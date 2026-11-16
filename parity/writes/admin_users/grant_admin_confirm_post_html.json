@@ -15,8 +15,8 @@
       }
     }
   ],
-  "started_at": "2026-10-14T11:17:56.909566",
-  "transaction_started_at": "2026-10-14T11:17:55.624458",
+  "started_at": "2026-11-15T21:52:56.656107",
+  "transaction_started_at": "2026-11-15T21:52:52.04322",
   "responses": [
     {
       "status": 200,
@@ -27,7 +27,7 @@
     },
     {
       "status": 200,
-      "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Discourse</title>\n  <meta name=\"description\" content=\"\">\n  <meta name=\"generator\" content=\"Discourse 2026.10.0-latest - https://github.com/discourse/discourse version bf55a44c2872738f7ae2664d6fec3d6d8779190f\">\n<link rel=\"icon\" type=\"image/png\" href=\"http://localhost:3051/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_32x32.png\">\n<link rel=\"apple-touch-icon\" type=\"image/png\" href=\"http://localhost:3051/uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_180x180.png\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: light)\" content=\"#fff\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: dark)\" content=\"#111111\">\n\n<meta name=\"color-scheme\" content=\"light dark\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover\">\n<link rel=\"canonical\" href=\"http://localhost:3051/users/confirm-admin/81a7a7175a5abe49094ba69bc48f5cfe\" />\n\n\n  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"http://localhost:3051/opensearch.xml\" title=\"Discourse Search\">\n\n  <link href=\"/stylesheets/color_definitions_light-default_-1_-1_52d22e96ca4d7c5494a46562d0df099f8b6caa0b.css?__ws=localhost\" media=\"(prefers-color-scheme: light)\" rel=\"stylesheet\" class=\"light-scheme\"/><link href=\"/stylesheets/color_definitions_dark_13_-1_db96197b363568a3e5c31b0004bd50f2cf5856a7.css?__ws=localhost\" media=\"(prefers-color-scheme: dark)\" rel=\"stylesheet\" class=\"dark-scheme\" data-scheme-id=\"13\"/>\n\n<link href=\"/stylesheets/common_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"common\"  />\n\n  <link href=\"/stylesheets/admin_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"admin\"  />\n\n  <link href=\"/stylesheets/wizard_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"wizard\"  />\n\n  <link href=\"/stylesheets/chat_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"chat\"  />\n  <link href=\"/stylesheets/checklist_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"checklist\"  />\n  <link href=\"/stylesheets/discourse-details_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-details\"  />\n  <link href=\"/stylesheets/discourse-lazy-videos_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-lazy-videos\"  />\n  <link href=\"/stylesheets/discourse-local-dates_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-local-dates\"  />\n  <link href=\"/stylesheets/discourse-narrative-bot_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-narrative-bot\"  />\n  <link href=\"/stylesheets/discourse-presence_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-presence\"  />\n  <link href=\"/stylesheets/discourse-reactions_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-reactions\"  />\n  <link href=\"/stylesheets/discourse-solved_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved\"  />\n  <link href=\"/stylesheets/discourse-templates_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-templates\"  />\n  <link href=\"/stylesheets/discourse-topic-voting_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-topic-voting\"  />\n  <link href=\"/stylesheets/discourse-workflows_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-workflows\"  />\n  <link href=\"/stylesheets/footnote_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"footnote\"  />\n  <link href=\"/stylesheets/poll_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"poll\"  />\n  <link href=\"/stylesheets/spoiler-alert_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"spoiler-alert\"  />\n  <link href=\"/stylesheets/chat_mobile_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"chat_mobile\"  />\n  <link href=\"/stylesheets/discourse-reactions_mobile_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_mobile\"  />\n  <link href=\"/stylesheets/chat_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"chat_desktop\"  />\n  <link href=\"/stylesheets/discourse-reactions_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_desktop\"  />\n  <link href=\"/stylesheets/poll_desktop_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"poll_desktop\"  />\n  <link href=\"/stylesheets/discourse-solved_admin_cda70713428198017adc2584dcd675af8d99f6ec.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved_admin\"  />\n\n  \n  \n  \n\n  \n\n    \n\n  \n  \n\n    \n\n\n\n  <script defer src=\"/assets/js/pageview-de2d5660.js\" data-discourse-entrypoint=\"js/pageview\" nonce=\"1C3Cs3ufgWz2lm3p9v9avrxvL\"></script>\n\n</head>\n<body class=\"no-ember \">\n    \n\n    \n\n    \n\n  <section id='main'>\n    \n  <header class=\"d-header\">\n    <div class=\"wrap\">\n      <div class=\"contents clearfix\">\n        <div class=\"title\">\n          <a href=\"/\">\n              <picture>\n                <img src=\"http://localhost:3051/images/discourse-logo-sketch.png\" alt=\"Discourse\" id=\"site-logo\" />\n              </picture>\n          </a>\n        </div>\n        <div class=\"panel clearfix\">\n        </div>\n      </div>\n    </div>\n  </header>\n\n    <div id=\"main-outlet\" class=\"wrap\">\n      <div id='simple-container'>\n  <h2>Confirm Admin Account</h2>\n  <br/>\n\n    <b>user1</b> is now an administrator.\n    <br/>\n    <br/>\n    <a class=\"btn btn-primary\" href=\"http://localhost:3051\">Return to Discourse</a>\n\n</div>\n\n    </div>\n  </section>\n\n    \n    \n\n    \n    \n</body>\n</html>\n"
+      "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Discourse</title>\n  <meta name=\"description\" content=\"\">\n  <meta name=\"generator\" content=\"Discourse 2026.11.0-latest.1 - https://github.com/discourse/discourse version 9daeae2a745b73533215775ebf132191ca4c5056\">\n<link rel=\"icon\" type=\"image/png\" href=\"http://localhost:3042/uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_32x32.png\">\n<link rel=\"apple-touch-icon\" type=\"image/png\" href=\"http://localhost:3042/uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_180x180.png\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: light)\" content=\"#fff\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: dark)\" content=\"#111111\">\n\n<meta name=\"color-scheme\" content=\"light dark\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover\">\n<link rel=\"canonical\" href=\"http://localhost:3042/users/confirm-admin/927b9c5fa4559bab2abcc80f16c4b9e2\" />\n\n\n  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"http://localhost:3042/opensearch.xml\" title=\"Discourse Search\">\n\n  <link href=\"/stylesheets/color_definitions_light-default_-1_-1_d48430f8830d100f8487351ba858639aa2210b62.css?__ws=localhost\" media=\"(prefers-color-scheme: light)\" rel=\"stylesheet\" class=\"light-scheme\"/><link href=\"/stylesheets/color_definitions_dark_13_-1_4c9b009ef3b199927407cd84b9b4f69aad4cf60d.css?__ws=localhost\" media=\"(prefers-color-scheme: dark)\" rel=\"stylesheet\" class=\"dark-scheme\" data-scheme-id=\"13\"/>\n\n<link href=\"/stylesheets/common_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"common\"  />\n\n  <link href=\"/stylesheets/admin_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"admin\"  />\n\n  <link href=\"/stylesheets/wizard_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"wizard\"  />\n\n  <link href=\"/stylesheets/boards_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"boards\"  />\n  <link href=\"/stylesheets/chat_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"chat\"  />\n  <link href=\"/stylesheets/checklist_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"checklist\"  />\n  <link href=\"/stylesheets/discourse-details_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-details\"  />\n  <link href=\"/stylesheets/discourse-lazy-videos_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-lazy-videos\"  />\n  <link href=\"/stylesheets/discourse-local-dates_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-local-dates\"  />\n  <link href=\"/stylesheets/discourse-narrative-bot_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-narrative-bot\"  />\n  <link href=\"/stylesheets/discourse-presence_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-presence\"  />\n  <link href=\"/stylesheets/discourse-reactions_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-reactions\"  />\n  <link href=\"/stylesheets/discourse-solved_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved\"  />\n  <link href=\"/stylesheets/discourse-templates_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-templates\"  />\n  <link href=\"/stylesheets/discourse-topic-voting_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-topic-voting\"  />\n  <link href=\"/stylesheets/discourse-workflows_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-workflows\"  />\n  <link href=\"/stylesheets/footnote_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"footnote\"  />\n  <link href=\"/stylesheets/poll_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"poll\"  />\n  <link href=\"/stylesheets/spoiler-alert_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"spoiler-alert\"  />\n  <link href=\"/stylesheets/chat_mobile_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"chat_mobile\"  />\n  <link href=\"/stylesheets/discourse-reactions_mobile_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_mobile\"  />\n  <link href=\"/stylesheets/chat_desktop_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"chat_desktop\"  />\n  <link href=\"/stylesheets/discourse-reactions_desktop_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_desktop\"  />\n  <link href=\"/stylesheets/poll_desktop_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"poll_desktop\"  />\n  <link href=\"/stylesheets/discourse-solved_admin_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved_admin\"  />\n\n  \n  \n  \n\n\n\n  \n\n    \n\n  \n  \n\n    \n\n\n\n\n  <script defer src=\"/assets/js/pageview-de2d5660.js\" data-discourse-entrypoint=\"js/pageview\" nonce=\"y4mPxdHgzTBxox5StVzL0LoEb\"></script>\n\n</head>\n<body class=\"no-ember \">\n    \n\n    \n\n    \n\n  <section id='main'>\n    \n  <header class=\"d-header\">\n    <div class=\"wrap\">\n      <div class=\"contents clearfix\">\n        <div class=\"title\">\n          <a href=\"/\">\n              <picture>\n                <img src=\"http://localhost:3042/images/discourse-logo-sketch.png\" alt=\"Discourse\" id=\"site-logo\" width=\"1858\" height=\"512\" />\n              </picture>\n          </a>\n        </div>\n        <div class=\"panel clearfix\">\n        </div>\n      </div>\n    </div>\n  </header>\n\n    <div id=\"main-outlet\" class=\"wrap\">\n      <div id='simple-container'>\n  <h2>Confirm Admin Account</h2>\n  <br/>\n\n    <b>user1</b> is now an administrator.\n    <br/>\n    <br/>\n    <a class=\"btn btn-primary\" href=\"http://localhost:3042\">Return to Discourse</a>\n\n</div>\n\n    </div>\n  </section>\n\n    \n    \n\n    \n    \n</body>\n</html>\n"
     }
   ],
   "changes": {
@@ -38,9 +38,9 @@
           "owner": false,
           "user_id": 3,
           "group_id": 1,
-          "created_at": "2026-10-14T11:17:55.624458",
-          "updated_at": "2026-10-14T11:17:55.624458",
-          "first_unread_pm_at": "2026-10-14T11:17:55.624458",
+          "created_at": "2026-11-15T21:52:52.04322",
+          "updated_at": "2026-11-15T21:52:52.04322",
+          "first_unread_pm_at": "2026-11-15T21:52:52.04322",
           "notification_level": 2
         },
         {
@@ -48,9 +48,9 @@
           "owner": false,
           "user_id": 3,
           "group_id": 3,
-          "created_at": "2026-10-14T11:17:55.624458",
-          "updated_at": "2026-10-14T11:17:55.624458",
-          "first_unread_pm_at": "2026-10-14T11:17:55.624458",
+          "created_at": "2026-11-15T21:52:52.04322",
+          "updated_at": "2026-11-15T21:52:52.04322",
+          "first_unread_pm_at": "2026-11-15T21:52:52.04322",
           "notification_level": 2
         }
       ],
@@ -73,9 +73,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-07-25T05:58:06.786103",
+            "created_at": "2026-11-03T05:07:09.359134",
             "flair_icon": null,
-            "updated_at": "2026-07-25T05:58:06.788462",
+            "updated_at": "2026-11-03T05:07:09.361546",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -127,9 +127,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-07-25T05:58:06.786103",
+            "created_at": "2026-11-03T05:07:09.359134",
             "flair_icon": null,
-            "updated_at": "2026-07-25T05:58:06.788462",
+            "updated_at": "2026-11-03T05:07:09.361546",
             "user_count": 2,
             "flair_color": null,
             "imap_server": null,
@@ -183,9 +183,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-07-25T05:58:06.806819",
+            "created_at": "2026-11-03T05:07:09.379049",
             "flair_icon": null,
-            "updated_at": "2026-07-25T05:58:06.809333",
+            "updated_at": "2026-11-03T05:07:09.381914",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -237,9 +237,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-07-25T05:58:06.806819",
+            "created_at": "2026-11-03T05:07:09.379049",
             "flair_icon": null,
-            "updated_at": "2026-07-25T05:58:06.809333",
+            "updated_at": "2026-11-03T05:07:09.381914",
             "user_count": 2,
             "flair_color": null,
             "imap_server": null,
@@ -289,33 +289,33 @@
       "updated": [
         {
           "before": {
-            "id": 78,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Q8Y2I2Jcn/K0GrSPhr3Vad+LLOg=",
-            "created_at": "2026-10-14T11:17:56.036785",
-            "rotated_at": "2026-10-14T11:17:56.035471",
-            "updated_at": "2026-10-14T11:17:56.036785",
+            "auth_token": "enb7ALK9tgqumCAt8i9wPh41qQ8=",
+            "created_at": "2026-11-15T21:52:53.781597",
+            "rotated_at": "2026-11-15T21:52:53.774657",
+            "updated_at": "2026-11-15T21:52:53.781597",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Q8Y2I2Jcn/K0GrSPhr3Vad+LLOg=",
+            "prev_auth_token": "enb7ALK9tgqumCAt8i9wPh41qQ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 78,
-            "seen_at": "2026-10-14T11:17:56.917256",
+            "id": 14,
+            "seen_at": "2026-11-15T21:52:56.676384",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Q8Y2I2Jcn/K0GrSPhr3Vad+LLOg=",
-            "created_at": "2026-10-14T11:17:56.036785",
-            "rotated_at": "2026-10-14T11:17:56.035471",
-            "updated_at": "2026-10-14T11:17:56.036785",
+            "auth_token": "enb7ALK9tgqumCAt8i9wPh41qQ8=",
+            "created_at": "2026-11-15T21:52:53.781597",
+            "rotated_at": "2026-11-15T21:52:53.774657",
+            "updated_at": "2026-11-15T21:52:53.781597",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Q8Y2I2Jcn/K0GrSPhr3Vad+LLOg=",
+            "prev_auth_token": "enb7ALK9tgqumCAt8i9wPh41qQ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -326,7 +326,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 32,
           "context": null,
@@ -336,9 +336,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-14T11:17:57.065315",
+          "created_at": "2026-11-15T21:52:57.076607",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T11:17:57.065315",
+          "updated_at": "2026-11-15T21:52:57.076607",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -367,25 +368,25 @@
             "approved": false,
             "username": "user1",
             "moderator": false,
-            "created_at": "2026-07-25T05:59:16.250829",
+            "created_at": "2026-11-03T05:08:00.404788",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-01T15:45:00.822146",
+            "updated_at": "2026-11-15T19:19:54.791982",
             "approved_at": null,
             "trust_level": 2,
-            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "last_seen_at": "2026-11-15T19:40:02.306968",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "first_seen_at": "2026-11-15T19:40:02.306968",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "last_posted_at": "2026-11-15T19:19:54.764084",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "previous_visit_at": null,
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -407,25 +408,25 @@
             "approved": true,
             "username": "user1",
             "moderator": false,
-            "created_at": "2026-07-25T05:59:16.250829",
+            "created_at": "2026-11-03T05:08:00.404788",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-14T11:17:57.032708",
-            "approved_at": "2026-10-14T11:17:57.029703",
+            "updated_at": "2026-11-15T21:52:57.007536",
+            "approved_at": "2026-11-15T21:52:56.994992",
             "trust_level": 2,
-            "last_seen_at": "2026-10-01T22:32:51.040203",
+            "last_seen_at": "2026-11-15T19:40:02.306968",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-10-01T15:42:53.259339",
+            "first_seen_at": "2026-11-15T19:40:02.306968",
             "silenced_till": null,
             "approved_by_id": -1,
             "flair_group_id": null,
-            "last_posted_at": "2026-09-30T07:28:29.580198",
+            "last_posted_at": "2026-11-15T19:19:54.764084",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": "2026-10-01T15:50:01.377372",
+            "previous_visit_at": null,
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -446,7 +447,7 @@
         "to_address": "admin@example.com",
         "target_email": "user1@example.com",
         "target_username": "user1",
-        "token": "81a7a7175a5abe49094ba69bc48f5cfe"
+        "token": "927b9c5fa4559bab2abcc80f16c4b9e2"
       }
     ],
     [
@@ -482,7 +483,7 @@
   ],
   "next_ids": {
     "group_users": 68,
-    "user_histories": 74
+    "user_histories": 68
   },
   "fragment": [
     "<div id='simple-container'>",
@@ -490,7 +491,7 @@
   ],
   "recorded_from": {
     "case": "8f4b88cab532b36d65ccfa25c9af188f2acb297d95187d4585c3e6d8c4e85bdc",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

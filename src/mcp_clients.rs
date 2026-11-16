@@ -33,12 +33,14 @@ pub struct Client {
     pub created_at: NaiveDateTime,
     pub last_seen_at: Option<NaiveDateTime>,
     pub authorization_count: i64,
+    /// Made by an admin (Discourse c8e4d29e75d).
+    pub admin_managed: bool,
 }
 
 const COLUMNS: &str = "c.id, c.client_id, c.name, c.registration_type, c.trust_state, \
      c.metadata_uri, c.metadata_hash, c.redirect_uris, c.created_at, c.last_seen_at, \
      (SELECT count(*) FROM mcp_oauth_authorizations a WHERE a.mcp_oauth_client_id = c.id) \
-     AS authorization_count";
+     AS authorization_count, c.admin_managed";
 
 /// `URI.parse(value).host`: None for a relative or unparsable value.
 fn uri_host(value: &str) -> Option<String> {
@@ -66,6 +68,7 @@ pub fn serialize(c: &Client) -> Value {
         "trust_state": c.trust_state,
         "blocked": c.trust_state == "blocked",
         "redirect_uris": c.redirect_uris,
+        "admin_managed": c.admin_managed,
         "redirect_hosts": hosts,
         "metadata_uri": c.metadata_uri,
         "first_seen_at": time(Some(c.created_at)),
@@ -199,8 +202,8 @@ pub async fn create(
     }
     let id: i64 = sqlx::query_scalar(
         "INSERT INTO mcp_oauth_clients (client_id, name, registration_type, trust_state, \
-         redirect_uris, created_at, updated_at) \
-         VALUES ($1, $2, 'pre_registered', 'approved', $3, now(), now()) RETURNING id",
+         redirect_uris, admin_managed, created_at, updated_at) \
+         VALUES ($1, $2, 'pre_registered', 'approved', $3, TRUE, now(), now()) RETURNING id",
     )
     .bind(&c.client_id)
     .bind(&c.name)

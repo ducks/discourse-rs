@@ -88,6 +88,38 @@
   },
   {
     "kind": "tool",
+    "identifier": "discourse_create_category",
+    "title": "Create category",
+    "description": "Creates a category and returns its ID, slug, and name.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:categories:write"
+    ],
+    "schema_bytes": 500,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_create_group",
+    "title": "Create group",
+    "description": "Creates a group and returns its ID and name. Requires group creation rights.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:groups:write"
+    ],
+    "schema_bytes": 1402,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
     "identifier": "discourse_create_post",
     "title": "Create post",
     "description": "Creates a reply in a topic as the authenticated user.",
@@ -117,6 +149,24 @@
     "plugin": null,
     "enabled_setting": null,
     "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_create_tag_group",
+    "title": "Create tag group",
+    "description": "Creates a tag group. Requires staff authority and tagging enabled. Tags use ID or name selectors; synonyms resolve to original tags. Name selectors require allow_tag_creation=true and may create tags. permissions maps group IDs to full or readonly; group 0 means everyone. Omitted permissions default to everyone/full.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:tag-groups:write"
+    ],
+    "schema_bytes": 1044,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": [
+      "tagging_enabled"
+    ]
   },
   {
     "kind": "tool",
@@ -152,6 +202,22 @@
   },
   {
     "kind": "tool",
+    "identifier": "discourse_create_user",
+    "title": "Create user",
+    "description": "Creates a user as an administrator. Registrations must be open. Supply the site's invite code if required and required user fields keyed by field ID. Missing-field errors identify the field name and ID.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:users:write"
+    ],
+    "schema_bytes": 744,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
     "identifier": "discourse_current_user_get",
     "title": "Get current user",
     "description": "Returns the authenticated Discourse user, granted scopes, and MCP server URI.",
@@ -162,6 +228,22 @@
     ],
     "schema_bytes": 46,
     "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_delete_category",
+    "title": "Delete category",
+    "description": "Deletes an empty category after confirming its current name.",
+    "provider": "core",
+    "risk": "destructive",
+    "required_scopes": [
+      "mcp:categories:write"
+    ],
+    "schema_bytes": 251,
+    "consent_relevant": true,
     "plugin": null,
     "enabled_setting": null,
     "available_when": []
@@ -184,6 +266,56 @@
   },
   {
     "kind": "tool",
+    "identifier": "discourse_delete_group",
+    "title": "Delete group",
+    "description": "Deletes a group after confirming its current name. Administrators only. Automatic groups cannot be deleted.",
+    "provider": "core",
+    "risk": "destructive",
+    "required_scopes": [
+      "mcp:groups:write"
+    ],
+    "schema_bytes": 246,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_delete_tag_group",
+    "title": "Delete tag group",
+    "description": "Deletes a tag group and its membership, permission and category relationships, including required-tag rules. Tags and topic tags remain. Requires staff authority, tagging enabled, confirm=true and the exact current expected_name.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:tag-groups:write"
+    ],
+    "schema_bytes": 254,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": [
+      "tagging_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_delete_theme",
+    "title": "Delete theme",
+    "description": "Deletes a theme and its component links. Requires edit permission, the current name, and confirmation. Default and system themes cannot be deleted.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:write"
+    ],
+    "schema_bytes": 246,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
     "identifier": "discourse_filter_topics",
     "title": "Filter topics",
     "description": "Discover topics through a filtered, top, or hot view. Filtered uses Discourse TopicsFilter syntax; top uses Discourse's top score and defaults to weekly; hot is daily top. Returns a uniform topic projection and truthful pagination metadata.",
@@ -194,6 +326,22 @@
     ],
     "schema_bytes": 409,
     "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_category",
+    "title": "Get category",
+    "description": "Reads category details needed for category management.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:categories:read"
+    ],
+    "schema_bytes": 133,
+    "consent_relevant": true,
     "plugin": null,
     "enabled_setting": null,
     "available_when": []
@@ -227,6 +375,22 @@
       "mcp:drafts:read"
     ],
     "schema_bytes": 187,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_group",
+    "title": "Get group",
+    "description": "Gets safe details and caller capabilities for one visible group.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:groups:read"
+    ],
+    "schema_bytes": 166,
     "consent_relevant": false,
     "plugin": null,
     "enabled_setting": null,
@@ -284,6 +448,22 @@
   },
   {
     "kind": "tool",
+    "identifier": "discourse_get_report",
+    "title": "Get report",
+    "description": "Retrieves one report from the caller's current report catalog. Requires staff access; admin-only reports and related items retain their normal restrictions. Dates use YYYY-MM-DD and default to the last 30 days ending on end_date or today. Date ranges cannot exceed 366 days. Filters accept scalar values or arrays, as supported by each report. limit bounds rows only where the report supports it; omitting it preserves that report's default. cache opts into the existing report cache and requires administrator access; include_related_items defaults to false. This runs registered reports, not arbitrary SQL.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:reports:read"
+    ],
+    "schema_bytes": 933,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
     "identifier": "discourse_get_review_queue_count",
     "title": "Get review queue count",
     "description": "Returns the number of pending reviewable records visible to the authenticated reviewer.",
@@ -309,6 +489,22 @@
       "mcp:moderation:read"
     ],
     "schema_bytes": 178,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_get_tag_group",
+    "title": "Get tag group",
+    "description": "Reads tag-group configuration, including tags, parent, one-per-topic policy and permissions. Requires staff authority.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:tag-groups:read"
+    ],
+    "schema_bytes": 135,
     "consent_relevant": true,
     "plugin": null,
     "enabled_setting": null,
@@ -396,6 +592,54 @@
   },
   {
     "kind": "tool",
+    "identifier": "discourse_handle_group_membership_request",
+    "title": "Handle group membership request",
+    "description": "Approves or denies one pending membership request for a group the authenticated user may manage. Approving adds the requester to the group.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:groups:write"
+    ],
+    "schema_bytes": 258,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_install_theme",
+    "title": "Install theme",
+    "description": "Installs executable theme code from exactly one repository URL or base64 archive. Requires administrator access and confirmation. Repository installs always run migrations and require confirm_run_migrations. Archive migrations are opt-in. Archive component imports default to none; merge and sync require run_migrations and confirm_run_migrations. Only archives can replace an existing theme; confirm its current name before replacement. Returns a theme summary without source code and reports any archive components that could not be imported.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:write"
+    ],
+    "schema_bytes": 722,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_invite_group_members",
+    "title": "Invite group members by email",
+    "description": "Adds existing accounts that match an address and invites the rest to the forum with the group preassigned. Requires permission to view email addresses.",
+    "provider": "core",
+    "risk": "external_side_effect",
+    "required_scopes": [
+      "mcp:groups:write"
+    ],
+    "schema_bytes": 294,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
     "identifier": "discourse_invite_to_private_message",
     "title": "Invite to private message",
     "description": "Adds one user or group, or submits one email invitation, to a private message.",
@@ -421,6 +665,70 @@
       "mcp:content:read"
     ],
     "schema_bytes": 657,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_group_members",
+    "title": "List group members",
+    "description": "Lists members and owners when the authenticated user may see them.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:groups:read"
+    ],
+    "schema_bytes": 406,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_group_membership_requests",
+    "title": "List group membership requests",
+    "description": "Lists pending requests for a group the authenticated user may manage.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:groups:read"
+    ],
+    "schema_bytes": 317,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_group_posts",
+    "title": "List group posts",
+    "description": "Lists visible public-topic posts authored by members of a visible group.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:groups:read"
+    ],
+    "schema_bytes": 329,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_groups",
+    "title": "List groups",
+    "description": "Lists groups visible to the authenticated user.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:groups:read"
+    ],
+    "schema_bytes": 459,
     "consent_relevant": false,
     "plugin": null,
     "enabled_setting": null,
@@ -454,6 +762,22 @@
     ],
     "schema_bytes": 408,
     "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_reports",
+    "title": "List reports",
+    "description": "Lists the caller's available Discourse reports, including enabled plugin reports. Requires staff access. Use the returned report types with discourse_get_report.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:reports:read"
+    ],
+    "schema_bytes": 76,
+    "consent_relevant": true,
     "plugin": null,
     "enabled_setting": null,
     "available_when": []
@@ -508,6 +832,38 @@
   },
   {
     "kind": "tool",
+    "identifier": "discourse_list_tag_groups",
+    "title": "List tag groups",
+    "description": "Lists staff tag-group inventory with permissions and parent tags, ordered by name and ID. Requires staff authority. Paginate with limit and offset; reads remain available when tagging is disabled.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:tag-groups:read"
+    ],
+    "schema_bytes": 186,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_themes",
+    "title": "List themes",
+    "description": "Lists installed themes and components. Requires administrator access.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:read"
+    ],
+    "schema_bytes": 168,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
     "identifier": "discourse_list_user_actions",
     "title": "List user actions",
     "description": "Lists a user's visible activity using named action types.",
@@ -534,6 +890,86 @@
     ],
     "schema_bytes": 233,
     "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_list_users",
+    "title": "List users",
+    "description": "Lists and filters users visible through Discourse's staff user directory.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:users:read"
+    ],
+    "schema_bytes": 582,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_manage_group_members",
+    "title": "Manage group members",
+    "description": "Adds or removes members of a group the authenticated user may manage. Provide exactly one of usernames, user_ids, or user_emails. The user_emails selector requires permission to view email addresses.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:groups:write"
+    ],
+    "schema_bytes": 560,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_manage_group_membership",
+    "title": "Manage own group membership",
+    "description": "Joins a group that allows public admission, leaves a group that allows public exit, or requests membership with a reason.",
+    "provider": "core",
+    "risk": "write",
+    "required_scopes": [
+      "mcp:groups:write"
+    ],
+    "schema_bytes": 255,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_manage_group_owners",
+    "title": "Manage group owners",
+    "description": "Grants or revokes group ownership. Adding an owner also adds them as a member. Automatic groups cannot be changed.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:groups:write"
+    ],
+    "schema_bytes": 560,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_manage_user_activation",
+    "title": "Manage user activation",
+    "description": "Activates, approves, activates and approves, or deactivates an eligible user.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:users:write"
+    ],
+    "schema_bytes": 280,
+    "consent_relevant": true,
     "plugin": null,
     "enabled_setting": null,
     "available_when": []
@@ -752,6 +1188,24 @@
   },
   {
     "kind": "tool",
+    "identifier": "discourse_search_tag_groups",
+    "title": "Search tag groups",
+    "description": "Searches visible tag groups and visible member tags. Omits staff configuration. q and names combine; q supports SQL LIKE wildcards. truncated signals possible additional results.",
+    "provider": "core",
+    "risk": "read",
+    "required_scopes": [
+      "mcp:content:read"
+    ],
+    "schema_bytes": 276,
+    "consent_relevant": false,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": [
+      "tagging_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
     "identifier": "discourse_solved_solution_set",
     "title": "Set accepted solution",
     "description": "Accepts or unaccepts a post as the topic solution when permitted.",
@@ -767,6 +1221,22 @@
     "available_when": [
       "solved_enabled"
     ]
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_sync_remote_theme",
+    "title": "Sync remote theme",
+    "description": "Checks a theme repository for updates or installs its latest code. Requires edit permission. Updating runs migrations and requires both code and migration confirmation. Checking also updates stored remote-version metadata. Returns a theme summary. When completing a pending installation, also reports skipped components with their errors.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:write"
+    ],
+    "schema_bytes": 348,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
   },
   {
     "kind": "tool",
@@ -820,6 +1290,38 @@
   },
   {
     "kind": "tool",
+    "identifier": "discourse_update_category",
+    "title": "Update category",
+    "description": "Updates basic details for a category.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:categories:write"
+    ],
+    "schema_bytes": 616,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_update_group",
+    "title": "Update group",
+    "description": "Updates the group settings the authenticated user may change. Fields the user cannot change are ignored.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:groups:write"
+    ],
+    "schema_bytes": 2296,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
     "identifier": "discourse_update_post",
     "title": "Update post",
     "description": "Edits a post when the authenticated user has permission.",
@@ -852,6 +1354,24 @@
   },
   {
     "kind": "tool",
+    "identifier": "discourse_update_tag_group",
+    "title": "Update tag group",
+    "description": "Updates supplied fields, preserving omitted fields. tags replaces all member tags; [] clears them. parent_tag=null clears the parent. permissions replaces the full permission map. Synonyms resolve to original tags. Name selectors require allow_tag_creation=true. Requires staff authority and tagging enabled.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:tag-groups:write"
+    ],
+    "schema_bytes": 1098,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": [
+      "tagging_enabled"
+    ]
+  },
+  {
+    "kind": "tool",
     "identifier": "discourse_update_theme",
     "title": "Update theme",
     "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
@@ -861,6 +1381,38 @@
       "mcp:themes:write"
     ],
     "schema_bytes": 1189,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_update_theme_setting",
+    "title": "Update theme setting",
+    "description": "Sets a declared theme setting or restores its declared default. Requires edit permission. Use pipe-separated strings for list settings and arrays of objects for object settings. Reverting requires confirm and must omit value.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:write"
+    ],
+    "schema_bytes": 444,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_update_theme_translations",
+    "title": "Update theme translations",
+    "description": "Updates declared theme translations for one locale. Requires edit permission and the current theme name. Unknown keys reject the whole batch.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:write"
+    ],
+    "schema_bytes": 439,
     "consent_relevant": true,
     "plugin": null,
     "enabled_setting": null,
@@ -909,6 +1461,22 @@
       "mcp:content:write"
     ],
     "schema_bytes": 388,
+    "consent_relevant": true,
+    "plugin": null,
+    "enabled_setting": null,
+    "available_when": []
+  },
+  {
+    "kind": "tool",
+    "identifier": "discourse_upload_theme_asset",
+    "title": "Upload theme asset",
+    "description": "Uploads base64 asset data for use in a theme. Requires administrator access. Returns an unattached upload ID; use discourse_update_theme to attach it to a theme field. Site upload and MCP request-size limits apply.",
+    "provider": "core",
+    "risk": "administration",
+    "required_scopes": [
+      "mcp:themes:write"
+    ],
+    "schema_bytes": 262,
     "consent_relevant": true,
     "plugin": null,
     "enabled_setting": null,

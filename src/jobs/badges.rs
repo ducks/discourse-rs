@@ -106,8 +106,9 @@ pub async fn ensure_badges_consistency(state: &AppState) -> Result<(), AppError>
 }
 
 /// `Jobs::GrantAnniversaryBadges#execute` for its default start (a year
-/// ago): the Anniversary badge, dated a year after the start, for each
-/// user who posted in the year since and hasn't had it for that year.
+/// ago): the Anniversary badge for each user who posted in the year since
+/// and hasn't had it since their latest anniversary, dated that
+/// anniversary (cb0fbef39d7).
 pub async fn grant_anniversary_badges(state: &AppState) -> Result<(), AppError> {
     let mut tx = state.pool.begin().await?;
     let s = settings(state, &mut tx).await?;
@@ -123,9 +124,21 @@ pub async fn grant_anniversary_badges(state: &AppState) -> Result<(), AppError> 
     let now = crate::clock::now_naive();
     let start = years_ago(now);
     let end = start.checked_add_months(Months::new(12)).unwrap_or(start);
-    // BadgeQueries.anniversaries(start_date, end_date)
-    let user_ids: Vec<i32> = sqlx::query_scalar(
-        "SELECT u.id FROM users AS u \
+    // BadgeQueries.anniversaries(start_date, end_date): each user's latest
+    // anniversary on or before the end.
+    let grants: Vec<(i32, NaiveDateTime)> = sqlx::query_as(
+        "WITH anniversary_candidates AS ( \
+           SELECT u.*, $4 - EXTRACT(YEAR FROM u.created_at)::integer AS anniversary_year FROM users AS u \
+         ), anniversary_years AS ( \
+           SELECT u.*, CASE WHEN u.created_at + make_interval(years => u.anniversary_year) <= $2 \
+                         THEN u.anniversary_year ELSE u.anniversary_year - 1 END AS current_anniversary_year \
+             FROM anniversary_candidates AS u \
+         ), users_with_anniversaries AS ( \
+           SELECT u.*, u.created_at + make_interval(years => u.current_anniversary_year) AS anniversary_at, \
+                  u.created_at + make_interval(years => u.current_anniversary_year + 1) AS next_anniversary_at \
+             FROM anniversary_years AS u \
+         ) \
+         SELECT u.id, u.anniversary_at FROM users_with_anniversaries AS u \
          JOIN posts AS p ON p.user_id = u.id \
          JOIN topics AS t ON p.topic_id = t.id \
          WHERE u.id > 0 AND u.active AND NOT u.staged \
@@ -136,16 +149,18 @@ pub async fn grant_anniversary_badges(state: &AppState) -> Result<(), AppError> 
            AND p.created_at BETWEEN $1 AND $2 \
            AND t.visible AND t.archetype <> 'private_message' AND t.deleted_at IS NULL \
            AND NOT EXISTS (SELECT 1 FROM user_badges AS ub WHERE ub.user_id = u.id \
-                           AND ub.badge_id = $3 AND ub.granted_at BETWEEN $1 AND $2) \
+                           AND ub.badge_id = $3 AND ub.granted_at >= u.anniversary_at \
+                           AND ub.granted_at < u.next_anniversary_at) \
            AND NOT EXISTS (SELECT 1 FROM anonymous_users AS au WHERE au.user_id = u.id) \
-         GROUP BY u.id HAVING COUNT(p.id) > 0 ORDER BY u.id",
+         GROUP BY u.id, u.anniversary_at HAVING COUNT(p.id) > 0 ORDER BY u.id",
     )
     .bind(start)
     .bind(end)
     .bind(ANNIVERSARY)
+    .bind(end.year())
     .fetch_all(&mut *tx)
     .await?;
-    for user_id in user_ids {
+    for (user_id, granted_at) in grants {
         badge_granter::grant(
             &mut tx,
             &state.bus,
@@ -154,7 +169,7 @@ pub async fn grant_anniversary_badges(state: &AppState) -> Result<(), AppError> 
             &badge,
             user_id,
             &GrantOpts {
-                created_at: Some(end),
+                created_at: Some(granted_at),
                 ..GrantOpts::system(None)
             },
         )

@@ -1,5 +1,6 @@
 {
   "user": null,
+  "not_yet": "2b6dd368623 (Discourse): connected accounts keep their avatars (UserAvatar.retrieve_for_associated_account); not ported",
   "settings": {
     "allowed_internal_hosts": "fixtures.localhost",
     "auth_require_interaction": false,
@@ -19,16 +20,22 @@
   "remote": {
     "/token": {
       "status": 200,
-      "headers": {"Content-Type": "application/json"},
+      "headers": {
+        "Content-Type": "application/json"
+      },
       "body": "{\"access_token\":\"access-6\"}"
     },
     "/user.json": {
       "status": 200,
-      "headers": {"Content-Type": "application/json"},
+      "headers": {
+        "Content-Type": "application/json"
+      },
       "body": "{\"id\":606,\"login\":\"signer\",\"name\":\"Signing Person\",\"mail\":\"signing.person@example.com\",\"avatar\":\"http://fixtures.localhost:8099/signer.png\"}"
     }
   },
-  "keep_headers": ["Location"],
+  "keep_headers": [
+    "Location"
+  ],
   "requests": [
     {
       "method": "GET",
@@ -38,7 +45,10 @@
       "method": "GET",
       "path": "/auth/oauth2_basic/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
     },
-    {"method": "GET", "path": "/session/hp.json"},
+    {
+      "method": "GET",
+      "path": "/session/hp.json"
+    },
     {
       "method": "POST",
       "path": "/u.json",

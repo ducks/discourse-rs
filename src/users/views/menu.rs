@@ -1119,30 +1119,24 @@ fn notification(cx: &MenuContext, n: &Value) -> Item {
     item
 }
 
-/// UserMenuMessageItem: a message from the messages tab's list.
-pub fn message_item(cx: &MenuContext, topic: &Value, users: &[Value]) -> String {
+/// UserMenuMessageItem: a message from the messages tab's list, labelled
+/// with its last poster (d36d416d20e).
+pub fn message_item(cx: &MenuContext, topic: &Value) -> String {
     let last_read = topic["last_read_post_number"].as_i64().unwrap_or(0);
     let highest = topic["highest_post_number"].as_i64().unwrap_or(0);
     let next = (last_read + 1).min(highest);
-    let last_poster = s(&topic["last_poster_username"]);
+    let poster = &topic["last_poster"];
+    let username = s(&poster["username"]);
     let label = if cx.prioritize_full_name {
-        let poster_id = topic["posters"]
-            .as_array()
-            .and_then(|p| p.last())
-            .and_then(|p| p["user_id"].as_i64());
-        users
-            .iter()
-            .find(|u| u["id"].as_i64() == poster_id && poster_id.is_some())
-            .and_then(|u| u["name"].as_str())
+        poster["name"]
+            .as_str()
             .filter(|n| !n.is_empty())
-            .unwrap_or(last_poster)
+            .unwrap_or(username)
             .to_string()
     } else {
-        last_poster.to_string()
+        username.to_string()
     };
-    // The list's `unread`, which ListableTopicSerializer keeps at 0 for
-    // old themes: a message reads as read.
-    let unread = topic["unread"].as_i64().unwrap_or(0) != 0;
+    let unread = topic["unread_posts"].as_i64().unwrap_or(0) != 0;
     render_item(
         cx,
         &Item {

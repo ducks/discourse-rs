@@ -26,14 +26,14 @@
       }
     }
   ],
-  "started_at": "2026-10-16T05:13:16.429264",
-  "transaction_started_at": "2026-10-16T05:13:15.136049",
+  "started_at": "2026-11-15T22:58:17.004138",
+  "transaction_started_at": "2026-11-15T22:58:16.244453",
   "responses": [
     {
       "status": 200,
       "body": {
-        "value": "154a66f5cc91cb98f1b3ce9033bf5aff",
-        "challenge": "1a21c7e9af4903eb922dc4e8c168d5df",
+        "value": "2fd450242a186d50373bad1b1137bd08",
+        "challenge": "eda251e4f8aca76480018762218c252d",
         "expires_in": 3600
       }
     },
@@ -51,7 +51,8 @@
         "generated_username": false,
         "trust_level": 1,
         "avatar_template": null,
-        "can_upload_avatar": true
+        "can_upload_avatar": true,
+        "can_edit_avatar": true
       }
     }
   ],
@@ -63,10 +64,10 @@
           "email": "newbie@example.com",
           "purpose": 0,
           "attempts": 0,
-          "code_hash": "336e4524da7f4d247e754c6ad341780d25d27e9e4cf277304bb68166abf03491",
-          "created_at": "2026-10-16T05:13:16.528848",
-          "expires_at": "2026-10-16T05:23:16.528377",
-          "updated_at": "2026-10-16T05:13:16.528848",
+          "code_hash": "e41ec585acee7eb25cd219697acadc5826bbccd03833c069d386b3adb60737d1",
+          "created_at": "2026-11-15T22:58:17.057616",
+          "expires_at": "2026-11-15T23:08:17.057366",
+          "updated_at": "2026-11-15T22:58:17.057616",
           "consumed_at": null
         }
       ],
@@ -79,7 +80,7 @@
       "send_email_login_code",
       {
         "to_address": "newbie@example.com",
-        "code": "849288"
+        "code": "906094"
       }
     ]
   ],
@@ -96,7 +97,7 @@
   ],
   "recorded_from": {
     "case": "b957463e306bb04dd1f4286e4f826695c4ee5c693483287c40f495f7e9b04b9a",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

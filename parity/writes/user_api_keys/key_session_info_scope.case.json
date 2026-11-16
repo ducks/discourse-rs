@@ -20,5 +20,8 @@
         "User-Api-Key": "parity-user-key-9101"
       }
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/current_user/available_notification_types"
   ]
 }

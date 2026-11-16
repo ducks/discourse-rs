@@ -367,13 +367,16 @@ async fn the_accepted_solutions_report_lists_solved_topics() {
     assert!(html.contains("\"admin.reports.related_items.table_summary.solved_topics_title\":\"Solved topics on %{date}\""));
 }
 
+/// The redesigned dashboard is the only one (Discourse 58f631dfb0b), and
+/// dashboard_improvements is permanent: an admin's stored opt-out is
+/// ignored.
 #[tokio::test]
-async fn the_legacy_dashboard_is_refused() {
+async fn the_dashboard_ignores_a_stored_opt_out() {
     let db = TestDb::new().await;
     set_setting(&db.pool, "dashboard_improvements", BOOL, "f").await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
-    let (status, _) = Client::logged_in(st, "admin").await.page("/admin").await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    let (status, html) = Client::logged_in(st, "admin").await.page("/admin").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
 }
 
 #[tokio::test]
@@ -785,7 +788,6 @@ async fn the_config_areas_settings_json() {
 #[tokio::test]
 async fn the_reports_index() {
     let db = TestDb::new().await;
-    set_setting(&db.pool, "dashboard_hidden_reports", 8, "visits").await;
     let st = admin_state(&db).await;
     let mut admin = Client::logged_in(st, "admin").await;
     let (status, html) = admin.page("/admin/reports?filter=sign").await;
@@ -794,8 +796,9 @@ async fn the_reports_index() {
     assert!(html.contains("<div class=\"admin-contents admin-reports\">"));
     assert!(html.contains("<h2 class=\"admin-reports-group__title\">Engagement</h2>"));
     assert!(html.contains("href=\"/admin/reports/signups\""));
-    // dashboard_hidden_reports leaves its reports out.
-    assert!(!html.contains("href=\"/admin/reports/visits\""));
+    // Every report is listed: Discourse 58f631dfb0b dropped
+    // dashboard_hidden_reports.
+    assert!(html.contains("href=\"/admin/reports/visits\""));
     // The URL's filter fills the input; the group menu lists the groups.
     assert!(html.contains("value=\"sign\" placeholder=\"Filter reports...\""));
     assert!(html.contains("<option class=\"d-native-select__option\" value=\"traffic\">"));
@@ -818,7 +821,6 @@ async fn the_report_page() {
         .execute(&db.pool)
         .await
         .unwrap();
-    set_setting(&db.pool, "dashboard_hidden_reports", 8, "visits").await;
     let st = admin_state(&db).await;
     let mut admin = Client::logged_in(st, "admin").await;
     // A chart: the chrome, the groupings, the dates, the group filter,
@@ -834,7 +836,7 @@ async fn the_report_page() {
         ),
         "{html}"
     );
-    assert!(html.contains("<div class=\"admin-report is-enabled is-visible signups\">"));
+    assert!(html.contains("<div class=\"admin-report is-enabled signups\">"));
     assert!(html.contains("<a class=\"d-page-subheader__title-link\" href=\"/admin/reports/signups?start_date&#x3D;2026-01-01&amp;end_date&#x3D;2026-01-31\">Signups</a>"), "{html}");
     assert!(html.contains("name=\"chart-grouping-signups\" type=\"radio\" value=\"weekly\""));
     assert!(html.contains("type=\"date\" value=\"2026-01-01\""));
@@ -881,10 +883,11 @@ async fn the_report_page() {
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("<div class=\"alert alert-error report-alert not-found\">"));
     assert!(!html.contains("chart__actions"));
-    // A hidden report draws nothing inside.
+    // No report is hidden since Discourse 58f631dfb0b dropped
+    // dashboard_hidden_reports.
     let (_, html) = admin.page("/admin/reports/visits").await;
     assert!(
-        html.contains("<div class=\"admin-report is-enabled hidden visits\"></div>"),
+        html.contains("<div class=\"admin-report is-enabled visits\"><div class=\"conditional-loading-section\">"),
         "{html}"
     );
     // From the dashboard, the way back is the dashboard.
@@ -1242,7 +1245,8 @@ async fn list_setting_editors_carry_their_content() {
         html.contains("class=\"select-kit multi-select category-selector\""),
         "{html}"
     );
-    assert!(html.contains("&quot;name&quot;:&quot;Uncategorized&quot;"));
+    // The seed has no Uncategorized category since Discourse a9f8c119c71.
+    assert!(html.contains("&quot;name&quot;:&quot;General&quot;"));
 
     let (_, html) = admin.page(&page("digest_suppress_tags")).await;
     assert!(

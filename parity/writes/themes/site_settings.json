@@ -62,8 +62,8 @@
       "path": "/admin/themes/-1.json"
     }
   ],
-  "started_at": "2026-10-14T16:10:18.354031",
-  "transaction_started_at": "2026-10-14T16:10:15.32471",
+  "started_at": "2026-11-15T23:44:54.74259",
+  "transaction_started_at": "2026-11-15T23:44:53.930402",
   "responses": [
     {
       "status": 200,
@@ -187,8 +187,8 @@
           "id": -1,
           "name": "Foundation",
           "description": "The classic Discourse theme that is well-suited to customization for your community’s specific needs.",
-          "created_at": "2026-07-25T05:58:16.654Z",
-          "updated_at": "2026-07-25T05:58:21.435Z",
+          "created_at": "2026-11-03T05:07:13.429Z",
+          "updated_at": "2026-11-03T05:07:17.750Z",
           "default": true,
           "component": false,
           "color_scheme_id": null,
@@ -197,6 +197,7 @@
           "auto_update": false,
           "remote_theme_id": null,
           "settings": [],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -235,7 +236,7 @@
               "value": "",
               "type_id": 7,
               "upload_id": 1,
-              "url": "/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png",
+              "url": "/uploads/default/original/1X/288f8119fa0e836a3839f6a2145b77d688b25127.png",
               "filename": "light.png",
               "file_path": null
             },
@@ -245,7 +246,7 @@
               "value": "",
               "type_id": 7,
               "upload_id": 2,
-              "url": "/uploads/default/original/1X/46d43cd68924bf0f8dca7c468f5a3722ff0a750f.png",
+              "url": "/uploads/default/original/1X/9b5ee62c077f4537e940d3740f955fe8ba8a627c.png",
               "filename": "dark.png",
               "file_path": null
             },
@@ -255,6 +256,34 @@
               "value": "{\n  \"name\": \"Foundation\",\n  \"authors\": \"Discourse\",\n  \"theme_version\": \"1.0.0\",\n  \"minimum_discourse_version\": null,\n  \"maximum_discourse_version\": null,\n  \"assets\": {},\n  \"modifiers\": {},\n  \"color_schemes\": {},\n  \"screenshots\": [\n    \"screenshots/light.png\",\n    \"screenshots/dark.png\"\n  ]\n}\n",
               "type_id": 8,
               "file_path": "about.json"
+            },
+            {
+              "name": "de",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nde:\n  theme_metadata:\n    description: \"Das klassische Discourse-Theme, das sich gut für die Anpassung an die spezifischen Bedürfnisse deiner Community eignet.\"\n",
+              "type_id": 5,
+              "file_path": "locales/de.yml"
+            },
+            {
+              "name": "el",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nel:\n",
+              "type_id": 5,
+              "file_path": "locales/el.yml"
+            },
+            {
+              "name": "en",
+              "target": "translations",
+              "value": "en:\n  theme_metadata:\n    description: \"The classic Discourse theme that is well-suited to customization for your community’s specific needs.\"\n",
+              "type_id": 5,
+              "file_path": "locales/en.yml"
+            },
+            {
+              "name": "en_GB",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nen_GB:\n",
+              "type_id": 5,
+              "file_path": "locales/en_GB.yml"
             },
             {
               "name": "es",
@@ -404,6 +433,20 @@
               "file_path": "locales/pt_BR.yml"
             },
             {
+              "name": "ar",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nar:\n  theme_metadata:\n    description: \"السمة التقليدية لمنصة Discourse، الملائمة بشكل جيد للتخصيص بما يتوافق مع متطلبات مجتمعك المحدَّدة.\"\n",
+              "type_id": 5,
+              "file_path": "locales/ar.yml"
+            },
+            {
+              "name": "be",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbe:\n",
+              "type_id": 5,
+              "file_path": "locales/be.yml"
+            },
+            {
               "name": "ro",
               "target": "translations",
               "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nro:\n  theme_metadata:\n    description: \"Tema clasică Discourse care este potrivită pentru personalizare în funcție de nevoile specifice ale comunității tale.\"\n",
@@ -474,6 +517,13 @@
               "file_path": "locales/th.yml"
             },
             {
+              "name": "tr_TR",
+              "target": "translations",
+              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ntr_TR:\n  theme_metadata:\n    description: \"Topluluğunuzun özel ihtiyaçlarına göre özelleştirilmeye uygun klasik Discourse teması.\"\n",
+              "type_id": 5,
+              "file_path": "locales/tr_TR.yml"
+            },
+            {
               "name": "ug",
               "target": "translations",
               "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nug:\n  theme_metadata:\n    description: \"ئەنئەنىۋى Discourse ئۆرنىكى جامائەتنىڭ مۇئەييەن ئېھتىياجىغا ئاساسەن خاسلاشتۇرۇشقا ئىنتايىن ماس كېلىدۇ.\"\n",
@@ -516,39 +566,11 @@
               "file_path": "locales/zh_TW.yml"
             },
             {
-              "name": "ar",
-              "target": "translations",
-              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nar:\n  theme_metadata:\n    description: \"السمة التقليدية لمنصة Discourse، الملائمة بشكل جيد للتخصيص بما يتوافق مع متطلبات مجتمعك المحدَّدة.\"\n",
-              "type_id": 5,
-              "file_path": "locales/ar.yml"
-            },
-            {
-              "name": "be",
-              "target": "translations",
-              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbe:\n",
-              "type_id": 5,
-              "file_path": "locales/be.yml"
-            },
-            {
               "name": "bg",
               "target": "translations",
               "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nbg:\n",
               "type_id": 5,
               "file_path": "locales/bg.yml"
-            },
-            {
-              "name": "en",
-              "target": "translations",
-              "value": "en:\n  theme_metadata:\n    description: \"The classic Discourse theme that is well-suited to customization for your community’s specific needs.\"\n",
-              "type_id": 5,
-              "file_path": "locales/en.yml"
-            },
-            {
-              "name": "tr_TR",
-              "target": "translations",
-              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\ntr_TR:\n  theme_metadata:\n    description: \"Topluluğunuzun özel ihtiyaçlarına göre özelleştirilmeye uygun klasik Discourse teması.\"\n",
-              "type_id": 5,
-              "file_path": "locales/tr_TR.yml"
             },
             {
               "name": "bs_BA",
@@ -577,31 +599,10 @@
               "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nda:\n",
               "type_id": 5,
               "file_path": "locales/da.yml"
-            },
-            {
-              "name": "de",
-              "target": "translations",
-              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nde:\n  theme_metadata:\n    description: \"Das klassische Discourse-Theme, das sich gut für die Anpassung an die spezifischen Bedürfnisse deiner Community eignet.\"\n",
-              "type_id": 5,
-              "file_path": "locales/de.yml"
-            },
-            {
-              "name": "el",
-              "target": "translations",
-              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nel:\n",
-              "type_id": 5,
-              "file_path": "locales/el.yml"
-            },
-            {
-              "name": "en_GB",
-              "target": "translations",
-              "value": "# WARNING: Never edit this file.\n# It will be overwritten when translations are pulled from Crowdin.\n#\n# To work with us on translations, join this project:\n# https://translate.discourse.org/\n\nen_GB:\n",
-              "type_id": 5,
-              "file_path": "locales/en_GB.yml"
             }
           ],
-          "screenshot_dark_url": "/uploads/default/original/1X/46d43cd68924bf0f8dca7c468f5a3722ff0a750f.png",
-          "screenshot_light_url": "/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png",
+          "screenshot_dark_url": "/uploads/default/original/1X/9b5ee62c077f4537e940d3740f955fe8ba8a627c.png",
+          "screenshot_light_url": "/uploads/default/original/1X/288f8119fa0e836a3839f6a2145b77d688b25127.png",
           "system": true,
           "only_theme_color_schemes": false,
           "color_scheme": null,
@@ -629,8 +630,8 @@
           "value": "f",
           "theme_id": -1,
           "data_type": 5,
-          "created_at": "2026-10-14T16:10:18.411545",
-          "updated_at": "2026-10-14T16:10:18.411545"
+          "created_at": "2026-11-15T23:44:54.757585",
+          "updated_at": "2026-11-15T23:44:54.757585"
         },
         {
           "id": 4,
@@ -638,8 +639,8 @@
           "value": "search_field",
           "theme_id": -1,
           "data_type": 7,
-          "created_at": "2026-10-14T16:10:18.54553",
-          "updated_at": "2026-10-14T16:10:18.54553"
+          "created_at": "2026-11-15T23:44:54.787284",
+          "updated_at": "2026-11-15T23:44:54.787284"
         }
       ],
       "deleted": [],
@@ -651,8 +652,8 @@
             "value": "search_field",
             "theme_id": -2,
             "data_type": 7,
-            "created_at": "2026-07-25T05:58:20.814568",
-            "updated_at": "2026-07-25T05:58:20.814568"
+            "created_at": "2026-11-03T05:07:17.391495",
+            "updated_at": "2026-11-03T05:07:17.391495"
           },
           "after": {
             "id": 2,
@@ -660,8 +661,8 @@
             "value": "search_icon",
             "theme_id": -2,
             "data_type": 7,
-            "created_at": "2026-07-25T05:58:20.814568",
-            "updated_at": "2026-10-14T16:10:18.585217"
+            "created_at": "2026-11-03T05:07:17.391495",
+            "updated_at": "2026-11-15T23:44:54.814604"
           }
         }
       ]
@@ -672,33 +673,33 @@
       "updated": [
         {
           "before": {
-            "id": 112,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "eucwamRq8wSDOdq8xC2F3Ojsz2k=",
-            "created_at": "2026-10-14T16:10:15.879009",
-            "rotated_at": "2026-10-14T16:10:15.877845",
-            "updated_at": "2026-10-14T16:10:15.879009",
+            "auth_token": "iIY56v5U/ln2MISAUsqCDaOlhJ8=",
+            "created_at": "2026-11-15T23:44:54.272697",
+            "rotated_at": "2026-11-15T23:44:54.271957",
+            "updated_at": "2026-11-15T23:44:54.272697",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "eucwamRq8wSDOdq8xC2F3Ojsz2k=",
+            "prev_auth_token": "iIY56v5U/ln2MISAUsqCDaOlhJ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 112,
-            "seen_at": "2026-10-14T16:10:18.36118",
+            "id": 14,
+            "seen_at": "2026-11-15T23:44:54.747287",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "eucwamRq8wSDOdq8xC2F3Ojsz2k=",
-            "created_at": "2026-10-14T16:10:15.879009",
-            "rotated_at": "2026-10-14T16:10:15.877845",
-            "updated_at": "2026-10-14T16:10:15.879009",
+            "auth_token": "iIY56v5U/ln2MISAUsqCDaOlhJ8=",
+            "created_at": "2026-11-15T23:44:54.272697",
+            "rotated_at": "2026-11-15T23:44:54.271957",
+            "updated_at": "2026-11-15T23:44:54.272697",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "eucwamRq8wSDOdq8xC2F3Ojsz2k=",
+            "prev_auth_token": "iIY56v5U/ln2MISAUsqCDaOlhJ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -709,7 +710,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 120,
           "context": null,
@@ -719,9 +720,10 @@
           "topic_id": null,
           "new_value": "f",
           "admin_only": true,
-          "created_at": "2026-10-14T16:10:18.42466",
+          "created_at": "2026-11-15T23:44:54.75907",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T16:10:18.42466",
+          "updated_at": "2026-11-15T23:44:54.75907",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -730,7 +732,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 120,
           "context": null,
@@ -740,9 +742,10 @@
           "topic_id": null,
           "new_value": "search_field",
           "admin_only": true,
-          "created_at": "2026-10-14T16:10:18.54824",
+          "created_at": "2026-11-15T23:44:54.789082",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T16:10:18.54824",
+          "updated_at": "2026-11-15T23:44:54.789082",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -751,7 +754,7 @@
           "target_user_id": null
         },
         {
-          "id": 76,
+          "id": 70,
           "email": null,
           "action": 120,
           "context": null,
@@ -761,9 +764,10 @@
           "topic_id": null,
           "new_value": "search_icon",
           "admin_only": true,
-          "created_at": "2026-10-14T16:10:18.587675",
+          "created_at": "2026-11-15T23:44:54.816566",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T16:10:18.587675",
+          "updated_at": "2026-11-15T23:44:54.816566",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -772,7 +776,7 @@
           "target_user_id": null
         },
         {
-          "id": 77,
+          "id": 71,
           "email": null,
           "action": 120,
           "context": null,
@@ -782,9 +786,10 @@
           "topic_id": null,
           "new_value": "t",
           "admin_only": true,
-          "created_at": "2026-10-14T16:10:18.676625",
+          "created_at": "2026-11-15T23:44:54.84145",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T16:10:18.676625",
+          "updated_at": "2026-11-15T23:44:54.84145",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -800,11 +805,11 @@
   "jobs": [],
   "next_ids": {
     "theme_site_settings": 3,
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "1bea2fdc60653ab4687a956da93d986d1d4a195bbe443cae1892ea2098fef9f1",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

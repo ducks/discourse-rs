@@ -1,5 +1,6 @@
 {
   "user": null,
+  "not_yet": "0a264785d1d (Discourse): a chat channel as the homepage (register_homepage, homepage_options); not ported",
   "settings": {
     "github_client_id": "ghclient1",
     "github_client_secret": "abc123",

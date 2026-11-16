@@ -44,6 +44,12 @@ pub fn plain_template(email_type: &str) -> Option<(&'static str, &'static str, &
         ),
         // account_exists' template names the user's own email.
         "account_exists" => ("user_notifications.account_exists", "", "email"),
+        // A newly connected account (8dece8319b1).
+        "account_associated" => (
+            "user_notifications.account_associated",
+            "provider_name",
+            "provider_name",
+        ),
         _ => return None,
     })
 }
@@ -319,14 +325,24 @@ pub async fn penalty(
         .await
         .map(Some);
     }
-    let zone: chrono_tz::Tz = match timezone.as_deref().filter(|z| !z.trim().is_empty()) {
-        None => chrono_tz::UTC,
-        Some(z) => z
-            .parse()
-            .map_err(|_| Unsupported("a user timezone Rails does not know"))?,
-    };
+    // A timezone ActiveSupport does not know falls back to UTC
+    // (f3067bbc7d3, d50426d12dd).
+    let zone: chrono_tz::Tz = timezone
+        .as_deref()
+        .filter(|z| !z.trim().is_empty())
+        .and_then(|z| z.parse().ok())
+        .unwrap_or(chrono_tz::UTC);
     let at = chrono::TimeZone::from_utc_datetime(&zone, &till);
-    let when = at.format("%B %-d, %Y, %l:%M%P").to_string();
+    let date = at.format("%B %-d, %Y, %l:%M%P").to_string();
+    // `formatted_offset`: +HH:MM.
+    let offset = at.format("%:z").to_string();
+    let when = ctx
+        .i18n
+        .t_with(
+            &format!("{template}.date_with_timezone"),
+            &[("date", &date), ("offset", &offset)],
+        )
+        .unwrap_or(date);
     build_with_args(
         conn,
         ctx,

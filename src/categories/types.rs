@@ -118,6 +118,16 @@ impl Registry<'_> {
         }
     }
 
+    /// `svg_icon`: the type chooser's sprite icon, preferred over the emoji.
+    fn svg_icon(t: Type) -> &'static str {
+        match t {
+            Type::Discussion => "comment",
+            Type::Events => "calendar-days",
+            Type::Support => "circle-question",
+            Type::Ideas => "lightbulb",
+        }
+    }
+
     /// The plugin a type enables (`enables_plugin?`): its humanized name
     /// and `plugin_enabled?`.
     pub(crate) fn plugin(&self, t: Type) -> Result<Option<(&'static str, bool)>, AppError> {
@@ -501,6 +511,7 @@ impl Registry<'_> {
             ),
         );
         out.insert("icon".into(), json!(Self::icon(t)));
+        out.insert("svg_icon".into(), json!(Self::svg_icon(t)));
         out.insert("available".into(), json!(true));
         out.insert("visible".into(), json!(true));
         out.insert(

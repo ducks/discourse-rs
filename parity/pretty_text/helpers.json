@@ -685,15 +685,15 @@
     "method": "lookup_upload_urls",
     "args": [
       [
-        "upload://qa4V5109J7tySkPok8r3aBAruY1.png",
-        "upload://qa4V5109J7tySkPok8r3aBAruY1.png"
+        "upload://5MOyqPPuE0zKxGgwAPEOECI7NeT.png",
+        "upload://5MOyqPPuE0zKxGgwAPEOECI7NeT.png"
       ]
     ],
     "result": {
-      "upload://qa4V5109J7tySkPok8r3aBAruY1.png": {
-        "url": "/uploads/default/original/1X/b75c33ea141d3a8d82fda3117d09fe33a664fec9.png",
-        "short_path": "/uploads/short-url/qa4V5109J7tySkPok8r3aBAruY1.png",
-        "base62_sha1": "qa4V5109J7tySkPok8r3aBAruY1"
+      "upload://5MOyqPPuE0zKxGgwAPEOECI7NeT.png": {
+        "url": "/uploads/default/original/1X/288f8119fa0e836a3839f6a2145b77d688b25127.png",
+        "short_path": "/uploads/short-url/5MOyqPPuE0zKxGgwAPEOECI7NeT.png",
+        "base62_sha1": "5MOyqPPuE0zKxGgwAPEOECI7NeT"
       }
     }
   }

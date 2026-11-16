@@ -66,8 +66,8 @@
       "path": "/admin/color_schemes/3.json"
     }
   ],
-  "started_at": "2026-10-14T15:10:09.766226",
-  "transaction_started_at": "2026-10-14T15:10:07.693763",
+  "started_at": "2026-11-15T22:41:47.344281",
+  "transaction_started_at": "2026-11-15T22:41:46.531649",
   "responses": [
     {
       "status": 200,
@@ -480,104 +480,104 @@
           "id": 325,
           "hex": "1a1a1a",
           "name": "primary",
-          "created_at": "2026-10-14T15:10:10.097773",
-          "updated_at": "2026-10-14T15:10:10.097773",
+          "created_at": "2026-11-15T22:41:48.80599",
+          "updated_at": "2026-11-15T22:41:48.80599",
           "color_scheme_id": 19
         },
         {
           "id": 326,
           "hex": "ffffff",
           "name": "secondary",
-          "created_at": "2026-10-14T15:10:10.100616",
-          "updated_at": "2026-10-14T15:10:10.100616",
+          "created_at": "2026-11-15T22:41:48.807142",
+          "updated_at": "2026-11-15T22:41:48.807142",
           "color_scheme_id": 19
         },
         {
           "id": 327,
           "hex": "1f7bc1",
           "name": "tertiary",
-          "created_at": "2026-10-14T15:10:10.105172",
-          "updated_at": "2026-10-14T15:10:10.105172",
+          "created_at": "2026-11-15T22:41:48.808114",
+          "updated_at": "2026-11-15T22:41:48.808114",
           "color_scheme_id": 19
         },
         {
           "id": 328,
           "hex": "e45735",
           "name": "quaternary",
-          "created_at": "2026-10-14T15:10:10.108413",
-          "updated_at": "2026-10-14T15:10:10.108413",
+          "created_at": "2026-11-15T22:41:48.809309",
+          "updated_at": "2026-11-15T22:41:48.809309",
           "color_scheme_id": 19
         },
         {
           "id": 329,
           "hex": "ffffff",
           "name": "header_background",
-          "created_at": "2026-10-14T15:10:10.112076",
-          "updated_at": "2026-10-14T15:10:10.112076",
+          "created_at": "2026-11-15T22:41:48.810353",
+          "updated_at": "2026-11-15T22:41:48.810353",
           "color_scheme_id": 19
         },
         {
           "id": 330,
           "hex": "1a1a1a",
           "name": "header_primary",
-          "created_at": "2026-10-14T15:10:10.115688",
-          "updated_at": "2026-10-14T15:10:10.115688",
+          "created_at": "2026-11-15T22:41:48.811367",
+          "updated_at": "2026-11-15T22:41:48.811367",
           "color_scheme_id": 19
         },
         {
           "id": 331,
           "hex": "ffff4d",
           "name": "highlight",
-          "created_at": "2026-10-14T15:10:10.119065",
-          "updated_at": "2026-10-14T15:10:10.119065",
+          "created_at": "2026-11-15T22:41:48.812493",
+          "updated_at": "2026-11-15T22:41:48.812493",
           "color_scheme_id": 19
         },
         {
           "id": 332,
           "hex": "c7e3ff",
           "name": "selected",
-          "created_at": "2026-10-14T15:10:10.122077",
-          "updated_at": "2026-10-14T15:10:10.122077",
+          "created_at": "2026-11-15T22:41:48.813559",
+          "updated_at": "2026-11-15T22:41:48.813559",
           "color_scheme_id": 19
         },
         {
           "id": 333,
           "hex": "d6ebff",
           "name": "hover",
-          "created_at": "2026-10-14T15:10:10.124624",
-          "updated_at": "2026-10-14T15:10:10.124624",
+          "created_at": "2026-11-15T22:41:48.815009",
+          "updated_at": "2026-11-15T22:41:48.815009",
           "color_scheme_id": 19
         },
         {
           "id": 334,
           "hex": "c80001",
           "name": "danger",
-          "created_at": "2026-10-14T15:10:10.127985",
-          "updated_at": "2026-10-14T15:10:10.127985",
+          "created_at": "2026-11-15T22:41:48.815989",
+          "updated_at": "2026-11-15T22:41:48.815989",
           "color_scheme_id": 19
         },
         {
           "id": 335,
           "hex": "090",
           "name": "success",
-          "created_at": "2026-10-14T15:10:10.133051",
-          "updated_at": "2026-10-14T15:10:10.133051",
+          "created_at": "2026-11-15T22:41:48.817087",
+          "updated_at": "2026-11-15T22:41:48.817087",
           "color_scheme_id": 19
         },
         {
           "id": 336,
           "hex": "fa6c8d",
           "name": "love",
-          "created_at": "2026-10-14T15:10:10.139116",
-          "updated_at": "2026-10-14T15:10:10.139116",
+          "created_at": "2026-11-15T22:41:48.818229",
+          "updated_at": "2026-11-15T22:41:48.818229",
           "color_scheme_id": 19
         },
         {
           "id": 337,
           "hex": "1f7bc1",
           "name": "tertiary-med-or-tertiary",
-          "created_at": "2026-10-14T15:10:10.143088",
-          "updated_at": "2026-10-14T15:10:10.143088",
+          "created_at": "2026-11-15T22:41:48.819229",
+          "updated_at": "2026-11-15T22:41:48.819229",
           "color_scheme_id": 19
         }
       ],
@@ -588,16 +588,16 @@
             "id": 27,
             "hex": "1a1a1a",
             "name": "primary",
-            "created_at": "2026-07-25T05:58:18.097623",
-            "updated_at": "2026-07-25T05:58:18.097623",
+            "created_at": "2026-11-03T05:07:14.624",
+            "updated_at": "2026-11-03T05:07:14.624",
             "color_scheme_id": 3
           },
           "after": {
             "id": 27,
             "hex": "123456",
             "name": "primary",
-            "created_at": "2026-07-25T05:58:18.097623",
-            "updated_at": "2026-10-14T15:10:10.159373",
+            "created_at": "2026-11-03T05:07:14.624",
+            "updated_at": "2026-11-15T22:41:48.828701",
             "color_scheme_id": 3
           }
         },
@@ -606,16 +606,16 @@
             "id": 28,
             "hex": "ffffff",
             "name": "secondary",
-            "created_at": "2026-07-25T05:58:18.098641",
-            "updated_at": "2026-07-25T05:58:18.098641",
+            "created_at": "2026-11-03T05:07:14.625547",
+            "updated_at": "2026-11-03T05:07:14.625547",
             "color_scheme_id": 3
           },
           "after": {
             "id": 28,
             "hex": "fefefe",
             "name": "secondary",
-            "created_at": "2026-07-25T05:58:18.098641",
-            "updated_at": "2026-10-14T15:10:10.531411",
+            "created_at": "2026-11-03T05:07:14.625547",
+            "updated_at": "2026-11-15T22:41:48.917528",
             "color_scheme_id": 3
           }
         }
@@ -628,8 +628,8 @@
           "name": "Royal",
           "version": 1,
           "theme_id": -2,
-          "created_at": "2026-10-14T15:10:10.094605",
-          "updated_at": "2026-10-14T15:10:10.094605",
+          "created_at": "2026-11-15T22:41:48.804545",
+          "updated_at": "2026-11-15T22:41:48.804545",
           "via_wizard": false,
           "remote_copy": true,
           "base_scheme_id": null,
@@ -644,8 +644,8 @@
             "name": "Royal",
             "version": 1,
             "theme_id": -2,
-            "created_at": "2026-07-25T05:58:18.096407",
-            "updated_at": "2026-07-25T05:58:18.096407",
+            "created_at": "2026-11-03T05:07:14.622576",
+            "updated_at": "2026-11-03T05:07:14.622576",
             "via_wizard": false,
             "remote_copy": false,
             "base_scheme_id": null,
@@ -656,8 +656,8 @@
             "name": "Royal",
             "version": 4,
             "theme_id": -2,
-            "created_at": "2026-07-25T05:58:18.096407",
-            "updated_at": "2026-10-14T15:10:10.53527",
+            "created_at": "2026-11-03T05:07:14.622576",
+            "updated_at": "2026-11-15T22:41:48.919393",
             "via_wizard": false,
             "remote_copy": false,
             "base_scheme_id": 19,
@@ -672,33 +672,33 @@
       "updated": [
         {
           "before": {
-            "id": 112,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "KVrd5BjRrj6iViu9UZ2cTgYWH8w=",
-            "created_at": "2026-10-14T15:10:08.898874",
-            "rotated_at": "2026-10-14T15:10:08.897556",
-            "updated_at": "2026-10-14T15:10:08.898874",
+            "auth_token": "San3ibU/eEcmWhvEe2jfMOJfYVw=",
+            "created_at": "2026-11-15T22:41:46.844763",
+            "rotated_at": "2026-11-15T22:41:46.843826",
+            "updated_at": "2026-11-15T22:41:46.844763",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "KVrd5BjRrj6iViu9UZ2cTgYWH8w=",
+            "prev_auth_token": "San3ibU/eEcmWhvEe2jfMOJfYVw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 112,
-            "seen_at": "2026-10-14T15:10:09.773115",
+            "id": 14,
+            "seen_at": "2026-11-15T22:41:47.348821",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "KVrd5BjRrj6iViu9UZ2cTgYWH8w=",
-            "created_at": "2026-10-14T15:10:08.898874",
-            "rotated_at": "2026-10-14T15:10:08.897556",
-            "updated_at": "2026-10-14T15:10:08.898874",
+            "auth_token": "San3ibU/eEcmWhvEe2jfMOJfYVw=",
+            "created_at": "2026-11-15T22:41:46.844763",
+            "rotated_at": "2026-11-15T22:41:46.843826",
+            "updated_at": "2026-11-15T22:41:46.844763",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "KVrd5BjRrj6iViu9UZ2cTgYWH8w=",
+            "prev_auth_token": "San3ibU/eEcmWhvEe2jfMOJfYVw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -714,7 +714,7 @@
   },
   "recorded_from": {
     "case": "81e79a2109cbb4984038b7fd6d275889df1c51f403cc21ae5faa4492fba2c6f2",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

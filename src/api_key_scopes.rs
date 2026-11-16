@@ -274,8 +274,15 @@ pub type Recognized = (&'static str, Map<String, Value>);
 /// parameters. Routes behind a constraint the port can't evaluate here
 /// (the home page's, permalinks', markdown's, impersonation's, procs) are
 /// refused; admin and staff constraints are the session layer's (a key
-/// that does not let the request in is a 404 there).
-pub fn recognize(method: &Method, path: &str) -> Result<Option<Recognized>, Unsupported> {
+/// that does not let the request in is a 404 there). The blog's routes
+/// (Blog::Routes, drawn before core's) are behind procs that each start
+/// with `UpcomingChanges.enabled?(:blog_enabled)`: with the blog off
+/// (`blog_enabled`) none matches, else they are refused.
+pub fn recognize(
+    method: &Method,
+    path: &str,
+    blog_enabled: bool,
+) -> Result<Option<Recognized>, Unsupported> {
     let verb = if *method == Method::HEAD {
         "GET"
     } else {
@@ -288,6 +295,12 @@ pub fn recognize(method: &Method, path: &str) -> Result<Option<Recognized>, Unsu
         let Some(caps) = route.pattern.captures(path) else {
             continue;
         };
+        if route.action.starts_with("blog/") && route.constraints.iter().any(|c| c == "proc") {
+            if !blog_enabled {
+                continue;
+            }
+            return Err(Unsupported("API key scopes on the blog's routes"));
+        }
         if route
             .constraints
             .iter()
@@ -325,8 +338,9 @@ pub fn matches(
     m: &Mapping,
     allowed: Option<&Map<String, Value>>,
     r: &Request,
+    blog_enabled: bool,
 ) -> Result<bool, Unsupported> {
-    let recognized = recognize(r.method, r.path)?;
+    let recognized = recognize(r.method, r.path, blog_enabled)?;
     let action_allowed = match &m.actions {
         None => true,
         Some(actions) => {
@@ -485,19 +499,19 @@ mod tests {
     #[test]
     fn recognizes_actions_like_rails() {
         let get = |p| {
-            recognize(&Method::GET, p)
+            recognize(&Method::GET, p, false)
                 .unwrap()
                 .map(|(a, _)| a.to_string())
         };
         assert_eq!(get("/latest.json").as_deref(), Some("list#latest"));
         assert_eq!(get("/u/user1.json").as_deref(), Some("users#show"));
         assert_eq!(
-            recognize(&Method::POST, "/posts.json")
+            recognize(&Method::POST, "/posts.json", false)
                 .unwrap()
                 .map(|(a, _)| a),
             Some("posts#create")
         );
-        let (action, params) = recognize(&Method::PUT, "/t/some-slug/42.json")
+        let (action, params) = recognize(&Method::PUT, "/t/some-slug/42.json", false)
             .unwrap()
             .unwrap();
         assert_eq!(action, "topics#update");

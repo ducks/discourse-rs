@@ -220,6 +220,14 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         Some(_) => return Err(Unsupported("post_alert options that are not a hash").into()),
     }
     let new_record = args.get("new_record") == Some(&json!(true));
+    let added_mentions: Option<Vec<String>> = args
+        .get("added_mentions")
+        .and_then(Value::as_array)
+        .map(|a| {
+            a.iter()
+                .filter_map(|m| m.as_str().map(str::to_string))
+                .collect()
+        });
     let post = load_post(conn, post_id as i32).await?;
     let Some(post) = post else {
         return Ok(());
@@ -231,12 +239,16 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
     let private_message = post.archetype == "private_message";
     // allowed_users and allowed_group_users, neither the author nor a bot
     // (not_allowed?); the group members once per membership, as the join
-    // gives them.
+    // gives them. `topic.allowed_users` (and `group.users` below) have no
+    // ORDER BY, and Postgres 18 reads the small users table in heap order.
+    // Kept in that order because the notifications' ids follow it and the
+    // jobs they enqueue carry those ids (notification_id), which no
+    // comparison marker can pair up.
     let not_allowed = |u: i32| u <= 0 || Some(u) == post.user_id;
     let (allowed_users, allowed_group_users): (Vec<(i32, bool)>, Vec<i32>) = if private_message {
         let users: Vec<(i32, bool)> = sqlx::query_as(
             "SELECT u.id, u.staged FROM topic_allowed_users tau JOIN users u ON u.id = tau.user_id \
-             WHERE tau.topic_id = $1 ORDER BY tau.id",
+             WHERE tau.topic_id = $1 ORDER BY u.ctid",
         )
         .bind(post.topic_id)
         .fetch_all(&mut *conn)
@@ -348,10 +360,18 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
             opts.original_username = post.editor_username.clone();
             opts.display_username = post.editor_username.clone();
         }
+        // An edit's `added_mentions` (Discourse 1cb76a9fd1d): only the users,
+        // groups and here mention it added are notified.
+        let added = |name: &str| {
+            added_mentions
+                .as_ref()
+                .is_none_or(|a| a.iter().any(|m| m == name))
+        };
+        let user_mentions: Vec<&String> = mentions.iter().filter(|m| added(m)).collect();
         let users: Vec<i32> = sqlx::query_scalar(
             "SELECT id FROM users WHERE username_lower = ANY($1) AND id IS DISTINCT FROM $2 ORDER BY id",
         )
-        .bind(&mentions)
+        .bind(&user_mentions)
         .bind(post.user_id)
         .fetch_all(&mut *conn)
         .await?;
@@ -377,6 +397,9 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         for (group_id, group_name, members) in
             expand_group_mentions(ctx, conn, &post, &mentioned_groups).await?
         {
+            if !added(&group_name.to_lowercase()) {
+                continue;
+            }
             let targets: Vec<i32> = members
                 .into_iter()
                 .filter(|u| !private_message || all_allowed.contains(u))
@@ -399,9 +422,8 @@ pub async fn run(ctx: &Ctx<'_>, conn: &mut PgConnection, args: &Value) -> Result
         }
         // @here, when the author can_mention_here?: expand_here_mention's
         // posters not notified yet, only those allowed in a message.
-        if mentions.contains(&s.get("here_mention")?.to_s())
-            && can_mention_here(ctx, conn, &post).await?
-        {
+        let here = s.get("here_mention")?.to_s();
+        if mentions.contains(&here) && added(&here) && can_mention_here(ctx, conn, &post).await? {
             let users = expand_here_mention(ctx, conn, &post, &alerter.notified).await?;
             let targets: Vec<i32> = users
                 .into_iter()
@@ -790,7 +812,7 @@ async fn expand_group_mentions(
         }
         let members: Vec<i32> = sqlx::query_scalar(
             "SELECT users.id FROM users JOIN group_users ON users.id = group_users.user_id \
-             WHERE group_users.group_id = $1 ORDER BY group_users.ctid",
+             WHERE group_users.group_id = $1 ORDER BY users.ctid",
         )
         .bind(id)
         .fetch_all(&mut *conn)
@@ -1358,7 +1380,10 @@ impl Alerter<'_> {
                 data.insert("consolidated_count".into(), json!(count));
             }
         }
-        if let Some(name) = opts.display_name.as_ref().or(target_name.as_ref()) {
+        // No display_name with names off (fbce98a62ec).
+        if ctx.settings.get("enable_names")?.truthy()
+            && let Some(name) = opts.display_name.as_ref().or(target_name.as_ref())
+        {
             data.insert("display_name".into(), json!(name));
         }
         for (key, value) in &opts.custom_data {

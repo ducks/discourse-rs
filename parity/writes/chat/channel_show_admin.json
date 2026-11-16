@@ -11,8 +11,8 @@
       "path": "/chat/api/channels/4.json"
     }
   ],
-  "started_at": "2026-10-09T18:05:10.173197",
-  "transaction_started_at": "2026-10-09T18:05:06.961214",
+  "started_at": "2026-11-15T22:31:38.492995",
+  "transaction_started_at": "2026-11-15T22:31:37.4679",
   "responses": [
     {
       "status": 200,
@@ -70,10 +70,11 @@
           "current_user_membership": {
             "following": true,
             "muted": false,
+            "muted_until": null,
             "notification_level": "mention",
             "chat_channel_id": 1,
             "last_read_message_id": null,
-            "last_viewed_at": "2026-10-01T15:42:53.424Z",
+            "last_viewed_at": "2026-11-15T19:40:02.336Z",
             "last_viewed_pins_at": null,
             "starred": false,
             "has_unseen_pins": false
@@ -100,7 +101,7 @@
             "id": null,
             "message": null,
             "cooked": null,
-            "created_at": "2026-10-09T18:05:10+00:00",
+            "created_at": "2026-11-15T22:31:38+00:00",
             "excerpt": null,
             "deleted_at": null,
             "deleted_by_id": null,
@@ -128,7 +129,7 @@
             "emoji": "thought_balloon",
             "slug": "site-feedback",
             "topic_count": 1,
-            "post_count": 1,
+            "post_count": 0,
             "position": 1,
             "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
             "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
@@ -186,7 +187,7 @@
             "id": null,
             "message": null,
             "cooked": null,
-            "created_at": "2026-10-09T18:05:10+00:00",
+            "created_at": "2026-11-15T22:31:38+00:00",
             "excerpt": null,
             "deleted_at": null,
             "deleted_by_id": null,
@@ -205,33 +206,33 @@
       "updated": [
         {
           "before": {
-            "id": 395,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "DPevozLWZhPFhStlVgy8X07cOAo=",
-            "created_at": "2026-10-09T18:05:08.314273",
-            "rotated_at": "2026-10-09T18:05:08.307681",
-            "updated_at": "2026-10-09T18:05:08.314273",
+            "auth_token": "zdCRY5QAp7kYsxyLFFOWQX2n7qM=",
+            "created_at": "2026-11-15T22:31:37.797609",
+            "rotated_at": "2026-11-15T22:31:37.796171",
+            "updated_at": "2026-11-15T22:31:37.797609",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "DPevozLWZhPFhStlVgy8X07cOAo=",
+            "prev_auth_token": "zdCRY5QAp7kYsxyLFFOWQX2n7qM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 395,
-            "seen_at": "2026-10-09T18:05:10.20065",
+            "id": 14,
+            "seen_at": "2026-11-15T22:31:38.502592",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "DPevozLWZhPFhStlVgy8X07cOAo=",
-            "created_at": "2026-10-09T18:05:08.314273",
-            "rotated_at": "2026-10-09T18:05:08.307681",
-            "updated_at": "2026-10-09T18:05:08.314273",
+            "auth_token": "zdCRY5QAp7kYsxyLFFOWQX2n7qM=",
+            "created_at": "2026-11-15T22:31:37.797609",
+            "rotated_at": "2026-11-15T22:31:37.796171",
+            "updated_at": "2026-11-15T22:31:37.797609",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "DPevozLWZhPFhStlVgy8X07cOAo=",
+            "prev_auth_token": "zdCRY5QAp7kYsxyLFFOWQX2n7qM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -249,7 +250,7 @@
   ],
   "recorded_from": {
     "case": "bd4879ca53480a8cf99e6b7845faa8de07a81e7e2f4cbcd2f2dc207c2b00c9f6",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

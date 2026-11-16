@@ -31,5 +31,8 @@
       "path": "/discourse-reactions/posts/35/reactions-users.json",
       "params": {}
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/reaction_users"
   ]
 }

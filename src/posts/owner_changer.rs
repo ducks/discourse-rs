@@ -829,7 +829,14 @@ async fn revise_owner(
     )
     .await?;
     if editor_user.id != SYSTEM_USER_ID {
-        crate::jobs::enqueue(&mut *conn, "post_alert", json!({"post_id": post.id})).await?;
+        // alert_users(old_raw) with the raw unchanged: no added mentions
+        // (Discourse 1cb76a9fd1d).
+        crate::jobs::enqueue(
+            &mut *conn,
+            "post_alert",
+            json!({"post_id": post.id, "added_mentions": []}),
+        )
+        .await?;
     }
     crate::bus::publish_post_change(
         ctx,

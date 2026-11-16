@@ -19,8 +19,8 @@
       "path": "/review.json?type=ReviewableQueuedPost"
     }
   ],
-  "started_at": "2026-11-06T20:27:23.652268",
-  "transaction_started_at": "2026-11-06T20:27:22.488915",
+  "started_at": "2026-11-15T23:24:19.515827",
+  "transaction_started_at": "2026-11-15T23:24:18.680757",
   "responses": [
     {
       "status": 200,
@@ -51,6 +51,7 @@
             "target_created_by_trust_level": 1,
             "created_from_flag": false,
             "status": 0,
+            "approval_style": true,
             "fancy_title": "A better title for the queued topic",
             "cooked": "<p>A new topic waiting for approval in the queue.</p>",
             "removed_topic_id": null,
@@ -88,8 +89,8 @@
               9702
             ],
             "bundled_action_ids": [
-              "9702-approve_post",
-              "9702-reject-post"
+              "9702-reject-post",
+              "9702-approve_post"
             ],
             "reviewable_note_ids": [],
             "reviewable_history_ids": [
@@ -129,7 +130,8 @@
             "ReviewableQueuedPost",
             "ReviewableUser",
             "ReviewablePost",
-            "Chat::ReviewableMessage"
+            "Chat::ReviewableMessage",
+            "discourse_workflows:workflow"
           ],
           "unknown_reviewable_types_and_sources": [],
           "score_types": [
@@ -176,7 +178,7 @@
             "flags_agreed": 0,
             "flags_disagreed": 0,
             "flags_ignored": 0,
-            "created_at": "2026-07-25T05:59:15.831Z",
+            "created_at": "2026-11-03T05:08:00.105Z",
             "trust_level": 1,
             "silenced_count": 0,
             "suspended_count": 0,
@@ -206,7 +208,7 @@
               "disagreed": 0,
               "ignored": 0
             },
-            "reason": "<p>New user typed their first post suspiciously fast (3 seconds), suspected bot or spammer behavior. See <a href=\"http://localhost:3048/admin/site_settings/category/all_results?filter=first_post_typing_time\">first post typing time</a>.</p>",
+            "reason": "<p>New user typed their first post suspiciously fast (3 seconds), suspected bot or spammer behavior. See <a href=\"http://localhost:3042/admin/site_settings/category/all_results?filter=first_post_typing_time\">first post typing time</a>.</p>",
             "reason_type": "fast_typer",
             "reason_data": null,
             "created_at": "2026-10-02T10:00:00.000Z",
@@ -227,14 +229,8 @@
         ],
         "bundled_actions": [
           {
-            "id": "9702-approve_post",
-            "action_ids": [
-              "9702-approve_post"
-            ]
-          },
-          {
             "id": "9702-reject-post",
-            "label": "No",
+            "label": "Yes",
             "action_ids": [
               "9702-reject_post",
               "9702-revise_and_reject_post",
@@ -243,18 +239,15 @@
               "9702-delete_user",
               "9702-delete_user_block"
             ]
+          },
+          {
+            "id": "9702-approve_post",
+            "action_ids": [
+              "9702-approve_post"
+            ]
           }
         ],
         "actions": [
-          {
-            "id": "9702-approve_post",
-            "action_name": "approve_post",
-            "icon": "check",
-            "button_class": null,
-            "label": "Yes",
-            "server_action": "approve_post",
-            "completed_message": "Post approved."
-          },
           {
             "id": "9702-reject_post",
             "action_name": "reject_post",
@@ -318,6 +311,15 @@
             "description": "Delete the user and block their email and IP address",
             "server_action": "delete_user_block",
             "completed_message": null
+          },
+          {
+            "id": "9702-approve_post",
+            "action_name": "approve_post",
+            "icon": "check",
+            "button_class": null,
+            "label": "No",
+            "server_action": "approve_post",
+            "completed_message": "Post approved."
           }
         ],
         "reviewable_notes": [],
@@ -331,14 +333,17 @@
           },
           {
             "id": 1,
-            "created_at": "2026-11-06T20:27:23.698Z",
+            "created_at": "2026-11-15T23:24:19.547Z",
             "reviewable_history_type": 2,
             "status": 0,
             "created_by_id": 5
           }
         ],
         "claimed_bies": [],
-        "__rest_serializer": "1"
+        "__rest_serializer": "1",
+        "extras": {
+          "dsa_classification": {}
+        }
       }
     }
   ],
@@ -372,8 +377,8 @@
             ]
           },
           "status": 0,
-          "created_at": "2026-11-06T20:27:23.698264",
-          "updated_at": "2026-11-06T20:27:23.698264",
+          "created_at": "2026-11-15T23:24:19.547399",
+          "updated_at": "2026-11-15T23:24:19.547399",
           "created_by_id": 5,
           "reviewable_id": 9702,
           "reviewable_history_type": 2
@@ -439,7 +444,7 @@
             "topic_id": null,
             "target_id": null,
             "created_at": "2026-10-02T10:00:00",
-            "updated_at": "2026-11-06T20:27:23.694848",
+            "updated_at": "2026-11-15T23:24:19.54479",
             "category_id": 4,
             "target_type": null,
             "type_source": "core",
@@ -462,33 +467,33 @@
       "updated": [
         {
           "before": {
-            "id": 665,
+            "id": 14,
             "seen_at": null,
             "user_id": 5,
             "client_ip": "127.0.0.1",
-            "auth_token": "xzg0QQNziOWX7WXcWNBtW7vsbdQ=",
-            "created_at": "2026-11-06T20:27:22.854685",
-            "rotated_at": "2026-11-06T20:27:22.85377",
-            "updated_at": "2026-11-06T20:27:22.854685",
+            "auth_token": "X9KDOJww/VMVVClfexqYUtbuyWA=",
+            "created_at": "2026-11-15T23:24:19.01675",
+            "rotated_at": "2026-11-15T23:24:19.015805",
+            "updated_at": "2026-11-15T23:24:19.01675",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "xzg0QQNziOWX7WXcWNBtW7vsbdQ=",
+            "prev_auth_token": "X9KDOJww/VMVVClfexqYUtbuyWA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 665,
-            "seen_at": "2026-11-06T20:27:23.659381",
+            "id": 14,
+            "seen_at": "2026-11-15T23:24:19.520943",
             "user_id": 5,
             "client_ip": "127.0.0.1",
-            "auth_token": "xzg0QQNziOWX7WXcWNBtW7vsbdQ=",
-            "created_at": "2026-11-06T20:27:22.854685",
-            "rotated_at": "2026-11-06T20:27:22.85377",
-            "updated_at": "2026-11-06T20:27:22.854685",
+            "auth_token": "X9KDOJww/VMVVClfexqYUtbuyWA=",
+            "created_at": "2026-11-15T23:24:19.01675",
+            "rotated_at": "2026-11-15T23:24:19.015805",
+            "updated_at": "2026-11-15T23:24:19.01675",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "xzg0QQNziOWX7WXcWNBtW7vsbdQ=",
+            "prev_auth_token": "X9KDOJww/VMVVClfexqYUtbuyWA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -517,7 +522,7 @@
   ],
   "recorded_from": {
     "case": "d4d4bc6869069a10550a056325723298d98a15e019fe40b9212d4e6943abad95",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

@@ -27,5 +27,8 @@
     "Jobs::Chat::ProcessMessage",
     "Jobs::Chat::NotifyMentioned",
     "Jobs::Chat::NotifyWatching"
-  ]
+  ],
+  "unordered": {
+    "user_chat_thread_memberships": ["id"]
+  }
 }

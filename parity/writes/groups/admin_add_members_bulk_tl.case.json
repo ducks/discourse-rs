@@ -14,5 +14,8 @@
   ],
   "run_jobs": [
     "bulk_grant_trust_level"
+  ],
+  "unordered_responses": [
+    "/responses/0/body/usernames"
   ]
 }

@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-10-03T18:37:39.228911",
-  "transaction_started_at": "2026-10-03T18:37:38.300855",
+  "started_at": "2026-11-15T23:23:56.089858",
+  "transaction_started_at": "2026-11-15T23:23:55.296994",
   "responses": [
     {
       "status": 200,
@@ -46,7 +46,8 @@
             "ReviewableQueuedPost",
             "ReviewableUser",
             "ReviewablePost",
-            "Chat::ReviewableMessage"
+            "Chat::ReviewableMessage",
+            "discourse_workflows:workflow"
           ],
           "unknown_reviewable_types_and_sources": [],
           "score_types": [
@@ -78,7 +79,10 @@
           "reviewable_count": 1,
           "unseen_reviewable_count": 1
         },
-        "__rest_serializer": "1"
+        "__rest_serializer": "1",
+        "extras": {
+          "dsa_classification": {}
+        }
       }
     }
   ],
@@ -89,33 +93,33 @@
       "updated": [
         {
           "before": {
-            "id": 86,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "vi+sq+mxn2Jfj9+POG072ki+OWs=",
-            "created_at": "2026-10-03T18:37:38.648073",
-            "rotated_at": "2026-10-03T18:37:38.647797",
-            "updated_at": "2026-10-03T18:37:38.648073",
+            "auth_token": "ZnOMrxKHZw2bEWtXaVGj72R/YtY=",
+            "created_at": "2026-11-15T23:23:55.6114",
+            "rotated_at": "2026-11-15T23:23:55.610565",
+            "updated_at": "2026-11-15T23:23:55.6114",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "vi+sq+mxn2Jfj9+POG072ki+OWs=",
+            "prev_auth_token": "ZnOMrxKHZw2bEWtXaVGj72R/YtY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 86,
-            "seen_at": "2026-10-03T18:37:39.234986",
+            "id": 14,
+            "seen_at": "2026-11-15T23:23:56.094874",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "vi+sq+mxn2Jfj9+POG072ki+OWs=",
-            "created_at": "2026-10-03T18:37:38.648073",
-            "rotated_at": "2026-10-03T18:37:38.647797",
-            "updated_at": "2026-10-03T18:37:38.648073",
+            "auth_token": "ZnOMrxKHZw2bEWtXaVGj72R/YtY=",
+            "created_at": "2026-11-15T23:23:55.6114",
+            "rotated_at": "2026-11-15T23:23:55.610565",
+            "updated_at": "2026-11-15T23:23:55.6114",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "vi+sq+mxn2Jfj9+POG072ki+OWs=",
+            "prev_auth_token": "ZnOMrxKHZw2bEWtXaVGj72R/YtY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -125,6 +129,7 @@
     }
   },
   "jobs": [],
+  "next_ids": {},
   "setup": [
     "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 52, 3, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE)",
     "UPDATE posts SET off_topic_count = 1 WHERE id = 52",
@@ -135,7 +140,7 @@
   ],
   "recorded_from": {
     "case": "a4e8bc71a631c582f26a0316564ecdeaba69d062506fc4faabb14711ecc51e8b",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

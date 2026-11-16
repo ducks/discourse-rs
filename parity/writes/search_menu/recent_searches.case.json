@@ -10,5 +10,8 @@
     {"method": "GET", "path": "/u/recent-searches", "headers": {"Accept": "application/json"}},
     {"method": "DELETE", "path": "/u/recent-searches.json"},
     {"method": "GET", "path": "/u/recent-searches.json"}
+  ],
+  "ignore": [
+    "/changes/user_options/inserted/0/oldest_search_log_date"
   ]
 }

@@ -194,7 +194,7 @@ async fn a_members_controls_carry_the_picker_and_the_users_menu() {
     .await;
     let html = user1.page("/t/parity-fixture-replies-and-posters/35").await;
     assert!(html.contains(
-        "<img alt=\":clap\" class=\"btn-toggle-reaction-emoji reaction-button\" src=\"/images/emoji/twitter/clap.png?v=15\">"
+        "<img alt=\":clap\" class=\"btn-toggle-reaction-emoji reaction-button\" src=\"/images/emoji/twitter/clap.png?v=16\">"
     ));
     assert!(html.contains(
         "class=\"discourse-reactions-actions custom-reaction-used has-reactions has-reacted\""
@@ -212,7 +212,7 @@ async fn the_activity_reactions_tab_lists_the_users_reactions() {
         "<li aria-current=\"location\" class=\"user-activity-bottom-outlet discourse-reactions-user-activity-reactions\"><a class=\"active\" href=\"/u/user1/activity/reactions\">"
     ), "{html}");
     assert!(html.contains(
-        "<div class=\"discourse-reactions-my-reaction\"><img width=\"20\" height=\"20\" src=\"/images/emoji/twitter/clap.png?v=15\" title=\"clap\" alt=\"clap\" class=\"emoji reaction-emoji\"><a class=\"avatar-link\" data-user-card=\"user1\">"
+        "<div class=\"discourse-reactions-my-reaction\"><img width=\"20\" height=\"20\" src=\"/images/emoji/twitter/clap.png?v=16\" title=\"clap\" alt=\"clap\" class=\"emoji reaction-emoji\"><a class=\"avatar-link\" data-user-card=\"user1\">"
     ));
     assert!(
         html.contains(

@@ -144,15 +144,15 @@ async fn the_drawer_draws_a_channels_settings_and_members() {
 async fn the_drawer_draws_a_channels_pins() {
     let db = TestDb::new().await;
     threaded(&db).await;
-    // Refused while pinned messages are off (the API's 404).
+    // chat_pinned_messages is permanent (Discourse f00f07d6272): a stored
+    // opt-out leaves the pins on.
     set_setting(&db.pool, "chat_pinned_messages", 5, "f").await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut user1 = Client::logged_in(st.clone(), "user1").await;
     assert_eq!(
         drawer(&mut user1, "url=/chat/c/general/2/pins").await.0,
-        500
+        200
     );
-    set_setting(&db.pool, "chat_pinned_messages", 5, "t").await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
     let mut admin = Client::logged_in(st.clone(), "admin").await;
     let (status, _) = admin

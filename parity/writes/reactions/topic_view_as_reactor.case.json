@@ -30,5 +30,8 @@
   ],
   "ignore": [
     "/responses/0/body/suggested_topics"
+  ],
+  "unordered_responses": [
+    "/responses/0/body/bookmarks"
   ]
 }

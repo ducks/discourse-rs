@@ -229,6 +229,16 @@ item) since their order is the database's heap or plan order, which no
 template state lines up. JSON is compared structurally; status and media type
 must match.
 
+`not_yet=<commit>,<commit>` marks a case whose difference is a Discourse change
+the port lacks, the commits that made it named (their reason in a comment
+above the line, as the options take no spaces). As with a write case's
+`not_yet`, the golden replay (`tests/parity.rs`) expects such a case to differ
+and fails once it matches, so the mark comes off when the port catches up:
+
+```
+GET /site.json not_yet=0a264785d1d
+```
+
 ```bash
 make parity RAILS_URL=http://127.0.0.1:3000   # live: Rails vs discourse-rs
 make parity-record RAILS_URL=...              # save Rails responses to parity/golden/
@@ -241,11 +251,17 @@ with the clock pinned to the golden's `recorded_at` (the port's
 `clock::now()` and the database's `now()`), so edit windows and "recent"
 lists answer as they did when Rails was recorded.
 
-Recording workflow: create a fresh dv agent, run `scripts/reference-env
-<agent>` (no Sidekiq or scheduler, so its database only changes when a
-recording changes it; see `parity/reference.env`), vendor its commit,
-snapshot its database, write its env to `parity/environment`, then
-`make parity-record`.
+Recording workflow: create a fresh dv agent on host port 3042 (the
+recordings' DISCOURSE_PORT), check out the commit to vendor detached (its
+Discourse.git_branch is then "unknown", as recorded), give its
+discourse_development the en_US.UTF-8 collation (dv's PostgreSQL 18
+images default to C.UTF-8; scripts/snapshot-dv checks), run
+scripts/fixtures/topics.rb, messages.rb, bookmarks.rb and
+reference_state.rb in that order with Sidekiq running, then
+`scripts/reference-env <agent>` (no Sidekiq or scheduler, so its database
+only changes when a recording changes it; see `parity/reference.env`),
+vendor its commit, snapshot its database, write its env to
+`parity/environment`, then `make parity-record`.
 Live comparison needs both sides on the same database and configuration:
 run discourse-rs against a `make db-load` of the snapshot with
 `env $(grep -v ^# parity/environment) cargo run`.

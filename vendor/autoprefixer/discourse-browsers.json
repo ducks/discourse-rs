@@ -1,5 +1,5 @@
 {
- "autoprefixer": "10.5.6",
+ "autoprefixer": "10.6.1",
  "browsers": [
   "last 1 chrome version",
   "last 1 and_chr version",
@@ -97,6 +97,9 @@
    "-moz-"
   ],
   "box-decoration-break": [
+   "-webkit-"
+  ],
+  "initial-letter": [
    "-webkit-"
   ]
  },
@@ -5373,7 +5376,8 @@
   "-ms-scroll-chaining",
   "-webkit-text-orientation",
   "-webkit-print-color-adjust",
-  "color-adjust"
+  "color-adjust",
+  "-webkit-initial-letter"
  ],
  "cleaner_remove_values": {
   "background": [

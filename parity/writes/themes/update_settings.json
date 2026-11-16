@@ -121,8 +121,8 @@
       "path": "/admin/themes/{{responses.0.body.theme.id}}.json"
     }
   ],
-  "started_at": "2026-10-14T19:20:43.733252",
-  "transaction_started_at": "2026-10-14T19:20:42.371069",
+  "started_at": "2026-11-15T23:45:08.281526",
+  "transaction_started_at": "2026-11-15T23:45:07.461696",
   "responses": [
     {
       "status": 201,
@@ -131,8 +131,8 @@
           "id": 1,
           "name": "Configurable",
           "description": null,
-          "created_at": "2026-10-14T19:20:43.755Z",
-          "updated_at": "2026-10-14T19:20:43.755Z",
+          "created_at": "2026-11-15T23:45:08.294Z",
+          "updated_at": "2026-11-15T23:45:08.294Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -174,6 +174,7 @@
               "value": 3
             }
           ],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -265,8 +266,8 @@
           "id": 1,
           "name": "Configurable",
           "description": null,
-          "created_at": "2026-10-14T19:20:43.755Z",
-          "updated_at": "2026-10-14T19:20:43.755Z",
+          "created_at": "2026-11-15T23:45:08.294Z",
+          "updated_at": "2026-11-15T23:45:08.294Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -308,6 +309,7 @@
               "value": 3
             }
           ],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -434,8 +436,8 @@
           "id": 1,
           "name": "Configurable",
           "description": null,
-          "created_at": "2026-10-14T19:20:43.755Z",
-          "updated_at": "2026-10-14T19:20:43.755Z",
+          "created_at": "2026-11-15T23:45:08.294Z",
+          "updated_at": "2026-11-15T23:45:08.294Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -477,6 +479,7 @@
               "value": 7
             }
           ],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -568,8 +571,8 @@
           "id": 1,
           "name": "Configurable",
           "description": null,
-          "created_at": "2026-10-14T19:20:43.755Z",
-          "updated_at": "2026-10-14T19:20:43.755Z",
+          "created_at": "2026-11-15T23:45:08.294Z",
+          "updated_at": "2026-11-15T23:45:08.294Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -611,6 +614,7 @@
               "value": 7
             }
           ],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -711,8 +715,8 @@
           "id": 1,
           "name": "Configurable",
           "description": null,
-          "created_at": "2026-10-14T19:20:43.755Z",
-          "updated_at": "2026-10-14T19:20:43.755Z",
+          "created_at": "2026-11-15T23:45:08.294Z",
+          "updated_at": "2026-11-15T23:45:08.294Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -754,6 +758,7 @@
               "value": 7
             }
           ],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -848,10 +853,10 @@
           "digest": "e5daa592db0c840c2c4995f6f86af891f3f73222",
           "content": "/* Translation data for theme 1 (en)*/\nconst localeData = window._discourse_locale_data ??= {};\nlocaleData.theme ??= {};\nlocaleData.theme[1] = {\"en\":{\"greeting\":\"Hello\",\"farewell\":\"Later\"}};\n",
           "theme_id": null,
-          "created_at": "2026-10-14T19:20:43.928313",
+          "created_at": "2026-11-15T23:45:08.427009",
           "source_map": null,
-          "updated_at": "2026-10-14T19:20:45.591646",
-          "theme_field_id": 170,
+          "updated_at": "2026-11-15T23:45:09.505455",
+          "theme_field_id": 164,
           "external_plugin_imports": []
         }
       ],
@@ -861,35 +866,7 @@
     "theme_fields": {
       "inserted": [
         {
-          "id": 169,
-          "name": "yaml",
-          "error": null,
-          "value": "show_banner: true\nbanner_text:\n  default: Welcome\nsize:\n  type: enum\n  default: small\n  choices:\n    - small\n    - large\ncount: 3\n",
-          "type_id": 5,
-          "theme_id": 1,
-          "target_id": 3,
-          "upload_id": null,
-          "created_at": "2026-10-14T19:20:43.757382",
-          "updated_at": "2026-10-14T19:20:43.757382",
-          "value_baked": "baked",
-          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
-        },
-        {
-          "id": 171,
-          "name": "header",
-          "error": null,
-          "value": "<div>banner</div>",
-          "type_id": 0,
-          "theme_id": 1,
-          "target_id": 0,
-          "upload_id": null,
-          "created_at": "2026-10-14T19:20:43.765527",
-          "updated_at": "2026-10-14T19:20:43.765527",
-          "value_baked": "<div>banner</div>",
-          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
-        },
-        {
-          "id": 170,
+          "id": 164,
           "name": "en",
           "error": null,
           "value": "en:\n  greeting: Hello\n  farewell: Bye\n",
@@ -897,10 +874,38 @@
           "theme_id": 1,
           "target_id": 4,
           "upload_id": null,
-          "created_at": "2026-10-14T19:20:43.76161",
-          "updated_at": "2026-10-14T19:20:43.76161",
+          "created_at": "2026-11-15T23:45:08.298797",
+          "updated_at": "2026-11-15T23:45:08.298797",
           "value_baked": "<script type=\"module\" src=\"/theme-javascripts/e5daa592db0c840c2c4995f6f86af891f3f73222.js?__ws=localhost\" data-theme-id=\"1\" nonce=\"__CSP__NONCE__PLACEHOLDER__f72bff1b1768168a34ee092ce759f192__\"></script>\n",
-          "compiler_version": "2d5f9189b1fc7dbde3145bae2c90d503252b2fae"
+          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
+        },
+        {
+          "id": 163,
+          "name": "yaml",
+          "error": null,
+          "value": "show_banner: true\nbanner_text:\n  default: Welcome\nsize:\n  type: enum\n  default: small\n  choices:\n    - small\n    - large\ncount: 3\n",
+          "type_id": 5,
+          "theme_id": 1,
+          "target_id": 3,
+          "upload_id": null,
+          "created_at": "2026-11-15T23:45:08.29571",
+          "updated_at": "2026-11-15T23:45:08.29571",
+          "value_baked": "baked",
+          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
+        },
+        {
+          "id": 165,
+          "name": "header",
+          "error": null,
+          "value": "<div>banner</div>",
+          "type_id": 0,
+          "theme_id": 1,
+          "target_id": 0,
+          "upload_id": null,
+          "created_at": "2026-11-15T23:45:08.301229",
+          "updated_at": "2026-11-15T23:45:08.301229",
+          "value_baked": "<div>banner</div>",
+          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         }
       ],
       "deleted": [],
@@ -934,9 +939,9 @@
           "value": "false",
           "theme_id": 1,
           "data_type": 3,
-          "created_at": "2026-10-14T19:20:44.124537",
+          "created_at": "2026-11-15T23:45:08.546136",
           "json_value": null,
-          "updated_at": "2026-10-14T19:20:44.124537"
+          "updated_at": "2026-11-15T23:45:08.546136"
         },
         {
           "id": 2,
@@ -944,9 +949,9 @@
           "value": "large",
           "theme_id": 1,
           "data_type": 5,
-          "created_at": "2026-10-14T19:20:44.131931",
+          "created_at": "2026-11-15T23:45:08.550791",
           "json_value": null,
-          "updated_at": "2026-10-14T19:20:44.131931"
+          "updated_at": "2026-11-15T23:45:08.550791"
         },
         {
           "id": 3,
@@ -954,9 +959,9 @@
           "value": "Hi there",
           "theme_id": 1,
           "data_type": 2,
-          "created_at": "2026-10-14T19:20:44.297224",
+          "created_at": "2026-11-15T23:45:08.637431",
           "json_value": null,
-          "updated_at": "2026-10-14T19:20:44.297224"
+          "updated_at": "2026-11-15T23:45:08.637431"
         },
         {
           "id": 4,
@@ -964,9 +969,9 @@
           "value": "7",
           "theme_id": 1,
           "data_type": 0,
-          "created_at": "2026-10-14T19:20:44.609122",
+          "created_at": "2026-11-15T23:45:08.834714",
           "json_value": null,
-          "updated_at": "2026-10-14T19:20:44.609122"
+          "updated_at": "2026-11-15T23:45:08.834714"
         }
       ],
       "deleted": [],
@@ -979,9 +984,10 @@
           "value": "Later",
           "locale": "en",
           "theme_id": 1,
-          "created_at": "2026-10-14T19:20:45.433324",
-          "updated_at": "2026-10-14T19:20:45.433324",
-          "translation_key": "farewell"
+          "created_at": "2026-11-15T23:45:09.402355",
+          "updated_at": "2026-11-15T23:45:09.402355",
+          "translation_key": "farewell",
+          "original_translation": "Bye"
         }
       ],
       "deleted": [],
@@ -996,8 +1002,8 @@
           "enabled": true,
           "user_id": 1,
           "component": false,
-          "created_at": "2026-10-14T19:20:43.755463",
-          "updated_at": "2026-10-14T19:20:43.755463",
+          "created_at": "2026-11-15T23:45:08.29433",
+          "updated_at": "2026-11-15T23:45:08.29433",
           "auto_update": true,
           "color_scheme_id": null,
           "remote_theme_id": null,
@@ -1015,33 +1021,33 @@
       "updated": [
         {
           "before": {
-            "id": 128,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "yR2AvJZqgNDAZPJlQP+l4qxdYJQ=",
-            "created_at": "2026-10-14T19:20:42.908791",
-            "rotated_at": "2026-10-14T19:20:42.905772",
-            "updated_at": "2026-10-14T19:20:42.908791",
+            "auth_token": "8PBjyTZeo8AHlJOztIxnfHL+9Kw=",
+            "created_at": "2026-11-15T23:45:07.796077",
+            "rotated_at": "2026-11-15T23:45:07.794768",
+            "updated_at": "2026-11-15T23:45:07.796077",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "yR2AvJZqgNDAZPJlQP+l4qxdYJQ=",
+            "prev_auth_token": "8PBjyTZeo8AHlJOztIxnfHL+9Kw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 128,
-            "seen_at": "2026-10-14T19:20:43.740782",
+            "id": 14,
+            "seen_at": "2026-11-15T23:45:08.286073",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "yR2AvJZqgNDAZPJlQP+l4qxdYJQ=",
-            "created_at": "2026-10-14T19:20:42.908791",
-            "rotated_at": "2026-10-14T19:20:42.905772",
-            "updated_at": "2026-10-14T19:20:42.908791",
+            "auth_token": "8PBjyTZeo8AHlJOztIxnfHL+9Kw=",
+            "created_at": "2026-11-15T23:45:07.796077",
+            "rotated_at": "2026-11-15T23:45:07.794768",
+            "updated_at": "2026-11-15T23:45:07.796077",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "yR2AvJZqgNDAZPJlQP+l4qxdYJQ=",
+            "prev_auth_token": "8PBjyTZeo8AHlJOztIxnfHL+9Kw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1052,91 +1058,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
-          "email": null,
-          "action": 4,
-          "context": null,
-          "details": null,
-          "post_id": null,
-          "subject": "Configurable",
-          "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Configurable\",\"description\":null,\"created_at\":\"2026-10-14T19:20:43.755Z\",\"updated_at\":\"2026-10-14T19:20:43.755Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"show_banner\",\"humanized_name\":\"Show banner\",\"type\":\"bool\",\"default\":true,\"value\":true},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Welcome\",\"value\":\"Welcome\",\"textarea\":false},{\"setting\":\"size\",\"humanized_name\":\"Size\",\"type\":\"enum\",\"default\":\"small\",\"value\":\"small\",\"valid_values\":[\"small\",\"large\"]},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":3,\"value\":3}],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cdiv\\u003ebanner\\u003c/div\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"show_banner: true\\nbanner_text:\\n  default: Welcome\\nsize:\\n  type: enum\\n  default: small\\n  choices:\\n    - small\\n    - large\\ncount: 3\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  greeting: Hello\\n  farewell: Bye\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"greeting\",\"value\":\"Hello\",\"default\":\"Hello\"},{\"key\":\"farewell\",\"value\":\"Bye\",\"default\":\"Bye\"}]}",
-          "admin_only": true,
-          "created_at": "2026-10-14T19:20:43.994131",
-          "ip_address": null,
-          "updated_at": "2026-10-14T19:20:43.994131",
-          "category_id": null,
-          "custom_type": null,
-          "reviewable_id": null,
-          "acting_user_id": 1,
-          "previous_value": null,
-          "target_user_id": null
-        },
-        {
-          "id": 75,
-          "email": null,
-          "action": 4,
-          "context": null,
-          "details": null,
-          "post_id": null,
-          "subject": "Configurable",
-          "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Configurable\",\"settings\":[{\"setting\":\"show_banner\",\"humanized_name\":\"Show banner\",\"type\":\"bool\",\"default\":true,\"value\":false},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Welcome\",\"value\":\"Welcome\",\"textarea\":false},{\"setting\":\"size\",\"humanized_name\":\"Size\",\"type\":\"enum\",\"default\":\"small\",\"value\":\"large\",\"valid_values\":[\"small\",\"large\"]},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":3,\"value\":3}]}",
-          "admin_only": true,
-          "created_at": "2026-10-14T19:20:44.234662",
-          "ip_address": null,
-          "updated_at": "2026-10-14T19:20:44.234662",
-          "category_id": null,
-          "custom_type": null,
-          "reviewable_id": null,
-          "acting_user_id": 1,
-          "previous_value": "{\"id\":1,\"name\":\"Configurable\",\"settings\":[{\"setting\":\"show_banner\",\"humanized_name\":\"Show banner\",\"type\":\"bool\",\"default\":true,\"value\":true},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Welcome\",\"value\":\"Welcome\",\"textarea\":false},{\"setting\":\"size\",\"humanized_name\":\"Size\",\"type\":\"enum\",\"default\":\"small\",\"value\":\"small\",\"valid_values\":[\"small\",\"large\"]},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":3,\"value\":3}]}",
-          "target_user_id": null
-        },
-        {
-          "id": 76,
-          "email": null,
-          "action": 77,
-          "context": null,
-          "details": null,
-          "post_id": null,
-          "subject": "Configurable: banner_text",
-          "topic_id": null,
-          "new_value": "Hi there",
-          "admin_only": true,
-          "created_at": "2026-10-14T19:20:44.565515",
-          "ip_address": null,
-          "updated_at": "2026-10-14T19:20:44.565515",
-          "category_id": null,
-          "custom_type": null,
-          "reviewable_id": null,
-          "acting_user_id": 1,
-          "previous_value": "Welcome",
-          "target_user_id": null
-        },
-        {
-          "id": 77,
-          "email": null,
-          "action": 77,
-          "context": null,
-          "details": null,
-          "post_id": null,
-          "subject": "Configurable: count",
-          "topic_id": null,
-          "new_value": "7",
-          "admin_only": true,
-          "created_at": "2026-10-14T19:20:44.666008",
-          "ip_address": null,
-          "updated_at": "2026-10-14T19:20:44.666008",
-          "category_id": null,
-          "custom_type": null,
-          "reviewable_id": null,
-          "acting_user_id": 1,
-          "previous_value": "3",
-          "target_user_id": null
-        },
-        {
-          "id": 78,
+          "id": 72,
           "email": null,
           "action": 77,
           "context": null,
@@ -1146,9 +1068,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-14T19:20:44.930271",
+          "created_at": "2026-11-15T23:45:09.066583",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T19:20:44.930271",
+          "updated_at": "2026-11-15T23:45:09.066583",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1157,7 +1080,7 @@
           "target_user_id": null
         },
         {
-          "id": 79,
+          "id": 73,
           "email": null,
           "action": 4,
           "context": null,
@@ -1167,9 +1090,10 @@
           "topic_id": null,
           "new_value": "{\"id\":1,\"name\":\"Configurable\",\"translations\":[{\"key\":\"greeting\",\"value\":\"Howdy\",\"default\":\"Hello\"},{\"key\":\"farewell\",\"value\":\"Bye\",\"default\":\"Bye\"}]}",
           "admin_only": true,
-          "created_at": "2026-10-14T19:20:45.371126",
+          "created_at": "2026-11-15T23:45:09.350431",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T19:20:45.371126",
+          "updated_at": "2026-11-15T23:45:09.350431",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1178,7 +1102,7 @@
           "target_user_id": null
         },
         {
-          "id": 80,
+          "id": 74,
           "email": null,
           "action": 4,
           "context": null,
@@ -1188,14 +1112,103 @@
           "topic_id": null,
           "new_value": "{\"id\":1,\"name\":\"Configurable\",\"translations\":[{\"key\":\"greeting\",\"value\":\"Hello\",\"default\":\"Hello\"},{\"key\":\"farewell\",\"value\":\"Later\",\"default\":\"Bye\"}]}",
           "admin_only": true,
-          "created_at": "2026-10-14T19:20:45.69135",
+          "created_at": "2026-11-15T23:45:09.579646",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T19:20:45.69135",
+          "updated_at": "2026-11-15T23:45:09.579646",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
           "acting_user_id": 1,
           "previous_value": "{\"id\":1,\"name\":\"Configurable\",\"translations\":[{\"key\":\"greeting\",\"value\":\"Howdy\",\"default\":\"Hello\"},{\"key\":\"farewell\",\"value\":\"Bye\",\"default\":\"Bye\"}]}",
+          "target_user_id": null
+        },
+        {
+          "id": 68,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Configurable",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Configurable\",\"description\":null,\"created_at\":\"2026-11-15T23:45:08.294Z\",\"updated_at\":\"2026-11-15T23:45:08.294Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"show_banner\",\"humanized_name\":\"Show banner\",\"type\":\"bool\",\"default\":true,\"value\":true},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Welcome\",\"value\":\"Welcome\",\"textarea\":false},{\"setting\":\"size\",\"humanized_name\":\"Size\",\"type\":\"enum\",\"default\":\"small\",\"value\":\"small\",\"valid_values\":[\"small\",\"large\"]},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":3,\"value\":3}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cdiv\\u003ebanner\\u003c/div\\u003e\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"show_banner: true\\nbanner_text:\\n  default: Welcome\\nsize:\\n  type: enum\\n  default: small\\n  choices:\\n    - small\\n    - large\\ncount: 3\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  greeting: Hello\\n  farewell: Bye\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"greeting\",\"value\":\"Hello\",\"default\":\"Hello\"},{\"key\":\"farewell\",\"value\":\"Bye\",\"default\":\"Bye\"}]}",
+          "admin_only": true,
+          "created_at": "2026-11-15T23:45:08.47488",
+          "expires_at": null,
+          "ip_address": null,
+          "updated_at": "2026-11-15T23:45:08.47488",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 69,
+          "email": null,
+          "action": 4,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Configurable",
+          "topic_id": null,
+          "new_value": "{\"id\":1,\"name\":\"Configurable\",\"settings\":[{\"setting\":\"show_banner\",\"humanized_name\":\"Show banner\",\"type\":\"bool\",\"default\":true,\"value\":false},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Welcome\",\"value\":\"Welcome\",\"textarea\":false},{\"setting\":\"size\",\"humanized_name\":\"Size\",\"type\":\"enum\",\"default\":\"small\",\"value\":\"large\",\"valid_values\":[\"small\",\"large\"]},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":3,\"value\":3}]}",
+          "admin_only": true,
+          "created_at": "2026-11-15T23:45:08.605447",
+          "expires_at": null,
+          "ip_address": null,
+          "updated_at": "2026-11-15T23:45:08.605447",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "{\"id\":1,\"name\":\"Configurable\",\"settings\":[{\"setting\":\"show_banner\",\"humanized_name\":\"Show banner\",\"type\":\"bool\",\"default\":true,\"value\":true},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Welcome\",\"value\":\"Welcome\",\"textarea\":false},{\"setting\":\"size\",\"humanized_name\":\"Size\",\"type\":\"enum\",\"default\":\"small\",\"value\":\"small\",\"valid_values\":[\"small\",\"large\"]},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":3,\"value\":3}]}",
+          "target_user_id": null
+        },
+        {
+          "id": 70,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Configurable: banner_text",
+          "topic_id": null,
+          "new_value": "Hi there",
+          "admin_only": true,
+          "created_at": "2026-11-15T23:45:08.775975",
+          "expires_at": null,
+          "ip_address": null,
+          "updated_at": "2026-11-15T23:45:08.775975",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "Welcome",
+          "target_user_id": null
+        },
+        {
+          "id": 71,
+          "email": null,
+          "action": 77,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "Configurable: count",
+          "topic_id": null,
+          "new_value": "7",
+          "admin_only": true,
+          "created_at": "2026-11-15T23:45:08.851739",
+          "expires_at": null,
+          "ip_address": null,
+          "updated_at": "2026-11-15T23:45:08.851739",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "3",
           "target_user_id": null
         }
       ],
@@ -1206,16 +1219,16 @@
   "jobs": [],
   "next_ids": {
     "javascript_caches": 1,
-    "theme_fields": 169,
+    "theme_fields": 163,
     "theme_modifier_sets": 3,
     "theme_settings": 1,
     "theme_translation_overrides": 1,
     "themes": 1,
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "9ecaa690fb0a2af4c6c59ae9e505a28d4426096fcbc491ddee7e4b6e16d4ac42",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

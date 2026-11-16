@@ -1,7 +1,8 @@
 {
   "request": "GET /session/csrf.json",
   "source": "http://127.0.0.1:3042",
+  "recorded_at": "2026-11-15T21:23:47.523633186+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
-  "body": "{\"csrf\":\"KpYbIVdc-AY-xBoGrUxIjK0X0ruBOl6h-hjQFs8e910R5t6WWBHo1_2uL9wPMX572Crzf7K67uBNY7AsfYV7ig\"}"
+  "body": "{\"csrf\":\"5oDFG10nVRoxMn_9r-pz40btqRZCZaGSSmOqzZgKUPfx5CpdvORg9Mw8Yb9FcTHNA-COZc0YRmIb9m7XfAfS3w\"}"
 }

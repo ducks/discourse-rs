@@ -2,8 +2,8 @@
   "name": "crawler_stats_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-14T16:28:25.821719",
-  "transaction_started_at": "2026-10-14T16:28:23.63065",
+  "started_at": "2026-11-15T23:27:18.703012",
+  "transaction_started_at": "2026-11-15T23:27:17.938149",
   "responses": [],
   "changes": {
     "web_crawler_requests": {
@@ -11,49 +11,49 @@
       "deleted": [
         {
           "id": 1,
-          "date": "2026-09-04",
+          "date": "2026-10-06",
           "count": 100,
           "user_agent": "OldBot"
         },
         {
           "id": 2,
-          "date": "2026-09-13",
+          "date": "2026-10-15",
           "count": 5,
           "user_agent": "OldishBot"
         },
         {
           "id": 6,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 1,
           "user_agent": "Bot1"
         },
         {
           "id": 7,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 2,
           "user_agent": "Bot2"
         },
         {
           "id": 8,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 3,
           "user_agent": "Bot3"
         },
         {
           "id": 9,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 4,
           "user_agent": "Bot4"
         },
         {
           "id": 10,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 5,
           "user_agent": "Bot5"
         },
         {
           "id": 11,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 6,
           "user_agent": "Bot6"
         }
@@ -76,7 +76,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "249f235748e1b17d063d873f4daff0f946cc0a9ca7390905fb45d7c2270570ed",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

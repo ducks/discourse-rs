@@ -205,7 +205,6 @@ pub async fn show(
 /// the read ones and the messages merged newest first.
 fn message_items(cx: &MenuContext, doc: &Value) -> Vec<String> {
     let list = |key: &str| doc[key].as_array().cloned().unwrap_or_default();
-    let users = list("users");
     let mut items: Vec<String> = list("unread_notifications")
         .iter()
         .map(|n| user_menu_view::notification_item(cx, n))
@@ -227,7 +226,7 @@ fn message_items(cx: &MenuContext, doc: &Value) -> Vec<String> {
                     _ => false,
                 });
         if take_topic {
-            items.push(user_menu_view::message_item(cx, &topics[j], &users));
+            items.push(user_menu_view::message_item(cx, &topics[j]));
             j += 1;
         } else {
             items.push(user_menu_view::notification_item(cx, &read[i]));
@@ -267,7 +266,6 @@ async fn messages_doc(
         .await?;
     let unread = notes.filter_inaccessible_topics(unread).await?;
     let mut topics = Vec::new();
-    let mut users = Vec::new();
     let mut read = Vec::new();
     if (unread.len() as i64) < USER_MENU_LIST_LIMIT {
         let mut exclude: Vec<i32> = Vec::new();
@@ -308,37 +306,48 @@ async fn messages_doc(
         }
         .serialize(&list)
         .await?;
-        topics = json["topic_list"]["topics"]
+        // UserMenuMessageSerializer (d36d416d20e, 415dba802d6): the
+        // topic's own fields and its last poster as BasicUserSerializer
+        // has them; no separate users list.
+        let all = json["users"].as_array().cloned().unwrap_or_default();
+        for t in json["topic_list"]["topics"]
             .as_array()
-            .cloned()
-            .unwrap_or_default();
-        // The last posters as BasicUserSerializer has them, unless names
-        // and avatars are both off.
-        if settings.get("show_user_menu_avatars")?.truthy()
-            || !settings.get("prioritize_username_in_ux")?.truthy()
+            .into_iter()
+            .flatten()
         {
-            let all = json["users"].as_array().cloned().unwrap_or_default();
-            for t in &topics {
-                let Some(id) = t["posters"]
-                    .as_array()
-                    .and_then(|p| p.last())
-                    .and_then(|p| p["user_id"].as_i64())
-                else {
-                    continue;
-                };
-                if users.iter().any(|u: &Value| u["id"].as_i64() == Some(id)) {
-                    continue;
+            let mut item = serde_json::Map::new();
+            for key in [
+                "fancy_title",
+                "id",
+                "slug",
+                "bumped_at",
+                "highest_post_number",
+            ] {
+                item.insert(key.into(), t.get(key).cloned().unwrap_or(Value::Null));
+            }
+            // has_user_data
+            for key in ["last_read_post_number", "unread_posts"] {
+                if let Some(v) = t.get(key) {
+                    item.insert(key.into(), v.clone());
                 }
-                if let Some(u) = all.iter().find(|u| u["id"].as_i64() == Some(id)) {
+            }
+            let last_poster = t["posters"]
+                .as_array()
+                .and_then(|p| p.last())
+                .and_then(|p| p["user_id"].as_i64())
+                .and_then(|id| all.iter().find(|u| u["id"].as_i64() == Some(id)))
+                .map(|u| {
                     let mut basic = serde_json::Map::new();
                     for key in ["id", "username", "name", "avatar_template"] {
                         if let Some(v) = u.get(key) {
                             basic.insert(key.into(), v.clone());
                         }
                     }
-                    users.push(Value::Object(basic));
-                }
-            }
+                    Value::Object(basic)
+                })
+                .unwrap_or(Value::Null);
+            item.insert("last_poster".into(), last_poster);
+            topics.push(Value::Object(item));
         }
         let mut notes = Notifications {
             conn: &mut *conn,
@@ -355,7 +364,6 @@ async fn messages_doc(
         "unread_notifications": unread,
         "read_notifications": read,
         "topics": topics,
-        "users": users,
     }))
 }
 

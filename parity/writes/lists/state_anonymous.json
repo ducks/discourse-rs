@@ -11,8 +11,8 @@
       "path": "/latest.json?state=watching&per_page=1"
     }
   ],
-  "started_at": "2026-10-22T06:46:42.46785",
-  "transaction_started_at": "2026-10-22T06:46:40.402806",
+  "started_at": "2026-11-15T23:01:21.73563",
+  "transaction_started_at": "2026-11-15T23:01:21.167705",
   "responses": [
     {
       "status": 200,
@@ -80,10 +80,10 @@
               "reply_count": 0,
               "highest_post_number": 1,
               "image_url": null,
-              "created_at": "2026-07-25T05:58:28.320Z",
-              "last_posted_at": "2026-07-25T05:58:28.405Z",
+              "created_at": "2026-11-03T05:07:24.494Z",
+              "last_posted_at": "2026-11-03T05:07:24.525Z",
               "bumped": true,
-              "bumped_at": "2026-07-25T05:58:28.405Z",
+              "bumped_at": "2026-11-03T05:07:24.525Z",
               "archetype": "regular",
               "unseen": false,
               "pinned": true,
@@ -127,7 +127,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "13d7b5c7c9b1aeea6f7698171841212e008450b8395e03d4fb5200564722a821",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

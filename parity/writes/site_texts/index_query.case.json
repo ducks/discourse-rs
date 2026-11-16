@@ -1,4 +1,5 @@
 {
+  "not_yet": "747aa636644 (Discourse): site texts of themes and plugins carry default_text and default_locale (object editor fields translated as site texts); not ported",
   "user": "admin",
   "requests": [
     {"method": "GET", "path": "/admin/customize/site_texts.json?q=bookmark%20reminder&locale=en"},

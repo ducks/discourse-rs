@@ -121,7 +121,8 @@ pub struct Author {
 
 /// What Chat::UserMessageBookmarkSerializer draws of the message.
 pub struct Serialized {
-    /// `title` and `fancy_title`: the channel's title for the viewer.
+    /// `title`: the channel's title for the viewer (`fancy_title` its
+    /// escape).
     pub title: String,
     /// The excerpt of the cooked message; None without one.
     pub excerpt: Option<String>,

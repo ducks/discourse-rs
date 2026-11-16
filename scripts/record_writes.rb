@@ -230,7 +230,10 @@ def clear_redis_state
   # new_features*, latest_new_feature_created_at, refresh_latest_new_feature_lock,
   # last_viewed_feature_dates_for_users_hash: DiscourseUpdates' feed and
   # what each admin has seen of it (a case's `redis`, its requests).
-  %w[ban_user_from_external_uploads_* user-profile-view:* user:*:????-??-?? readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled _CACHE:solved_admin_dashboard_support_* new_features new_features_last_seen_user_* latest_new_feature_created_at refresh_latest_new_feature_lock last_viewed_feature_dates_for_users_hash].each do |pattern|
+  # chat_thread:replies_count_cache*: Chat::ThreadCache's reply counts,
+  # which outlive a case's thread rows and give the next case's thread of
+  # the same id their count.
+  %w[chat_thread:replies_count_cache* ban_user_from_external_uploads_* user-profile-view:* user:*:????-??-?? readonly_mode* email-backup-token:* backup_restore_operation_* start_logs_message_id postgres:last_readonly otp_* unique-post-* unique-pm-post-* rejection_email:* user-last-seen:* hot_score_6_hourly __SEARCH__LOG_* LAST_UPLOAD_CLEANUP l-rate-limit3:* grpmsg:* last_notified_reviewable_id _CACHE:inline_onebox:* _CACHE:onebox__* _CACHE:onebox_failed__* about-stats badge_queue directory_* summary-new-users:* _CACHE:watched-words-list:* _CACHE:reports:* index-dashboard-data-* general-dashboard-data-* _CACHE:solved_admin_dashboard_kpi_enabled _CACHE:solved_admin_dashboard_support_* new_features new_features_last_seen_user_* latest_new_feature_created_at refresh_latest_new_feature_lock last_viewed_feature_dates_for_users_hash].each do |pattern|
     Discourse.redis.keys(pattern).each { |k| Discourse.redis.del(k) }
   end
   # Oneboxer's preferred strategies, outside the namespace.
@@ -558,6 +561,9 @@ cases.each do |c|
     end
     # `setup`: SQL for fixture rows a case needs (a reply key), run the same way.
     (c["setup"] || []).each { |sql| db.execute(sql) }
+    # Setup SQL that writes site_settings rows: the in-process cache read
+    # again, or a request compares with the value from before the setup.
+    SiteSetting.refresh! if (c["setup"] || []).any? { |sql| sql.include?("site_settings") }
     # Always: a case's settings (emoji_deny_list) are cached too.
     reset_plugin_caches
     # `readonly`: read-only mode's Redis keys set for the case's requests

@@ -1,7 +1,18 @@
 {
   "user": null,
-  "setup": ["INSERT INTO topic_search_data (topic_id, raw_data, locale, version, search_data) VALUES (40, 'x', 'en', 4, ''), (9999, 'x', 'en', 4, '')", "INSERT INTO post_search_data (post_id, raw_data, locale, version, search_data, private_message) VALUES (45, 'x', 'en', 5, '', false), (41, 'x', 'en', 5, '', false)", "UPDATE posts SET deleted_at = now() - interval '2 hours' WHERE id = 37"],
+  "setup": [
+    "INSERT INTO topic_search_data (topic_id, raw_data, locale, version, search_data) VALUES (40, 'x', 'en', 4, ''), (9999, 'x', 'en', 4, '') ON CONFLICT (topic_id) DO UPDATE SET raw_data = EXCLUDED.raw_data, locale = EXCLUDED.locale, version = EXCLUDED.version, search_data = EXCLUDED.search_data",
+    "INSERT INTO post_search_data (post_id, raw_data, locale, version, search_data, private_message) VALUES (45, 'x', 'en', 5, '', false), (41, 'x', 'en', 5, '', false) ON CONFLICT (post_id) DO UPDATE SET raw_data = EXCLUDED.raw_data, locale = EXCLUDED.locale, version = EXCLUDED.version, search_data = EXCLUDED.search_data, private_message = EXCLUDED.private_message",
+    "UPDATE posts SET deleted_at = now() - interval '2 hours' WHERE id = 37"
+  ],
   "requests": [],
-  "enqueue": [["reindex_search", {}]],
-  "run_jobs": ["reindex_search"]
+  "enqueue": [
+    [
+      "reindex_search",
+      {}
+    ]
+  ],
+  "run_jobs": [
+    "reindex_search"
+  ]
 }

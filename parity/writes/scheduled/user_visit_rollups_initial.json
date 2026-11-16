@@ -2,41 +2,41 @@
   "name": "user_visit_rollups_initial",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-14T16:28:30.994189",
-  "transaction_started_at": "2026-10-14T16:28:29.664778",
+  "started_at": "2026-11-15T23:29:39.580275",
+  "transaction_started_at": "2026-11-15T23:29:38.957043",
   "responses": [],
   "changes": {
     "user_visit_daily_rollups": {
       "inserted": [
         {
-          "id": 6,
+          "id": 1,
           "dau": 1,
           "mau": 1,
-          "date": "2026-08-25"
+          "date": "2026-09-26"
         },
         {
-          "id": 7,
+          "id": 2,
           "dau": 1,
           "mau": 2,
-          "date": "2026-09-09"
+          "date": "2026-10-11"
         },
         {
-          "id": 8,
+          "id": 3,
+          "dau": 2,
+          "mau": 2,
+          "date": "2026-11-13"
+        },
+        {
+          "id": 4,
+          "dau": 1,
+          "mau": 3,
+          "date": "2026-11-14"
+        },
+        {
+          "id": 5,
           "dau": 3,
           "mau": 4,
-          "date": "2026-10-01"
-        },
-        {
-          "id": 9,
-          "dau": 2,
-          "mau": 3,
-          "date": "2026-10-12"
-        },
-        {
-          "id": 10,
-          "dau": 1,
-          "mau": 4,
-          "date": "2026-10-13"
+          "date": "2026-11-15"
         }
       ],
       "deleted": [],
@@ -45,7 +45,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_visit_daily_rollups": 6
+    "user_visit_daily_rollups": 1
   },
   "setup": [
     "DELETE FROM user_visit_daily_rollups",
@@ -60,7 +60,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "37970b819e108061f51e4b0540b38892d6b6965e8cefb3f9ca4f99b2f14d234a",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

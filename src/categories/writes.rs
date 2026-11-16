@@ -1210,8 +1210,20 @@ async fn validate(
         let m = errors.message("invalid", &[]);
         errors.add("emoji", m);
     }
-    // parent_category_validator
-    if let Some(parent) = r.int("parent_category_id") {
+    // parent_category_validator: a parent that does not exist is the only
+    // error (41e84f0e42e).
+    let parent_exists = match r.int("parent_category_id") {
+        Some(parent) => {
+            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE id = $1)")
+                .bind(parent as i32)
+                .fetch_one(&mut *conn)
+                .await?
+        }
+        None => false,
+    };
+    if r.int("parent_category_id").is_some() && !parent_exists {
+        errors.base(cx.t("category.errors.not_found"));
+    } else if let Some(parent) = r.int("parent_category_id") {
         let uncategorized = cx.settings.get("uncategorized_category_id")?.to_i();
         if r.id.map(i64::from) == Some(uncategorized) {
             errors.base(cx.t("category.errors.uncategorized_parent"));
@@ -1226,9 +1238,40 @@ async fn validate(
     }
     // email_in_validator: email_in is refused on assignment.
     ensure_slug(conn, cx, r, &mut errors).await?;
+    // special_category_permissions_validator (3b6713ef776, on update): the
+    // seeded categories keep the permissions they have.
+    if let (Some(id), Some(perms)) = (r.id, r.permissions.as_ref()) {
+        let special = [
+            "meta_category_id",
+            "staff_category_id",
+            "uncategorized_category_id",
+        ]
+        .into_iter()
+        .map(|name| cx.settings.get(name).map(|v| v.to_i()))
+        .collect::<Result<Vec<_>, _>>()?
+        .contains(&i64::from(id));
+        if special {
+            let mut current: Vec<(i32, i64)> = sqlx::query_as::<_, (i32, i32)>(
+                "SELECT group_id, permission_type FROM category_groups WHERE category_id = $1",
+            )
+            .bind(id)
+            .fetch_all(&mut *conn)
+            .await?
+            .into_iter()
+            .map(|(g, p)| (g, i64::from(p)))
+            .collect();
+            current.sort();
+            let mut wanted = perms.clone();
+            wanted.sort();
+            if r.changed("read_restricted") || wanted != current {
+                errors.base(cx.t("category.errors.special_category_permissions"));
+            }
+        }
+    }
     // permissions_compatibility_validator
     if let Some(perms) = r.permissions.clone() {
         if let Some(parent) = r.int("parent_category_id") {
+            // A missing parent has no permissions to be compatible with.
             let parent_perms: Vec<(i32, i64)> = sqlx::query_as::<_, (i32, i32)>(
                 "SELECT group_id, permission_type FROM category_groups WHERE category_id = $1 ORDER BY id",
             )
@@ -2986,7 +3029,9 @@ pub async fn destroy(conn: &mut PgConnection, cx: &Cx<'_>, id: i32) -> Result<()
         if tagged || embed {
             return Err(Unsupported("trashing a tagged or embedded category definition").into());
         }
-        if cx.settings.get("boards_enabled").is_ok_and(|v| v.truthy()) {
+        if cx.settings.get("boards_enabled").is_ok_and(|v| v.truthy())
+            && crate::plugins::boards_to_sync(&mut *conn).await?
+        {
             return Err(Unsupported("the boards plugin's topic_trashed sync").into());
         }
         sqlx::query("UPDATE topics SET deleted_at = now(), deleted_by_id = NULL WHERE id = $1")

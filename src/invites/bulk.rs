@@ -177,9 +177,11 @@ pub async fn bulk_invite(state: &AppState, args: &Value) -> Result<(), AppError>
                 tally.skipped_emails.push(email.clone());
             }
             None => {
+                // invite_to_topic: the topic's email template (d150e372cad).
                 let opts = Generate {
                     email: Some(email.clone()),
                     topic_id,
+                    invite_to_topic: json!(topic_id.is_some()),
                     group_ids: groups.iter().map(|g| g.id).collect(),
                     skip_email,
                     emailed_status: large.then_some(emailed_status::BULK_PENDING),
@@ -261,11 +263,17 @@ pub async fn process_bulk_invite_emails(state: &AppState) -> Result<(), AppError
             .bind(emailed_status::SENDING)
             .execute(&mut *tx)
             .await?;
+        // A topic invite gets the topic's email template (d150e372cad).
+        let topic_invites: Vec<i32> =
+            sqlx::query_scalar("SELECT invite_id FROM topic_invites WHERE invite_id = ANY($1)")
+                .bind(&ids)
+                .fetch_all(&mut *tx)
+                .await?;
         for id in &ids {
             crate::jobs::enqueue(
                 &mut tx,
                 crate::invite_mailer::INVITE_EMAIL,
-                json!({"invite_id": id}),
+                json!({"invite_id": id, "invite_to_topic": topic_invites.contains(id)}),
             )
             .await?;
         }

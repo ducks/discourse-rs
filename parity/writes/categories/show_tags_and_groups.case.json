@@ -1,5 +1,6 @@
 {
   "user": "admin",
+  "not_yet": "3b804903928 (Discourse): CategorySerializer#permission_groups and logged_in_users category permissions; not ported",
   "setup": [
     "INSERT INTO tags (id, name, slug, created_at, updated_at) VALUES (9001, 'alpha', 'alpha', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
     "INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9001, 'Greek', '2026-10-01 10:00:00', '2026-10-01 10:00:00')",

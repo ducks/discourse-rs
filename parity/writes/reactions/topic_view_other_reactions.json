@@ -8,8 +8,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-10-09T11:45:49.105297",
-  "transaction_started_at": "2026-10-09T11:45:48.204746",
+  "started_at": "2026-11-15T23:20:30.840575",
+  "transaction_started_at": "2026-11-15T23:20:29.902052",
   "responses": [
     {
       "status": 200,
@@ -21,12 +21,12 @@
               "name": "User0",
               "username": "user0",
               "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-              "created_at": "2026-09-30T07:28:28.901Z",
+              "created_at": "2026-11-15T19:19:53.957Z",
               "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
               "post_number": 1,
               "post_type": 1,
               "posts_count": 5,
-              "updated_at": "2026-09-30T07:28:28.901Z",
+              "updated_at": "2026-11-15T19:19:53.957Z",
               "reply_count": 0,
               "reply_to_post_number": null,
               "quote_count": 0,
@@ -134,12 +134,12 @@
               "name": "User1",
               "username": "user1",
               "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-              "created_at": "2026-09-30T07:28:29.079Z",
+              "created_at": "2026-11-15T19:19:54.128Z",
               "cooked": "<p>Reply one from user1, also long enough to pass the minimum length check.</p>",
               "post_number": 2,
               "post_type": 1,
               "posts_count": 5,
-              "updated_at": "2026-09-30T07:28:29.079Z",
+              "updated_at": "2026-11-15T19:19:54.128Z",
               "reply_count": 0,
               "reply_to_post_number": null,
               "quote_count": 0,
@@ -239,12 +239,12 @@
               "name": "User2",
               "username": "user2",
               "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-              "created_at": "2026-09-30T07:28:29.179Z",
+              "created_at": "2026-11-15T19:19:54.208Z",
               "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
               "post_number": 3,
               "post_type": 1,
               "posts_count": 5,
-              "updated_at": "2026-09-30T07:28:29.179Z",
+              "updated_at": "2026-11-15T19:19:54.208Z",
               "reply_count": 0,
               "reply_to_post_number": null,
               "quote_count": 0,
@@ -342,12 +342,12 @@
               "name": "Admin",
               "username": "admin",
               "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
-              "created_at": "2026-09-30T07:28:29.251Z",
+              "created_at": "2026-11-15T19:19:54.283Z",
               "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>",
               "post_number": 4,
               "post_type": 1,
               "posts_count": 5,
-              "updated_at": "2026-09-30T07:28:29.251Z",
+              "updated_at": "2026-11-15T19:19:54.283Z",
               "reply_count": 0,
               "reply_to_post_number": null,
               "quote_count": 0,
@@ -441,12 +441,12 @@
               "name": "User0",
               "username": "user0",
               "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-              "created_at": "2026-10-01T15:39:51.834Z",
+              "created_at": "2026-11-15T19:20:01.206Z",
               "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
               "post_number": 5,
               "post_type": 1,
               "posts_count": 5,
-              "updated_at": "2026-10-01T15:39:51.834Z",
+              "updated_at": "2026-11-15T19:20:01.206Z",
               "reply_count": 0,
               "reply_to_post_number": null,
               "quote_count": 0,
@@ -541,11 +541,7 @@
         "timeline_lookup": [
           [
             1,
-            9
-          ],
-          [
-            5,
-            8
+            0
           ]
         ],
         "suggested_topics": [
@@ -558,10 +554,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-07-25T05:58:28.320Z",
-            "last_posted_at": "2026-07-25T05:58:28.405Z",
+            "created_at": "2026-11-03T05:07:24.494Z",
+            "last_posted_at": "2026-11-03T05:07:24.525Z",
             "bumped": true,
-            "bumped_at": "2026-07-25T05:58:28.405Z",
+            "bumped_at": "2026-11-03T05:07:24.525Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": true,
@@ -606,10 +602,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-09-30T07:28:29.543Z",
-            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "created_at": "2026-11-15T19:19:54.728Z",
+            "last_posted_at": "2026-11-15T19:19:54.764Z",
             "bumped": true,
-            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "bumped_at": "2026-11-15T19:19:54.764Z",
             "archetype": "regular",
             "unseen": false,
             "last_read_post_number": 1,
@@ -665,11 +661,11 @@
         "id": 35,
         "title": "Parity fixture: replies and posters",
         "posts_count": 5,
-        "created_at": "2026-09-30T07:28:28.864Z",
+        "created_at": "2026-11-15T19:19:53.917Z",
         "views": 0,
         "reply_count": 0,
         "like_count": 1,
-        "last_posted_at": "2026-10-01T15:39:51.834Z",
+        "last_posted_at": "2026-11-15T19:20:01.206Z",
         "visible": true,
         "closed": false,
         "archived": false,
@@ -731,6 +727,7 @@
         "show_read_indicator": false,
         "thumbnails": null,
         "slow_mode_enabled_until": null,
+        "board_memberships": [],
         "valid_reactions": [
           "tada",
           "laughing",
@@ -742,8 +739,6 @@
         "can_vote": false,
         "vote_count": 0,
         "user_voted": false,
-        "discourse_zendesk_plugin_zendesk_id": null,
-        "discourse_zendesk_plugin_zendesk_url": "https://your-url.zendesk.com/agent/tickets/",
         "details": {
           "can_edit": false,
           "notification_level": 2,
@@ -785,10 +780,10 @@
               "trust_level": 4
             },
             {
-              "id": 4,
-              "username": "user2",
-              "name": "User2",
-              "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+              "id": 3,
+              "username": "user1",
+              "name": "User1",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
               "post_count": 1,
               "primary_group_name": null,
               "flair_name": null,
@@ -799,10 +794,10 @@
               "trust_level": 2
             },
             {
-              "id": 3,
-              "username": "user1",
-              "name": "User1",
-              "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+              "id": 4,
+              "username": "user2",
+              "name": "User2",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
               "post_count": 1,
               "primary_group_name": null,
               "flair_name": null,
@@ -829,13 +824,13 @@
         "pending_posts": [],
         "bookmarks": [
           {
-            "id": 2,
-            "bookmarkable_id": 35,
-            "bookmarkable_type": "Topic",
+            "id": 5,
+            "bookmarkable_id": 52,
+            "bookmarkable_type": "Post",
             "reminder_at": null,
-            "name": "Parity fixture: topic bookmark",
+            "name": "Parity fixture: reminder sent",
             "auto_delete_preference": 3,
-            "post_number": null
+            "post_number": 5
           },
           {
             "id": 3,
@@ -847,13 +842,13 @@
             "post_number": 2
           },
           {
-            "id": 5,
-            "bookmarkable_id": 52,
-            "bookmarkable_type": "Post",
+            "id": 2,
+            "bookmarkable_id": 35,
+            "bookmarkable_type": "Topic",
             "reminder_at": null,
-            "name": "Parity fixture: reminder sent",
+            "name": "Parity fixture: topic bookmark",
             "auto_delete_preference": 3,
-            "post_number": 5
+            "post_number": null
           }
         ]
       }
@@ -866,33 +861,33 @@
       "updated": [
         {
           "before": {
-            "id": 317,
+            "id": 14,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "sgNjmmR6O5FVsphPjXNsdvkOoGU=",
-            "created_at": "2026-10-09T11:45:48.525397",
-            "rotated_at": "2026-10-09T11:45:48.525138",
-            "updated_at": "2026-10-09T11:45:48.525397",
+            "auth_token": "A/s7XLZoLttg+aFW8fLOPifWsic=",
+            "created_at": "2026-11-15T23:20:30.212821",
+            "rotated_at": "2026-11-15T23:20:30.211585",
+            "updated_at": "2026-11-15T23:20:30.212821",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "sgNjmmR6O5FVsphPjXNsdvkOoGU=",
+            "prev_auth_token": "A/s7XLZoLttg+aFW8fLOPifWsic=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 317,
-            "seen_at": "2026-10-09T11:45:49.111369",
+            "id": 14,
+            "seen_at": "2026-11-15T23:20:30.847555",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "sgNjmmR6O5FVsphPjXNsdvkOoGU=",
-            "created_at": "2026-10-09T11:45:48.525397",
-            "rotated_at": "2026-10-09T11:45:48.525138",
-            "updated_at": "2026-10-09T11:45:48.525397",
+            "auth_token": "A/s7XLZoLttg+aFW8fLOPifWsic=",
+            "created_at": "2026-11-15T23:20:30.212821",
+            "rotated_at": "2026-11-15T23:20:30.211585",
+            "updated_at": "2026-11-15T23:20:30.212821",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "sgNjmmR6O5FVsphPjXNsdvkOoGU=",
+            "prev_auth_token": "A/s7XLZoLttg+aFW8fLOPifWsic=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -902,6 +897,7 @@
     }
   },
   "jobs": [],
+  "next_ids": {},
   "settings": {
     "discourse_reactions_enabled_reactions": "laughing|clap|tada",
     "discourse_reactions_reaction_for_like": "tada",
@@ -930,7 +926,7 @@
   ],
   "recorded_from": {
     "case": "b24f3e5817ace0bcc46203ada2f1d3e52d8badb1cb6c621c04f360ce9feb0dc1",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

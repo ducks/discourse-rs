@@ -13,5 +13,8 @@
       "method": "GET",
       "path": "/session/current.json"
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/current_user/available_notification_types"
   ]
 }

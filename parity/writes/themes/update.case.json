@@ -1,14 +1,94 @@
 {
   "user": "admin",
+  "not_yet": "747aa636644 (Discourse): themes serialize translations_locale (object editor fields translated as site texts); not ported",
   "requests": [
-    {"method": "POST", "path": "/admin/themes.json", "params": {"theme": {"name": "Base"}}},
-    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"name": "Renamed", "user_selectable": "true", "color_scheme_id": "13", "dark_color_scheme_id": "2"}}},
-    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "true"}}},
-    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"default": "false"}}},
-    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"name": "Renamed"}}},
-    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"theme_fields": [{"name": "after_header", "target": "mobile", "value": "<section>Mobile only</section>"}]}}},
-    {"method": "PUT", "path": "/admin/themes/{{responses.0.body.theme.id}}.json", "params": {"theme": {"theme_fields": [{"name": "after_header", "target": "mobile", "value": ""}]}}},
-    {"method": "PUT", "path": "/admin/themes/999.json", "params": {"theme": {"name": "Nope"}}}
+    {
+      "method": "POST",
+      "path": "/admin/themes.json",
+      "params": {
+        "theme": {
+          "name": "Base"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "name": "Renamed",
+          "user_selectable": "true",
+          "color_scheme_id": "13",
+          "dark_color_scheme_id": "2"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "default": "true"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "default": "false"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "name": "Renamed"
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "mobile",
+              "value": "<section>Mobile only</section>"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json",
+      "params": {
+        "theme": {
+          "theme_fields": [
+            {
+              "name": "after_header",
+              "target": "mobile",
+              "value": ""
+            }
+          ]
+        }
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/themes/999.json",
+      "params": {
+        "theme": {
+          "name": "Nope"
+        }
+      }
+    }
   ],
   "unordered_responses": [
     "/responses/0/body/theme/theme_fields",

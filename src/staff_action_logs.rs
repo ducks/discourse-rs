@@ -358,11 +358,12 @@ pub async fn index(
         reviewable_id: Option<i64>,
         custom_type: Option<String>,
         created_at: NaiveDateTime,
+        expires_at: Option<NaiveDateTime>,
     }
     let rows_sql = format!(
         "SELECT id, action, acting_user_id, target_user_id, details, context, ip_address, \
                     email, subject, previous_value, new_value, topic_id, post_id, category_id, \
-                    reviewable_id::int8 AS reviewable_id, custom_type, created_at \
+                    reviewable_id::int8 AS reviewable_id, custom_type, created_at, expires_at \
              FROM user_histories WHERE {filter} ORDER BY id DESC OFFSET {} LIMIT {}",
         page.max(0) * page_size,
         page_size
@@ -439,6 +440,14 @@ pub async fn index(
         o.insert(
             "created_at".into(),
             json!(r.created_at.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()),
+        );
+        // expires_at (Discourse 6b70ebfe046), redacted as the content is.
+        o.insert(
+            "expires_at".into(),
+            match r.expires_at {
+                Some(at) if !redact => json!(at.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string()),
+                _ => Value::Null,
+            },
         );
         o.insert("subject".into(), json!(r.subject));
         let (previous, new) = if redact {

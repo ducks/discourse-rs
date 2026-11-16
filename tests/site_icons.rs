@@ -13,9 +13,9 @@ use tower::ServiceExt;
 
 /// The sketch logo's (upload -6) optimized copies in the seed.
 const FAVICON: &str =
-    "uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_32x32.png";
+    "uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_32x32.png";
 const TOUCH_ICON: &str =
-    "uploads/default/optimized/1X/_129430568242d1b7f853bb13ebea28b3f6af4e7_2_180x180.png";
+    "uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_180x180.png";
 
 #[tokio::test]
 async fn pages_link_the_favicon_and_touch_icon() {

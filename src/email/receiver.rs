@@ -502,7 +502,7 @@ pub async fn process(state: &AppState, raw: &str, source: Option<&str>) -> Resul
         return Ok(());
     }
     // Email::Validator.ensure_valid!
-    let Some(date) = mail.date else {
+    if mail.date.is_none() {
         // InvalidPost, raised before there is an incoming email.
         let mut r = Rejection::new("InvalidPost");
         r.message = state
@@ -511,7 +511,7 @@ pub async fn process(state: &AppState, raw: &str, source: Option<&str>) -> Resul
             .unwrap_or("")
             .to_string();
         return reject(state, &mut conn, &s, &mail, r, None).await;
-    };
+    }
 
     // parse_from_field: bounces and forwarded emails are refused.
     let bounce_key = Regex::new(r"\+verp-[0-9a-fA-F]{32}@").unwrap();
@@ -572,7 +572,6 @@ pub async fn process(state: &AppState, raw: &str, source: Option<&str>) -> Resul
         &s,
         &mail,
         raw,
-        date,
         incoming_id,
         from_email.as_deref(),
         from_user,
@@ -607,7 +606,6 @@ async fn process_internal(
     s: &SiteSettings,
     mail: &Incoming,
     raw: &str,
-    date: chrono::NaiveDateTime,
     incoming_id: i32,
     from_email: Option<&str>,
     from_user: Option<(i32, bool, bool, bool)>,
@@ -800,7 +798,9 @@ async fn process_internal(
     let now: chrono::NaiveDateTime = sqlx::query_scalar("SELECT clock_timestamp()::timestamp")
         .fetch_one(&mut *conn)
         .await?;
-    let created_at = date.min(now);
+    // A reply to an existing topic takes server time, not the mail's Date
+    // header (39cade8f7cd).
+    let created_at = now;
     let session_user = crate::session::current::SessionUser::load(&mut *conn, user_id)
         .await?
         .ok_or(Unsupported("a user that vanished"))?;

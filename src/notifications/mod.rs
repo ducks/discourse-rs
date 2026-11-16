@@ -68,7 +68,7 @@ pub const TYPES: &[(&str, i32)] = &[
     ("following_created_topic", 801),
     ("following_replied", 802),
     ("circles_activity", 900),
-    ("voice_invitation", 1000),
+    ("live_invitation", 1000),
 ];
 
 const GRANTED_BADGE: i32 = 12;
@@ -598,6 +598,24 @@ impl Notifications<'_> {
     }
 }
 
+/// `User#available_notification_types` (Discourse eafa0d1225a): the types of
+/// the user's visible notifications, read or not, which the user menu
+/// shows filters for. `distinct.pluck` without ORDER BY, so in the order
+/// the database hands them back.
+pub async fn available_types(
+    conn: &mut PgConnection,
+    user_id: i32,
+) -> Result<Vec<i32>, sqlx::Error> {
+    sqlx::query_scalar(
+        "SELECT DISTINCT notifications.notification_type FROM notifications \
+         LEFT JOIN topics ON notifications.topic_id = topics.id \
+         WHERE notifications.user_id = $1 AND (topics.id IS NULL OR topics.deleted_at IS NULL)",
+    )
+    .bind(user_id)
+    .fetch_all(conn)
+    .await
+}
+
 /// `notifications.visible.order("notifications.created_at desc").first`,
 /// serialized: the last notification in the published notification state.
 pub async fn last_visible(
@@ -688,8 +706,11 @@ fn serialize(settings: &SiteSettings, rows: &[Row]) -> Result<Value, Notificatio
         };
         n.insert("slug".into(), slug);
         let mut data: Value = serde_json::from_str(&r.data).unwrap_or(json!({}));
+        // With names off, no name in the data (fbce98a62ec).
         if !enable_names && let Some(obj) = data.as_object_mut() {
-            obj.remove("display_name");
+            for key in ["display_name", "name", "name2", "original_name"] {
+                obj.remove(key);
+            }
         }
         // populate_acting_user sets data_hash[:original_name] with names on.
         if enable_names

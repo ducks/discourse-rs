@@ -270,7 +270,6 @@ mod tests {
             read_time_word_count: 500,
             show_topic_map_in_topics_without_replies: true,
             show_bottom_topic_map: true,
-            short_progress_text_threshold: 10000,
             tagging_enabled: true,
             topic_featured_link_enabled: featured_link_enabled,
             post_menu: Vec::new(),

@@ -398,11 +398,14 @@ impl Context<'_> {
         .bind(super::bookmarks::POLYMORPHIC_NAME)
         .fetch_optional(&mut *self.conn)
         .await?;
-        let (id, loaded_score) = match old {
-            Some((id, old_status, loaded_score)) => {
-                if old_status != reviewables::PENDING {
-                    reviewables::recalculate_score(&mut *self.conn, &hooks, id).await?;
-                    self.log_history(id, HISTORY_TRANSITIONED, created_by_id)
+        let (id, loaded_score, reopened) = match old {
+            Some((id, old_status, mut loaded_score)) => {
+                // Re-opened (06ca4ae7f94): the score recalculated without an
+                // event, the transition logged by the system user.
+                let reopened = old_status != reviewables::PENDING;
+                if reopened {
+                    loaded_score = reviewables::recalculate(&mut *self.conn, id).await?;
+                    self.log_history(id, HISTORY_TRANSITIONED, crate::avatar::SYSTEM_USER_ID)
                         .await?;
                 }
                 sqlx::query(
@@ -415,7 +418,7 @@ impl Context<'_> {
                 .bind(payload)
                 .execute(&mut *self.conn)
                 .await?;
-                (id, loaded_score)
+                (id, loaded_score, reopened)
             }
             None => {
                 let id: i64 = sqlx::query_scalar(
@@ -450,13 +453,14 @@ impl Context<'_> {
                     json!({ "reviewable_id": id }),
                 )
                 .await?;
-                (id, 0.0)
+                (id, 0.0, false)
             }
         };
         Ok(InReview {
             id,
             loaded_score,
             topic_id: None,
+            reopened,
         })
     }
 

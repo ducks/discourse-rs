@@ -77,15 +77,15 @@
   },
   {
     "raw": ":smile: :heart: :+1:",
-    "cooked": "<p><img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji only-emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\"> <img src=\"/images/emoji/twitter/heart.png?v=15\" title=\":heart:\" class=\"emoji only-emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> <img src=\"/images/emoji/twitter/+1.png?v=15\" title=\":+1:\" class=\"emoji only-emoji\" alt=\":+1:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>"
+    "cooked": "<p><img src=\"/images/emoji/twitter/smile.png?v=16\" title=\":smile:\" class=\"emoji only-emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\"> <img src=\"/images/emoji/twitter/heart.png?v=16\" title=\":heart:\" class=\"emoji only-emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> <img src=\"/images/emoji/twitter/+1.png?v=16\" title=\":+1:\" class=\"emoji only-emoji\" alt=\":+1:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>"
   },
   {
     "raw": "inline emoji:smile:here",
-    "cooked": "<p>inline emoji<img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">here</p>"
+    "cooked": "<p>inline emoji<img src=\"/images/emoji/twitter/smile.png?v=16\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">here</p>"
   },
   {
     "raw": ":) :D <3",
-    "cooked": "<p><img src=\"/images/emoji/twitter/slight_smile.png?v=15\" title=\":slight_smile:\" class=\"emoji\" alt=\":slight_smile:\" loading=\"lazy\" width=\"20\" height=\"20\"> <img src=\"/images/emoji/twitter/smiley.png?v=15\" title=\":smiley:\" class=\"emoji\" alt=\":smiley:\" loading=\"lazy\" width=\"20\" height=\"20\"> &lt;3</p>"
+    "cooked": "<p><img src=\"/images/emoji/twitter/slight_smile.png?v=16\" title=\":slight_smile:\" class=\"emoji\" alt=\":slight_smile:\" loading=\"lazy\" width=\"20\" height=\"20\"> <img src=\"/images/emoji/twitter/smiley.png?v=16\" title=\":smiley:\" class=\"emoji\" alt=\":smiley:\" loading=\"lazy\" width=\"20\" height=\"20\"> &lt;3</p>"
   },
   {
     "raw": "@user0 and @user2 and @nobody",

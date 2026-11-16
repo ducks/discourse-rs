@@ -10,5 +10,11 @@
   ],
   "requests": [],
   "enqueue": [["clean_up_inactive_users", {}]],
-  "run_jobs": ["clean_up_inactive_users"]
+  "run_jobs": ["clean_up_inactive_users"],
+  "unordered": {
+    "user_histories": ["id"]
+  },
+  "unordered_responses": [
+    "/jobs_from_jobs"
+  ]
 }

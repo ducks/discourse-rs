@@ -57,7 +57,7 @@ mod search_menu;
 mod similar_topics;
 mod styleguide;
 pub(crate) mod uploads;
-pub(crate) use search::{invalid_access, invalid_access_at};
+pub(crate) use search::{invalid_access, invalid_access_with};
 pub(crate) use session::{csrf_ok, viewer_state};
 pub(crate) use sitemap::regenerate_sitemaps;
 pub(crate) use topics::not_found_response;
@@ -114,7 +114,7 @@ mod user_activity;
 mod user_api_key_auth;
 mod user_api_key_device;
 mod user_api_keys;
-mod user_avatar_writes;
+pub(crate) mod user_avatar_writes;
 mod user_avatars;
 mod user_badges;
 pub(crate) mod user_card;
@@ -796,6 +796,11 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/captcha/hcaptcha/create.json", post(captcha::hcaptcha))
         .route("/captcha/recaptcha/create", post(captcha::recaptcha))
         .route("/captcha/recaptcha/create.json", post(captcha::recaptcha))
+        .route("/captcha/recaptcha_v2/create", post(captcha::recaptcha))
+        .route(
+            "/captcha/recaptcha_v2/create.json",
+            post(captcha::recaptcha),
+        )
         // chat's incoming webhooks and admin controllers.
         .route("/chat/hooks/{key}", post(chat_admin::create_message))
         .route(
@@ -1044,6 +1049,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
                 .put(invites::update)
                 .delete(invites::destroy),
         )
+        .route("/invites/{id}/sso", post(invite_redeem::sso))
         .route(
             "/invites/show/{id}",
             put(invite_redeem::perform_accept_invitation),
@@ -1658,38 +1664,6 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route(
             "/admin/dashboard.json",
             get(admin::dashboard_sections::index),
-        )
-        .route(
-            "/admin/dashboard/general",
-            get(admin::dashboard_sections::general),
-        )
-        .route(
-            "/admin/dashboard/general.json",
-            get(admin::dashboard_sections::general),
-        )
-        .route(
-            "/admin/dashboard/moderation",
-            get(admin::dashboard_sections::empty),
-        )
-        .route(
-            "/admin/dashboard/moderation.json",
-            get(admin::dashboard_sections::empty),
-        )
-        .route(
-            "/admin/dashboard/security",
-            get(admin::dashboard_sections::empty),
-        )
-        .route(
-            "/admin/dashboard/security.json",
-            get(admin::dashboard_sections::empty),
-        )
-        .route(
-            "/admin/dashboard/reports",
-            get(admin::dashboard_sections::empty),
-        )
-        .route(
-            "/admin/dashboard/reports.json",
-            get(admin::dashboard_sections::empty),
         )
         .route(
             "/admin/dashboard/configuration",
@@ -2410,11 +2384,6 @@ pub fn router(state: &AppState) -> Router<AppState> {
                 .layer(axum::extract::DefaultBodyLimit::max(
                     backups::CHUNK_BODY_LIMIT,
                 )),
-        )
-        .route("/admin/backups/upload_url", get(backups::create_upload_url))
-        .route(
-            "/admin/backups/upload_url.json",
-            get(backups::create_upload_url),
         )
         .route(
             "/admin/backups/create-multipart",

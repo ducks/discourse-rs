@@ -371,8 +371,9 @@ pub fn process(
                 }
             }
             Some(Keyword::Topic) => {
+                // Any positive id, topic 1 too (130a4bf84d8).
                 let id: i64 = crate::ruby::to_i(&word["topic:".len()..]);
-                if id > 1 {
+                if id > 0 {
                     adv.context_keywords.push(ContextKeyword::Topic(id));
                 }
             }

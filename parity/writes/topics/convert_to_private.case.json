@@ -9,5 +9,8 @@
       "method": "GET",
       "path": "/posts/35/revisions/latest.json"
     }
-  ]
+  ],
+  "unordered": {
+    "user_actions": ["id"]
+  }
 }

@@ -1,4 +1,5 @@
 {
+  "not_yet": "00f21b36e14 (Discourse): chat_allowed_groups includes anonymous_users by default; anonymous read-only chat (me/channels, channel messages) not ported",
   "user": null,
   "setup": [
     "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 2, now() - interval '50 minutes', now() - interval '50 minutes', 'Hello **world**', '<p>Hello <strong>world</strong></p>', 1, 2)",

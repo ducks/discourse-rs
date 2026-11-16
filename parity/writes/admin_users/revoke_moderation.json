@@ -7,8 +7,8 @@
       "path": "/admin/users/2/revoke_moderation.json"
     }
   ],
-  "started_at": "2026-10-08T05:49:50.164087",
-  "transaction_started_at": "2026-10-08T05:49:49.391748",
+  "started_at": "2026-11-15T21:57:10.916439",
+  "transaction_started_at": "2026-11-15T21:57:06.287999",
   "responses": [
     {
       "status": 200,
@@ -20,12 +20,12 @@
         "active": true,
         "admin": false,
         "moderator": false,
-        "last_seen_at": "2026-10-01T22:32:51.475Z",
+        "last_seen_at": "2026-11-15T19:40:02.187Z",
         "last_emailed_at": null,
-        "created_at": "2026-07-25T05:59:15.831Z",
-        "last_seen_age": 544618.734258719,
+        "created_at": "2026-11-03T05:08:00.105Z",
+        "last_seen_age": 8228.95726536,
         "last_emailed_age": null,
-        "created_at_age": 6479434.378443243,
+        "created_at_age": 1097351.039799615,
         "trust_level": 1,
         "manual_locked_trust_level": null,
         "title": null,
@@ -64,9 +64,9 @@
           "silenced": 0,
           "suspended": 0
         },
-        "next_penalty": "2026-10-09T05:49:50.224Z",
+        "next_penalty": "2026-11-16T21:57:11.212Z",
         "primary_group_id": null,
-        "badge_count": 3,
+        "badge_count": 4,
         "warnings_received_count": 0,
         "bounce_score": 0.0,
         "reset_bounce_score_after": null,
@@ -88,10 +88,10 @@
           {
             "name": "boards_enabled",
             "humanized_name": "Boards enabled",
-            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control",
-            "enabled": false,
+            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control. Visit <a href='/boards'>/boards</a> to get started.",
+            "enabled": true,
             "specific_groups": [],
-            "reason": "enabled_for_no_one"
+            "reason": "enabled_for_everyone"
           },
           {
             "name": "chat_pinned_messages",
@@ -126,6 +126,14 @@
             "reason": "enabled_for_no_one"
           },
           {
+            "name": "enable_ai_combined_search",
+            "humanized_name": "Enable AI combined search",
+            "description": "Pressing enter in the header search answers with AI and shows keyword results together as tabs, opening on the one the search most likely wants. Follow-up questions continue on a full page.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
             "name": "enable_category_hashtag_cards",
             "humanized_name": "Enable category hashtag cards",
             "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
@@ -137,9 +145,9 @@
             "name": "enable_composer_redesign",
             "humanized_name": "Enable composer redesign",
             "description": "Enable the redesigned composer.",
-            "enabled": false,
+            "enabled": true,
             "specific_groups": [],
-            "reason": "enabled_for_no_one"
+            "reason": "enabled_for_everyone"
           },
           {
             "name": "enable_composer_toolbar_customization",
@@ -222,17 +230,17 @@
             "reason": "enabled_for_everyone"
           },
           {
-            "name": "enable_markdown_endpoints",
-            "humanized_name": "Enable markdown endpoints",
-            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
+            "name": "enable_main_outlet_grid_layout_change",
+            "humanized_name": "Enable main outlet grid layout change",
+            "description": "Place the composer inside the main layout grid so themes can position it in a grid column, and use a narrower sidebar.",
             "enabled": true,
             "specific_groups": [],
             "reason": "enabled_for_everyone"
           },
           {
-            "name": "enable_new_chat_reactions_popup",
-            "humanized_name": "Enable new chat reactions popup",
-            "description": "Enable the redesigned reactions popup on chat messages, showing who reacted with infinite scroll and a native mobile experience.",
+            "name": "enable_markdown_endpoints",
+            "humanized_name": "Enable markdown endpoints",
+            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
             "enabled": true,
             "specific_groups": [],
             "reason": "enabled_for_everyone"
@@ -254,14 +262,6 @@
             "reason": "enabled_for_everyone"
           },
           {
-            "name": "enable_new_post_reactions_menu",
-            "humanized_name": "Enable new post reactions menu",
-            "description": "Enable the redesigned post likes and reactions menu, with infinite scroll and a native mobile experience.",
-            "enabled": true,
-            "specific_groups": [],
-            "reason": "enabled_for_everyone"
-          },
-          {
             "name": "enable_new_post_reply_count_position",
             "humanized_name": "Enable new post reply count position",
             "description": "Move the post reactions summary before the reply count in the post controls.",
@@ -270,17 +270,17 @@
             "reason": "enabled_for_everyone"
           },
           {
+            "name": "enable_new_reordering_controls",
+            "humanized_name": "Enable new reordering controls",
+            "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
             "name": "enable_simplified_category_creation",
             "humanized_name": "Enable simplified category creation",
             "description": "Enables a simplified category creation flow with fewer options and a cleaner interface.",
-            "enabled": true,
-            "specific_groups": [],
-            "reason": "enabled_for_everyone"
-          },
-          {
-            "name": "enable_solved_shared_issues",
-            "humanized_name": "Enable solved shared issues",
-            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
             "enabled": true,
             "specific_groups": [],
             "reason": "enabled_for_everyone"
@@ -297,6 +297,14 @@
             "name": "enable_unified_new",
             "humanized_name": "Enable unified new",
             "description": "Replace the separate New and Unread lists with a single unified New list that makes it easier for members to distinguish between new topics and topics with new replies. When enabled, the /new route shows a combined view with subtabs for Topics (new topics) and Replies (tracked topics with new replies), and the unread option is removed from the top menu.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_user_menu_mentions_tab",
+            "humanized_name": "Enable user menu mentions tab",
+            "description": "Add a Mentions tab to the user menu that shows direct @username mentions separately from replies and group mentions.",
             "enabled": true,
             "specific_groups": [],
             "reason": "enabled_for_everyone"
@@ -324,6 +332,16 @@
             "enabled": false,
             "specific_groups": [],
             "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "live_enabled",
+            "humanized_name": "Live enabled",
+            "description": "Live brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "enabled": false,
+            "specific_groups": [
+              "logged_in_users"
+            ],
+            "reason": "not_in_specific_groups"
           },
           {
             "name": "modernize_foundation_theme",
@@ -366,6 +384,14 @@
             "reason": "enabled_for_everyone"
           },
           {
+            "name": "review_queue_consistent_answers",
+            "humanized_name": "Review queue consistent answers",
+            "description": "Frame every review queue question so \"Yes\" always means there is a problem, and label reviewed items \"Problem confirmed\" or \"No problem found\" for every type.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
             "name": "sidebar_user_navigation",
             "humanized_name": "Sidebar user navigation",
             "description": "Moves the navigation for user pages — profile, activity, notifications, messages, invites and preferences — out of the horizontal tab bars and into a dedicated sidebar panel, the way the admin area works. On mobile the panel is served from the hamburger menu.",
@@ -382,9 +408,9 @@
             "reason": "enabled_for_no_one"
           },
           {
-            "name": "voice_enabled",
-            "humanized_name": "Voice enabled",
-            "description": "Voice brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "name": "update_whispers_allowed_groups_default",
+            "humanized_name": "Update whispers allowed groups default",
+            "description": "We are updating the default for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=whispers_allowed_groups\" data-setting-name=\"whispers_allowed_groups\" data-setting-area=\"group_permissions\" data-setting-category=\"basic\">Whispers allowed groups</a> setting to allow staff to post whispers by default. If you have previously changed this setting, your configuration will not change unless you reset the setting.",
             "enabled": false,
             "specific_groups": [],
             "reason": "enabled_for_no_one"
@@ -472,7 +498,7 @@
           "group_id": 2,
           "created_at": "2026-10-01T10:00:00",
           "updated_at": "2026-10-01T10:00:00",
-          "first_unread_pm_at": "2026-10-08T05:49:49.391748",
+          "first_unread_pm_at": "2026-11-15T21:57:06.287999",
           "notification_level": 2
         },
         {
@@ -482,7 +508,7 @@
           "group_id": 3,
           "created_at": "2026-10-01T10:00:00",
           "updated_at": "2026-10-01T10:00:00",
-          "first_unread_pm_at": "2026-10-08T05:49:49.391748",
+          "first_unread_pm_at": "2026-11-15T21:57:06.287999",
           "notification_level": 2
         }
       ],
@@ -504,9 +530,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-07-25T05:58:06.795937",
+            "created_at": "2026-11-03T05:07:09.368508",
             "flair_icon": null,
-            "updated_at": "2026-07-25T05:58:06.80035",
+            "updated_at": "2026-11-03T05:07:09.373426",
             "user_count": 2,
             "flair_color": null,
             "imap_server": null,
@@ -558,9 +584,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-07-25T05:58:06.795937",
+            "created_at": "2026-11-03T05:07:09.368508",
             "flair_icon": null,
-            "updated_at": "2026-07-25T05:58:06.80035",
+            "updated_at": "2026-11-03T05:07:09.373426",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -614,9 +640,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-07-25T05:58:06.806819",
+            "created_at": "2026-11-03T05:07:09.379049",
             "flair_icon": null,
-            "updated_at": "2026-07-25T05:58:06.809333",
+            "updated_at": "2026-11-03T05:07:09.381914",
             "user_count": 2,
             "flair_color": null,
             "imap_server": null,
@@ -668,9 +694,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-07-25T05:58:06.806819",
+            "created_at": "2026-11-03T05:07:09.379049",
             "flair_icon": null,
-            "updated_at": "2026-07-25T05:58:06.809333",
+            "updated_at": "2026-11-03T05:07:09.381914",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -720,33 +746,33 @@
       "updated": [
         {
           "before": {
-            "id": 135,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "RITUBMOjVWzlH43mNLL0s0PkMDs=",
-            "created_at": "2026-10-08T05:49:49.706496",
-            "rotated_at": "2026-10-08T05:49:49.706291",
-            "updated_at": "2026-10-08T05:49:49.706496",
+            "auth_token": "ZJOYg7gUXjEoM2QQjI4IA1nLuEg=",
+            "created_at": "2026-11-15T21:57:08.240708",
+            "rotated_at": "2026-11-15T21:57:08.235503",
+            "updated_at": "2026-11-15T21:57:08.240708",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "RITUBMOjVWzlH43mNLL0s0PkMDs=",
+            "prev_auth_token": "ZJOYg7gUXjEoM2QQjI4IA1nLuEg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 135,
-            "seen_at": "2026-10-08T05:49:50.168099",
+            "id": 14,
+            "seen_at": "2026-11-15T21:57:10.940493",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "RITUBMOjVWzlH43mNLL0s0PkMDs=",
-            "created_at": "2026-10-08T05:49:49.706496",
-            "rotated_at": "2026-10-08T05:49:49.706291",
-            "updated_at": "2026-10-08T05:49:49.706496",
+            "auth_token": "ZJOYg7gUXjEoM2QQjI4IA1nLuEg=",
+            "created_at": "2026-11-15T21:57:08.240708",
+            "rotated_at": "2026-11-15T21:57:08.235503",
+            "updated_at": "2026-11-15T21:57:08.240708",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "RITUBMOjVWzlH43mNLL0s0PkMDs=",
+            "prev_auth_token": "ZJOYg7gUXjEoM2QQjI4IA1nLuEg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -757,7 +783,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 35,
           "context": null,
@@ -767,9 +793,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-08T05:49:50.207511",
+          "created_at": "2026-11-15T21:57:11.134629",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-08T05:49:50.207511",
+          "updated_at": "2026-11-15T21:57:11.134629",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -798,25 +825,25 @@
             "approved": false,
             "username": "user0",
             "moderator": true,
-            "created_at": "2026-07-25T05:59:15.831079",
+            "created_at": "2026-11-03T05:08:00.105147",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-01T15:39:52.016889",
+            "updated_at": "2026-11-15T19:20:01.297303",
             "approved_at": null,
             "trust_level": 1,
-            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "last_seen_at": "2026-11-15T19:40:02.187657",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "first_seen_at": "2026-11-15T19:40:02.187657",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "last_posted_at": "2026-11-15T19:20:01.206739",
             "suspended_till": null,
             "username_lower": "user0",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "previous_visit_at": null,
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -838,25 +865,25 @@
             "approved": false,
             "username": "user0",
             "moderator": false,
-            "created_at": "2026-07-25T05:59:15.831079",
+            "created_at": "2026-11-03T05:08:00.105147",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-10-08T05:49:50.177676",
+            "updated_at": "2026-11-15T21:57:10.999842",
             "approved_at": null,
             "trust_level": 1,
-            "last_seen_at": "2026-10-01T22:32:51.475256",
+            "last_seen_at": "2026-11-15T19:40:02.187657",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-10-01T06:40:59.592885",
+            "first_seen_at": "2026-11-15T19:40:02.187657",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "last_posted_at": "2026-11-15T19:20:01.206739",
             "suspended_till": null,
             "username_lower": "user0",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": "2026-10-01T15:44:57.254251",
+            "previous_visit_at": null,
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -892,6 +919,9 @@
       }
     ]
   ],
+  "next_ids": {
+    "user_histories": 68
+  },
   "setup": [
     "UPDATE users SET moderator = TRUE WHERE id = 2",
     "INSERT INTO group_users (group_id, user_id, created_at, updated_at) VALUES (2, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00'), (3, 2, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
@@ -899,7 +929,7 @@
   ],
   "recorded_from": {
     "case": "2df93666c22f9b5c869511e20779e33b9f2509b1fa68124f46af968b0a7bb360",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

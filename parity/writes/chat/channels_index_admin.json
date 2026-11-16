@@ -7,8 +7,8 @@
       "path": "/chat/api/channels.json"
     }
   ],
-  "started_at": "2026-10-09T18:05:12.8302",
-  "transaction_started_at": "2026-10-09T18:05:11.828863",
+  "started_at": "2026-11-15T22:31:46.988899",
+  "transaction_started_at": "2026-11-15T22:31:46.171103",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
               "emoji": "thought_balloon",
               "slug": "site-feedback",
               "topic_count": 1,
-              "post_count": 1,
+              "post_count": 0,
               "position": 1,
               "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
               "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
@@ -100,7 +100,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-10-09T18:05:12+00:00",
+              "created_at": "2026-11-15T22:31:47+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -123,7 +123,7 @@
               "emoji": "blue_book",
               "slug": "general",
               "topic_count": 3,
-              "post_count": 6,
+              "post_count": 1,
               "position": 3,
               "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
               "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -176,10 +176,11 @@
             "current_user_membership": {
               "following": true,
               "muted": false,
+              "muted_until": null,
               "notification_level": "mention",
               "chat_channel_id": 2,
               "last_read_message_id": null,
-              "last_viewed_at": "2026-10-01T15:42:53.424Z",
+              "last_viewed_at": "2026-11-15T19:40:02.336Z",
               "last_viewed_pins_at": null,
               "starred": false,
               "has_unseen_pins": false
@@ -206,7 +207,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-10-09T18:05:12+00:00",
+              "created_at": "2026-11-15T22:31:47+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -282,10 +283,11 @@
             "current_user_membership": {
               "following": true,
               "muted": false,
+              "muted_until": null,
               "notification_level": "mention",
               "chat_channel_id": 1,
               "last_read_message_id": null,
-              "last_viewed_at": "2026-10-01T15:42:53.424Z",
+              "last_viewed_at": "2026-11-15T19:40:02.336Z",
               "last_viewed_pins_at": null,
               "starred": false,
               "has_unseen_pins": false
@@ -312,7 +314,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-10-09T18:05:12+00:00",
+              "created_at": "2026-11-15T22:31:47+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -335,7 +337,7 @@
               "emoji": null,
               "slug": "sub-general",
               "topic_count": 1,
-              "post_count": 1,
+              "post_count": 0,
               "position": 4,
               "description": null,
               "description_text": null,
@@ -410,7 +412,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-10-09T18:05:12+00:00",
+              "created_at": "2026-11-15T22:31:47+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -433,33 +435,33 @@
       "updated": [
         {
           "before": {
-            "id": 395,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "0nnJEqJYiImb3fWl/vKWPiMuISA=",
-            "created_at": "2026-10-09T18:05:12.321448",
-            "rotated_at": "2026-10-09T18:05:12.321172",
-            "updated_at": "2026-10-09T18:05:12.321448",
+            "auth_token": "gjA3lwdp5jSVjPnzqVdu6n256pg=",
+            "created_at": "2026-11-15T22:31:46.500321",
+            "rotated_at": "2026-11-15T22:31:46.499446",
+            "updated_at": "2026-11-15T22:31:46.500321",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "0nnJEqJYiImb3fWl/vKWPiMuISA=",
+            "prev_auth_token": "gjA3lwdp5jSVjPnzqVdu6n256pg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 395,
-            "seen_at": "2026-10-09T18:05:12.838799",
+            "id": 14,
+            "seen_at": "2026-11-15T22:31:46.995813",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "0nnJEqJYiImb3fWl/vKWPiMuISA=",
-            "created_at": "2026-10-09T18:05:12.321448",
-            "rotated_at": "2026-10-09T18:05:12.321172",
-            "updated_at": "2026-10-09T18:05:12.321448",
+            "auth_token": "gjA3lwdp5jSVjPnzqVdu6n256pg=",
+            "created_at": "2026-11-15T22:31:46.500321",
+            "rotated_at": "2026-11-15T22:31:46.499446",
+            "updated_at": "2026-11-15T22:31:46.500321",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "0nnJEqJYiImb3fWl/vKWPiMuISA=",
+            "prev_auth_token": "gjA3lwdp5jSVjPnzqVdu6n256pg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -477,7 +479,7 @@
   ],
   "recorded_from": {
     "case": "5dd5d99f322d997c1f4760a618c3acd8cadccdb5db681763615b0bc01f895b28",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

@@ -103,34 +103,6 @@ pub(crate) fn invalid_access_with(state: &AppState, message_key: &str) -> Respon
         .into_response()
 }
 
-/// `invalid_access_with` raised inside a controller, which for topics#show
-/// adds the not-found page (403, no current user) as extras.
-pub(crate) async fn invalid_access_at(
-    state: &AppState,
-    message_key: &str,
-    method: &axum::http::Method,
-    path: &str,
-) -> Result<Response, crate::AppError> {
-    let slug = match crate::not_found_page::topic_show_slug(path) {
-        Some(slug) if method == axum::http::Method::GET => slug,
-        _ => return Ok(invalid_access_with(state, message_key)),
-    };
-    let anonymous = crate::guardian::Guardian::anonymous();
-    // The API key refusal names its message (custom_message).
-    let custom = (message_key == "invalid_api_credentials").then_some(message_key);
-    let extras = super::topics::not_found_extras(state, &anonymous, &slug, true, custom).await?;
-    let text = state
-        .i18n
-        .t(message_key)
-        .unwrap_or("You are not permitted to view the requested resource.");
-    Ok((
-        StatusCode::FORBIDDEN,
-        [(header::CACHE_CONTROL, "no-cache, no-store")],
-        Json(json!({"errors": [text], "error_type": "invalid_access", "extras": extras})),
-    )
-        .into_response())
-}
-
 /// `rate_limit_search`: per user a minute, or for anonymous searches per
 /// IP and site-wide, a second and a minute, in that order. A refusal is
 /// a 429 with failed_json and slow_down.

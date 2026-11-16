@@ -1,15 +1,31 @@
 {
   "user": "user1",
+  "not_yet": "0a264785d1d (Discourse): a chat channel as the homepage (register_homepage, homepage_options); not ported",
   "settings": {
     "external_system_avatars_url": "",
     "show_user_menu_avatars": true
   },
   "requests": [
-    { "method": "GET", "path": "/u/user2.json" },
-    { "method": "GET", "path": "/u/admin.json" },
-    { "method": "GET", "path": "/u/system.json" },
-    { "method": "GET", "path": "/latest.json" },
-    { "method": "GET", "path": "/site.json" }
+    {
+      "method": "GET",
+      "path": "/u/user2.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/admin.json"
+    },
+    {
+      "method": "GET",
+      "path": "/u/system.json"
+    },
+    {
+      "method": "GET",
+      "path": "/latest.json"
+    },
+    {
+      "method": "GET",
+      "path": "/site.json"
+    }
   ],
   "ignore": [
     "/responses/4/body/markdown_additional_options",

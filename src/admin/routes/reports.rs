@@ -491,12 +491,6 @@ async fn page(
     } else {
         Vec::new()
     };
-    let hidden = shell
-        .settings
-        .get("dashboard_hidden_reports")?
-        .to_s()
-        .split('|')
-        .any(|v| !v.is_empty() && v == kind);
     // The route's backLink: the dashboard when the page came from there.
     let base = shell.site.base_path.clone();
     let from_dashboard = headers
@@ -547,7 +541,6 @@ async fn page(
         start_date: &start_date,
         end_date: &end_date,
         custom_filters: custom_filters.as_ref(),
-        hidden,
         admin: guardian.is_admin(),
         back,
         groups: &groups,

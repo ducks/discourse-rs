@@ -38,6 +38,10 @@ pub struct Case {
     pub login: Option<String>,
     /// `body=k=v&k=v`: a form body for POST/DELETE.
     pub body: Option<String>,
+    /// `not_yet=<commit>[,<commit>]`: the Discourse commits whose change
+    /// the port lacks. The golden replay expects such a case to differ and
+    /// fails once it matches, as a write case's `not_yet` does.
+    pub not_yet: Option<String>,
 }
 
 impl Case {
@@ -75,7 +79,8 @@ impl Case {
 }
 
 /// Parses the cases file: one `METHOD /path [ignore=/ptr,/ptr]
-/// [unordered=/ptr,/ptr] [as=user] [body=form]` per line,
+/// [unordered=/ptr,/ptr] [as=user] [body=form] [not_yet=commit,commit]`
+/// per line,
 /// blank lines and `#` comments skipped.
 pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
     let mut cases: Vec<Case> = Vec::new();
@@ -106,7 +111,15 @@ pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
         let mut unordered = Vec::new();
         let mut login = None;
         let mut body = None;
+        let mut not_yet = None;
         for opt in parts {
+            if let Some(commits) = opt.strip_prefix("not_yet=") {
+                if commits.is_empty() {
+                    return Err(format!("line {lineno}: not_yet= names no commit"));
+                }
+                not_yet = Some(commits.to_string());
+                continue;
+            }
             if let Some(user) = opt.strip_prefix("as=") {
                 login = Some(user.to_string());
                 continue;
@@ -144,6 +157,7 @@ pub fn parse_cases(src: &str) -> Result<Vec<Case>, String> {
             unordered,
             login,
             body,
+            not_yet,
         };
         if let Some(dup) = cases.iter().find(|c| c.golden_name() == case.golden_name()) {
             return Err(format!(
@@ -728,6 +742,7 @@ mod tests {
             unordered: vec![],
             login: None,
             body: None,
+            not_yet: None,
         }
     }
 
@@ -754,6 +769,16 @@ mod tests {
             cases[1].ignore,
             vec!["/topic_list/topics/*/bumped_at", "/x"]
         );
+    }
+
+    #[test]
+    fn parses_not_yet_commits() {
+        let cases =
+            parse_cases("GET /site.json not_yet=0a264785d1d,899c68d783e\nGET /x\n").unwrap();
+        assert_eq!(cases[0].not_yet.as_deref(), Some("0a264785d1d,899c68d783e"));
+        assert_eq!(cases[0].golden_name(), "get_site_json.json");
+        assert_eq!(cases[1].not_yet, None);
+        assert!(parse_cases("GET /x not_yet=").is_err());
     }
 
     #[test]
@@ -795,6 +820,7 @@ mod tests {
             unordered: vec![],
             login: None,
             body: None,
+            not_yet: None,
         };
         assert_eq!(c.golden_name(), "get_srv_status_cluster_a_b.json");
         let c = parse_cases("POST /session as=user1 body=login=x&password=y")

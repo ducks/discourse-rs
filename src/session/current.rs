@@ -566,9 +566,11 @@ pub async fn layer(
             Ok(_) if path.starts_with("/admin/") => {
                 return Ok(crate::routes::not_found_response(&state));
             }
+            // An authentication failure: no not-found page as extras
+            // (f0a2d01aaee).
             Ok(key) if json => {
                 drop(conn);
-                return crate::routes::invalid_access_at(&state, key, &method, &path).await;
+                return Ok(crate::routes::invalid_access_with(&state, key));
             }
             Ok(key) => {
                 let text = state

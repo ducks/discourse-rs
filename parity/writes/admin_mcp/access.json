@@ -72,8 +72,8 @@
       "path": "/admin/mcp/access.json"
     }
   ],
-  "started_at": "2026-10-17T08:35:31.973425",
-  "transaction_started_at": "2026-10-17T08:35:29.106483",
+  "started_at": "2026-11-15T21:45:18.810423",
+  "transaction_started_at": "2026-11-15T21:45:16.622722",
   "responses": [
     {
       "status": 200,
@@ -86,21 +86,30 @@
           "discourse-reactions:write",
           "discourse-solved:write",
           "discourse-topic-voting:write",
+          "mcp:categories:read",
+          "mcp:categories:write",
           "mcp:content:read",
           "mcp:content:write",
           "mcp:data-explorer:read",
           "mcp:drafts:read",
           "mcp:drafts:write",
+          "mcp:groups:read",
+          "mcp:groups:write",
           "mcp:moderation:read",
           "mcp:moderation:write",
           "mcp:private-messages:read",
           "mcp:private-messages:write",
           "mcp:profile:read",
           "mcp:profile:write",
+          "mcp:reports:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
+          "mcp:tag-groups:read",
+          "mcp:tag-groups:write",
           "mcp:themes:read",
-          "mcp:themes:write"
+          "mcp:themes:write",
+          "mcp:users:read",
+          "mcp:users:write"
         ],
         "primitives": [
           {
@@ -184,6 +193,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_category",
+            "field_name": "primitive_tool_7f4714661ed34db9",
+            "identifier": "discourse_create_category",
+            "kind": "tool",
+            "title": "Create category",
+            "description": "Creates a category and returns its ID, slug, and name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_group",
+            "field_name": "primitive_tool_2168a86badb026d6",
+            "identifier": "discourse_create_group",
+            "kind": "tool",
+            "title": "Create group",
+            "description": "Creates a group and returns its ID and name. Requires group creation rights.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_create_post",
             "field_name": "primitive_tool_db18db3d12f6441b",
             "identifier": "discourse_create_post",
@@ -210,6 +251,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_tag_group",
+            "field_name": "primitive_tool_03e3927a6b9a127c",
+            "identifier": "discourse_create_tag_group",
+            "kind": "tool",
+            "title": "Create tag group",
+            "description": "Creates a tag group. Requires staff authority and tagging enabled. Tags use ID or name selectors; synonyms resolve to original tags. Name selectors require allow_tag_creation=true and may create tags. permissions maps group IDs to full or readonly; group 0 means everyone. Omitted permissions default to everyone/full.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -248,6 +305,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_user",
+            "field_name": "primitive_tool_81dad7a5f588415d",
+            "identifier": "discourse_create_user",
+            "kind": "tool",
+            "title": "Create user",
+            "description": "Creates a user as an administrator. Registrations must be open. Supply the site's invite code if required and required user fields keyed by field ID. Missing-field errors identify the field name and ID.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_current_user_get",
             "field_name": "primitive_tool_2460f13c1aa9ca7d",
             "identifier": "discourse_current_user_get",
@@ -258,6 +331,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_category",
+            "field_name": "primitive_tool_58a8916174e79eb7",
+            "identifier": "discourse_delete_category",
+            "kind": "tool",
+            "title": "Delete category",
+            "description": "Deletes an empty category after confirming its current name.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:categories:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -280,6 +369,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_delete_group",
+            "field_name": "primitive_tool_e902e7a8868ad0ec",
+            "identifier": "discourse_delete_group",
+            "kind": "tool",
+            "title": "Delete group",
+            "description": "Deletes a group after confirming its current name. Administrators only. Automatic groups cannot be deleted.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_tag_group",
+            "field_name": "primitive_tool_72611c1faffbcec6",
+            "identifier": "discourse_delete_tag_group",
+            "kind": "tool",
+            "title": "Delete tag group",
+            "description": "Deletes a tag group and its membership, permission and category relationships, including required-tag rules. Tags and topic tags remain. Requires staff authority, tagging enabled, confirm=true and the exact current expected_name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_theme",
+            "field_name": "primitive_tool_723f0532e40f0399",
+            "identifier": "discourse_delete_theme",
+            "kind": "tool",
+            "title": "Delete theme",
+            "description": "Deletes a theme and its component links. Requires edit permission, the current name, and confirmation. Default and system themes cannot be deleted.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_filter_topics",
             "field_name": "primitive_tool_0e686b5bde2f028b",
             "identifier": "discourse_filter_topics",
@@ -290,6 +427,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_category",
+            "field_name": "primitive_tool_d13de2830c6214da",
+            "identifier": "discourse_get_category",
+            "kind": "tool",
+            "title": "Get category",
+            "description": "Reads category details needed for category management.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -322,6 +475,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_group",
+            "field_name": "primitive_tool_18e4d95fc6857eec",
+            "identifier": "discourse_get_group",
+            "kind": "tool",
+            "title": "Get group",
+            "description": "Gets safe details and caller capabilities for one visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -376,6 +545,22 @@
             "available": false
           },
           {
+            "id": "tool:discourse_get_report",
+            "field_name": "primitive_tool_fbb12ff6ea48277d",
+            "identifier": "discourse_get_report",
+            "kind": "tool",
+            "title": "Get report",
+            "description": "Retrieves one report from the caller's current report catalog. Requires staff access; admin-only reports and related items retain their normal restrictions. Dates use YYYY-MM-DD and default to the last 30 days ending on end_date or today. Date ranges cannot exceed 366 days. Filters accept scalar values or arrays, as supported by each report. limit bounds rows only where the report supports it; omitting it preserves that report's default. cache opts into the existing report cache and requires administrator access; include_related_items defaults to false. This runs registered reports, not arbitrary SQL.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_get_review_queue_count",
             "field_name": "primitive_tool_105a65acb9eb981b",
             "identifier": "discourse_get_review_queue_count",
@@ -402,6 +587,22 @@
             "risk": "moderation",
             "required_scopes": [
               "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_tag_group",
+            "field_name": "primitive_tool_810e83db62b1735b",
+            "identifier": "discourse_get_tag_group",
+            "kind": "tool",
+            "title": "Get tag group",
+            "description": "Reads tag-group configuration, including tags, parent, one-per-topic policy and permissions. Requires staff authority.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -488,6 +689,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_handle_group_membership_request",
+            "field_name": "primitive_tool_266723c0794ce65d",
+            "identifier": "discourse_handle_group_membership_request",
+            "kind": "tool",
+            "title": "Handle group membership request",
+            "description": "Approves or denies one pending membership request for a group the authenticated user may manage. Approving adds the requester to the group.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_install_theme",
+            "field_name": "primitive_tool_6c965a650b3cce5d",
+            "identifier": "discourse_install_theme",
+            "kind": "tool",
+            "title": "Install theme",
+            "description": "Installs executable theme code from exactly one repository URL or base64 archive. Requires administrator access and confirmation. Repository installs always run migrations and require confirm_run_migrations. Archive migrations are opt-in. Archive component imports default to none; merge and sync require run_migrations and confirm_run_migrations. Only archives can replace an existing theme; confirm its current name before replacement. Returns a theme summary without source code and reports any archive components that could not be imported.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_group_members",
+            "field_name": "primitive_tool_465441113fce8557",
+            "identifier": "discourse_invite_group_members",
+            "kind": "tool",
+            "title": "Invite group members by email",
+            "description": "Adds existing accounts that match an address and invites the rest to the forum with the group preassigned. Requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_invite_to_private_message",
             "field_name": "primitive_tool_f54fa0cbc0d051ca",
             "identifier": "discourse_invite_to_private_message",
@@ -520,6 +769,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_group_members",
+            "field_name": "primitive_tool_05ba0ee0d4c50634",
+            "identifier": "discourse_list_group_members",
+            "kind": "tool",
+            "title": "List group members",
+            "description": "Lists members and owners when the authenticated user may see them.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_membership_requests",
+            "field_name": "primitive_tool_d72fcacde1774179",
+            "identifier": "discourse_list_group_membership_requests",
+            "kind": "tool",
+            "title": "List group membership requests",
+            "description": "Lists pending requests for a group the authenticated user may manage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_posts",
+            "field_name": "primitive_tool_5c5636f856561243",
+            "identifier": "discourse_list_group_posts",
+            "kind": "tool",
+            "title": "List group posts",
+            "description": "Lists visible public-topic posts authored by members of a visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_groups",
+            "field_name": "primitive_tool_806f48a0a543e91f",
+            "identifier": "discourse_list_groups",
+            "kind": "tool",
+            "title": "List groups",
+            "description": "Lists groups visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_latest_posts",
             "field_name": "primitive_tool_a61ae05157131e18",
             "identifier": "discourse_list_latest_posts",
@@ -546,6 +859,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reports",
+            "field_name": "primitive_tool_45e64bd524674273",
+            "identifier": "discourse_list_reports",
+            "kind": "tool",
+            "title": "List reports",
+            "description": "Lists the caller's available Discourse reports, including enabled plugin reports. Requires staff access. Use the returned report types with discourse_get_report.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -600,6 +929,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_tag_groups",
+            "field_name": "primitive_tool_2db6c55f17ce0c25",
+            "identifier": "discourse_list_tag_groups",
+            "kind": "tool",
+            "title": "List tag groups",
+            "description": "Lists staff tag-group inventory with permissions and parent tags, ordered by name and ID. Requires staff authority. Paginate with limit and offset; reads remain available when tagging is disabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_themes",
+            "field_name": "primitive_tool_b5d51aa1896790de",
+            "identifier": "discourse_list_themes",
+            "kind": "tool",
+            "title": "List themes",
+            "description": "Lists installed themes and components. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_user_actions",
             "field_name": "primitive_tool_13f3d5b18a439b5a",
             "identifier": "discourse_list_user_actions",
@@ -626,6 +987,86 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_users",
+            "field_name": "primitive_tool_a447c1e56e396389",
+            "identifier": "discourse_list_users",
+            "kind": "tool",
+            "title": "List users",
+            "description": "Lists and filters users visible through Discourse's staff user directory.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_members",
+            "field_name": "primitive_tool_b408514c90dfb6da",
+            "identifier": "discourse_manage_group_members",
+            "kind": "tool",
+            "title": "Manage group members",
+            "description": "Adds or removes members of a group the authenticated user may manage. Provide exactly one of usernames, user_ids, or user_emails. The user_emails selector requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_membership",
+            "field_name": "primitive_tool_d9e750f0af46fadb",
+            "identifier": "discourse_manage_group_membership",
+            "kind": "tool",
+            "title": "Manage own group membership",
+            "description": "Joins a group that allows public admission, leaves a group that allows public exit, or requests membership with a reason.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_owners",
+            "field_name": "primitive_tool_b2ed746f50ba5bea",
+            "identifier": "discourse_manage_group_owners",
+            "kind": "tool",
+            "title": "Manage group owners",
+            "description": "Grants or revokes group ownership. Adding an owner also adds them as a member. Automatic groups cannot be changed.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_user_activation",
+            "field_name": "primitive_tool_5bba3abf3e738821",
+            "identifier": "discourse_manage_user_activation",
+            "kind": "tool",
+            "title": "Manage user activation",
+            "description": "Activates, approves, activates and approves, or deactivates an eligible user.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -840,6 +1281,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_tag_groups",
+            "field_name": "primitive_tool_51456312005b67e5",
+            "identifier": "discourse_search_tag_groups",
+            "kind": "tool",
+            "title": "Search tag groups",
+            "description": "Searches visible tag groups and visible member tags. Omits staff configuration. q and names combine; q supports SQL LIKE wildcards. truncated signals possible additional results.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -850,6 +1307,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_sync_remote_theme",
+            "field_name": "primitive_tool_451d034f6910fbaa",
+            "identifier": "discourse_sync_remote_theme",
+            "kind": "tool",
+            "title": "Sync remote theme",
+            "description": "Checks a theme repository for updates or installs its latest code. Requires edit permission. Updating runs migrations and requires both code and migration confirmation. Checking also updates stored remote-version metadata. Returns a theme summary. When completing a pending installation, also reports skipped components with their errors.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -904,6 +1377,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_category",
+            "field_name": "primitive_tool_b281fdf78b9ae6de",
+            "identifier": "discourse_update_category",
+            "kind": "tool",
+            "title": "Update category",
+            "description": "Updates basic details for a category.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_group",
+            "field_name": "primitive_tool_66d21dfae24afc55",
+            "identifier": "discourse_update_group",
+            "kind": "tool",
+            "title": "Update group",
+            "description": "Updates the group settings the authenticated user may change. Fields the user cannot change are ignored.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_post",
             "field_name": "primitive_tool_6394003e5b2a6e25",
             "identifier": "discourse_update_post",
@@ -936,12 +1441,60 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_tag_group",
+            "field_name": "primitive_tool_d6732f80e3ca66d0",
+            "identifier": "discourse_update_tag_group",
+            "kind": "tool",
+            "title": "Update tag group",
+            "description": "Updates supplied fields, preserving omitted fields. tags replaces all member tags; [] clears them. parent_tag=null clears the parent. permissions replaces the full permission map. Synonyms resolve to original tags. Name selectors require allow_tag_creation=true. Requires staff authority and tagging enabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_theme",
             "field_name": "primitive_tool_fdc61efa928e1c7a",
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
             "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_setting",
+            "field_name": "primitive_tool_c7da69dbdb1d869c",
+            "identifier": "discourse_update_theme_setting",
+            "kind": "tool",
+            "title": "Update theme setting",
+            "description": "Sets a declared theme setting or restores its declared default. Requires edit permission. Use pipe-separated strings for list settings and arrays of objects for object settings. Reverting requires confirm and must omit value.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_translations",
+            "field_name": "primitive_tool_d31561dc41c17f4b",
+            "identifier": "discourse_update_theme_translations",
+            "kind": "tool",
+            "title": "Update theme translations",
+            "description": "Updates declared theme translations for one locale. Requires edit permission and the current theme name. Unknown keys reject the whole batch.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -994,6 +1547,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_theme_asset",
+            "field_name": "primitive_tool_308dcce01df72ac6",
+            "identifier": "discourse_upload_theme_asset",
+            "kind": "tool",
+            "title": "Upload theme asset",
+            "description": "Uploads base64 asset data for use in a theme. Requires administrator access. Returns an unattached upload ID; use discourse_update_theme to attach it to a theme field. Site upload and MCP request-size limits apply.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1091,21 +1660,30 @@
               "discourse-reactions:write",
               "discourse-solved:write",
               "discourse-topic-voting:write",
+              "mcp:categories:read",
+              "mcp:categories:write",
               "mcp:content:read",
               "mcp:content:write",
               "mcp:data-explorer:read",
               "mcp:drafts:read",
               "mcp:drafts:write",
+              "mcp:groups:read",
+              "mcp:groups:write",
               "mcp:moderation:read",
               "mcp:moderation:write",
               "mcp:private-messages:read",
               "mcp:private-messages:write",
               "mcp:profile:read",
               "mcp:profile:write",
+              "mcp:reports:read",
               "mcp:site-settings:read",
               "mcp:site-settings:write",
+              "mcp:tag-groups:read",
+              "mcp:tag-groups:write",
               "mcp:themes:read",
-              "mcp:themes:write"
+              "mcp:themes:write",
+              "mcp:users:read",
+              "mcp:users:write"
             ],
             "pre_registered": true,
             "deletable": false
@@ -1135,21 +1713,30 @@
           "discourse-reactions:write",
           "discourse-solved:write",
           "discourse-topic-voting:write",
+          "mcp:categories:read",
+          "mcp:categories:write",
           "mcp:content:read",
           "mcp:content:write",
           "mcp:data-explorer:read",
           "mcp:drafts:read",
           "mcp:drafts:write",
+          "mcp:groups:read",
+          "mcp:groups:write",
           "mcp:moderation:read",
           "mcp:moderation:write",
           "mcp:private-messages:read",
           "mcp:private-messages:write",
           "mcp:profile:read",
           "mcp:profile:write",
+          "mcp:reports:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
+          "mcp:tag-groups:read",
+          "mcp:tag-groups:write",
           "mcp:themes:read",
-          "mcp:themes:write"
+          "mcp:themes:write",
+          "mcp:users:read",
+          "mcp:users:write"
         ],
         "primitives": [
           {
@@ -1233,6 +1820,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_category",
+            "field_name": "primitive_tool_7f4714661ed34db9",
+            "identifier": "discourse_create_category",
+            "kind": "tool",
+            "title": "Create category",
+            "description": "Creates a category and returns its ID, slug, and name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_group",
+            "field_name": "primitive_tool_2168a86badb026d6",
+            "identifier": "discourse_create_group",
+            "kind": "tool",
+            "title": "Create group",
+            "description": "Creates a group and returns its ID and name. Requires group creation rights.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_create_post",
             "field_name": "primitive_tool_db18db3d12f6441b",
             "identifier": "discourse_create_post",
@@ -1259,6 +1878,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_tag_group",
+            "field_name": "primitive_tool_03e3927a6b9a127c",
+            "identifier": "discourse_create_tag_group",
+            "kind": "tool",
+            "title": "Create tag group",
+            "description": "Creates a tag group. Requires staff authority and tagging enabled. Tags use ID or name selectors; synonyms resolve to original tags. Name selectors require allow_tag_creation=true and may create tags. permissions maps group IDs to full or readonly; group 0 means everyone. Omitted permissions default to everyone/full.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1297,6 +1932,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_user",
+            "field_name": "primitive_tool_81dad7a5f588415d",
+            "identifier": "discourse_create_user",
+            "kind": "tool",
+            "title": "Create user",
+            "description": "Creates a user as an administrator. Registrations must be open. Supply the site's invite code if required and required user fields keyed by field ID. Missing-field errors identify the field name and ID.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_current_user_get",
             "field_name": "primitive_tool_2460f13c1aa9ca7d",
             "identifier": "discourse_current_user_get",
@@ -1307,6 +1958,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_category",
+            "field_name": "primitive_tool_58a8916174e79eb7",
+            "identifier": "discourse_delete_category",
+            "kind": "tool",
+            "title": "Delete category",
+            "description": "Deletes an empty category after confirming its current name.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:categories:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1329,6 +1996,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_delete_group",
+            "field_name": "primitive_tool_e902e7a8868ad0ec",
+            "identifier": "discourse_delete_group",
+            "kind": "tool",
+            "title": "Delete group",
+            "description": "Deletes a group after confirming its current name. Administrators only. Automatic groups cannot be deleted.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_tag_group",
+            "field_name": "primitive_tool_72611c1faffbcec6",
+            "identifier": "discourse_delete_tag_group",
+            "kind": "tool",
+            "title": "Delete tag group",
+            "description": "Deletes a tag group and its membership, permission and category relationships, including required-tag rules. Tags and topic tags remain. Requires staff authority, tagging enabled, confirm=true and the exact current expected_name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_theme",
+            "field_name": "primitive_tool_723f0532e40f0399",
+            "identifier": "discourse_delete_theme",
+            "kind": "tool",
+            "title": "Delete theme",
+            "description": "Deletes a theme and its component links. Requires edit permission, the current name, and confirmation. Default and system themes cannot be deleted.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_filter_topics",
             "field_name": "primitive_tool_0e686b5bde2f028b",
             "identifier": "discourse_filter_topics",
@@ -1339,6 +2054,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_category",
+            "field_name": "primitive_tool_d13de2830c6214da",
+            "identifier": "discourse_get_category",
+            "kind": "tool",
+            "title": "Get category",
+            "description": "Reads category details needed for category management.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1371,6 +2102,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_group",
+            "field_name": "primitive_tool_18e4d95fc6857eec",
+            "identifier": "discourse_get_group",
+            "kind": "tool",
+            "title": "Get group",
+            "description": "Gets safe details and caller capabilities for one visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1425,6 +2172,22 @@
             "available": false
           },
           {
+            "id": "tool:discourse_get_report",
+            "field_name": "primitive_tool_fbb12ff6ea48277d",
+            "identifier": "discourse_get_report",
+            "kind": "tool",
+            "title": "Get report",
+            "description": "Retrieves one report from the caller's current report catalog. Requires staff access; admin-only reports and related items retain their normal restrictions. Dates use YYYY-MM-DD and default to the last 30 days ending on end_date or today. Date ranges cannot exceed 366 days. Filters accept scalar values or arrays, as supported by each report. limit bounds rows only where the report supports it; omitting it preserves that report's default. cache opts into the existing report cache and requires administrator access; include_related_items defaults to false. This runs registered reports, not arbitrary SQL.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_get_review_queue_count",
             "field_name": "primitive_tool_105a65acb9eb981b",
             "identifier": "discourse_get_review_queue_count",
@@ -1451,6 +2214,22 @@
             "risk": "moderation",
             "required_scopes": [
               "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_tag_group",
+            "field_name": "primitive_tool_810e83db62b1735b",
+            "identifier": "discourse_get_tag_group",
+            "kind": "tool",
+            "title": "Get tag group",
+            "description": "Reads tag-group configuration, including tags, parent, one-per-topic policy and permissions. Requires staff authority.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1537,6 +2316,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_handle_group_membership_request",
+            "field_name": "primitive_tool_266723c0794ce65d",
+            "identifier": "discourse_handle_group_membership_request",
+            "kind": "tool",
+            "title": "Handle group membership request",
+            "description": "Approves or denies one pending membership request for a group the authenticated user may manage. Approving adds the requester to the group.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_install_theme",
+            "field_name": "primitive_tool_6c965a650b3cce5d",
+            "identifier": "discourse_install_theme",
+            "kind": "tool",
+            "title": "Install theme",
+            "description": "Installs executable theme code from exactly one repository URL or base64 archive. Requires administrator access and confirmation. Repository installs always run migrations and require confirm_run_migrations. Archive migrations are opt-in. Archive component imports default to none; merge and sync require run_migrations and confirm_run_migrations. Only archives can replace an existing theme; confirm its current name before replacement. Returns a theme summary without source code and reports any archive components that could not be imported.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_group_members",
+            "field_name": "primitive_tool_465441113fce8557",
+            "identifier": "discourse_invite_group_members",
+            "kind": "tool",
+            "title": "Invite group members by email",
+            "description": "Adds existing accounts that match an address and invites the rest to the forum with the group preassigned. Requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_invite_to_private_message",
             "field_name": "primitive_tool_f54fa0cbc0d051ca",
             "identifier": "discourse_invite_to_private_message",
@@ -1569,6 +2396,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_group_members",
+            "field_name": "primitive_tool_05ba0ee0d4c50634",
+            "identifier": "discourse_list_group_members",
+            "kind": "tool",
+            "title": "List group members",
+            "description": "Lists members and owners when the authenticated user may see them.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_membership_requests",
+            "field_name": "primitive_tool_d72fcacde1774179",
+            "identifier": "discourse_list_group_membership_requests",
+            "kind": "tool",
+            "title": "List group membership requests",
+            "description": "Lists pending requests for a group the authenticated user may manage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_posts",
+            "field_name": "primitive_tool_5c5636f856561243",
+            "identifier": "discourse_list_group_posts",
+            "kind": "tool",
+            "title": "List group posts",
+            "description": "Lists visible public-topic posts authored by members of a visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_groups",
+            "field_name": "primitive_tool_806f48a0a543e91f",
+            "identifier": "discourse_list_groups",
+            "kind": "tool",
+            "title": "List groups",
+            "description": "Lists groups visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_latest_posts",
             "field_name": "primitive_tool_a61ae05157131e18",
             "identifier": "discourse_list_latest_posts",
@@ -1595,6 +2486,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reports",
+            "field_name": "primitive_tool_45e64bd524674273",
+            "identifier": "discourse_list_reports",
+            "kind": "tool",
+            "title": "List reports",
+            "description": "Lists the caller's available Discourse reports, including enabled plugin reports. Requires staff access. Use the returned report types with discourse_get_report.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1649,6 +2556,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_tag_groups",
+            "field_name": "primitive_tool_2db6c55f17ce0c25",
+            "identifier": "discourse_list_tag_groups",
+            "kind": "tool",
+            "title": "List tag groups",
+            "description": "Lists staff tag-group inventory with permissions and parent tags, ordered by name and ID. Requires staff authority. Paginate with limit and offset; reads remain available when tagging is disabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_themes",
+            "field_name": "primitive_tool_b5d51aa1896790de",
+            "identifier": "discourse_list_themes",
+            "kind": "tool",
+            "title": "List themes",
+            "description": "Lists installed themes and components. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_user_actions",
             "field_name": "primitive_tool_13f3d5b18a439b5a",
             "identifier": "discourse_list_user_actions",
@@ -1675,6 +2614,86 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_users",
+            "field_name": "primitive_tool_a447c1e56e396389",
+            "identifier": "discourse_list_users",
+            "kind": "tool",
+            "title": "List users",
+            "description": "Lists and filters users visible through Discourse's staff user directory.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_members",
+            "field_name": "primitive_tool_b408514c90dfb6da",
+            "identifier": "discourse_manage_group_members",
+            "kind": "tool",
+            "title": "Manage group members",
+            "description": "Adds or removes members of a group the authenticated user may manage. Provide exactly one of usernames, user_ids, or user_emails. The user_emails selector requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_membership",
+            "field_name": "primitive_tool_d9e750f0af46fadb",
+            "identifier": "discourse_manage_group_membership",
+            "kind": "tool",
+            "title": "Manage own group membership",
+            "description": "Joins a group that allows public admission, leaves a group that allows public exit, or requests membership with a reason.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_owners",
+            "field_name": "primitive_tool_b2ed746f50ba5bea",
+            "identifier": "discourse_manage_group_owners",
+            "kind": "tool",
+            "title": "Manage group owners",
+            "description": "Grants or revokes group ownership. Adding an owner also adds them as a member. Automatic groups cannot be changed.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_user_activation",
+            "field_name": "primitive_tool_5bba3abf3e738821",
+            "identifier": "discourse_manage_user_activation",
+            "kind": "tool",
+            "title": "Manage user activation",
+            "description": "Activates, approves, activates and approves, or deactivates an eligible user.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1889,6 +2908,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_tag_groups",
+            "field_name": "primitive_tool_51456312005b67e5",
+            "identifier": "discourse_search_tag_groups",
+            "kind": "tool",
+            "title": "Search tag groups",
+            "description": "Searches visible tag groups and visible member tags. Omits staff configuration. q and names combine; q supports SQL LIKE wildcards. truncated signals possible additional results.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -1899,6 +2934,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_sync_remote_theme",
+            "field_name": "primitive_tool_451d034f6910fbaa",
+            "identifier": "discourse_sync_remote_theme",
+            "kind": "tool",
+            "title": "Sync remote theme",
+            "description": "Checks a theme repository for updates or installs its latest code. Requires edit permission. Updating runs migrations and requires both code and migration confirmation. Checking also updates stored remote-version metadata. Returns a theme summary. When completing a pending installation, also reports skipped components with their errors.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1953,6 +3004,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_category",
+            "field_name": "primitive_tool_b281fdf78b9ae6de",
+            "identifier": "discourse_update_category",
+            "kind": "tool",
+            "title": "Update category",
+            "description": "Updates basic details for a category.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_group",
+            "field_name": "primitive_tool_66d21dfae24afc55",
+            "identifier": "discourse_update_group",
+            "kind": "tool",
+            "title": "Update group",
+            "description": "Updates the group settings the authenticated user may change. Fields the user cannot change are ignored.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_post",
             "field_name": "primitive_tool_6394003e5b2a6e25",
             "identifier": "discourse_update_post",
@@ -1985,12 +3068,60 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_tag_group",
+            "field_name": "primitive_tool_d6732f80e3ca66d0",
+            "identifier": "discourse_update_tag_group",
+            "kind": "tool",
+            "title": "Update tag group",
+            "description": "Updates supplied fields, preserving omitted fields. tags replaces all member tags; [] clears them. parent_tag=null clears the parent. permissions replaces the full permission map. Synonyms resolve to original tags. Name selectors require allow_tag_creation=true. Requires staff authority and tagging enabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_theme",
             "field_name": "primitive_tool_fdc61efa928e1c7a",
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
             "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_setting",
+            "field_name": "primitive_tool_c7da69dbdb1d869c",
+            "identifier": "discourse_update_theme_setting",
+            "kind": "tool",
+            "title": "Update theme setting",
+            "description": "Sets a declared theme setting or restores its declared default. Requires edit permission. Use pipe-separated strings for list settings and arrays of objects for object settings. Reverting requires confirm and must omit value.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_translations",
+            "field_name": "primitive_tool_d31561dc41c17f4b",
+            "identifier": "discourse_update_theme_translations",
+            "kind": "tool",
+            "title": "Update theme translations",
+            "description": "Updates declared theme translations for one locale. Requires edit permission and the current theme name. Unknown keys reject the whole batch.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -2043,6 +3174,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_theme_asset",
+            "field_name": "primitive_tool_308dcce01df72ac6",
+            "identifier": "discourse_upload_theme_asset",
+            "kind": "tool",
+            "title": "Upload theme asset",
+            "description": "Uploads base64 asset data for use in a theme. Requires administrator access. Returns an unattached upload ID; use discourse_update_theme to attach it to a theme field. Site upload and MCP request-size limits apply.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2140,21 +3287,30 @@
               "discourse-reactions:write",
               "discourse-solved:write",
               "discourse-topic-voting:write",
+              "mcp:categories:read",
+              "mcp:categories:write",
               "mcp:content:read",
               "mcp:content:write",
               "mcp:data-explorer:read",
               "mcp:drafts:read",
               "mcp:drafts:write",
+              "mcp:groups:read",
+              "mcp:groups:write",
               "mcp:moderation:read",
               "mcp:moderation:write",
               "mcp:private-messages:read",
               "mcp:private-messages:write",
               "mcp:profile:read",
               "mcp:profile:write",
+              "mcp:reports:read",
               "mcp:site-settings:read",
               "mcp:site-settings:write",
+              "mcp:tag-groups:read",
+              "mcp:tag-groups:write",
               "mcp:themes:read",
-              "mcp:themes:write"
+              "mcp:themes:write",
+              "mcp:users:read",
+              "mcp:users:write"
             ],
             "pre_registered": true,
             "deletable": false
@@ -2231,21 +3387,30 @@
           "discourse-reactions:write",
           "discourse-solved:write",
           "discourse-topic-voting:write",
+          "mcp:categories:read",
+          "mcp:categories:write",
           "mcp:content:read",
           "mcp:content:write",
           "mcp:data-explorer:read",
           "mcp:drafts:read",
           "mcp:drafts:write",
+          "mcp:groups:read",
+          "mcp:groups:write",
           "mcp:moderation:read",
           "mcp:moderation:write",
           "mcp:private-messages:read",
           "mcp:private-messages:write",
           "mcp:profile:read",
           "mcp:profile:write",
+          "mcp:reports:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
+          "mcp:tag-groups:read",
+          "mcp:tag-groups:write",
           "mcp:themes:read",
-          "mcp:themes:write"
+          "mcp:themes:write",
+          "mcp:users:read",
+          "mcp:users:write"
         ],
         "primitives": [
           {
@@ -2329,6 +3494,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_category",
+            "field_name": "primitive_tool_7f4714661ed34db9",
+            "identifier": "discourse_create_category",
+            "kind": "tool",
+            "title": "Create category",
+            "description": "Creates a category and returns its ID, slug, and name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_group",
+            "field_name": "primitive_tool_2168a86badb026d6",
+            "identifier": "discourse_create_group",
+            "kind": "tool",
+            "title": "Create group",
+            "description": "Creates a group and returns its ID and name. Requires group creation rights.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_create_post",
             "field_name": "primitive_tool_db18db3d12f6441b",
             "identifier": "discourse_create_post",
@@ -2355,6 +3552,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_tag_group",
+            "field_name": "primitive_tool_03e3927a6b9a127c",
+            "identifier": "discourse_create_tag_group",
+            "kind": "tool",
+            "title": "Create tag group",
+            "description": "Creates a tag group. Requires staff authority and tagging enabled. Tags use ID or name selectors; synonyms resolve to original tags. Name selectors require allow_tag_creation=true and may create tags. permissions maps group IDs to full or readonly; group 0 means everyone. Omitted permissions default to everyone/full.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2393,6 +3606,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_user",
+            "field_name": "primitive_tool_81dad7a5f588415d",
+            "identifier": "discourse_create_user",
+            "kind": "tool",
+            "title": "Create user",
+            "description": "Creates a user as an administrator. Registrations must be open. Supply the site's invite code if required and required user fields keyed by field ID. Missing-field errors identify the field name and ID.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_current_user_get",
             "field_name": "primitive_tool_2460f13c1aa9ca7d",
             "identifier": "discourse_current_user_get",
@@ -2403,6 +3632,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_category",
+            "field_name": "primitive_tool_58a8916174e79eb7",
+            "identifier": "discourse_delete_category",
+            "kind": "tool",
+            "title": "Delete category",
+            "description": "Deletes an empty category after confirming its current name.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:categories:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2425,6 +3670,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_delete_group",
+            "field_name": "primitive_tool_e902e7a8868ad0ec",
+            "identifier": "discourse_delete_group",
+            "kind": "tool",
+            "title": "Delete group",
+            "description": "Deletes a group after confirming its current name. Administrators only. Automatic groups cannot be deleted.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_tag_group",
+            "field_name": "primitive_tool_72611c1faffbcec6",
+            "identifier": "discourse_delete_tag_group",
+            "kind": "tool",
+            "title": "Delete tag group",
+            "description": "Deletes a tag group and its membership, permission and category relationships, including required-tag rules. Tags and topic tags remain. Requires staff authority, tagging enabled, confirm=true and the exact current expected_name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_theme",
+            "field_name": "primitive_tool_723f0532e40f0399",
+            "identifier": "discourse_delete_theme",
+            "kind": "tool",
+            "title": "Delete theme",
+            "description": "Deletes a theme and its component links. Requires edit permission, the current name, and confirmation. Default and system themes cannot be deleted.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_filter_topics",
             "field_name": "primitive_tool_0e686b5bde2f028b",
             "identifier": "discourse_filter_topics",
@@ -2435,6 +3728,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_category",
+            "field_name": "primitive_tool_d13de2830c6214da",
+            "identifier": "discourse_get_category",
+            "kind": "tool",
+            "title": "Get category",
+            "description": "Reads category details needed for category management.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2467,6 +3776,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_group",
+            "field_name": "primitive_tool_18e4d95fc6857eec",
+            "identifier": "discourse_get_group",
+            "kind": "tool",
+            "title": "Get group",
+            "description": "Gets safe details and caller capabilities for one visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2521,6 +3846,22 @@
             "available": false
           },
           {
+            "id": "tool:discourse_get_report",
+            "field_name": "primitive_tool_fbb12ff6ea48277d",
+            "identifier": "discourse_get_report",
+            "kind": "tool",
+            "title": "Get report",
+            "description": "Retrieves one report from the caller's current report catalog. Requires staff access; admin-only reports and related items retain their normal restrictions. Dates use YYYY-MM-DD and default to the last 30 days ending on end_date or today. Date ranges cannot exceed 366 days. Filters accept scalar values or arrays, as supported by each report. limit bounds rows only where the report supports it; omitting it preserves that report's default. cache opts into the existing report cache and requires administrator access; include_related_items defaults to false. This runs registered reports, not arbitrary SQL.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_get_review_queue_count",
             "field_name": "primitive_tool_105a65acb9eb981b",
             "identifier": "discourse_get_review_queue_count",
@@ -2547,6 +3888,22 @@
             "risk": "moderation",
             "required_scopes": [
               "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_tag_group",
+            "field_name": "primitive_tool_810e83db62b1735b",
+            "identifier": "discourse_get_tag_group",
+            "kind": "tool",
+            "title": "Get tag group",
+            "description": "Reads tag-group configuration, including tags, parent, one-per-topic policy and permissions. Requires staff authority.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2633,6 +3990,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_handle_group_membership_request",
+            "field_name": "primitive_tool_266723c0794ce65d",
+            "identifier": "discourse_handle_group_membership_request",
+            "kind": "tool",
+            "title": "Handle group membership request",
+            "description": "Approves or denies one pending membership request for a group the authenticated user may manage. Approving adds the requester to the group.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_install_theme",
+            "field_name": "primitive_tool_6c965a650b3cce5d",
+            "identifier": "discourse_install_theme",
+            "kind": "tool",
+            "title": "Install theme",
+            "description": "Installs executable theme code from exactly one repository URL or base64 archive. Requires administrator access and confirmation. Repository installs always run migrations and require confirm_run_migrations. Archive migrations are opt-in. Archive component imports default to none; merge and sync require run_migrations and confirm_run_migrations. Only archives can replace an existing theme; confirm its current name before replacement. Returns a theme summary without source code and reports any archive components that could not be imported.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_group_members",
+            "field_name": "primitive_tool_465441113fce8557",
+            "identifier": "discourse_invite_group_members",
+            "kind": "tool",
+            "title": "Invite group members by email",
+            "description": "Adds existing accounts that match an address and invites the rest to the forum with the group preassigned. Requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_invite_to_private_message",
             "field_name": "primitive_tool_f54fa0cbc0d051ca",
             "identifier": "discourse_invite_to_private_message",
@@ -2665,6 +4070,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_group_members",
+            "field_name": "primitive_tool_05ba0ee0d4c50634",
+            "identifier": "discourse_list_group_members",
+            "kind": "tool",
+            "title": "List group members",
+            "description": "Lists members and owners when the authenticated user may see them.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_membership_requests",
+            "field_name": "primitive_tool_d72fcacde1774179",
+            "identifier": "discourse_list_group_membership_requests",
+            "kind": "tool",
+            "title": "List group membership requests",
+            "description": "Lists pending requests for a group the authenticated user may manage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_posts",
+            "field_name": "primitive_tool_5c5636f856561243",
+            "identifier": "discourse_list_group_posts",
+            "kind": "tool",
+            "title": "List group posts",
+            "description": "Lists visible public-topic posts authored by members of a visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_groups",
+            "field_name": "primitive_tool_806f48a0a543e91f",
+            "identifier": "discourse_list_groups",
+            "kind": "tool",
+            "title": "List groups",
+            "description": "Lists groups visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_latest_posts",
             "field_name": "primitive_tool_a61ae05157131e18",
             "identifier": "discourse_list_latest_posts",
@@ -2691,6 +4160,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reports",
+            "field_name": "primitive_tool_45e64bd524674273",
+            "identifier": "discourse_list_reports",
+            "kind": "tool",
+            "title": "List reports",
+            "description": "Lists the caller's available Discourse reports, including enabled plugin reports. Requires staff access. Use the returned report types with discourse_get_report.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2745,6 +4230,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_tag_groups",
+            "field_name": "primitive_tool_2db6c55f17ce0c25",
+            "identifier": "discourse_list_tag_groups",
+            "kind": "tool",
+            "title": "List tag groups",
+            "description": "Lists staff tag-group inventory with permissions and parent tags, ordered by name and ID. Requires staff authority. Paginate with limit and offset; reads remain available when tagging is disabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_themes",
+            "field_name": "primitive_tool_b5d51aa1896790de",
+            "identifier": "discourse_list_themes",
+            "kind": "tool",
+            "title": "List themes",
+            "description": "Lists installed themes and components. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_user_actions",
             "field_name": "primitive_tool_13f3d5b18a439b5a",
             "identifier": "discourse_list_user_actions",
@@ -2771,6 +4288,86 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_users",
+            "field_name": "primitive_tool_a447c1e56e396389",
+            "identifier": "discourse_list_users",
+            "kind": "tool",
+            "title": "List users",
+            "description": "Lists and filters users visible through Discourse's staff user directory.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_members",
+            "field_name": "primitive_tool_b408514c90dfb6da",
+            "identifier": "discourse_manage_group_members",
+            "kind": "tool",
+            "title": "Manage group members",
+            "description": "Adds or removes members of a group the authenticated user may manage. Provide exactly one of usernames, user_ids, or user_emails. The user_emails selector requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_membership",
+            "field_name": "primitive_tool_d9e750f0af46fadb",
+            "identifier": "discourse_manage_group_membership",
+            "kind": "tool",
+            "title": "Manage own group membership",
+            "description": "Joins a group that allows public admission, leaves a group that allows public exit, or requests membership with a reason.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_owners",
+            "field_name": "primitive_tool_b2ed746f50ba5bea",
+            "identifier": "discourse_manage_group_owners",
+            "kind": "tool",
+            "title": "Manage group owners",
+            "description": "Grants or revokes group ownership. Adding an owner also adds them as a member. Automatic groups cannot be changed.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_user_activation",
+            "field_name": "primitive_tool_5bba3abf3e738821",
+            "identifier": "discourse_manage_user_activation",
+            "kind": "tool",
+            "title": "Manage user activation",
+            "description": "Activates, approves, activates and approves, or deactivates an eligible user.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2985,6 +4582,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_tag_groups",
+            "field_name": "primitive_tool_51456312005b67e5",
+            "identifier": "discourse_search_tag_groups",
+            "kind": "tool",
+            "title": "Search tag groups",
+            "description": "Searches visible tag groups and visible member tags. Omits staff configuration. q and names combine; q supports SQL LIKE wildcards. truncated signals possible additional results.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -2995,6 +4608,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_sync_remote_theme",
+            "field_name": "primitive_tool_451d034f6910fbaa",
+            "identifier": "discourse_sync_remote_theme",
+            "kind": "tool",
+            "title": "Sync remote theme",
+            "description": "Checks a theme repository for updates or installs its latest code. Requires edit permission. Updating runs migrations and requires both code and migration confirmation. Checking also updates stored remote-version metadata. Returns a theme summary. When completing a pending installation, also reports skipped components with their errors.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3049,6 +4678,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_category",
+            "field_name": "primitive_tool_b281fdf78b9ae6de",
+            "identifier": "discourse_update_category",
+            "kind": "tool",
+            "title": "Update category",
+            "description": "Updates basic details for a category.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_group",
+            "field_name": "primitive_tool_66d21dfae24afc55",
+            "identifier": "discourse_update_group",
+            "kind": "tool",
+            "title": "Update group",
+            "description": "Updates the group settings the authenticated user may change. Fields the user cannot change are ignored.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_post",
             "field_name": "primitive_tool_6394003e5b2a6e25",
             "identifier": "discourse_update_post",
@@ -3081,12 +4742,60 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_tag_group",
+            "field_name": "primitive_tool_d6732f80e3ca66d0",
+            "identifier": "discourse_update_tag_group",
+            "kind": "tool",
+            "title": "Update tag group",
+            "description": "Updates supplied fields, preserving omitted fields. tags replaces all member tags; [] clears them. parent_tag=null clears the parent. permissions replaces the full permission map. Synonyms resolve to original tags. Name selectors require allow_tag_creation=true. Requires staff authority and tagging enabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_theme",
             "field_name": "primitive_tool_fdc61efa928e1c7a",
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
             "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_setting",
+            "field_name": "primitive_tool_c7da69dbdb1d869c",
+            "identifier": "discourse_update_theme_setting",
+            "kind": "tool",
+            "title": "Update theme setting",
+            "description": "Sets a declared theme setting or restores its declared default. Requires edit permission. Use pipe-separated strings for list settings and arrays of objects for object settings. Reverting requires confirm and must omit value.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_translations",
+            "field_name": "primitive_tool_d31561dc41c17f4b",
+            "identifier": "discourse_update_theme_translations",
+            "kind": "tool",
+            "title": "Update theme translations",
+            "description": "Updates declared theme translations for one locale. Requires edit permission and the current theme name. Unknown keys reject the whole batch.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -3139,6 +4848,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_theme_asset",
+            "field_name": "primitive_tool_308dcce01df72ac6",
+            "identifier": "discourse_upload_theme_asset",
+            "kind": "tool",
+            "title": "Upload theme asset",
+            "description": "Uploads base64 asset data for use in a theme. Requires administrator access. Returns an unattached upload ID; use discourse_update_theme to attach it to a theme field. Site upload and MCP request-size limits apply.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3250,21 +4975,30 @@
           "discourse-reactions:write",
           "discourse-solved:write",
           "discourse-topic-voting:write",
+          "mcp:categories:read",
+          "mcp:categories:write",
           "mcp:content:read",
           "mcp:content:write",
           "mcp:data-explorer:read",
           "mcp:drafts:read",
           "mcp:drafts:write",
+          "mcp:groups:read",
+          "mcp:groups:write",
           "mcp:moderation:read",
           "mcp:moderation:write",
           "mcp:private-messages:read",
           "mcp:private-messages:write",
           "mcp:profile:read",
           "mcp:profile:write",
+          "mcp:reports:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
+          "mcp:tag-groups:read",
+          "mcp:tag-groups:write",
           "mcp:themes:read",
-          "mcp:themes:write"
+          "mcp:themes:write",
+          "mcp:users:read",
+          "mcp:users:write"
         ],
         "primitives": [
           {
@@ -3348,6 +5082,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_category",
+            "field_name": "primitive_tool_7f4714661ed34db9",
+            "identifier": "discourse_create_category",
+            "kind": "tool",
+            "title": "Create category",
+            "description": "Creates a category and returns its ID, slug, and name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_group",
+            "field_name": "primitive_tool_2168a86badb026d6",
+            "identifier": "discourse_create_group",
+            "kind": "tool",
+            "title": "Create group",
+            "description": "Creates a group and returns its ID and name. Requires group creation rights.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_create_post",
             "field_name": "primitive_tool_db18db3d12f6441b",
             "identifier": "discourse_create_post",
@@ -3374,6 +5140,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_tag_group",
+            "field_name": "primitive_tool_03e3927a6b9a127c",
+            "identifier": "discourse_create_tag_group",
+            "kind": "tool",
+            "title": "Create tag group",
+            "description": "Creates a tag group. Requires staff authority and tagging enabled. Tags use ID or name selectors; synonyms resolve to original tags. Name selectors require allow_tag_creation=true and may create tags. permissions maps group IDs to full or readonly; group 0 means everyone. Omitted permissions default to everyone/full.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3412,6 +5194,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_user",
+            "field_name": "primitive_tool_81dad7a5f588415d",
+            "identifier": "discourse_create_user",
+            "kind": "tool",
+            "title": "Create user",
+            "description": "Creates a user as an administrator. Registrations must be open. Supply the site's invite code if required and required user fields keyed by field ID. Missing-field errors identify the field name and ID.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_current_user_get",
             "field_name": "primitive_tool_2460f13c1aa9ca7d",
             "identifier": "discourse_current_user_get",
@@ -3422,6 +5220,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_category",
+            "field_name": "primitive_tool_58a8916174e79eb7",
+            "identifier": "discourse_delete_category",
+            "kind": "tool",
+            "title": "Delete category",
+            "description": "Deletes an empty category after confirming its current name.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:categories:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3444,6 +5258,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_delete_group",
+            "field_name": "primitive_tool_e902e7a8868ad0ec",
+            "identifier": "discourse_delete_group",
+            "kind": "tool",
+            "title": "Delete group",
+            "description": "Deletes a group after confirming its current name. Administrators only. Automatic groups cannot be deleted.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_tag_group",
+            "field_name": "primitive_tool_72611c1faffbcec6",
+            "identifier": "discourse_delete_tag_group",
+            "kind": "tool",
+            "title": "Delete tag group",
+            "description": "Deletes a tag group and its membership, permission and category relationships, including required-tag rules. Tags and topic tags remain. Requires staff authority, tagging enabled, confirm=true and the exact current expected_name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_theme",
+            "field_name": "primitive_tool_723f0532e40f0399",
+            "identifier": "discourse_delete_theme",
+            "kind": "tool",
+            "title": "Delete theme",
+            "description": "Deletes a theme and its component links. Requires edit permission, the current name, and confirmation. Default and system themes cannot be deleted.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_filter_topics",
             "field_name": "primitive_tool_0e686b5bde2f028b",
             "identifier": "discourse_filter_topics",
@@ -3454,6 +5316,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_category",
+            "field_name": "primitive_tool_d13de2830c6214da",
+            "identifier": "discourse_get_category",
+            "kind": "tool",
+            "title": "Get category",
+            "description": "Reads category details needed for category management.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3486,6 +5364,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_group",
+            "field_name": "primitive_tool_18e4d95fc6857eec",
+            "identifier": "discourse_get_group",
+            "kind": "tool",
+            "title": "Get group",
+            "description": "Gets safe details and caller capabilities for one visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3540,6 +5434,22 @@
             "available": false
           },
           {
+            "id": "tool:discourse_get_report",
+            "field_name": "primitive_tool_fbb12ff6ea48277d",
+            "identifier": "discourse_get_report",
+            "kind": "tool",
+            "title": "Get report",
+            "description": "Retrieves one report from the caller's current report catalog. Requires staff access; admin-only reports and related items retain their normal restrictions. Dates use YYYY-MM-DD and default to the last 30 days ending on end_date or today. Date ranges cannot exceed 366 days. Filters accept scalar values or arrays, as supported by each report. limit bounds rows only where the report supports it; omitting it preserves that report's default. cache opts into the existing report cache and requires administrator access; include_related_items defaults to false. This runs registered reports, not arbitrary SQL.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_get_review_queue_count",
             "field_name": "primitive_tool_105a65acb9eb981b",
             "identifier": "discourse_get_review_queue_count",
@@ -3566,6 +5476,22 @@
             "risk": "moderation",
             "required_scopes": [
               "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_tag_group",
+            "field_name": "primitive_tool_810e83db62b1735b",
+            "identifier": "discourse_get_tag_group",
+            "kind": "tool",
+            "title": "Get tag group",
+            "description": "Reads tag-group configuration, including tags, parent, one-per-topic policy and permissions. Requires staff authority.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3652,6 +5578,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_handle_group_membership_request",
+            "field_name": "primitive_tool_266723c0794ce65d",
+            "identifier": "discourse_handle_group_membership_request",
+            "kind": "tool",
+            "title": "Handle group membership request",
+            "description": "Approves or denies one pending membership request for a group the authenticated user may manage. Approving adds the requester to the group.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_install_theme",
+            "field_name": "primitive_tool_6c965a650b3cce5d",
+            "identifier": "discourse_install_theme",
+            "kind": "tool",
+            "title": "Install theme",
+            "description": "Installs executable theme code from exactly one repository URL or base64 archive. Requires administrator access and confirmation. Repository installs always run migrations and require confirm_run_migrations. Archive migrations are opt-in. Archive component imports default to none; merge and sync require run_migrations and confirm_run_migrations. Only archives can replace an existing theme; confirm its current name before replacement. Returns a theme summary without source code and reports any archive components that could not be imported.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_group_members",
+            "field_name": "primitive_tool_465441113fce8557",
+            "identifier": "discourse_invite_group_members",
+            "kind": "tool",
+            "title": "Invite group members by email",
+            "description": "Adds existing accounts that match an address and invites the rest to the forum with the group preassigned. Requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_invite_to_private_message",
             "field_name": "primitive_tool_f54fa0cbc0d051ca",
             "identifier": "discourse_invite_to_private_message",
@@ -3684,6 +5658,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_group_members",
+            "field_name": "primitive_tool_05ba0ee0d4c50634",
+            "identifier": "discourse_list_group_members",
+            "kind": "tool",
+            "title": "List group members",
+            "description": "Lists members and owners when the authenticated user may see them.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_membership_requests",
+            "field_name": "primitive_tool_d72fcacde1774179",
+            "identifier": "discourse_list_group_membership_requests",
+            "kind": "tool",
+            "title": "List group membership requests",
+            "description": "Lists pending requests for a group the authenticated user may manage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_posts",
+            "field_name": "primitive_tool_5c5636f856561243",
+            "identifier": "discourse_list_group_posts",
+            "kind": "tool",
+            "title": "List group posts",
+            "description": "Lists visible public-topic posts authored by members of a visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_groups",
+            "field_name": "primitive_tool_806f48a0a543e91f",
+            "identifier": "discourse_list_groups",
+            "kind": "tool",
+            "title": "List groups",
+            "description": "Lists groups visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_latest_posts",
             "field_name": "primitive_tool_a61ae05157131e18",
             "identifier": "discourse_list_latest_posts",
@@ -3710,6 +5748,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reports",
+            "field_name": "primitive_tool_45e64bd524674273",
+            "identifier": "discourse_list_reports",
+            "kind": "tool",
+            "title": "List reports",
+            "description": "Lists the caller's available Discourse reports, including enabled plugin reports. Requires staff access. Use the returned report types with discourse_get_report.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3764,6 +5818,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_tag_groups",
+            "field_name": "primitive_tool_2db6c55f17ce0c25",
+            "identifier": "discourse_list_tag_groups",
+            "kind": "tool",
+            "title": "List tag groups",
+            "description": "Lists staff tag-group inventory with permissions and parent tags, ordered by name and ID. Requires staff authority. Paginate with limit and offset; reads remain available when tagging is disabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_themes",
+            "field_name": "primitive_tool_b5d51aa1896790de",
+            "identifier": "discourse_list_themes",
+            "kind": "tool",
+            "title": "List themes",
+            "description": "Lists installed themes and components. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_user_actions",
             "field_name": "primitive_tool_13f3d5b18a439b5a",
             "identifier": "discourse_list_user_actions",
@@ -3790,6 +5876,86 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_users",
+            "field_name": "primitive_tool_a447c1e56e396389",
+            "identifier": "discourse_list_users",
+            "kind": "tool",
+            "title": "List users",
+            "description": "Lists and filters users visible through Discourse's staff user directory.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_members",
+            "field_name": "primitive_tool_b408514c90dfb6da",
+            "identifier": "discourse_manage_group_members",
+            "kind": "tool",
+            "title": "Manage group members",
+            "description": "Adds or removes members of a group the authenticated user may manage. Provide exactly one of usernames, user_ids, or user_emails. The user_emails selector requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_membership",
+            "field_name": "primitive_tool_d9e750f0af46fadb",
+            "identifier": "discourse_manage_group_membership",
+            "kind": "tool",
+            "title": "Manage own group membership",
+            "description": "Joins a group that allows public admission, leaves a group that allows public exit, or requests membership with a reason.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_owners",
+            "field_name": "primitive_tool_b2ed746f50ba5bea",
+            "identifier": "discourse_manage_group_owners",
+            "kind": "tool",
+            "title": "Manage group owners",
+            "description": "Grants or revokes group ownership. Adding an owner also adds them as a member. Automatic groups cannot be changed.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_user_activation",
+            "field_name": "primitive_tool_5bba3abf3e738821",
+            "identifier": "discourse_manage_user_activation",
+            "kind": "tool",
+            "title": "Manage user activation",
+            "description": "Activates, approves, activates and approves, or deactivates an eligible user.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -4004,6 +6170,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_tag_groups",
+            "field_name": "primitive_tool_51456312005b67e5",
+            "identifier": "discourse_search_tag_groups",
+            "kind": "tool",
+            "title": "Search tag groups",
+            "description": "Searches visible tag groups and visible member tags. Omits staff configuration. q and names combine; q supports SQL LIKE wildcards. truncated signals possible additional results.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -4014,6 +6196,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_sync_remote_theme",
+            "field_name": "primitive_tool_451d034f6910fbaa",
+            "identifier": "discourse_sync_remote_theme",
+            "kind": "tool",
+            "title": "Sync remote theme",
+            "description": "Checks a theme repository for updates or installs its latest code. Requires edit permission. Updating runs migrations and requires both code and migration confirmation. Checking also updates stored remote-version metadata. Returns a theme summary. When completing a pending installation, also reports skipped components with their errors.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -4068,6 +6266,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_category",
+            "field_name": "primitive_tool_b281fdf78b9ae6de",
+            "identifier": "discourse_update_category",
+            "kind": "tool",
+            "title": "Update category",
+            "description": "Updates basic details for a category.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_group",
+            "field_name": "primitive_tool_66d21dfae24afc55",
+            "identifier": "discourse_update_group",
+            "kind": "tool",
+            "title": "Update group",
+            "description": "Updates the group settings the authenticated user may change. Fields the user cannot change are ignored.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_post",
             "field_name": "primitive_tool_6394003e5b2a6e25",
             "identifier": "discourse_update_post",
@@ -4100,12 +6330,60 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_tag_group",
+            "field_name": "primitive_tool_d6732f80e3ca66d0",
+            "identifier": "discourse_update_tag_group",
+            "kind": "tool",
+            "title": "Update tag group",
+            "description": "Updates supplied fields, preserving omitted fields. tags replaces all member tags; [] clears them. parent_tag=null clears the parent. permissions replaces the full permission map. Synonyms resolve to original tags. Name selectors require allow_tag_creation=true. Requires staff authority and tagging enabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_theme",
             "field_name": "primitive_tool_fdc61efa928e1c7a",
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
             "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_setting",
+            "field_name": "primitive_tool_c7da69dbdb1d869c",
+            "identifier": "discourse_update_theme_setting",
+            "kind": "tool",
+            "title": "Update theme setting",
+            "description": "Sets a declared theme setting or restores its declared default. Requires edit permission. Use pipe-separated strings for list settings and arrays of objects for object settings. Reverting requires confirm and must omit value.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_translations",
+            "field_name": "primitive_tool_d31561dc41c17f4b",
+            "identifier": "discourse_update_theme_translations",
+            "kind": "tool",
+            "title": "Update theme translations",
+            "description": "Updates declared theme translations for one locale. Requires edit permission and the current theme name. Unknown keys reject the whole batch.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -4158,6 +6436,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_theme_asset",
+            "field_name": "primitive_tool_308dcce01df72ac6",
+            "identifier": "discourse_upload_theme_asset",
+            "kind": "tool",
+            "title": "Upload theme asset",
+            "description": "Uploads base64 asset data for use in a theme. Requires administrator access. Returns an unattached upload ID; use discourse_update_theme to attach it to a theme field. Site upload and MCP request-size limits apply.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -4263,18 +6557,18 @@
     "mcp_group_scopes": {
       "inserted": [
         {
-          "id": 27,
+          "id": 36,
           "scope": "mcp:content:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:35:32.168752",
-          "updated_at": "2026-10-17T08:35:32.168752"
+          "created_at": "2026-11-15T21:45:19.019404",
+          "updated_at": "2026-11-15T21:45:19.019404"
         },
         {
-          "id": 28,
+          "id": 37,
           "scope": "mcp:profile:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:35:32.171551",
-          "updated_at": "2026-10-17T08:35:32.171551"
+          "created_at": "2026-11-15T21:45:19.022498",
+          "updated_at": "2026-11-15T21:45:19.022498"
         }
       ],
       "deleted": [],
@@ -4286,33 +6580,33 @@
       "updated": [
         {
           "before": {
-            "id": 412,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "uVVrFzqCA9wERvnIvB03hCeaBJg=",
-            "created_at": "2026-10-17T08:35:30.314352",
-            "rotated_at": "2026-10-17T08:35:30.310329",
-            "updated_at": "2026-10-17T08:35:30.314352",
+            "auth_token": "PuJPOBGMenMnlKi3EiM9RHpcFao=",
+            "created_at": "2026-11-15T21:45:17.630202",
+            "rotated_at": "2026-11-15T21:45:17.626105",
+            "updated_at": "2026-11-15T21:45:17.630202",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "uVVrFzqCA9wERvnIvB03hCeaBJg=",
+            "prev_auth_token": "PuJPOBGMenMnlKi3EiM9RHpcFao=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 412,
-            "seen_at": "2026-10-17T08:35:31.979542",
+            "id": 14,
+            "seen_at": "2026-11-15T21:45:18.817612",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "uVVrFzqCA9wERvnIvB03hCeaBJg=",
-            "created_at": "2026-10-17T08:35:30.314352",
-            "rotated_at": "2026-10-17T08:35:30.310329",
-            "updated_at": "2026-10-17T08:35:30.314352",
+            "auth_token": "PuJPOBGMenMnlKi3EiM9RHpcFao=",
+            "created_at": "2026-11-15T21:45:17.630202",
+            "rotated_at": "2026-11-15T21:45:17.626105",
+            "updated_at": "2026-11-15T21:45:17.630202",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "uVVrFzqCA9wERvnIvB03hCeaBJg=",
+            "prev_auth_token": "PuJPOBGMenMnlKi3EiM9RHpcFao=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -4323,7 +6617,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 23,
           "context": null,
@@ -4333,9 +6627,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-17T08:35:32.009795",
+          "created_at": "2026-11-15T21:45:18.851195",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T08:35:32.009795",
+          "updated_at": "2026-11-15T21:45:18.851195",
           "category_id": null,
           "custom_type": "mcp_access_rule_updated",
           "reviewable_id": null,
@@ -4344,7 +6639,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 23,
           "context": null,
@@ -4354,9 +6649,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-17T08:35:32.040177",
+          "created_at": "2026-11-15T21:45:18.887323",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T08:35:32.040177",
+          "updated_at": "2026-11-15T21:45:18.887323",
           "category_id": null,
           "custom_type": "mcp_access_rule_updated",
           "reviewable_id": null,
@@ -4365,7 +6661,7 @@
           "target_user_id": null
         },
         {
-          "id": 76,
+          "id": 70,
           "email": null,
           "action": 23,
           "context": null,
@@ -4375,9 +6671,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-17T08:35:32.116952",
+          "created_at": "2026-11-15T21:45:18.966018",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T08:35:32.116952",
+          "updated_at": "2026-11-15T21:45:18.966018",
           "category_id": null,
           "custom_type": "mcp_access_rule_deleted",
           "reviewable_id": null,
@@ -4386,7 +6683,7 @@
           "target_user_id": null
         },
         {
-          "id": 77,
+          "id": 71,
           "email": null,
           "action": 23,
           "context": null,
@@ -4396,9 +6693,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-17T08:35:32.173113",
+          "created_at": "2026-11-15T21:45:19.023839",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T08:35:32.173113",
+          "updated_at": "2026-11-15T21:45:19.023839",
           "category_id": null,
           "custom_type": "mcp_access_rule_updated",
           "reviewable_id": null,
@@ -4414,11 +6712,11 @@
   "jobs": [],
   "next_ids": {
     "mcp_group_scopes": 1,
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "16b6206591365425c2d30afe6d519bae7e416ebac721bc0e47a2a11b61b14111",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

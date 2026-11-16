@@ -11,14 +11,14 @@
       "path": "/auth/amazon/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
     }
   ],
-  "started_at": "2026-10-16T04:58:47.557254",
-  "transaction_started_at": "2026-10-16T04:58:45.512216",
+  "started_at": "2026-11-15T22:50:07.345301",
+  "transaction_started_at": "2026-11-15T22:50:06.426317",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/amz-www/ap/oa?client_id=amzn-client&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Famazon%2Fcallback&response_type=code&scope=profile&state=782e4d85f2f79895930319db26df8ddd6788e6c97f631d01...",
+      "body": "Redirecting to http://fixtures.localhost:8099/amz-www/ap/oa?client_id=amzn-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Famazon%2Fcallback&response_type=code&scope=profile&state=68e096ea2bb6a2f59572c5852c5c86c8469a4a87b2452adc...",
       "headers": {
-        "Location": "/amz-www/ap/oa?client_id=amzn-client&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Famazon%2Fcallback&response_type=code&scope=profile&state=782e4d85f2f79895930319db26df8ddd6788e6c97f631d01"
+        "Location": "/amz-www/ap/oa?client_id=amzn-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Famazon%2Fcallback&response_type=code&scope=profile&state=68e096ea2bb6a2f59572c5852c5c86c8469a4a87b2452adc"
       }
     },
     {
@@ -42,15 +42,16 @@
             "postal_code": "98101"
           },
           "user_id": null,
-          "last_used": "2026-10-16T04:58:48.057543",
-          "created_at": "2026-10-16T04:58:48.058874",
-          "updated_at": "2026-10-16T04:58:48.058874",
+          "last_used": "2026-11-15T22:50:07.79844",
+          "created_at": "2026-11-15T22:50:07.799104",
+          "updated_at": "2026-11-15T22:50:07.799104",
           "credentials": {
             "token": "Atza|amzn-token",
             "expires": false
           },
           "provider_uid": "amzn1.account.X",
-          "provider_name": "amazon"
+          "provider_name": "amazon",
+          "avatar_upload_id": null
         }
       ],
       "deleted": [],
@@ -93,7 +94,7 @@
   ],
   "recorded_from": {
     "case": "87c8d0aea23873dd9ff2ec710dc701dc993a1c62867ab532332c965b2bac867b",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

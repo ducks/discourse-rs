@@ -1,5 +1,5 @@
-//! The admin dashboard itself: Admin::DashboardController#index, general,
-//! the empty moderation/security/reports actions, the section
+//! The admin dashboard itself: Admin::DashboardController#index (the old
+//! dashboard's general and tab actions went in Discourse 58f631dfb0b), the section
 //! configuration and settings, and the mountable reports (available,
 //! layout, bulk). Staff only (StaffConstraint, others 404); the
 //! configuration, settings, available reports, layout and traffic routes
@@ -59,16 +59,6 @@ pub async fn index(
         &urls,
     )
     .await?;
-    let improvements = guardian
-        .upcoming_change_enabled(&mut conn, &settings, "dashboard_improvements")
-        .await?;
-    if !improvements {
-        let mut data = dashboard::index_data(&mut conn).await?;
-        if settings.get("version_checks")?.truthy() {
-            data["version_check"] = dashboard::check_version(&mut conn, &cx).await?;
-        }
-        return Ok(Json(data).into_response());
-    }
     let start = p.get("start_date").and_then(crate::params::scalar);
     let end = p.get("end_date").and_then(crate::params::scalar);
     let doc = sections_document(
@@ -153,30 +143,6 @@ pub async fn document(
     )
     .await?;
     sections_document(conn, state, guardian, settings, &cx, Some(start), Some(end)).await
-}
-
-/// GET /admin/dashboard/general(.json)
-pub async fn general(
-    State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
-) -> Result<Response, AppError> {
-    if !guardian.is_staff() {
-        return Ok(not_found(&state));
-    }
-    let mut conn = state.pool.acquire().await?;
-    Ok(Json(dashboard::general_data(&mut conn).await?).into_response())
-}
-
-/// GET /admin/dashboard/{moderation,security,reports}(.json): empty
-/// actions (the Ember pages' JSON).
-pub async fn empty(
-    State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
-) -> Result<Response, AppError> {
-    if !guardian.is_staff() {
-        return Ok(not_found(&state));
-    }
-    Ok(StatusCode::NO_CONTENT.into_response())
 }
 
 /// The admin routes' checks: AdminConstraint, then CSRF for writes.
@@ -438,12 +404,6 @@ pub async fn traffic(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    if !guardian
-        .upcoming_change_enabled(&mut conn, &settings, "dashboard_improvements")
-        .await?
-    {
-        return Ok(not_found(&state));
-    }
     let p = crate::params::parse(uri.query(), &headers, &body);
     let params = match explorer::parse(&p)? {
         Ok(params) => params,

@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-10-13T13:12:51.366528",
-  "transaction_started_at": "2026-10-13T13:12:50.339859",
+  "started_at": "2026-11-15T23:02:41.772436",
+  "transaction_started_at": "2026-11-15T23:02:40.963301",
   "responses": [
     {
       "status": 200,
@@ -29,8 +29,8 @@
           "id": 2,
           "group_id": 2,
           "topic_id": 90,
-          "created_at": "2026-10-13T13:12:51.48972",
-          "updated_at": "2026-10-13T13:12:51.48972"
+          "created_at": "2026-11-15T23:02:41.888074",
+          "updated_at": "2026-11-15T23:02:41.888074"
         }
       ],
       "deleted": [
@@ -38,8 +38,8 @@
           "id": 1,
           "group_id": 2,
           "topic_id": 90,
-          "created_at": "2026-10-13T13:12:50.339859",
-          "updated_at": "2026-10-13T13:12:50.339859"
+          "created_at": "2026-11-15T23:02:40.963301",
+          "updated_at": "2026-11-15T23:02:40.963301"
         }
       ],
       "updated": []
@@ -49,8 +49,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-10-13T13:12:51.412266",
-          "updated_at": "2026-10-13T13:12:51.412266",
+          "created_at": "2026-11-15T23:02:41.816163",
+          "updated_at": "2026-11-15T23:02:41.816163",
           "drafts_saved": 0,
           "writing_device": null,
           "composer_version": null,
@@ -87,20 +87,20 @@
           "locale": null,
           "user_id": 1,
           "version": 1,
-          "baked_at": "2026-10-13T13:12:51.39",
+          "baked_at": "2026-11-15T23:02:41.793893",
           "topic_id": 90,
           "hidden_at": null,
           "post_type": 3,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-10-13T13:12:51.390027",
+          "created_at": "2026-11-15T23:02:41.79392",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 2,
           "spam_count": 0,
-          "updated_at": "2026-10-13T13:12:51.390027",
+          "updated_at": "2026-11-15T23:02:41.79392",
           "word_count": 0,
           "action_code": "closed.enabled",
           "cook_method": 1,
@@ -120,7 +120,7 @@
           "last_editor_id": 1,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-10-13T13:12:51.409021",
+          "last_version_at": "2026-11-15T23:02:41.813763",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -165,7 +165,7 @@
             "user_id": 1,
             "topic_id": 90,
             "bookmarked": false,
-            "last_posted_at": "2026-10-13T13:12:51.42591",
+            "last_posted_at": "2026-11-15T23:02:41.829093",
             "last_visited_at": null,
             "first_visited_at": null,
             "cleared_pinned_at": null,
@@ -198,13 +198,13 @@
             "visible": true,
             "archived": false,
             "archetype": "private_message",
-            "bumped_at": "2026-10-13T12:12:50.339859",
+            "bumped_at": "2026-11-15T22:02:40.963301",
             "pinned_at": null,
-            "created_at": "2026-10-13T12:12:50.339859",
+            "created_at": "2026-11-15T22:02:40.963301",
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-10-13T12:12:50.339859",
+            "updated_at": "2026-11-15T22:02:40.963301",
             "word_count": null,
             "category_id": null,
             "external_id": null,
@@ -250,13 +250,13 @@
             "visible": true,
             "archived": false,
             "archetype": "private_message",
-            "bumped_at": "2026-10-13T12:12:50.339859",
+            "bumped_at": "2026-11-15T22:02:40.963301",
             "pinned_at": null,
-            "created_at": "2026-10-13T12:12:50.339859",
+            "created_at": "2026-11-15T22:02:40.963301",
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-10-13T13:12:51.430764",
+            "updated_at": "2026-11-15T23:02:41.833018",
             "word_count": null,
             "category_id": null,
             "external_id": null,
@@ -296,8 +296,8 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-10-13T13:12:51.390027",
-          "updated_at": "2026-10-13T13:12:51.418547",
+          "created_at": "2026-11-15T23:02:41.79392",
+          "updated_at": "2026-11-15T23:02:41.821918",
           "action_type": 13,
           "acting_user_id": 1,
           "target_post_id": 53,
@@ -315,8 +315,8 @@
           "id": 2,
           "user_id": 3,
           "topic_id": 90,
-          "created_at": "2026-10-13T13:12:50.339859",
-          "updated_at": "2026-10-13T13:12:50.339859"
+          "created_at": "2026-11-15T23:02:40.963301",
+          "updated_at": "2026-11-15T23:02:40.963301"
         }
       ],
       "updated": []
@@ -327,33 +327,33 @@
       "updated": [
         {
           "before": {
-            "id": 488,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "p1PMMqlVXgSi2P9HiNEksqSa+sQ=",
-            "created_at": "2026-10-13T13:12:50.689381",
-            "rotated_at": "2026-10-13T13:12:50.688482",
-            "updated_at": "2026-10-13T13:12:50.689381",
+            "auth_token": "KbbJFg4d9oXEUc6KJXa3SW2MCzs=",
+            "created_at": "2026-11-15T23:02:41.2968",
+            "rotated_at": "2026-11-15T23:02:41.295866",
+            "updated_at": "2026-11-15T23:02:41.2968",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "p1PMMqlVXgSi2P9HiNEksqSa+sQ=",
+            "prev_auth_token": "KbbJFg4d9oXEUc6KJXa3SW2MCzs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 488,
-            "seen_at": "2026-10-13T13:12:51.373958",
+            "id": 14,
+            "seen_at": "2026-11-15T23:02:41.778387",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "p1PMMqlVXgSi2P9HiNEksqSa+sQ=",
-            "created_at": "2026-10-13T13:12:50.689381",
-            "rotated_at": "2026-10-13T13:12:50.688482",
-            "updated_at": "2026-10-13T13:12:50.689381",
+            "auth_token": "KbbJFg4d9oXEUc6KJXa3SW2MCzs=",
+            "created_at": "2026-11-15T23:02:41.2968",
+            "rotated_at": "2026-11-15T23:02:41.295866",
+            "updated_at": "2026-11-15T23:02:41.2968",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "p1PMMqlVXgSi2P9HiNEksqSa+sQ=",
+            "prev_auth_token": "KbbJFg4d9oXEUc6KJXa3SW2MCzs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -364,7 +364,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 91,
           "context": null,
@@ -374,9 +374,10 @@
           "topic_id": 90,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-10-13T13:12:51.484075",
+          "created_at": "2026-11-15T23:02:41.88242",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-13T13:12:51.484075",
+          "updated_at": "2026-11-15T23:02:41.88242",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -450,7 +451,7 @@
     "post_stats": 52,
     "posts": 53,
     "user_actions": 65,
-    "user_histories": 74
+    "user_histories": 68
   },
   "setup": [
     "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, visible) VALUES (90, 'A group message the moderators received', 'A group message the moderators received', 'a-group-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1, 1, true)",
@@ -464,7 +465,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "11e5fc14336d9b6ecaf5627d69bfea12818e0b57cada77317d133c5cbda2f660",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

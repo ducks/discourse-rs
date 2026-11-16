@@ -7,8 +7,8 @@
       "path": "/admin/users/-1.json"
     }
   ],
-  "started_at": "2026-10-08T05:42:23.695599",
-  "transaction_started_at": "2026-10-08T05:42:22.875467",
+  "started_at": "2026-11-15T21:57:29.890311",
+  "transaction_started_at": "2026-11-15T21:57:25.478427",
   "responses": [
     {
       "status": 200,
@@ -22,10 +22,10 @@
         "moderator": true,
         "last_seen_at": null,
         "last_emailed_at": null,
-        "created_at": "2026-07-25T05:58:07.835Z",
+        "created_at": "2026-11-03T05:07:10.272Z",
         "last_seen_age": null,
         "last_emailed_age": null,
-        "created_at_age": 6479055.8712827,
+        "created_at_age": 1097419.680004119,
         "trust_level": 4,
         "manual_locked_trust_level": null,
         "title": null,
@@ -65,7 +65,7 @@
           "silenced": 0,
           "suspended": 0
         },
-        "next_penalty": "2026-10-09T05:42:23.720Z",
+        "next_penalty": "2026-11-16T21:57:30.010Z",
         "primary_group_id": null,
         "badge_count": 0,
         "warnings_received_count": 0,
@@ -90,10 +90,10 @@
           {
             "name": "boards_enabled",
             "humanized_name": "Boards enabled",
-            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control",
-            "enabled": false,
+            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control. Visit <a href='/boards'>/boards</a> to get started.",
+            "enabled": true,
             "specific_groups": [],
-            "reason": "enabled_for_no_one"
+            "reason": "enabled_for_everyone"
           },
           {
             "name": "chat_pinned_messages",
@@ -128,6 +128,14 @@
             "reason": "enabled_for_no_one"
           },
           {
+            "name": "enable_ai_combined_search",
+            "humanized_name": "Enable AI combined search",
+            "description": "Pressing enter in the header search answers with AI and shows keyword results together as tabs, opening on the one the search most likely wants. Follow-up questions continue on a full page.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
             "name": "enable_category_hashtag_cards",
             "humanized_name": "Enable category hashtag cards",
             "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
@@ -139,9 +147,9 @@
             "name": "enable_composer_redesign",
             "humanized_name": "Enable composer redesign",
             "description": "Enable the redesigned composer.",
-            "enabled": false,
+            "enabled": true,
             "specific_groups": [],
-            "reason": "enabled_for_no_one"
+            "reason": "enabled_for_everyone"
           },
           {
             "name": "enable_composer_toolbar_customization",
@@ -224,17 +232,17 @@
             "reason": "enabled_for_everyone"
           },
           {
-            "name": "enable_markdown_endpoints",
-            "humanized_name": "Enable markdown endpoints",
-            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
+            "name": "enable_main_outlet_grid_layout_change",
+            "humanized_name": "Enable main outlet grid layout change",
+            "description": "Place the composer inside the main layout grid so themes can position it in a grid column, and use a narrower sidebar.",
             "enabled": true,
             "specific_groups": [],
             "reason": "enabled_for_everyone"
           },
           {
-            "name": "enable_new_chat_reactions_popup",
-            "humanized_name": "Enable new chat reactions popup",
-            "description": "Enable the redesigned reactions popup on chat messages, showing who reacted with infinite scroll and a native mobile experience.",
+            "name": "enable_markdown_endpoints",
+            "humanized_name": "Enable markdown endpoints",
+            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
             "enabled": true,
             "specific_groups": [],
             "reason": "enabled_for_everyone"
@@ -256,14 +264,6 @@
             "reason": "enabled_for_everyone"
           },
           {
-            "name": "enable_new_post_reactions_menu",
-            "humanized_name": "Enable new post reactions menu",
-            "description": "Enable the redesigned post likes and reactions menu, with infinite scroll and a native mobile experience.",
-            "enabled": true,
-            "specific_groups": [],
-            "reason": "enabled_for_everyone"
-          },
-          {
             "name": "enable_new_post_reply_count_position",
             "humanized_name": "Enable new post reply count position",
             "description": "Move the post reactions summary before the reply count in the post controls.",
@@ -272,17 +272,17 @@
             "reason": "enabled_for_everyone"
           },
           {
+            "name": "enable_new_reordering_controls",
+            "humanized_name": "Enable new reordering controls",
+            "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
             "name": "enable_simplified_category_creation",
             "humanized_name": "Enable simplified category creation",
             "description": "Enables a simplified category creation flow with fewer options and a cleaner interface.",
-            "enabled": true,
-            "specific_groups": [],
-            "reason": "enabled_for_everyone"
-          },
-          {
-            "name": "enable_solved_shared_issues",
-            "humanized_name": "Enable solved shared issues",
-            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
             "enabled": true,
             "specific_groups": [],
             "reason": "enabled_for_everyone"
@@ -299,6 +299,14 @@
             "name": "enable_unified_new",
             "humanized_name": "Enable unified new",
             "description": "Replace the separate New and Unread lists with a single unified New list that makes it easier for members to distinguish between new topics and topics with new replies. When enabled, the /new route shows a combined view with subtabs for Topics (new topics) and Replies (tracked topics with new replies), and the unread option is removed from the top menu.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
+            "name": "enable_user_menu_mentions_tab",
+            "humanized_name": "Enable user menu mentions tab",
+            "description": "Add a Mentions tab to the user menu that shows direct @username mentions separately from replies and group mentions.",
             "enabled": true,
             "specific_groups": [],
             "reason": "enabled_for_everyone"
@@ -326,6 +334,16 @@
             "enabled": false,
             "specific_groups": [],
             "reason": "enabled_for_no_one"
+          },
+          {
+            "name": "live_enabled",
+            "humanized_name": "Live enabled",
+            "description": "Live brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "enabled": false,
+            "specific_groups": [
+              "logged_in_users"
+            ],
+            "reason": "not_in_specific_groups"
           },
           {
             "name": "modernize_foundation_theme",
@@ -368,6 +386,14 @@
             "reason": "enabled_for_everyone"
           },
           {
+            "name": "review_queue_consistent_answers",
+            "humanized_name": "Review queue consistent answers",
+            "description": "Frame every review queue question so \"Yes\" always means there is a problem, and label reviewed items \"Problem confirmed\" or \"No problem found\" for every type.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
             "name": "sidebar_user_navigation",
             "humanized_name": "Sidebar user navigation",
             "description": "Moves the navigation for user pages — profile, activity, notifications, messages, invites and preferences — out of the horizontal tab bars and into a dedicated sidebar panel, the way the admin area works. On mobile the panel is served from the hamburger menu.",
@@ -384,9 +410,9 @@
             "reason": "enabled_for_no_one"
           },
           {
-            "name": "voice_enabled",
-            "humanized_name": "Voice enabled",
-            "description": "Voice brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "name": "update_whispers_allowed_groups_default",
+            "humanized_name": "Update whispers allowed groups default",
+            "description": "We are updating the default for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=whispers_allowed_groups\" data-setting-name=\"whispers_allowed_groups\" data-setting-area=\"group_permissions\" data-setting-category=\"basic\">Whispers allowed groups</a> setting to allow staff to post whispers by default. If you have previously changed this setting, your configuration will not change unless you reset the setting.",
             "enabled": false,
             "specific_groups": [],
             "reason": "enabled_for_no_one"
@@ -624,7 +650,7 @@
             "automatic": true,
             "name": "trust_level_3",
             "display_name": "trust_level_3",
-            "user_count": 2,
+            "user_count": 3,
             "mentionable_level": 0,
             "messageable_level": 0,
             "visibility_level": 1,
@@ -692,33 +718,33 @@
       "updated": [
         {
           "before": {
-            "id": 135,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "lnY6MDYfRmkjwxfqxefdMLRnTd8=",
-            "created_at": "2026-10-08T05:42:23.211098",
-            "rotated_at": "2026-10-08T05:42:23.210856",
-            "updated_at": "2026-10-08T05:42:23.211098",
+            "auth_token": "2NQdZtzF2mzFYefnCOQtsgttgbA=",
+            "created_at": "2026-11-15T21:57:27.222919",
+            "rotated_at": "2026-11-15T21:57:27.218986",
+            "updated_at": "2026-11-15T21:57:27.222919",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "lnY6MDYfRmkjwxfqxefdMLRnTd8=",
+            "prev_auth_token": "2NQdZtzF2mzFYefnCOQtsgttgbA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 135,
-            "seen_at": "2026-10-08T05:42:23.700967",
+            "id": 14,
+            "seen_at": "2026-11-15T21:57:29.916292",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "lnY6MDYfRmkjwxfqxefdMLRnTd8=",
-            "created_at": "2026-10-08T05:42:23.211098",
-            "rotated_at": "2026-10-08T05:42:23.210856",
-            "updated_at": "2026-10-08T05:42:23.211098",
+            "auth_token": "2NQdZtzF2mzFYefnCOQtsgttgbA=",
+            "created_at": "2026-11-15T21:57:27.222919",
+            "rotated_at": "2026-11-15T21:57:27.218986",
+            "updated_at": "2026-11-15T21:57:27.222919",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "lnY6MDYfRmkjwxfqxefdMLRnTd8=",
+            "prev_auth_token": "2NQdZtzF2mzFYefnCOQtsgttgbA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -728,9 +754,10 @@
     }
   },
   "jobs": [],
+  "next_ids": {},
   "recorded_from": {
     "case": "7ba82a1a84f197e2b776899578f178e2f6e7f26265cde6216b628f91cac14bd5",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

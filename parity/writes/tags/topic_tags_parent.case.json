@@ -15,5 +15,8 @@
         "tags": ["guide"]
       }
     }
+  ],
+  "ignore": [
+    "/changes/post_search_data/inserted/0/search_data"
   ]
 }

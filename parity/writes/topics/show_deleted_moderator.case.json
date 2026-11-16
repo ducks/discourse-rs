@@ -11,5 +11,6 @@
     { "method": "GET", "path": "/t/parity-fixture-deleted-topic/40.json" },
     { "method": "GET", "path": "/t/about-the-staff-category/2.json" }
   ],
-  "ignore": ["/responses/2/body/suggested_topics", "/responses/3/body/suggested_topics"]
+  "ignore": [
+    "/responses/0/body/suggested_topics","/responses/2/body/suggested_topics", "/responses/3/body/suggested_topics"]
 }

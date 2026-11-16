@@ -11,8 +11,8 @@
       "path": "/chat/api/channels/2.json"
     }
   ],
-  "started_at": "2026-10-09T18:40:05.564471",
-  "transaction_started_at": "2026-10-09T18:40:02.214822",
+  "started_at": "2026-11-15T22:34:31.271752",
+  "transaction_started_at": "2026-11-15T22:34:30.391507",
   "responses": [
     {
       "status": 200,
@@ -31,7 +31,7 @@
               "emoji": "blue_book",
               "slug": "general",
               "topic_count": 3,
-              "post_count": 6,
+              "post_count": 1,
               "position": 3,
               "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
               "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -84,10 +84,11 @@
             "current_user_membership": {
               "following": true,
               "muted": false,
+              "muted_until": null,
               "notification_level": "mention",
               "chat_channel_id": 2,
               "last_read_message_id": 2,
-              "last_viewed_at": "2026-10-01T15:42:53.287Z",
+              "last_viewed_at": "2026-11-15T19:40:02.312Z",
               "last_viewed_pins_at": null,
               "starred": false,
               "has_unseen_pins": false
@@ -114,7 +115,7 @@
               "id": 6,
               "message": "https://example.com",
               "cooked": "<p><a href=\"https://example.com\" rel=\"noopener nofollow ugc\">https://example.com</a></p>",
-              "created_at": "2026-10-09T18:35:02Z",
+              "created_at": "2026-11-15T22:29:30Z",
               "excerpt": "https://example.com",
               "deleted_at": null,
               "deleted_by_id": null,
@@ -143,7 +144,8 @@
             "new_channel": 0,
             "archive_status": 0,
             "user_tracking_state": 0,
-            "user_has_threads": 0
+            "user_has_threads": 0,
+            "user_channel_mute": 0
           }
         },
         "unread_thread_overview": {},
@@ -171,7 +173,7 @@
             "emoji": "blue_book",
             "slug": "general",
             "topic_count": 3,
-            "post_count": 6,
+            "post_count": 1,
             "position": 3,
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -210,10 +212,11 @@
           "current_user_membership": {
             "following": true,
             "muted": false,
+            "muted_until": null,
             "notification_level": "mention",
             "chat_channel_id": 2,
             "last_read_message_id": 2,
-            "last_viewed_at": "2026-10-01T15:42:53.287Z",
+            "last_viewed_at": "2026-11-15T19:40:02.312Z",
             "last_viewed_pins_at": null,
             "starred": false,
             "has_unseen_pins": false
@@ -240,7 +243,7 @@
             "id": 6,
             "message": "https://example.com",
             "cooked": "<p><a href=\"https://example.com\" rel=\"noopener nofollow ugc\">https://example.com</a></p>",
-            "created_at": "2026-10-09T18:35:02Z",
+            "created_at": "2026-11-15T22:29:30Z",
             "excerpt": "https://example.com",
             "deleted_at": null,
             "deleted_by_id": null,
@@ -259,33 +262,33 @@
       "updated": [
         {
           "before": {
-            "id": 395,
+            "id": 14,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "Oj/N5fXdab2fwJwmCoQaoKMOmao=",
-            "created_at": "2026-10-09T18:40:03.684023",
-            "rotated_at": "2026-10-09T18:40:03.677496",
-            "updated_at": "2026-10-09T18:40:03.684023",
+            "auth_token": "8X9aL4psSmfrEa5uT6y1Cbw7jyY=",
+            "created_at": "2026-11-15T22:34:30.729181",
+            "rotated_at": "2026-11-15T22:34:30.728301",
+            "updated_at": "2026-11-15T22:34:30.729181",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Oj/N5fXdab2fwJwmCoQaoKMOmao=",
+            "prev_auth_token": "8X9aL4psSmfrEa5uT6y1Cbw7jyY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 395,
-            "seen_at": "2026-10-09T18:40:05.592087",
+            "id": 14,
+            "seen_at": "2026-11-15T22:34:31.279267",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "Oj/N5fXdab2fwJwmCoQaoKMOmao=",
-            "created_at": "2026-10-09T18:40:03.684023",
-            "rotated_at": "2026-10-09T18:40:03.677496",
-            "updated_at": "2026-10-09T18:40:03.684023",
+            "auth_token": "8X9aL4psSmfrEa5uT6y1Cbw7jyY=",
+            "created_at": "2026-11-15T22:34:30.729181",
+            "rotated_at": "2026-11-15T22:34:30.728301",
+            "updated_at": "2026-11-15T22:34:30.729181",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Oj/N5fXdab2fwJwmCoQaoKMOmao=",
+            "prev_auth_token": "8X9aL4psSmfrEa5uT6y1Cbw7jyY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -313,7 +316,7 @@
   ],
   "recorded_from": {
     "case": "27fe9d8129f4e2e5c643b9b337ba43385ff558bf91521435064283f4022d6da0",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

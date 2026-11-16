@@ -15,5 +15,9 @@
       "method": "GET",
       "path": "/site/basic-info.json"
     }
+  ],
+  "ignore": [
+    "/changes/topic_search_data",
+    "/changes/post_search_data"
   ]
 }

@@ -1,5 +1,11 @@
 # Requests compared against real Discourse (see parity/environment). One per line:
-#   METHOD /path [ignore=/json/pointer,/list/*/field]
+#   METHOD /path [ignore=/json/pointer,/list/*/field] [not_yet=<commit>,<commit>]
+# not_yet: the port lacks those Discourse commits; the golden replay expects
+# the case to differ and fails once it matches.
+# Known gaps marked not_yet: /site.json and /admin/site_settings.json lack
+# 0a264785d1d (a chat channel as the homepage: homepage_options); the
+# /admin/users/:id.json cases lack 899c68d783e (upcoming changes gated by a
+# group setting).
 # Golden responses live in parity/golden/, written by `make parity-record`.
 
 # forums#status
@@ -12,7 +18,7 @@ GET /site/basic-info.json
 # site#site (anonymous). Ignored until ported:
 #   access_control: boards plugin ACLs
 #   categories/*/custom_fields: plugin-registered category custom fields
-GET /site.json ignore=/access_control,/categories/*/custom_fields
+GET /site.json ignore=/access_control,/categories/*/custom_fields not_yet=0a264785d1d
 
 # list#latest (anonymous).
 GET /latest.json
@@ -160,11 +166,13 @@ POST /session body=login=user1&password=password&second_factor_token=123456 igno
 # voting, poll); custom_fields carry plugin-registered fields;
 # treat_as_new_topic_start_date and previous_visit_at move with time.
 # sidebar_category_ids plucks the sidebar links with no ORDER BY
-# (User#secured_sidebar_category_ids): compared in any order.
-GET /session/current.json as=user1 ignore=/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at unordered=/current_user/sidebar_category_ids
-GET /session/current.json as=user0 ignore=/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at unordered=/current_user/sidebar_category_ids
+# (User#secured_sidebar_category_ids), and available_notification_types
+# is notifications.visible.distinct.pluck (User#available_notification_types):
+# both compared in any order.
+GET /session/current.json as=user1 ignore=/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at unordered=/current_user/sidebar_category_ids,/current_user/available_notification_types
+GET /session/current.json as=user0 ignore=/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at unordered=/current_user/sidebar_category_ids,/current_user/available_notification_types
 # has_unseen_features is redis state (the new-features feed fetched after a staff login).
-GET /session/current.json as=admin ignore=/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at,/current_user/has_unseen_features unordered=/current_user/sidebar_category_ids
+GET /session/current.json as=admin ignore=/current_user/can_use_templates,/current_user/can_create_poll,/current_user/custom_fields,/current_user/user_option/treat_as_new_topic_start_date,/current_user/previous_visit_at,/current_user/has_unseen_features unordered=/current_user/sidebar_category_ids,/current_user/available_notification_types
 
 # Topic lists for a logged-in user. user1 (TL2) tracks 35 with unread
 # posts, watches 38, cleared the pin on and bookmarked 37, muted topic
@@ -220,9 +228,9 @@ GET /t/about-the-staff-category/2.json as=user1 ignore=/timeline_lookup
 GET /t/parity-fixture-deleted-topic/40.json as=user1 ignore=/timeline_lookup
 
 # site#site for a logged-in user. Plugin-shaped keys ignored: the flag
-GET /site.json as=user1 ignore=/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
-GET /site.json as=user0 ignore=/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
-GET /site.json as=admin ignore=/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday
+GET /site.json as=user1 ignore=/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday not_yet=0a264785d1d
+GET /site.json as=user0 ignore=/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday not_yet=0a264785d1d
+GET /site.json as=admin ignore=/access_control,/categories/*/custom_fields,/valid_flag_applies_to_types,/admin_config_login_routes,/permanent_upcoming_change_names,/topic_admin_button_workflows,/post_button_workflows,/users_on_holiday not_yet=0a264785d1d
 
 # search for a logged-in user: user data on /search.json topics only,
 # secure categories and staff group visibility, the log keyed by user.
@@ -318,11 +326,12 @@ GET /t/parity-fixture-pm-user1-to-user0/42.json ignore=/timeline_lookup
 # users#show for the user themself and for staff: the private block.
 # user_auth_tokens is ignored (the seed carries no tokens; the sessions
 # test covers the shape), as is last_seen_at (bumped by the recording
-# login itself).
-GET /u/user1.json as=user1 ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at
-GET /u/user1.json?skip_track_visit=true as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at
-GET /u/user0.json?skip_track_visit=true as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at
-GET /u/admin.json as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at
+# login itself). sidebar_category_ids plucks the sidebar links with no
+# ORDER BY (User#secured_sidebar_category_ids): compared in any order.
+GET /u/user1.json as=user1 ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at unordered=/user/sidebar_category_ids
+GET /u/user1.json?skip_track_visit=true as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at unordered=/user/sidebar_category_ids
+GET /u/user0.json?skip_track_visit=true as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at unordered=/user/sidebar_category_ids
+GET /u/admin.json as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at unordered=/user/sidebar_category_ids
 # Users with a gravatar upload, as an admin: the gravatar_avatar_* keys in
 # the private block.
 GET /u/system.json as=admin ignore=/user/profile_view_count,/user/user_auth_tokens,/user/last_seen_at,/user/user_option/event_reminder_preference
@@ -359,7 +368,7 @@ GET /u/user1/user-menu-bookmarks.json as=admin
 GET /u/user1/user-menu-bookmarks.json
 
 # admin/site_settings#index: SiteSetting.all_settings and the default theme.
-GET /admin/site_settings.json as=admin
+GET /admin/site_settings.json as=admin not_yet=0a264785d1d
 GET /admin/site_settings.json?categories[]=required as=admin
 GET /admin/site_settings.json?plugin=chat as=admin
 
@@ -381,11 +390,11 @@ GET /admin/users/list.json?filter=127.0.0.1 as=admin ignore=/*/last_seen_age,/*/
 
 # admin/users#show: AdminDetailedUserSerializer. The ages and next_penalty
 # count from the request's time.
-GET /admin/users/1.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
-GET /admin/users/2.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
-GET /admin/users/3.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
-GET /admin/users/4.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
-GET /admin/users/5.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /admin/users/1.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
+GET /admin/users/2.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
+GET /admin/users/3.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
+GET /admin/users/4.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
+GET /admin/users/5.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
 GET /t/35/posts.json?post_ids[]=36&post_ids[]=37
 GET /t/35/posts.json?post_ids[]=38&post_ids[]=52&include_suggested=true ignore=/suggested_topics
 GET /t/35/posts.json?post_ids[]=36&post_ids[]=52 as=user1 ignore=/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count

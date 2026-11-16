@@ -11,8 +11,8 @@
       "path": "/highlight-js/forum.example-host_1/76bb8ca4d50f2707d020ad6f0130c42cb8a43efd.js"
     }
   ],
-  "started_at": "2026-10-13T22:50:19.036493",
-  "transaction_started_at": "2026-10-13T22:50:17.726928",
+  "started_at": "2026-11-15T22:55:51.3016",
+  "transaction_started_at": "2026-11-15T22:55:50.402688",
   "responses": [
     {
       "status": 200,
@@ -31,7 +31,7 @@
   },
   "recorded_from": {
     "case": "cd3aa9f9684962da63e21100b96b6d84dec5e929b0e9c342e6669316a59b91c2",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

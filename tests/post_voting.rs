@@ -602,7 +602,7 @@ async fn comments_cook_with_their_few_rules() {
         ),
         (
             ":grin: abcde",
-            "<p><img src=\"/images/emoji/twitter/grin.png?v=15\" title=\":grin:\" class=\"emoji\" alt=\":grin:\" loading=\"lazy\" width=\"20\" height=\"20\"> abcde</p>",
+            "<p><img src=\"/images/emoji/twitter/grin.png?v=16\" title=\":grin:\" class=\"emoji\" alt=\":grin:\" loading=\"lazy\" width=\"20\" height=\"20\"> abcde</p>",
         ),
         ("testing", "<p>■■■■■■■</p>"),
         ("line 1\n\nline 2\n", "<p>line 1 line 2</p>"),

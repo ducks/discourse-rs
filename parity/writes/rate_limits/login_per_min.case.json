@@ -29,5 +29,11 @@
         "password": "wrong-password"
       }
     }
+  ],
+  "ignore": [
+    "/responses/2/headers/Retry-After",
+    "/responses/2/body/extras/time_left",
+    "/responses/2/body/extras/wait_seconds",
+    "/responses/2/body/errors"
   ]
 }

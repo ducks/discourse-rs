@@ -31,14 +31,45 @@
       "path": "/u/user1/summary.json"
     }
   ],
-  "started_at": "2026-10-22T01:32:52.496524",
-  "transaction_started_at": "2026-10-22T01:32:49.419443",
+  "started_at": "2026-11-15T22:25:53.931144",
+  "transaction_started_at": "2026-11-15T22:25:49.298002",
   "responses": [
     {
       "status": 200,
       "body": {
         "user_bookmark_list": {
           "bookmarks": [
+            {
+              "id": 4,
+              "created_at": "2026-11-15T19:20:04.859Z",
+              "updated_at": "2026-11-15T19:20:04.865Z",
+              "name": "Parity fixture: pinned, in a PM",
+              "reminder_at": null,
+              "pinned": true,
+              "title": "Parity fixture: PM user1 to user0",
+              "fancy_title": "Parity fixture: PM user1 to user0",
+              "excerpt": "A reply from user0 inside the private message, long enough too.",
+              "bookmarkable_id": 49,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-pm-user1-to-user0/42/2",
+              "topic_id": 42,
+              "linked_post_number": 2,
+              "deleted": false,
+              "hidden": false,
+              "category_id": null,
+              "closed": false,
+              "archived": false,
+              "archetype": "private_message",
+              "highest_post_number": 2,
+              "bumped_at": "2026-11-15T19:20:00.580Z",
+              "slug": "parity-fixture-pm-user1-to-user0",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
             {
               "id": 11,
               "created_at": "2026-10-02T11:01:00.000Z",
@@ -60,40 +91,9 @@
               }
             },
             {
-              "id": 4,
-              "created_at": "2026-10-01T22:32:02.419Z",
-              "updated_at": "2026-10-01T22:32:02.429Z",
-              "name": "Parity fixture: pinned, in a PM",
-              "reminder_at": null,
-              "pinned": true,
-              "title": "Parity fixture: PM user1 to user0",
-              "fancy_title": "Parity fixture: PM user1 to user0",
-              "excerpt": "A reply from user0 inside the private message, long enough too.",
-              "bookmarkable_id": 49,
-              "bookmarkable_type": "Post",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-pm-user1-to-user0/42/2",
-              "topic_id": 42,
-              "linked_post_number": 2,
-              "deleted": false,
-              "hidden": false,
-              "category_id": null,
-              "closed": false,
-              "archived": false,
-              "archetype": "private_message",
-              "highest_post_number": 2,
-              "bumped_at": "2026-10-01T15:39:51.295Z",
-              "slug": "parity-fixture-pm-user1-to-user0",
-              "user": {
-                "id": 2,
-                "username": "user0",
-                "name": "User0",
-                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
-              }
-            },
-            {
               "id": 3,
-              "created_at": "2026-10-01T22:32:02.391Z",
-              "updated_at": "2026-10-01T22:32:02.391Z",
+              "created_at": "2026-11-15T19:20:04.835Z",
+              "updated_at": "2026-11-15T19:20:04.835Z",
               "name": "Parity fixture: with a reminder",
               "reminder_at": "2031-01-15T09:30:00.000Z",
               "reminder_at_ics_start": "20310115T093000Z",
@@ -104,7 +104,7 @@
               "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
               "bookmarkable_id": 36,
               "bookmarkable_type": "Post",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/2",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
               "tags": [
                 {
                   "id": 2,
@@ -122,7 +122,7 @@
               "archived": false,
               "archetype": "regular",
               "highest_post_number": 5,
-              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "bumped_at": "2026-11-15T19:20:01.206Z",
               "slug": "parity-fixture-replies-and-posters",
               "user": {
                 "id": 3,
@@ -151,6 +151,118 @@
                 "username": "user0",
                 "name": "User0",
                 "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 5,
+              "created_at": "2026-11-15T19:20:04.875Z",
+              "updated_at": "2026-11-15T19:20:04.927Z",
+              "name": "Parity fixture: reminder sent",
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: replies and posters",
+              "fancy_title": "Parity fixture: replies and posters",
+              "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
+              "bookmarkable_id": 52,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/5",
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "topic_id": 35,
+              "linked_post_number": 5,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 4,
+              "closed": false,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 5,
+              "bumped_at": "2026-11-15T19:20:01.206Z",
+              "slug": "parity-fixture-replies-and-posters",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 2,
+              "created_at": "2026-11-15T19:20:04.814Z",
+              "updated_at": "2026-11-15T19:20:04.814Z",
+              "name": "Parity fixture: topic bookmark",
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: replies and posters",
+              "fancy_title": "Parity fixture: replies and posters",
+              "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+              "bookmarkable_id": 35,
+              "bookmarkable_type": "Topic",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35",
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                }
+              ],
+              "tags_descriptions": {},
+              "topic_id": 35,
+              "linked_post_number": 1,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 4,
+              "closed": false,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 5,
+              "bumped_at": "2026-11-15T19:20:01.206Z",
+              "slug": "parity-fixture-replies-and-posters",
+              "last_read_post_number": 2,
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
+              "id": 1,
+              "created_at": "2026-11-15T19:19:55.535Z",
+              "updated_at": "2026-11-15T19:19:55.535Z",
+              "name": null,
+              "reminder_at": null,
+              "pinned": null,
+              "title": "Parity fixture: pinned and closed",
+              "fancy_title": "Parity fixture: pinned and closed",
+              "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
+              "bookmarkable_id": 40,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-pinned-and-closed/37/1",
+              "tags": [],
+              "tags_descriptions": {},
+              "topic_id": 37,
+              "linked_post_number": 1,
+              "deleted": false,
+              "hidden": false,
+              "category_id": 2,
+              "closed": true,
+              "archived": false,
+              "archetype": "regular",
+              "highest_post_number": 1,
+              "bumped_at": "2026-11-15T19:19:54.472Z",
+              "slug": "parity-fixture-pinned-and-closed",
+              "user": {
+                "id": 1,
+                "username": "admin",
+                "name": "Admin",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
               }
             },
             {
@@ -172,118 +284,6 @@
                 "name": "User0",
                 "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
               }
-            },
-            {
-              "id": 5,
-              "created_at": "2026-10-01T22:32:02.441Z",
-              "updated_at": "2026-10-01T22:32:02.468Z",
-              "name": "Parity fixture: reminder sent",
-              "reminder_at": null,
-              "pinned": null,
-              "title": "Parity fixture: replies and posters",
-              "fancy_title": "Parity fixture: replies and posters",
-              "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
-              "bookmarkable_id": 52,
-              "bookmarkable_type": "Post",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/5",
-              "tags": [
-                {
-                  "id": 2,
-                  "name": "guide",
-                  "slug": "guide"
-                }
-              ],
-              "tags_descriptions": {},
-              "topic_id": 35,
-              "linked_post_number": 5,
-              "deleted": false,
-              "hidden": false,
-              "category_id": 4,
-              "closed": false,
-              "archived": false,
-              "archetype": "regular",
-              "highest_post_number": 5,
-              "bumped_at": "2026-10-01T15:39:51.834Z",
-              "slug": "parity-fixture-replies-and-posters",
-              "user": {
-                "id": 2,
-                "username": "user0",
-                "name": "User0",
-                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
-              }
-            },
-            {
-              "id": 2,
-              "created_at": "2026-10-01T22:32:02.369Z",
-              "updated_at": "2026-10-01T22:32:02.369Z",
-              "name": "Parity fixture: topic bookmark",
-              "reminder_at": null,
-              "pinned": null,
-              "title": "Parity fixture: replies and posters",
-              "fancy_title": "Parity fixture: replies and posters",
-              "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-              "bookmarkable_id": 35,
-              "bookmarkable_type": "Topic",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35",
-              "tags": [
-                {
-                  "id": 2,
-                  "name": "guide",
-                  "slug": "guide"
-                }
-              ],
-              "tags_descriptions": {},
-              "topic_id": 35,
-              "linked_post_number": 1,
-              "deleted": false,
-              "hidden": false,
-              "category_id": 4,
-              "closed": false,
-              "archived": false,
-              "archetype": "regular",
-              "highest_post_number": 5,
-              "bumped_at": "2026-10-01T15:39:51.834Z",
-              "slug": "parity-fixture-replies-and-posters",
-              "last_read_post_number": 2,
-              "user": {
-                "id": 2,
-                "username": "user0",
-                "name": "User0",
-                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
-              }
-            },
-            {
-              "id": 1,
-              "created_at": "2026-10-01T13:42:34.774Z",
-              "updated_at": "2026-10-01T13:42:34.774Z",
-              "name": null,
-              "reminder_at": null,
-              "pinned": null,
-              "title": "Parity fixture: pinned and closed",
-              "fancy_title": "Parity fixture: pinned and closed",
-              "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
-              "bookmarkable_id": 40,
-              "bookmarkable_type": "Post",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-pinned-and-closed/37/1",
-              "tags": [],
-              "tags_descriptions": {},
-              "topic_id": 37,
-              "linked_post_number": 1,
-              "deleted": false,
-              "hidden": false,
-              "category_id": 2,
-              "closed": true,
-              "archived": false,
-              "archetype": "regular",
-              "highest_post_number": 1,
-              "bumped_at": "2026-09-30T07:28:29.358Z",
-              "slug": "parity-fixture-pinned-and-closed",
-              "user": {
-                "id": 1,
-                "username": "admin",
-                "name": "Admin",
-                "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
-              }
             }
           ]
         }
@@ -296,8 +296,8 @@
           "bookmarks": [
             {
               "id": 3,
-              "created_at": "2026-10-01T22:32:02.391Z",
-              "updated_at": "2026-10-01T22:32:02.391Z",
+              "created_at": "2026-11-15T19:20:04.835Z",
+              "updated_at": "2026-11-15T19:20:04.835Z",
               "name": "Parity fixture: with a reminder",
               "reminder_at": "2031-01-15T09:30:00.000Z",
               "reminder_at_ics_start": "20310115T093000Z",
@@ -308,7 +308,7 @@
               "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
               "bookmarkable_id": 36,
               "bookmarkable_type": "Post",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/2",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
               "tags": [
                 {
                   "id": 2,
@@ -326,7 +326,7 @@
               "archived": false,
               "archetype": "regular",
               "highest_post_number": 5,
-              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "bumped_at": "2026-11-15T19:20:01.206Z",
               "slug": "parity-fixture-replies-and-posters",
               "user": {
                 "id": 3,
@@ -359,8 +359,8 @@
             },
             {
               "id": 5,
-              "created_at": "2026-10-01T22:32:02.441Z",
-              "updated_at": "2026-10-01T22:32:02.468Z",
+              "created_at": "2026-11-15T19:20:04.875Z",
+              "updated_at": "2026-11-15T19:20:04.927Z",
               "name": "Parity fixture: reminder sent",
               "reminder_at": null,
               "pinned": null,
@@ -369,7 +369,7 @@
               "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
               "bookmarkable_id": 52,
               "bookmarkable_type": "Post",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/5",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/5",
               "tags": [
                 {
                   "id": 2,
@@ -387,7 +387,7 @@
               "archived": false,
               "archetype": "regular",
               "highest_post_number": 5,
-              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "bumped_at": "2026-11-15T19:20:01.206Z",
               "slug": "parity-fixture-replies-and-posters",
               "user": {
                 "id": 2,
@@ -398,8 +398,8 @@
             },
             {
               "id": 2,
-              "created_at": "2026-10-01T22:32:02.369Z",
-              "updated_at": "2026-10-01T22:32:02.369Z",
+              "created_at": "2026-11-15T19:20:04.814Z",
+              "updated_at": "2026-11-15T19:20:04.814Z",
               "name": "Parity fixture: topic bookmark",
               "reminder_at": null,
               "pinned": null,
@@ -408,7 +408,7 @@
               "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
               "bookmarkable_id": 35,
               "bookmarkable_type": "Topic",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35",
               "tags": [
                 {
                   "id": 2,
@@ -426,7 +426,7 @@
               "archived": false,
               "archetype": "regular",
               "highest_post_number": 5,
-              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "bumped_at": "2026-11-15T19:20:01.206Z",
               "slug": "parity-fixture-replies-and-posters",
               "last_read_post_number": 2,
               "user": {
@@ -478,6 +478,37 @@
           "more_bookmarks_url": "/u/user1/bookmarks.json?page=1",
           "bookmarks": [
             {
+              "id": 4,
+              "created_at": "2026-11-15T19:20:04.859Z",
+              "updated_at": "2026-11-15T19:20:04.865Z",
+              "name": "Parity fixture: pinned, in a PM",
+              "reminder_at": null,
+              "pinned": true,
+              "title": "Parity fixture: PM user1 to user0",
+              "fancy_title": "Parity fixture: PM user1 to user0",
+              "excerpt": "A reply from user0 inside the private message, long enough too.",
+              "bookmarkable_id": 49,
+              "bookmarkable_type": "Post",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-pm-user1-to-user0/42/2",
+              "topic_id": 42,
+              "linked_post_number": 2,
+              "deleted": false,
+              "hidden": false,
+              "category_id": null,
+              "closed": false,
+              "archived": false,
+              "archetype": "private_message",
+              "highest_post_number": 2,
+              "bumped_at": "2026-11-15T19:20:00.580Z",
+              "slug": "parity-fixture-pm-user1-to-user0",
+              "user": {
+                "id": 2,
+                "username": "user0",
+                "name": "User0",
+                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+              }
+            },
+            {
               "id": 11,
               "created_at": "2026-10-02T11:01:00.000Z",
               "updated_at": "2026-10-02T11:01:00.000Z",
@@ -496,37 +527,6 @@
                 "name": "Admin",
                 "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
               }
-            },
-            {
-              "id": 4,
-              "created_at": "2026-10-01T22:32:02.419Z",
-              "updated_at": "2026-10-01T22:32:02.429Z",
-              "name": "Parity fixture: pinned, in a PM",
-              "reminder_at": null,
-              "pinned": true,
-              "title": "Parity fixture: PM user1 to user0",
-              "fancy_title": "Parity fixture: PM user1 to user0",
-              "excerpt": "A reply from user0 inside the private message, long enough too.",
-              "bookmarkable_id": 49,
-              "bookmarkable_type": "Post",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-pm-user1-to-user0/42/2",
-              "topic_id": 42,
-              "linked_post_number": 2,
-              "deleted": false,
-              "hidden": false,
-              "category_id": null,
-              "closed": false,
-              "archived": false,
-              "archetype": "private_message",
-              "highest_post_number": 2,
-              "bumped_at": "2026-10-01T15:39:51.295Z",
-              "slug": "parity-fixture-pm-user1-to-user0",
-              "user": {
-                "id": 2,
-                "username": "user0",
-                "name": "User0",
-                "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
-              }
             }
           ]
         }
@@ -540,8 +540,8 @@
           "bookmarks": [
             {
               "id": 3,
-              "created_at": "2026-10-01T22:32:02.391Z",
-              "updated_at": "2026-10-01T22:32:02.391Z",
+              "created_at": "2026-11-15T19:20:04.835Z",
+              "updated_at": "2026-11-15T19:20:04.835Z",
               "name": "Parity fixture: with a reminder",
               "reminder_at": "2031-01-15T09:30:00.000Z",
               "reminder_at_ics_start": "20310115T093000Z",
@@ -552,7 +552,7 @@
               "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
               "bookmarkable_id": 36,
               "bookmarkable_type": "Post",
-              "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/2",
+              "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
               "tags": [
                 {
                   "id": 2,
@@ -570,7 +570,7 @@
               "archived": false,
               "archetype": "regular",
               "highest_post_number": 5,
-              "bumped_at": "2026-10-01T15:39:51.834Z",
+              "bumped_at": "2026-11-15T19:20:01.206Z",
               "slug": "parity-fixture-replies-and-posters",
               "user": {
                 "id": 3,
@@ -611,12 +611,12 @@
         "notifications": [
           {
             "fancy_title": "Parity fixture: replies and posters",
-            "id": 52,
+            "id": 24,
             "user_id": 3,
             "notification_type": 24,
             "read": false,
             "high_priority": true,
-            "created_at": "2026-10-01T22:32:02.464Z",
+            "created_at": "2026-11-15T19:20:04.892Z",
             "post_number": 5,
             "topic_id": 35,
             "slug": "parity-fixture-replies-and-posters",
@@ -633,17 +633,22 @@
         ],
         "bookmarks": [
           {
+            "id": 4,
+            "name": "Parity fixture: pinned, in a PM",
+            "fancy_title": "Parity fixture: PM user1 to user0",
+            "topic_id": 42,
+            "bookmarkable_url": "http://localhost:3042/t/parity-fixture-pm-user1-to-user0/42/2",
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
+            }
+          },
+          {
             "id": 11,
-            "created_at": "2026-10-02T11:01:00.000Z",
-            "updated_at": "2026-10-02T11:01:00.000Z",
             "name": null,
-            "reminder_at": null,
-            "pinned": true,
-            "title": "General",
             "fancy_title": "General",
-            "excerpt": "A long chat message about <a href=\"https://example.com\">links</a> &amp; things. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in r&hellip;",
-            "bookmarkable_id": 2,
-            "bookmarkable_type": "ChatMessage",
             "bookmarkable_url": "/chat/c/-/2/2",
             "user": {
               "id": 1,
@@ -653,70 +658,11 @@
             }
           },
           {
-            "id": 4,
-            "created_at": "2026-10-01T22:32:02.419Z",
-            "updated_at": "2026-10-01T22:32:02.429Z",
-            "name": "Parity fixture: pinned, in a PM",
-            "reminder_at": null,
-            "pinned": true,
-            "title": "Parity fixture: PM user1 to user0",
-            "fancy_title": "Parity fixture: PM user1 to user0",
-            "excerpt": "A reply from user0 inside the private message, long enough too.",
-            "bookmarkable_id": 49,
-            "bookmarkable_type": "Post",
-            "bookmarkable_url": "http://localhost:3050/t/parity-fixture-pm-user1-to-user0/42/2",
-            "topic_id": 42,
-            "linked_post_number": 2,
-            "deleted": false,
-            "hidden": false,
-            "category_id": null,
-            "closed": false,
-            "archived": false,
-            "archetype": "private_message",
-            "highest_post_number": 2,
-            "bumped_at": "2026-10-01T15:39:51.295Z",
-            "slug": "parity-fixture-pm-user1-to-user0",
-            "user": {
-              "id": 2,
-              "username": "user0",
-              "name": "User0",
-              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
-            }
-          },
-          {
             "id": 3,
-            "created_at": "2026-10-01T22:32:02.391Z",
-            "updated_at": "2026-10-01T22:32:02.391Z",
             "name": "Parity fixture: with a reminder",
-            "reminder_at": "2031-01-15T09:30:00.000Z",
-            "reminder_at_ics_start": "20310115T093000Z",
-            "reminder_at_ics_end": "20310115T103000Z",
-            "pinned": null,
-            "title": "Parity fixture: replies and posters",
             "fancy_title": "Parity fixture: replies and posters",
-            "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
-            "bookmarkable_id": 36,
-            "bookmarkable_type": "Post",
-            "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/2",
-            "tags": [
-              {
-                "id": 2,
-                "name": "guide",
-                "slug": "guide"
-              }
-            ],
-            "tags_descriptions": {},
             "topic_id": 35,
-            "linked_post_number": 2,
-            "deleted": false,
-            "hidden": false,
-            "category_id": 4,
-            "closed": false,
-            "archived": false,
-            "archetype": "regular",
-            "highest_post_number": 5,
-            "bumped_at": "2026-10-01T15:39:51.834Z",
-            "slug": "parity-fixture-replies-and-posters",
+            "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/2",
             "user": {
               "id": 3,
               "username": "user1",
@@ -726,18 +672,8 @@
           },
           {
             "id": 10,
-            "created_at": "2026-10-02T11:00:00.000Z",
-            "updated_at": "2026-10-02T11:00:00.000Z",
             "name": "Chat fixture: named",
-            "reminder_at": "2031-02-01T08:00:00.000Z",
-            "reminder_at_ics_start": "20310201T080000Z",
-            "reminder_at_ics_end": "20310201T090000Z",
-            "pinned": null,
-            "title": "General",
             "fancy_title": "General",
-            "excerpt": "Hello from the general chat <img src=\"/images/emoji/twitter/smile.png?v=15\" title=\":smile:\" class=\"emoji\" alt=\":smile:\" loading=\"lazy\" width=\"20\" height=\"20\">",
-            "bookmarkable_id": 1,
-            "bookmarkable_type": "ChatMessage",
             "bookmarkable_url": "/chat/c/-/2/1",
             "user": {
               "id": 2,
@@ -747,58 +683,11 @@
             }
           },
           {
-            "id": 12,
-            "created_at": "2026-10-02T11:02:00.000Z",
-            "updated_at": "2026-10-02T11:02:00.000Z",
-            "name": null,
-            "reminder_at": null,
-            "pinned": null,
-            "title": "user0",
-            "fancy_title": "user0",
-            "excerpt": "A direct message to user1",
-            "bookmarkable_id": 3,
-            "bookmarkable_type": "ChatMessage",
-            "bookmarkable_url": "/chat/c/-/3/3",
-            "user": {
-              "id": 2,
-              "username": "user0",
-              "name": "User0",
-              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
-            }
-          },
-          {
             "id": 2,
-            "created_at": "2026-10-01T22:32:02.369Z",
-            "updated_at": "2026-10-01T22:32:02.369Z",
             "name": "Parity fixture: topic bookmark",
-            "reminder_at": null,
-            "pinned": null,
-            "title": "Parity fixture: replies and posters",
             "fancy_title": "Parity fixture: replies and posters",
-            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-            "bookmarkable_id": 35,
-            "bookmarkable_type": "Topic",
-            "bookmarkable_url": "http://localhost:3050/t/parity-fixture-replies-and-posters/35/3",
-            "tags": [
-              {
-                "id": 2,
-                "name": "guide",
-                "slug": "guide"
-              }
-            ],
-            "tags_descriptions": {},
             "topic_id": 35,
-            "linked_post_number": 1,
-            "deleted": false,
-            "hidden": false,
-            "category_id": 4,
-            "closed": false,
-            "archived": false,
-            "archetype": "regular",
-            "highest_post_number": 5,
-            "bumped_at": "2026-10-01T15:39:51.834Z",
-            "slug": "parity-fixture-replies-and-posters",
-            "last_read_post_number": 2,
+            "bookmarkable_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/3",
             "user": {
               "id": 2,
               "username": "user0",
@@ -808,35 +697,27 @@
           },
           {
             "id": 1,
-            "created_at": "2026-10-01T13:42:34.774Z",
-            "updated_at": "2026-10-01T13:42:34.774Z",
             "name": null,
-            "reminder_at": null,
-            "pinned": null,
-            "title": "Parity fixture: pinned and closed",
             "fancy_title": "Parity fixture: pinned and closed",
-            "excerpt": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
-            "bookmarkable_id": 40,
-            "bookmarkable_type": "Post",
-            "bookmarkable_url": "http://localhost:3050/t/parity-fixture-pinned-and-closed/37/1",
-            "tags": [],
-            "tags_descriptions": {},
             "topic_id": 37,
-            "linked_post_number": 1,
-            "deleted": false,
-            "hidden": false,
-            "category_id": 2,
-            "closed": true,
-            "archived": false,
-            "archetype": "regular",
-            "highest_post_number": 1,
-            "bumped_at": "2026-09-30T07:28:29.358Z",
-            "slug": "parity-fixture-pinned-and-closed",
+            "bookmarkable_url": "http://localhost:3042/t/parity-fixture-pinned-and-closed/37/1",
             "user": {
               "id": 1,
               "username": "admin",
               "name": "Admin",
               "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+            }
+          },
+          {
+            "id": 12,
+            "name": null,
+            "fancy_title": "user0",
+            "bookmarkable_url": "/chat/c/-/3/3",
+            "user": {
+              "id": 2,
+              "username": "user0",
+              "name": "User0",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
             }
           }
         ]
@@ -854,7 +735,7 @@
             "posts_count": 1,
             "category_id": 34,
             "like_count": 0,
-            "created_at": "2026-09-30T07:28:29.543Z",
+            "created_at": "2026-11-15T19:19:54.728Z",
             "has_accepted_answer": false
           },
           {
@@ -865,7 +746,7 @@
             "posts_count": 5,
             "category_id": 4,
             "like_count": 1,
-            "created_at": "2026-09-30T07:28:28.864Z",
+            "created_at": "2026-11-15T19:19:53.917Z",
             "has_accepted_answer": false
           }
         ],
@@ -902,6 +783,24 @@
             "badge_grouping_id": 1,
             "system": true,
             "slug": "first-like",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 5,
+            "name": "Welcome",
+            "description": "Received a like",
+            "grant_count": 2,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "heart",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 2,
+            "system": true,
+            "slug": "welcome",
             "manually_grantable": false,
             "show_in_post_header": false,
             "badge_type_id": 3
@@ -971,7 +870,7 @@
             {
               "post_number": 2,
               "like_count": 1,
-              "created_at": "2026-09-30T07:28:29.079Z",
+              "created_at": "2026-11-15T19:19:54.128Z",
               "topic_id": 35
             }
           ],
@@ -1014,26 +913,35 @@
           "badges": [
             {
               "id": 10,
-              "granted_at": "2026-09-30T06:20:36.833Z",
-              "created_at": "2026-09-30T06:20:36.833Z",
+              "granted_at": "2026-11-15T19:18:38.343Z",
+              "created_at": "2026-11-15T19:18:38.343Z",
               "count": 1,
               "badge_id": 2,
               "user_id": 3,
               "granted_by_id": -1
             },
             {
-              "id": 15,
-              "granted_at": "2026-09-30T07:28:30.313Z",
-              "created_at": "2026-09-30T07:28:37.785Z",
+              "id": 16,
+              "granted_at": "2026-11-15T19:19:55.302Z",
+              "created_at": "2026-11-15T19:20:32.791Z",
               "count": 1,
               "badge_id": 11,
               "user_id": 3,
               "granted_by_id": -1
             },
             {
+              "id": 18,
+              "granted_at": "2026-11-15T19:20:01.402Z",
+              "created_at": "2026-11-15T19:20:32.813Z",
+              "count": 1,
+              "badge_id": 5,
+              "user_id": 3,
+              "granted_by_id": -1
+            },
+            {
               "id": 3,
-              "granted_at": "2026-09-30T06:20:02.086Z",
-              "created_at": "2026-09-30T06:20:02.086Z",
+              "granted_at": "2026-11-15T19:18:11.383Z",
+              "created_at": "2026-11-15T19:18:11.383Z",
               "count": 1,
               "badge_id": 1,
               "user_id": 3,
@@ -1041,20 +949,6 @@
             }
           ],
           "top_categories": [
-            {
-              "topic_count": 1,
-              "post_count": 0,
-              "id": 34,
-              "name": "Sub General",
-              "color": "AB9364",
-              "text_color": "FFFFFF",
-              "style_type": "square",
-              "icon": null,
-              "emoji": null,
-              "slug": "sub-general",
-              "read_restricted": false,
-              "parent_category_id": 4
-            },
             {
               "topic_count": 0,
               "post_count": 1,
@@ -1068,6 +962,20 @@
               "slug": "general",
               "read_restricted": false,
               "parent_category_id": null
+            },
+            {
+              "topic_count": 1,
+              "post_count": 0,
+              "id": 34,
+              "name": "Sub General",
+              "color": "AB9364",
+              "text_color": "FFFFFF",
+              "style_type": "square",
+              "icon": null,
+              "emoji": null,
+              "slug": "sub-general",
+              "read_restricted": false,
+              "parent_category_id": 4
             }
           ]
         }
@@ -1081,33 +989,33 @@
       "updated": [
         {
           "before": {
-            "id": 450,
+            "id": 14,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "t1HoCxJjDbMHIjuKBhvKwRU8i7E=",
-            "created_at": "2026-10-22T01:32:50.525997",
-            "rotated_at": "2026-10-22T01:32:50.52386",
-            "updated_at": "2026-10-22T01:32:50.525997",
+            "auth_token": "U7f8ONBp0uWFIdR8e0wG5L/44BY=",
+            "created_at": "2026-11-15T22:25:51.051065",
+            "rotated_at": "2026-11-15T22:25:51.04644",
+            "updated_at": "2026-11-15T22:25:51.051065",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "t1HoCxJjDbMHIjuKBhvKwRU8i7E=",
+            "prev_auth_token": "U7f8ONBp0uWFIdR8e0wG5L/44BY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 450,
-            "seen_at": "2026-10-22T01:32:52.51086",
+            "id": 14,
+            "seen_at": "2026-11-15T22:25:53.963924",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "t1HoCxJjDbMHIjuKBhvKwRU8i7E=",
-            "created_at": "2026-10-22T01:32:50.525997",
-            "rotated_at": "2026-10-22T01:32:50.52386",
-            "updated_at": "2026-10-22T01:32:50.525997",
+            "auth_token": "U7f8ONBp0uWFIdR8e0wG5L/44BY=",
+            "created_at": "2026-11-15T22:25:51.051065",
+            "rotated_at": "2026-11-15T22:25:51.04644",
+            "updated_at": "2026-11-15T22:25:51.051065",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "t1HoCxJjDbMHIjuKBhvKwRU8i7E=",
+            "prev_auth_token": "U7f8ONBp0uWFIdR8e0wG5L/44BY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1132,7 +1040,7 @@
   ],
   "recorded_from": {
     "case": "bd6ca8259715caa61fd623ded8a2e56edfbe20cb90faea901c902068c4b4da40",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

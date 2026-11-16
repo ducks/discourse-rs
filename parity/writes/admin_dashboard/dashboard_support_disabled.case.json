@@ -44,7 +44,6 @@
   ],
   "ignore": [
     "/responses/*/body/sections/*/data/storage/backups/free_bytes",
-    "/responses/*/body/sections/*/data/storage/uploads/free_bytes",
-    "/responses/*/body/sections/*/data/dashboard_updated_at"
+    "/responses/*/body/sections/*/data/storage/uploads/free_bytes"
   ]
 }

@@ -97,8 +97,15 @@ async fn golden_responses_match() {
         .unwrap();
 
         checked += 1;
-        if let Err(report) = parity::compare(case, &golden.response, &actual, ("golden", "rs")) {
-            failures.push(format!("{}\n{report}", case.label()));
+        let compared = parity::compare(case, &golden.response, &actual, ("golden", "rs"));
+        match (&case.not_yet, compared) {
+            (None, Err(report)) => failures.push(format!("{}\n{report}", case.label())),
+            // A known gap: it should still differ.
+            (Some(commits), Ok(())) => failures.push(format!(
+                "{}\nmatches Rails now: remove its not_yet={commits}",
+                case.label()
+            )),
+            _ => {}
         }
     }
 

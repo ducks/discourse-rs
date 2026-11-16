@@ -16,6 +16,8 @@ const GROUPS_JSON: &str = include_str!("../vendor/discourse-emojis/dist/groups.j
 const ALIASES_JSON: &str = include_str!("../vendor/discourse-emojis/dist/aliases.json");
 const SEARCH_ALIASES_JSON: &str =
     include_str!("../vendor/discourse-emojis/dist/search_aliases.json");
+/// `Emoji.animated_emojis` (f72218bc9f1): the gem's noto_animated names.
+const ANIMATED_JSON: &str = include_str!("../vendor/discourse-emojis/dist/animated_emojis.json");
 const EN_SEARCH_ALIASES_JSON: &str =
     include_str!("../vendor/discourse-emojis/dist/locale_search_aliases/en.json");
 
@@ -28,6 +30,7 @@ struct Standard {
     filename: String,
     group: String,
     tonable: bool,
+    animated: bool,
 }
 
 /// `Emoji.load_standard`: emojis.json's emoji that groups.json places.
@@ -46,6 +49,8 @@ static STANDARD: LazyLock<Vec<Standard>> = LazyLock::new(|| {
     }
     let tonable: Vec<String> =
         serde_json::from_str(discourse_markdown::emoji::TONABLE_JSON).expect("tonable_emojis.json");
+    let animated: std::collections::HashSet<String> =
+        serde_json::from_str(ANIMATED_JSON).expect("animated_emojis.json");
     emojis
         .iter()
         .filter_map(|e| {
@@ -58,6 +63,7 @@ static STANDARD: LazyLock<Vec<Standard>> = LazyLock::new(|| {
                     .unwrap_or(&name)
                     .to_string(),
                 tonable: tonable.contains(&name),
+                animated: animated.contains(&name),
                 name,
                 group,
             })
@@ -361,6 +367,7 @@ pub fn grouped(settings: &SiteSettings, base_path: &str) -> Result<Value, AppErr
             json!({
                 "name": e.name,
                 "tonable": e.tonable,
+                "animated": e.animated,
                 "url": emojis.url_for(base_path, &e.filename),
                 "group": e.group,
             }),

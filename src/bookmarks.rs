@@ -753,7 +753,11 @@ impl Bookmarks<'_> {
         let m = chat.serialize_bookmarked(&message).await?;
         let mut out = self.base_fields(row);
         out.insert("title".into(), json!(m.title));
-        out.insert("fancy_title".into(), json!(m.title));
+        // ERB::Util.html_escape(title) (5ffb25452cb).
+        out.insert(
+            "fancy_title".into(),
+            json!(crate::email::notification::html_escape(&m.title)),
+        );
         out.insert("excerpt".into(), json!(m.excerpt));
         out.insert("bookmarkable_id".into(), json!(row.bookmarkable_id));
         out.insert("bookmarkable_type".into(), json!(row.bookmarkable_type));
@@ -814,7 +818,29 @@ impl Bookmarks<'_> {
                     },
                 )
                 .await?;
-            bookmarks = self.serialize(&list, true).await?;
+            // UserMenuBookmarkSerializer (Discourse 31f877169b1): of the
+            // bookmarkable's serializer, only what the menu draws.
+            bookmarks = self
+                .serialize(&list, true)
+                .await?
+                .into_iter()
+                .map(|full| {
+                    let mut item = serde_json::Map::new();
+                    for key in [
+                        "id",
+                        "name",
+                        "fancy_title",
+                        "topic_id",
+                        "bookmarkable_url",
+                        "user",
+                    ] {
+                        if let Some(value) = full.get(key) {
+                            item.insert(key.into(), value.clone());
+                        }
+                    }
+                    Value::Object(item)
+                })
+                .collect();
         }
         Ok(json!({"notifications": notifications, "bookmarks": bookmarks}))
     }

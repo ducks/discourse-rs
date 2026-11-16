@@ -508,7 +508,7 @@ mod tests {
     fn house_is_inlined_as_rails_prints_it() {
         let svg = raw_svg("house").unwrap();
         assert!(svg.starts_with(
-            "<svg class=\"fa d-icon svg-icon svg-node\" aria-hidden=\"true\"><svg id=\"house\" viewBox=\"0 0 576 512\">\n  <path d=\"M575.8 255.5"
+            "<svg class=\"fa d-icon svg-icon svg-node\" aria-hidden=\"true\"><svg id=\"house\" viewBox=\"0 0 512 512\" overflow=\"visible\">\n  <path d=\"M277.8 8.6"
         ));
         assert!(svg.ends_with("z\"/>\n</svg></svg>\n"));
     }
@@ -563,7 +563,7 @@ mod tests {
     fn a_standalone_icon() {
         let doc = icon_document(search("house").unwrap(), Some("f0a"));
         assert!(doc.starts_with(
-            "<?xml version=\"1.0\"?>\n<svg id=\"house\" viewBox=\"0 0 576 512\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"#ff00aa\">"
+            "<?xml version=\"1.0\"?>\n<svg id=\"house\" viewBox=\"0 0 512 512\" overflow=\"visible\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"#ff00aa\">"
         ));
     }
 }

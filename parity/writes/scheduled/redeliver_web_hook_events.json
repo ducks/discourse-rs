@@ -2,8 +2,8 @@
   "name": "redeliver_web_hook_events",
   "user": "admin",
   "requests": [],
-  "started_at": "2026-10-14T07:46:19.228218",
-  "transaction_started_at": "2026-10-14T07:46:15.110982",
+  "started_at": "2026-11-15T23:28:42.220238",
+  "transaction_started_at": "2026-11-15T23:28:40.990334",
   "responses": [],
   "changes": {
     "redelivering_webhook_events": {
@@ -41,12 +41,12 @@
             "status": 200,
             "headers": "{\"Accept\":\"*/*\"}",
             "payload": "{\"post\":{\"id\":4}}",
-            "duration": 55,
+            "duration": 46,
             "created_at": "2026-10-03T12:00:00",
-            "updated_at": "2026-10-14T07:46:19.319206",
+            "updated_at": "2026-11-15T23:28:42.274905",
             "web_hook_id": 9001,
             "response_body": "thanks",
-            "response_headers": "{\"user-agent\":\"Discourse/2026.10.0-latest-bf55a44c2872738f7ae2664d6fec3d6d8779190f; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"6\",\"content-type\":\"text/plain\"}"
+            "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"6\",\"content-type\":\"text/plain\"}"
           }
         }
       ]
@@ -75,7 +75,7 @@
             "secret": "",
             "status": 1,
             "created_at": "2026-10-01T10:00:00",
-            "updated_at": "2026-10-14T07:46:19.326182",
+            "updated_at": "2026-11-15T23:28:42.279186",
             "payload_url": "http://fixtures.localhost:8099/hook",
             "content_type": 1,
             "wildcard_web_hook": false,
@@ -116,7 +116,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "905301a0ed1bb021dbd2c9450053d425e8f90fb3de44a080da724e85de5e5120",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

@@ -14,7 +14,7 @@
       "method": "POST",
       "path": "/admin/email/send-digest.json",
       "params": {
-        "last_seen_at": "2026-10-01",
+        "last_seen_at": "2099-01-01",
         "username": "user0"
       }
     },

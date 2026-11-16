@@ -8,8 +8,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-10-08T19:38:44.508717",
-  "transaction_started_at": "2026-10-08T19:38:43.555548",
+  "started_at": "2026-11-15T23:56:11.573594",
+  "transaction_started_at": "2026-11-15T23:56:10.761121",
   "responses": [
     {
       "status": 200,
@@ -21,12 +21,12 @@
               "name": "system",
               "username": "system",
               "avatar_template": "/images/discourse-logo-sketch-small.png",
-              "created_at": "2026-07-25T05:58:16.335Z",
+              "created_at": "2026-11-03T05:07:13.066Z",
               "cooked": "<p>Create topics here that don’t fit into any other existing category.</p>",
               "post_number": 1,
               "post_type": 1,
               "posts_count": 1,
-              "updated_at": "2026-07-25T05:58:16.335Z",
+              "updated_at": "2026-11-03T05:07:13.066Z",
               "reply_count": 0,
               "reply_to_post_number": null,
               "quote_count": 0,
@@ -110,58 +110,10 @@
         "timeline_lookup": [
           [
             1,
-            76
+            13
           ]
         ],
         "suggested_topics": [
-          {
-            "fancy_title": "Welcome to Discourse! :wave:",
-            "id": 5,
-            "title": "Welcome to Discourse! :wave:",
-            "slug": "welcome-to-discourse",
-            "posts_count": 1,
-            "reply_count": 0,
-            "highest_post_number": 1,
-            "image_url": null,
-            "created_at": "2026-07-25T05:58:28.320Z",
-            "last_posted_at": "2026-07-25T05:58:28.405Z",
-            "bumped": true,
-            "bumped_at": "2026-07-25T05:58:28.405Z",
-            "archetype": "regular",
-            "unseen": false,
-            "pinned": true,
-            "unpinned": null,
-            "excerpt": "We are so glad you joined us. \nHere are some things you can do to get started: \n:speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to your profile. What is one thi&hellip;",
-            "visible": true,
-            "closed": false,
-            "archived": false,
-            "bookmarked": null,
-            "liked": null,
-            "unicode_title": "Welcome to Discourse! 👋",
-            "tags": [],
-            "tags_descriptions": {},
-            "like_count": 0,
-            "views": 0,
-            "category_id": 4,
-            "featured_link": null,
-            "op_like_count": 0,
-            "has_accepted_answer": false,
-            "posters": [
-              {
-                "extras": "latest single",
-                "description": "Original Poster, Most Recent Poster",
-                "user": {
-                  "id": -1,
-                  "username": "system",
-                  "name": "system",
-                  "avatar_template": "/images/discourse-logo-sketch-small.png",
-                  "admin": true,
-                  "moderator": true,
-                  "trust_level": 4
-                }
-              }
-            ]
-          },
           {
             "fancy_title": "Parity fixture: replies and posters",
             "id": 35,
@@ -171,10 +123,10 @@
             "reply_count": 0,
             "highest_post_number": 5,
             "image_url": null,
-            "created_at": "2026-09-30T07:28:28.864Z",
-            "last_posted_at": "2026-10-01T15:39:51.834Z",
+            "created_at": "2026-11-15T19:19:53.917Z",
+            "last_posted_at": "2026-11-15T19:20:01.206Z",
             "bumped": true,
-            "bumped_at": "2026-10-01T15:39:51.834Z",
+            "bumped_at": "2026-11-15T19:20:01.206Z",
             "archetype": "regular",
             "unseen": false,
             "last_read_post_number": 2,
@@ -253,6 +205,54 @@
             ]
           },
           {
+            "fancy_title": "Welcome to Discourse! :wave:",
+            "id": 5,
+            "title": "Welcome to Discourse! :wave:",
+            "slug": "welcome-to-discourse",
+            "posts_count": 1,
+            "reply_count": 0,
+            "highest_post_number": 1,
+            "image_url": null,
+            "created_at": "2026-11-03T05:07:24.494Z",
+            "last_posted_at": "2026-11-03T05:07:24.525Z",
+            "bumped": true,
+            "bumped_at": "2026-11-03T05:07:24.525Z",
+            "archetype": "regular",
+            "unseen": false,
+            "pinned": true,
+            "unpinned": null,
+            "excerpt": "We are so glad you joined us. \nHere are some things you can do to get started: \n:speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to your profile. What is one thi&hellip;",
+            "visible": true,
+            "closed": false,
+            "archived": false,
+            "bookmarked": null,
+            "liked": null,
+            "unicode_title": "Welcome to Discourse! 👋",
+            "tags": [],
+            "tags_descriptions": {},
+            "like_count": 0,
+            "views": 0,
+            "category_id": 4,
+            "featured_link": null,
+            "op_like_count": 0,
+            "has_accepted_answer": false,
+            "posters": [
+              {
+                "extras": "latest single",
+                "description": "Original Poster, Most Recent Poster",
+                "user": {
+                  "id": -1,
+                  "username": "system",
+                  "name": "system",
+                  "avatar_template": "/images/discourse-logo-sketch-small.png",
+                  "admin": true,
+                  "moderator": true,
+                  "trust_level": 4
+                }
+              }
+            ]
+          },
+          {
             "fancy_title": "Parity fixture: tagged in a subcategory",
             "id": 38,
             "title": "Parity fixture: tagged in a subcategory",
@@ -261,10 +261,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-09-30T07:28:29.543Z",
-            "last_posted_at": "2026-09-30T07:28:29.580Z",
+            "created_at": "2026-11-15T19:19:54.728Z",
+            "last_posted_at": "2026-11-15T19:19:54.764Z",
             "bumped": true,
-            "bumped_at": "2026-09-30T07:28:29.580Z",
+            "bumped_at": "2026-11-15T19:19:54.764Z",
             "archetype": "regular",
             "unseen": false,
             "last_read_post_number": 1,
@@ -314,7 +314,7 @@
         "id": 3,
         "title": "About the General category",
         "posts_count": 1,
-        "created_at": "2026-07-25T05:58:16.326Z",
+        "created_at": "2026-11-03T05:07:13.039Z",
         "views": 0,
         "reply_count": 0,
         "like_count": 0,
@@ -331,7 +331,7 @@
         "user_id": -1,
         "featured_link": null,
         "pinned_globally": false,
-        "pinned_at": "2026-07-25T05:58:16.314Z",
+        "pinned_at": "2026-11-03T05:07:13.029Z",
         "pinned_until": null,
         "image_url": null,
         "slow_mode_seconds": 0,
@@ -377,6 +377,7 @@
         "show_read_indicator": false,
         "thumbnails": null,
         "slow_mode_enabled_until": null,
+        "board_memberships": [],
         "valid_reactions": [
           "heart",
           "+1",
@@ -392,8 +393,6 @@
         "can_vote": false,
         "vote_count": 0,
         "user_voted": false,
-        "discourse_zendesk_plugin_zendesk_id": null,
-        "discourse_zendesk_plugin_zendesk_url": "https://your-url.zendesk.com/agent/tickets/",
         "details": {
           "can_edit": false,
           "notification_level": 1,
@@ -445,33 +444,33 @@
       "updated": [
         {
           "before": {
-            "id": 291,
+            "id": 14,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "laLuch84l7d3LJ/AwOJomfrRPzs=",
-            "created_at": "2026-10-08T19:38:43.881319",
-            "rotated_at": "2026-10-08T19:38:43.881073",
-            "updated_at": "2026-10-08T19:38:43.881319",
+            "auth_token": "zcku/OBvODeUxZvWkdCqgxlaLoA=",
+            "created_at": "2026-11-15T23:56:11.112695",
+            "rotated_at": "2026-11-15T23:56:11.111875",
+            "updated_at": "2026-11-15T23:56:11.112695",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "laLuch84l7d3LJ/AwOJomfrRPzs=",
+            "prev_auth_token": "zcku/OBvODeUxZvWkdCqgxlaLoA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 291,
-            "seen_at": "2026-10-08T19:38:44.527711",
+            "id": 14,
+            "seen_at": "2026-11-15T23:56:11.579742",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "laLuch84l7d3LJ/AwOJomfrRPzs=",
-            "created_at": "2026-10-08T19:38:43.881319",
-            "rotated_at": "2026-10-08T19:38:43.881073",
-            "updated_at": "2026-10-08T19:38:43.881319",
+            "auth_token": "zcku/OBvODeUxZvWkdCqgxlaLoA=",
+            "created_at": "2026-11-15T23:56:11.112695",
+            "rotated_at": "2026-11-15T23:56:11.111875",
+            "updated_at": "2026-11-15T23:56:11.112695",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "laLuch84l7d3LJ/AwOJomfrRPzs=",
+            "prev_auth_token": "zcku/OBvODeUxZvWkdCqgxlaLoA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -481,6 +480,7 @@
     }
   },
   "jobs": [],
+  "next_ids": {},
   "setup": [
     "INSERT INTO topic_voting_category_settings (category_id, created_at, updated_at) VALUES (4, now(), now())",
     "INSERT INTO topic_voting_votes (topic_id, user_id, archive, created_at, updated_at) VALUES (35, 3, false, now(), now()), (35, 4, false, now(), now()), (39, 4, false, now(), now()), (41, 3, true, now(), now())",
@@ -488,7 +488,7 @@
   ],
   "recorded_from": {
     "case": "aee2b9e4b01dde5bd15a82e09930b0271ed5756d72babd9fc38704b022b67e6f",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

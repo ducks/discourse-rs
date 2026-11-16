@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-10-14T02:32:28.817193",
-  "transaction_started_at": "2026-10-14T02:32:26.130357",
+  "started_at": "2026-11-15T23:23:18.572519",
+  "transaction_started_at": "2026-11-15T23:23:17.722084",
   "responses": [
     {
       "status": 200,
@@ -35,8 +35,8 @@
           "id": 1,
           "edited": null,
           "status": 2,
-          "created_at": "2026-10-14T02:32:28.861553",
-          "updated_at": "2026-10-14T02:32:28.861553",
+          "created_at": "2026-11-15T23:23:18.601967",
+          "updated_at": "2026-11-15T23:23:18.601967",
           "created_by_id": 1,
           "reviewable_id": 9311,
           "reviewable_history_type": 1
@@ -76,7 +76,7 @@
             "user_id": -1,
             "created_at": "2026-10-02T10:00:00",
             "updated_at": "2026-10-02T10:00:00",
-            "reviewed_at": "2026-10-14T02:32:28.867339",
+            "reviewed_at": "2026-11-15T23:23:18.60535",
             "meta_topic_id": null,
             "reviewable_id": 9311,
             "reviewed_by_id": 1,
@@ -136,7 +136,7 @@
             "topic_id": 35,
             "target_id": null,
             "created_at": "2026-10-02T10:00:00",
-            "updated_at": "2026-10-14T02:32:28.85955",
+            "updated_at": "2026-11-15T23:23:18.600543",
             "category_id": 4,
             "target_type": null,
             "type_source": "core",
@@ -159,33 +159,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "O/mvsqBAAJMLGfygQ529y7NN23E=",
-            "created_at": "2026-10-14T02:32:27.515887",
-            "rotated_at": "2026-10-14T02:32:27.511863",
-            "updated_at": "2026-10-14T02:32:27.515887",
+            "auth_token": "ndV7hiplkNlFMI+ihqmcAQmvDfw=",
+            "created_at": "2026-11-15T23:23:18.077242",
+            "rotated_at": "2026-11-15T23:23:18.076307",
+            "updated_at": "2026-11-15T23:23:18.077242",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "O/mvsqBAAJMLGfygQ529y7NN23E=",
+            "prev_auth_token": "ndV7hiplkNlFMI+ihqmcAQmvDfw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-10-14T02:32:28.82487",
+            "id": 14,
+            "seen_at": "2026-11-15T23:23:18.577972",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "O/mvsqBAAJMLGfygQ529y7NN23E=",
-            "created_at": "2026-10-14T02:32:27.515887",
-            "rotated_at": "2026-10-14T02:32:27.511863",
-            "updated_at": "2026-10-14T02:32:27.515887",
+            "auth_token": "ndV7hiplkNlFMI+ihqmcAQmvDfw=",
+            "created_at": "2026-11-15T23:23:18.077242",
+            "rotated_at": "2026-11-15T23:23:18.076307",
+            "updated_at": "2026-11-15T23:23:18.077242",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "O/mvsqBAAJMLGfygQ529y7NN23E=",
+            "prev_auth_token": "ndV7hiplkNlFMI+ihqmcAQmvDfw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -196,19 +196,20 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 64,
           "context": null,
-          "details": "created_at: 2026-10-02 10:00:00 UTC\nrejected_at: 2026-10-14T02:32:28+00:00\nuser: user0 (User0)\ntopic: Parity fixture: replies and posters\nraw: This reply waits for approval in the queue.",
+          "details": "created_at: 2026-10-02 10:00:00 UTC\nrejected_at: 2026-11-15T23:23:18+00:00\nuser: user0 (User0)\ntopic: Parity fixture: replies and posters\nraw: This reply waits for approval in the queue.",
           "post_id": null,
           "subject": null,
           "topic_id": 35,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-10-14T02:32:28.85659",
+          "created_at": "2026-11-15T23:23:18.598139",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T02:32:28.85659",
+          "updated_at": "2026-11-15T23:23:18.598139",
           "category_id": 4,
           "custom_type": null,
           "reviewable_id": 9311,
@@ -228,7 +229,7 @@
           "before": {
             "user_id": 2,
             "read_faq": null,
-            "new_since": "2026-07-25T05:59:16.023001",
+            "new_since": "2026-11-03T05:08:00.230026",
             "time_read": 0,
             "post_count": 1,
             "draft_count": 0,
@@ -240,21 +241,21 @@
             "flags_ignored": 0,
             "likes_received": 1,
             "topics_entered": 0,
-            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "first_unread_at": "2026-11-03T05:08:00.103863",
             "flags_disagreed": 0,
             "post_edits_count": null,
             "posts_read_count": 3,
-            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
-            "digest_attempted_at": "2026-10-14T02:29:10.389614",
+            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
+            "digest_attempted_at": null,
             "pending_posts_count": 1,
-            "distinct_badge_count": 3,
-            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-15T19:19:53.957314",
             "reset_bounce_score_after": null
           },
           "after": {
             "user_id": 2,
             "read_faq": null,
-            "new_since": "2026-07-25T05:59:16.023001",
+            "new_since": "2026-11-03T05:08:00.230026",
             "time_read": 0,
             "post_count": 1,
             "draft_count": 0,
@@ -266,15 +267,15 @@
             "flags_ignored": 0,
             "likes_received": 1,
             "topics_entered": 0,
-            "first_unread_at": "2026-10-01T18:21:56.278874",
+            "first_unread_at": "2026-11-03T05:08:00.103863",
             "flags_disagreed": 0,
             "post_edits_count": null,
             "posts_read_count": 3,
-            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
-            "digest_attempted_at": "2026-10-14T02:29:10.389614",
+            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
+            "digest_attempted_at": null,
             "pending_posts_count": 0,
-            "distinct_badge_count": 3,
-            "first_post_created_at": "2026-09-30T07:28:28.901913",
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-15T19:19:53.957314",
             "reset_bounce_score_after": null
           }
         }
@@ -295,7 +296,7 @@
   ],
   "next_ids": {
     "reviewable_histories": 1,
-    "user_histories": 74
+    "user_histories": 68
   },
   "setup": [
     "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9311, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"This reply waits for approval in the queue.\", \"tags\": null, \"typing_duration_msecs\": 3000, \"composer_open_duration_msecs\": 12000}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
@@ -305,7 +306,7 @@
   ],
   "recorded_from": {
     "case": "dabecad8671b02a9303b5c331afc67e4256e2dce6d42085af36fa0a226db8207",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

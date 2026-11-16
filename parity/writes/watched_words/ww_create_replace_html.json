@@ -15,8 +15,8 @@
       }
     }
   ],
-  "started_at": "2026-10-14T06:47:37.456062",
-  "transaction_started_at": "2026-10-14T06:47:35.459807",
+  "started_at": "2026-11-16T00:08:08.619709",
+  "transaction_started_at": "2026-11-16T00:08:07.734763",
   "responses": [
     {
       "status": 200,
@@ -69,33 +69,33 @@
       "updated": [
         {
           "before": {
-            "id": 78,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "C1hto2WdvzkgC0ZqPUi3nD0tKnI=",
-            "created_at": "2026-10-14T06:47:36.433844",
-            "rotated_at": "2026-10-14T06:47:36.431154",
-            "updated_at": "2026-10-14T06:47:36.433844",
+            "auth_token": "G5aal2WQ3WL9v+X8DrNqYLoPChI=",
+            "created_at": "2026-11-16T00:08:08.101372",
+            "rotated_at": "2026-11-16T00:08:08.100581",
+            "updated_at": "2026-11-16T00:08:08.101372",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "C1hto2WdvzkgC0ZqPUi3nD0tKnI=",
+            "prev_auth_token": "G5aal2WQ3WL9v+X8DrNqYLoPChI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 78,
-            "seen_at": "2026-10-14T06:47:37.461664",
+            "id": 14,
+            "seen_at": "2026-11-16T00:08:08.633217",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "C1hto2WdvzkgC0ZqPUi3nD0tKnI=",
-            "created_at": "2026-10-14T06:47:36.433844",
-            "rotated_at": "2026-10-14T06:47:36.431154",
-            "updated_at": "2026-10-14T06:47:36.433844",
+            "auth_token": "G5aal2WQ3WL9v+X8DrNqYLoPChI=",
+            "created_at": "2026-11-16T00:08:08.101372",
+            "rotated_at": "2026-11-16T00:08:08.100581",
+            "updated_at": "2026-11-16T00:08:08.101372",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "C1hto2WdvzkgC0ZqPUi3nD0tKnI=",
+            "prev_auth_token": "G5aal2WQ3WL9v+X8DrNqYLoPChI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -106,7 +106,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 105,
           "context": "replace",
@@ -116,9 +116,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-10-14T06:47:37.487163",
+          "created_at": "2026-11-16T00:08:08.710694",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T06:47:37.487163",
+          "updated_at": "2026-11-16T00:08:08.710694",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -135,8 +136,8 @@
         {
           "id": 1,
           "action": 5,
-          "created_at": "2026-10-14T06:47:37.479067",
-          "updated_at": "2026-10-14T06:47:37.479067"
+          "created_at": "2026-11-16T00:08:08.682655",
+          "updated_at": "2026-11-16T00:08:08.682655"
         }
       ],
       "deleted": [],
@@ -149,8 +150,8 @@
           "html": true,
           "word": "kitty",
           "action": 5,
-          "created_at": "2026-10-14T06:47:37.473785",
-          "updated_at": "2026-10-14T06:47:37.48338",
+          "created_at": "2026-11-16T00:08:08.666168",
+          "updated_at": "2026-11-16T00:08:08.699144",
           "replacement": "<b>cat</b>",
           "case_sensitive": false,
           "watched_word_group_id": 1
@@ -162,13 +163,13 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 74,
+    "user_histories": 68,
     "watched_word_groups": 1,
     "watched_words": 1
   },
   "recorded_from": {
     "case": "be17d7742ae4d8b2d357a19b9e76841abb03442bf43935db4d5af0b0bb82c97e",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

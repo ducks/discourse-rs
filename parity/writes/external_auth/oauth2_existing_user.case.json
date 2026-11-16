@@ -1,5 +1,6 @@
 {
   "user": null,
+  "not_yet": "2b6dd368623 (Discourse): connected accounts keep their avatars (UserAvatar.retrieve_for_associated_account); not ported",
   "settings": {
     "allowed_internal_hosts": "fixtures.localhost",
     "auth_require_interaction": false,
@@ -20,16 +21,22 @@
   "remote": {
     "/token": {
       "status": 200,
-      "headers": {"Content-Type": "application/json"},
+      "headers": {
+        "Content-Type": "application/json"
+      },
       "body": "{\"access_token\":\"access-1\",\"token_type\":\"Bearer\",\"expires_in\":3600,\"refresh_token\":\"refresh-1\"}"
     },
     "/user.json": {
       "status": 200,
-      "headers": {"Content-Type": "application/json"},
+      "headers": {
+        "Content-Type": "application/json"
+      },
       "body": "{\"user\":{\"id\":4242,\"login\":\"user1\",\"name\":\"User One\",\"mail\":\"user1@example.com\",\"avatar\":\"http://fixtures.localhost:8099/avatar.png\"},\"verified\":true}"
     }
   },
-  "keep_headers": ["Location"],
+  "keep_headers": [
+    "Location"
+  ],
   "requests": [
     {
       "method": "GET",

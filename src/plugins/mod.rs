@@ -287,6 +287,16 @@ pub async fn user_warning_created(
     user_notes::user_warning_created(conn, settings, urls, i18n, warning).await
 }
 
+/// Whether the unported Boards::TopicSync (`sync_topic`, `remove_topic`, run
+/// on the topic events while boards_enabled) has a board to write to.
+/// Boards went stable in Discourse 7d003898b28, so the plugin is on by
+/// default; with no board its sync writes nothing.
+pub async fn boards_to_sync(conn: &mut sqlx::PgConnection) -> Result<bool, sqlx::Error> {
+    sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM discourse_kanban_boards)")
+        .fetch_one(conn)
+        .await
+}
+
 /// UserDestroyer, before the user row goes: the rows the plugins'
 /// associations on User take with it (`has_many ..., dependent:`). Rails
 /// declares those when a plugin loads, so they apply whether or not the
@@ -306,10 +316,10 @@ pub async fn user_destroying(
             "discourse-events",
         ),
         ("discourse_post_event_hosts", "user_id", "discourse-events"),
-        ("voice_rooms", "creator_id", "voice"),
-        ("voice_room_memberships", "user_id", "voice"),
-        ("voice_co_presences", "user_id_1", "voice"),
-        ("voice_co_presences", "user_id_2", "voice"),
+        ("live_rooms", "creator_id", "live"),
+        ("live_room_memberships", "user_id", "live"),
+        ("live_co_presences", "user_id_1", "live"),
+        ("live_co_presences", "user_id_2", "live"),
     ];
     for (table, column, _) in UNPORTED {
         let any: bool = sqlx::query_scalar(&format!(
@@ -320,7 +330,7 @@ pub async fn user_destroying(
         .await?;
         if any {
             return Err(PluginError::Unsupported(crate::Unsupported(
-                "deleting a user with data of unported plugins (discourse-ai, events, voice)",
+                "deleting a user with data of unported plugins (discourse-ai, events, live)",
             )));
         }
     }

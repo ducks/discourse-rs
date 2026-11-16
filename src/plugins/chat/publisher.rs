@@ -12,14 +12,15 @@ use crate::{AppError, Unsupported};
 
 /// `Chat::Publisher.permissions(channel)` for a category channel, as bus
 /// audience tags: Chat.message_bus_allowed_group_ids (everyone and logged
-/// in users as trust level 0, anonymous users left out); for a restricted
+/// in users as trust level 0, anonymous users left out), or everyone (None)
+/// while anonymous_public_channel_access_allowed?; for a restricted
 /// category, its allowed groups as chat's restricted category ids.
 pub async fn audience(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     chatable_type: &str,
     chatable_id: i64,
-) -> Result<Vec<String>, AppError> {
+) -> Result<Option<Vec<String>>, AppError> {
     // A direct message's: its participants (allowed_user_ids).
     if chatable_type == "DirectMessage" {
         let ids: Vec<i32> = sqlx::query_scalar(
@@ -28,7 +29,7 @@ pub async fn audience(
         .bind(chatable_id)
         .fetch_all(&mut *conn)
         .await?;
-        return Ok(ids.into_iter().map(crate::bus::user_tag).collect());
+        return Ok(Some(ids.into_iter().map(crate::bus::user_tag).collect()));
     }
     if chatable_type != "Category" {
         return Err(Unsupported("chat channels of other chatables").into());
@@ -54,21 +55,25 @@ pub async fn audience(
                 groups.push(id);
             }
         }
-        return Ok(groups
-            .into_iter()
-            .map(crate::bus::chat_restricted_category_tag)
-            .collect());
+        return Ok(Some(
+            groups
+                .into_iter()
+                .map(crate::bus::chat_restricted_category_tag)
+                .collect(),
+        ));
     }
     let allowed = settings.group_ids("chat_allowed_groups")?;
     if settings.get("enable_public_channels")?.truthy()
         && allowed.contains(&auto_groups::ANONYMOUS_USERS)
     {
-        return Err(Unsupported("anonymous access to chat channels").into());
+        return Ok(None);
     }
-    Ok(super::message_bus_allowed_group_ids(settings)?
-        .into_iter()
-        .map(crate::bus::group_tag)
-        .collect())
+    Ok(Some(
+        super::message_bus_allowed_group_ids(settings)?
+            .into_iter()
+            .map(crate::bus::group_tag)
+            .collect(),
+    ))
 }
 
 /// `serialize_message_with_type`: the message as the anonymous guardian
@@ -160,7 +165,7 @@ async fn publish_to_targets(
     )
     .await?;
     for target in targets {
-        bus.publish(&mut *cx.conn, target, payload, Some(&tags))
+        bus.publish(&mut *cx.conn, target, payload, tags.as_deref())
             .await?;
     }
     Ok(())
@@ -201,7 +206,7 @@ pub async fn publish_new(
                     "force_thread": thread.force,
                     "message": message,
                 }),
-                Some(&tags),
+                tags.as_deref(),
             )
             .await?;
             publish_thread_metadata(cx, bus, channel, thread.id).await?;
@@ -216,7 +221,7 @@ pub async fn publish_new(
                     "thread_id": thread_id,
                     "message": message,
                 }),
-                Some(&tags),
+                tags.as_deref(),
             )
             .await?;
         }
@@ -520,7 +525,7 @@ pub async fn publish_channel_metadata(
         &mut *conn,
         "/chat/channel-metadata",
         &json!({ "chat_channel_id": channel_id, "memberships_count": memberships_count }),
-        Some(&tags),
+        tags.as_deref(),
     )
     .await?;
     Ok(())
@@ -583,7 +588,7 @@ pub async fn publish_archive_status(
             "total_messages": status.total_messages,
             "archive_topic_id": status.archive_topic_id,
         }),
-        Some(&tags),
+        tags.as_deref(),
     )
     .await?;
     Ok(())

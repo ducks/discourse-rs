@@ -1,5 +1,6 @@
 {
   "user": "admin",
+  "not_yet": "3b804903928 (Discourse): CategorySerializer#permission_groups and logged_in_users category permissions; not ported",
   "settings": {
     "general_category_id": "2",
     "topic_voting_enabled": "true"

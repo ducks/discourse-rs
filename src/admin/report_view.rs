@@ -36,8 +36,6 @@ pub struct ReportPage<'a> {
     pub end_date: &'a str,
     /// The model's `customFilters` (the `filters` query param).
     pub custom_filters: Option<&'a Map<String, Value>>,
-    /// In `dashboard_hidden_reports`.
-    pub hidden: bool,
     /// `@showRelatedItems`: the viewer is an admin.
     pub admin: bool,
     pub back: Back,
@@ -148,15 +146,12 @@ impl ReportPage<'_> {
         } else {
             self.kind.to_string()
         };
+        // reportClasses: no hidden or is-visible since Discourse 58f631dfb0b
+        // dropped dashboard_hidden_reports.
         let mut out = format!(
-            "<div class=\"admin-report is-enabled {} {}\">",
-            if self.hidden { "hidden" } else { "is-visible" },
+            "<div class=\"admin-report is-enabled {}\">",
             escape(&name.replace('_', "-"))
         );
-        if self.hidden {
-            out.push_str("</div>");
-            return out;
-        }
         out.push_str("<div class=\"conditional-loading-section\">");
         let not_found = self.error() == Some("not_found");
         if let Some(r) = self.report

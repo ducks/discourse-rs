@@ -31,5 +31,8 @@
       "method": "GET",
       "path": "/u/by-external/github/123.json"
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/current_user/available_notification_types"
   ]
 }

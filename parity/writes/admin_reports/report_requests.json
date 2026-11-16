@@ -83,8 +83,8 @@
       }
     }
   ],
-  "started_at": "2026-10-14T15:02:31.731534",
-  "transaction_started_at": "2026-10-14T15:02:28.761749",
+  "started_at": "2026-11-15T21:46:09.887715",
+  "transaction_started_at": "2026-11-15T21:46:08.904189",
   "responses": [
     {
       "status": 200,
@@ -98,12 +98,8 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-12",
-              "y": 50
-            },
-            {
-              "x": "2026-10-13",
-              "y": 9
+              "x": "2026-10-06",
+              "y": 100
             }
           ],
           "start_date": "2026-09-20T00:00:00Z",
@@ -111,7 +107,7 @@
           "prev_data": null,
           "prev_start_date": "2026-08-09T00:00:00Z",
           "prev_end_date": "2026-09-20T00:00:00Z",
-          "prev30Days": 100,
+          "prev30Days": 0,
           "dates_filtering": true,
           "report_key": "reports:page_view_total_reqs:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
           "primary_color": "rgba(0,136,204,1)",
@@ -153,12 +149,8 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-12",
-              "y": 135
-            },
-            {
-              "x": "2026-10-13",
-              "y": 15
+              "x": "2026-10-06",
+              "y": 50
             }
           ],
           "start_date": "2026-09-20T00:00:00Z",
@@ -166,7 +158,7 @@
           "prev_data": null,
           "prev_start_date": "2026-08-09T00:00:00Z",
           "prev_end_date": "2026-09-20T00:00:00Z",
-          "prev30Days": 50,
+          "prev30Days": 0,
           "dates_filtering": true,
           "report_key": "reports:page_view_legacy_total_reqs:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
           "primary_color": "rgba(0,136,204,1)",
@@ -205,16 +197,7 @@
           "yaxis": "Web Crawler Pageviews",
           "description": "Total pageviews from web crawlers over time.",
           "description_link": null,
-          "data": [
-            {
-              "x": "2026-10-12",
-              "y": 70
-            },
-            {
-              "x": "2026-10-13",
-              "y": 5
-            }
-          ],
+          "data": [],
           "start_date": "2026-09-20T00:00:00Z",
           "end_date": "2026-10-31T23:59:59Z",
           "prev_data": null,
@@ -297,16 +280,7 @@
           "yaxis": "Logged In Browser Pageviews",
           "description": "Number of pageviews by logged-in visitors using real browsers.",
           "description_link": null,
-          "data": [
-            {
-              "x": "2026-10-12",
-              "y": 30
-            },
-            {
-              "x": "2026-10-13",
-              "y": 8
-            }
-          ],
+          "data": [],
           "start_date": "2026-09-20T00:00:00Z",
           "end_date": "2026-10-31T23:59:59Z",
           "prev_data": null,
@@ -353,8 +327,8 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-12",
-              "y": 20
+              "x": "2026-10-06",
+              "y": 100
             }
           ],
           "start_date": "2026-09-20T00:00:00Z",
@@ -362,7 +336,7 @@
           "prev_data": null,
           "prev_start_date": "2026-08-09T00:00:00Z",
           "prev_end_date": "2026-09-20T00:00:00Z",
-          "prev30Days": 100,
+          "prev30Days": 0,
           "dates_filtering": true,
           "report_key": "reports:page_view_anon_browser_reqs:20260920:20261031:[:total, :prev30Days]:5:1:true:false",
           "primary_color": "rgba(0,136,204,1)",
@@ -401,12 +375,7 @@
           "yaxis": "Embedded pageviews",
           "description": "Number of pageviews served inside the full app embed iframe.",
           "description_link": null,
-          "data": [
-            {
-              "x": "2026-10-13",
-              "y": 2
-            }
-          ],
+          "data": [],
           "start_date": "2026-09-20T00:00:00Z",
           "end_date": "2026-10-31T23:59:59Z",
           "prev_data": null,
@@ -462,12 +431,8 @@
               "color": "#1EB8D1",
               "data": [
                 {
-                  "x": "2026-10-12",
-                  "y": 40
-                },
-                {
-                  "x": "2026-10-13",
-                  "y": 10
+                  "x": "2026-10-06",
+                  "y": 50
                 }
               ]
             },
@@ -475,27 +440,13 @@
               "req": "page_view_anon",
               "label": "Anonymous users",
               "color": "#9BC53D",
-              "data": [
-                {
-                  "x": "2026-10-12",
-                  "y": 25
-                }
-              ]
+              "data": []
             },
             {
               "req": "page_view_crawler",
               "label": "Crawlers",
               "color": "#721D8D",
-              "data": [
-                {
-                  "x": "2026-10-12",
-                  "y": 70
-                },
-                {
-                  "x": "2026-10-13",
-                  "y": 5
-                }
-              ]
+              "data": []
             }
           ],
           "start_date": "2026-09-20T00:00:00Z",
@@ -548,23 +499,13 @@
               "req": "api",
               "label": "API",
               "color": "#1EB8D1",
-              "data": [
-                {
-                  "x": "2026-10-13",
-                  "y": 3
-                }
-              ]
+              "data": []
             },
             {
               "req": "user_api",
               "label": "User API",
               "color": "#9BC53D",
-              "data": [
-                {
-                  "x": "2026-10-13",
-                  "y": 4
-                }
-              ]
+              "data": []
             }
           ],
           "start_date": "2026-09-20T00:00:00Z",
@@ -624,12 +565,8 @@
               "color": "#4B3CE0",
               "data": [
                 {
-                  "x": "2026-10-12",
-                  "y": 30
-                },
-                {
-                  "x": "2026-10-13",
-                  "y": 9
+                  "x": "2026-10-06",
+                  "y": 0
                 }
               ]
             },
@@ -639,12 +576,8 @@
               "color": "#9C8DEC",
               "data": [
                 {
-                  "x": "2026-10-12",
-                  "y": 20
-                },
-                {
-                  "x": "2026-10-13",
-                  "y": 0
+                  "x": "2026-10-06",
+                  "y": 100
                 }
               ]
             },
@@ -654,12 +587,8 @@
               "color": "#D5CDF7",
               "data": [
                 {
-                  "x": "2026-10-12",
-                  "y": 70
-                },
-                {
-                  "x": "2026-10-13",
-                  "y": 5
+                  "x": "2026-10-06",
+                  "y": 0
                 }
               ]
             },
@@ -669,12 +598,8 @@
               "color": "#E84A5F",
               "data": [
                 {
-                  "x": "2026-10-12",
-                  "y": 15
-                },
-                {
-                  "x": "2026-10-13",
-                  "y": 1
+                  "x": "2026-10-06",
+                  "y": 0
                 }
               ]
             }
@@ -728,33 +653,33 @@
       "updated": [
         {
           "before": {
-            "id": 222,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "r3HfzE0FR0+AeiJj24O2Wu5fte8=",
-            "created_at": "2026-10-14T15:02:30.061672",
-            "rotated_at": "2026-10-14T15:02:30.058588",
-            "updated_at": "2026-10-14T15:02:30.061672",
+            "auth_token": "tPIeGH6dPYLSRUqvgUXvRdmZ3y4=",
+            "created_at": "2026-11-15T21:46:09.22435",
+            "rotated_at": "2026-11-15T21:46:09.223554",
+            "updated_at": "2026-11-15T21:46:09.22435",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "r3HfzE0FR0+AeiJj24O2Wu5fte8=",
+            "prev_auth_token": "tPIeGH6dPYLSRUqvgUXvRdmZ3y4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 222,
-            "seen_at": "2026-10-14T15:02:31.737534",
+            "id": 14,
+            "seen_at": "2026-11-15T21:46:09.893243",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "r3HfzE0FR0+AeiJj24O2Wu5fte8=",
-            "created_at": "2026-10-14T15:02:30.061672",
-            "rotated_at": "2026-10-14T15:02:30.058588",
-            "updated_at": "2026-10-14T15:02:30.061672",
+            "auth_token": "tPIeGH6dPYLSRUqvgUXvRdmZ3y4=",
+            "created_at": "2026-11-15T21:46:09.22435",
+            "rotated_at": "2026-11-15T21:46:09.223554",
+            "updated_at": "2026-11-15T21:46:09.22435",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "r3HfzE0FR0+AeiJj24O2Wu5fte8=",
+            "prev_auth_token": "tPIeGH6dPYLSRUqvgUXvRdmZ3y4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -770,7 +695,7 @@
   ],
   "recorded_from": {
     "case": "50e066ac88594a3f38e0d3db9fca13671bfa01ded4a617078877ffc9951915f8",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

@@ -15,8 +15,8 @@
       }
     }
   ],
-  "started_at": "2026-11-06T20:27:18.96195",
-  "transaction_started_at": "2026-11-06T20:27:17.741388",
+  "started_at": "2026-11-15T23:24:16.091803",
+  "transaction_started_at": "2026-11-15T23:24:15.056742",
   "responses": [
     {
       "status": 200,
@@ -51,8 +51,8 @@
             ]
           },
           "status": 0,
-          "created_at": "2026-11-06T20:27:19.021567",
-          "updated_at": "2026-11-06T20:27:19.021567",
+          "created_at": "2026-11-15T23:24:16.160072",
+          "updated_at": "2026-11-15T23:24:16.160072",
           "created_by_id": 1,
           "reviewable_id": 9701,
           "reviewable_history_type": 2
@@ -110,7 +110,7 @@
             "topic_id": 35,
             "target_id": null,
             "created_at": "2026-10-02T10:00:00",
-            "updated_at": "2026-11-06T20:27:18.992001",
+            "updated_at": "2026-11-15T23:24:16.118107",
             "category_id": 4,
             "target_type": null,
             "type_source": "core",
@@ -127,53 +127,39 @@
         }
       ]
     },
-    "upload_references": {
-      "inserted": [
-        {
-          "id": 36,
-          "target_id": 9701,
-          "upload_id": 1,
-          "created_at": "2026-11-06T20:27:19.016684",
-          "updated_at": "2026-11-06T20:27:19.016721",
-          "target_type": "ReviewableQueuedPost"
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
     "user_auth_tokens": {
       "inserted": [],
       "deleted": [],
       "updated": [
         {
           "before": {
-            "id": 665,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "YF7Q/+j+zUxyxg7DQq8o5QFrhEk=",
-            "created_at": "2026-11-06T20:27:18.241086",
-            "rotated_at": "2026-11-06T20:27:18.240258",
-            "updated_at": "2026-11-06T20:27:18.241086",
+            "auth_token": "I3v1bgKTG5n7AujoEw4esmy+YN8=",
+            "created_at": "2026-11-15T23:24:15.405023",
+            "rotated_at": "2026-11-15T23:24:15.404001",
+            "updated_at": "2026-11-15T23:24:15.405023",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "YF7Q/+j+zUxyxg7DQq8o5QFrhEk=",
+            "prev_auth_token": "I3v1bgKTG5n7AujoEw4esmy+YN8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 665,
-            "seen_at": "2026-11-06T20:27:18.969106",
+            "id": 14,
+            "seen_at": "2026-11-15T23:24:16.098381",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "YF7Q/+j+zUxyxg7DQq8o5QFrhEk=",
-            "created_at": "2026-11-06T20:27:18.241086",
-            "rotated_at": "2026-11-06T20:27:18.240258",
-            "updated_at": "2026-11-06T20:27:18.241086",
+            "auth_token": "I3v1bgKTG5n7AujoEw4esmy+YN8=",
+            "created_at": "2026-11-15T23:24:15.405023",
+            "rotated_at": "2026-11-15T23:24:15.404001",
+            "updated_at": "2026-11-15T23:24:15.405023",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "YF7Q/+j+zUxyxg7DQq8o5QFrhEk=",
+            "prev_auth_token": "I3v1bgKTG5n7AujoEw4esmy+YN8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -191,8 +177,7 @@
     ]
   ],
   "next_ids": {
-    "reviewable_histories": 1,
-    "upload_references": 36
+    "reviewable_histories": 1
   },
   "setup": [
     "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9701, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"This reply waits for approval in the queue.\", \"tags\": null, \"typing_duration_msecs\": 3000, \"composer_open_duration_msecs\": 12000}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
@@ -201,7 +186,7 @@
   ],
   "recorded_from": {
     "case": "755fc3e5d96c54a96054d5ad0ce79d320e9cfe2f0fb0d91c5f35844f77b09e8b",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

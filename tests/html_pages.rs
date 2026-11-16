@@ -55,7 +55,7 @@ async fn home_and_latest_render_the_topic_list() {
         );
         assert!(
             html.contains(
-                r#"Welcome to Discourse! <img width="20" height="20" src='/images/emoji/twitter/wave.png?v=15' title='wave' alt='wave' class='emoji'>"#
+                r#"Welcome to Discourse! <img width="20" height="20" src='/images/emoji/twitter/wave.png?v=16' title='wave' alt='wave' class='emoji'>"#
             ),
             "emoji title"
         );
@@ -75,7 +75,7 @@ async fn home_and_latest_render_the_topic_list() {
         assert!(head.contains("data-relative-date-duration=\"30\""));
         assert!(head.contains("&quot;dates.long_with_year&quot;:&quot;MMM D, YYYY h:mm a&quot;"));
         assert!(html.contains(
-            r#" title="Created: Jul 25, 2026 5:58 am" data-tz-title="Created: %{1784959108320:MMM D, YYYY h:mm a}"><a class="post-activity" href="/t/welcome-to-discourse/5/1"><span class='relative-date' data-time='1784959108405' data-format='tiny'>"#
+            r#" title="Created: Nov 3, 2026 5:07 am" data-tz-title="Created: %{1793682444494:MMM D, YYYY h:mm a}"><a class="post-activity" href="/t/welcome-to-discourse/5/1"><span class='relative-date' data-time='1793682444525' data-format='tiny'>"#
         ), "{path}");
         assert!(!html.contains("Parity fixture: unlisted topic"));
         assert!(!html.contains("Parity fixture: deleted topic"));
@@ -244,7 +244,7 @@ async fn topic_page_shows_reactions_in_place_of_the_like_button() {
         r#"<button aria-expanded="false" aria-haspopup="dialog" aria-label="1 reaction" class="discourse-reactions-counter only-like" id="discourse-reactions-counter-46-left" type="button""#
     ));
     assert!(html.contains(
-        r#"<span class="discourse-reactions-list-emoji" id="discourse-reactions-list-emoji-46-heart"><img width="20" height="20" src="/images/emoji/twitter/heart.png?v=15" title="heart" alt="heart" class="emoji"></span>"#
+        r#"<span class="discourse-reactions-list-emoji" id="discourse-reactions-list-emoji-46-heart"><img width="20" height="20" src="/images/emoji/twitter/heart.png?v=16" title="heart" alt="heart" class="emoji"></span>"#
     ));
     // The button: no reacting in an archived topic (no
     // can-toggle-reaction), titled for an anonymous reader.
@@ -785,7 +785,7 @@ async fn a_members_topic_page_draws_what_the_composers_save_shows() {
 }
 
 const TAGGED_REPLY_WHERE: &str = r#"<template class="reply-where-topic" data-topic-id="38" data-offer="true"><div class="topic-title"><div class="topic-title__top-line"><span class="topic-statuses"></span><span class="fancy-title">Parity fixture: tagged in a subcategory</span></div><div class="topic-title__bottom-line"><span class="badge-category__wrapper" style="--category-badge-color: #AB9364;--category-badge-text-color: #FFFFFF;--parent-category-badge-color: #25AAE2;--parent-category-badge-text-color: #FFFFFF;"><span data-category-id="34" data-parent-category-id="4" data-drop-close="true" class="badge-category --has-parent --style-square"><span class="badge-category__name">Sub General</span></span></span><ul class='discourse-tags' aria-label=Tags><li><a href='/tag/howto/1'  data-tag-name=howto class='discourse-tag simple'>howto</a></li></ul></div></div></template>"#;
-const CLOSED_REPLY_WHERE: &str = r##"<template class="reply-where-topic" data-topic-id="37" data-offer="true"><div class="topic-title"><div class="topic-title__top-line"><span class="topic-statuses"><span class="topic-status --closed"><svg class="fa d-icon d-icon-lock svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#lock"></use></svg></span><span class="topic-status --pinned"><svg class="fa d-icon d-icon-thumbtack svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#thumbtack"></use></svg></span></span><span class="fancy-title">Parity fixture: pinned and closed</span></div><div class="topic-title__bottom-line"><span class="badge-category__wrapper" style="--category-badge-color: #808281;--category-badge-text-color: #FFFFFF;"><span data-category-id="2" data-drop-close="true" class="badge-category --style-emoji"><img width="20" height="20" src='/images/emoji/twitter/thought_balloon.png?v=15' title='thought_balloon' alt='thought_balloon' class='emoji'><span class="badge-category__name">Site Feedback</span></span></span></div></div></template>"##;
+const CLOSED_REPLY_WHERE: &str = r##"<template class="reply-where-topic" data-topic-id="37" data-offer="true"><div class="topic-title"><div class="topic-title__top-line"><span class="topic-statuses"><span class="topic-status --closed"><svg class="fa d-icon d-icon-lock svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#lock"></use></svg></span><span class="topic-status --pinned"><svg class="fa d-icon d-icon-thumbtack svg-icon fa-width-auto svg-string" width="1em" height="1em" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><use href="#thumbtack"></use></svg></span></span><span class="fancy-title">Parity fixture: pinned and closed</span></div><div class="topic-title__bottom-line"><span class="badge-category__wrapper" style="--category-badge-color: #808281;--category-badge-text-color: #FFFFFF;"><span data-category-id="2" data-drop-close="true" class="badge-category --style-emoji"><img width="20" height="20" src='/images/emoji/twitter/thought_balloon.png?v=16' title='thought_balloon' alt='thought_balloon' class='emoji'><span class="badge-category__name">Site Feedback</span></span></span></div></div></template>"##;
 
 /// /p/:post_id(/:user_id) (posts#short_link): a 302 to the post's URL,
 /// where the topic page jumps to it; a missing post is not found and one
@@ -2154,7 +2154,9 @@ fn list_rows<'a>(html: &'a str, path: &str) -> &'a str {
 #[tokio::test]
 async fn discovery_lists_carry_embers_body_classes() {
     let db = TestDb::new().await;
-    let uc = "uc-enable-new-checkbox-style uc-floating-dismiss-topics-on-mobile uc-modernize-foundation-theme";
+    // enable_composer_redesign went beta and enable_main_outlet_grid_layout_change
+    // came in as beta after bf55a44: the reference (promoting beta) has them on.
+    let uc = "uc-enable-composer-redesign uc-enable-main-outlet-grid-layout-change uc-enable-new-checkbox-style uc-floating-dismiss-topics-on-mobile uc-modernize-foundation-theme";
     for (path, classes) in [
         (
             "/latest",

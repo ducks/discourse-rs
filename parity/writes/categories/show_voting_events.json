@@ -7,8 +7,8 @@
       "path": "/c/4/show.json"
     }
   ],
-  "started_at": "2026-10-16T01:14:17.872383",
-  "transaction_started_at": "2026-10-16T01:14:16.418209",
+  "started_at": "2026-11-15T22:29:49.662437",
+  "transaction_started_at": "2026-11-15T22:29:48.858496",
   "responses": [
     {
       "status": 200,
@@ -23,7 +23,7 @@
           "emoji": "blue_book",
           "slug": "general",
           "topic_count": 3,
-          "post_count": 6,
+          "post_count": 1,
           "position": 3,
           "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
           "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -66,6 +66,7 @@
               "title": "discussion",
               "description": "A standard category with all the essentials for conversation.",
               "icon": "memo",
+              "svg_icon": "comment",
               "available": true,
               "visible": true,
               "configuration_schema": {}
@@ -76,6 +77,7 @@
               "title": "events",
               "description": "Where members can find and discuss upcoming events on a shared calendar.",
               "icon": "spiral_calendar",
+              "svg_icon": "calendar-days",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -232,6 +234,7 @@
               "title": "support",
               "description": "Where members can ask questions and mark replies as solutions.",
               "icon": "person_raising_hand",
+              "svg_icon": "circle-question",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -387,6 +390,7 @@
               "title": "ideas",
               "description": "Where members can submit ideas and vote on the ones they want most.",
               "icon": "bulb",
+              "svg_icon": "lightbulb",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -568,6 +572,48 @@
             "trust_level_3",
             "trust_level_4"
           ],
+          "permission_groups": [
+            {
+              "id": 1,
+              "name": "admins"
+            },
+            {
+              "id": 0,
+              "name": "everyone"
+            },
+            {
+              "id": 5,
+              "name": "logged_in_users"
+            },
+            {
+              "id": 2,
+              "name": "moderators"
+            },
+            {
+              "id": 3,
+              "name": "staff"
+            },
+            {
+              "id": 10,
+              "name": "trust_level_0"
+            },
+            {
+              "id": 11,
+              "name": "trust_level_1"
+            },
+            {
+              "id": 12,
+              "name": "trust_level_2"
+            },
+            {
+              "id": 13,
+              "name": "trust_level_3"
+            },
+            {
+              "id": 14,
+              "name": "trust_level_4"
+            }
+          ],
           "allowed_tags": [],
           "allowed_tag_groups": [],
           "auto_close_hours": null,
@@ -602,6 +648,7 @@
               "title": "discussion",
               "description": "A standard category with all the essentials for conversation.",
               "icon": "memo",
+              "svg_icon": "comment",
               "available": true,
               "visible": true,
               "configuration_schema": {}
@@ -612,6 +659,7 @@
               "title": "events",
               "description": "Where members can find and discuss upcoming events on a shared calendar.",
               "icon": "spiral_calendar",
+              "svg_icon": "calendar-days",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -768,6 +816,7 @@
               "title": "support",
               "description": "Where members can ask questions and mark replies as solutions.",
               "icon": "person_raising_hand",
+              "svg_icon": "circle-question",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -923,6 +972,7 @@
               "title": "ideas",
               "description": "Where members can submit ideas and vote on the ones they want most.",
               "icon": "bulb",
+              "svg_icon": "lightbulb",
               "available": true,
               "visible": true,
               "configuration_schema": {
@@ -1109,33 +1159,33 @@
       "updated": [
         {
           "before": {
-            "id": 257,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "c5heerlEJ+pauDRO0plDbLInJ2U=",
-            "created_at": "2026-10-16T01:14:17.027129",
-            "rotated_at": "2026-10-16T01:14:17.025881",
-            "updated_at": "2026-10-16T01:14:17.027129",
+            "auth_token": "SJxo8rYVd+nf3i1FqSbwlhyrvtg=",
+            "created_at": "2026-11-15T22:29:49.17492",
+            "rotated_at": "2026-11-15T22:29:49.173792",
+            "updated_at": "2026-11-15T22:29:49.17492",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "c5heerlEJ+pauDRO0plDbLInJ2U=",
+            "prev_auth_token": "SJxo8rYVd+nf3i1FqSbwlhyrvtg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 257,
-            "seen_at": "2026-10-16T01:14:17.881925",
+            "id": 14,
+            "seen_at": "2026-11-15T22:29:49.668877",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "c5heerlEJ+pauDRO0plDbLInJ2U=",
-            "created_at": "2026-10-16T01:14:17.027129",
-            "rotated_at": "2026-10-16T01:14:17.025881",
-            "updated_at": "2026-10-16T01:14:17.027129",
+            "auth_token": "SJxo8rYVd+nf3i1FqSbwlhyrvtg=",
+            "created_at": "2026-11-15T22:29:49.17492",
+            "rotated_at": "2026-11-15T22:29:49.173792",
+            "updated_at": "2026-11-15T22:29:49.17492",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "c5heerlEJ+pauDRO0plDbLInJ2U=",
+            "prev_auth_token": "SJxo8rYVd+nf3i1FqSbwlhyrvtg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1158,7 +1208,7 @@
   ],
   "recorded_from": {
     "case": "0a1f98ea0c1e13660e982d96ecc2a88b659426bac836d59db63ef498b77e59d6",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

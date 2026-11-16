@@ -14,8 +14,8 @@
       }
     }
   ],
-  "started_at": "2026-10-17T07:07:54.963549",
-  "transaction_started_at": "2026-10-17T07:07:53.874748",
+  "started_at": "2026-11-15T21:40:55.538928",
+  "transaction_started_at": "2026-11-15T21:40:54.706285",
   "responses": [
     {
       "status": 200,
@@ -24,13 +24,14 @@
           {
             "setting": "boards_enabled",
             "humanized_name": "Boards enabled",
-            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control",
-            "value": false,
+            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control. Visit <a href='/boards'>/boards</a> to get started.",
+            "value": true,
             "upcoming_change": {
-              "status": "alpha",
+              "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/411418",
               "requires_plugin_enabled": false,
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -39,11 +40,12 @@
               "body_class": null,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/plugins/boards/images/upcoming_changes/boards_enabled.png",
+                "url": "http://localhost:3042/plugins/boards/images/upcoming_changes/boards_enabled.png",
                 "width": 1250,
                 "height": 851
               },
-              "enabled_for": "no_one"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.639Z"
             },
             "plugin": "Boards",
             "depends_on": [],
@@ -61,22 +63,22 @@
             "description": "Enable pinned messages in chat channels.",
             "value": true,
             "upcoming_change": {
-              "status": "stable",
+              "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/397571",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.641Z"
             },
             "plugin": "Chat",
             "depends_on": [],
             "depends_on_humanized_names": [],
-            "dependents": [
-              "chat_pinning_messages_allowed_groups"
-            ],
+            "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
@@ -89,6 +91,7 @@
             "upcoming_change": {
               "status": "alpha",
               "learn_more_url": "https://meta.discourse.org/t/-/402705",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -97,7 +100,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.642Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -112,15 +116,17 @@
             "description": "Enables the redesigned admin dashboard that lets you pin custom reports and includes improved site traffic, engagement, and other analytics tied to community success and value.",
             "value": true,
             "upcoming_change": {
-              "status": "stable",
+              "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/404528",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "admins",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.643Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -137,13 +143,15 @@
             "upcoming_change": {
               "status": "experimental",
               "learn_more_url": "https://meta.discourse.org/t/-/412529",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.646Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -156,22 +164,24 @@
             "setting": "enable_composer_redesign",
             "humanized_name": "Enable composer redesign",
             "description": "Enable the redesigned composer.",
-            "value": false,
+            "value": true,
             "upcoming_change": {
-              "status": "alpha",
+              "status": "beta",
               "body_class": true,
               "learn_more_url": "https://meta.discourse.org/t/-/407849",
+              "group_setting": null,
               "impact_type": "other",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_composer_redesign.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_composer_redesign.png",
                 "width": 1620,
                 "height": 1544
               },
-              "enabled_for": "no_one"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.647Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -186,15 +196,17 @@
             "description": "Let members choose which buttons appear in their composer toolbar, from their interface preferences.",
             "value": false,
             "upcoming_change": {
-              "status": "experimental",
+              "status": "alpha",
               "learn_more_url": "https://meta.discourse.org/t/-/412749",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.648Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -213,12 +225,14 @@
               "learn_more_url": "https://meta.discourse.org/t/-/403795",
               "permanent_warning": false,
               "requires_plugin_enabled": false,
+              "group_setting": null,
               "impact_type": "site_setting_default",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.649Z"
             },
             "plugin": "Reactions",
             "depends_on": [],
@@ -238,19 +252,21 @@
               "learn_more_url": "https://meta.discourse.org/t/-/407100",
               "requires_plugin_enabled": false,
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
-              "impact_role": "admins",
+              "impact_role": "staff",
               "allow_enabled_for": [
                 "everyone"
               ],
               "body_class": null,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/plugins/discourse-workflows/images/upcoming_changes/enable_discourse_workflows.png",
+                "url": "http://localhost:3042/plugins/discourse-workflows/images/upcoming_changes/enable_discourse_workflows.png",
                 "width": 1200,
                 "height": 687
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.650Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -269,13 +285,15 @@
               "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/401309",
               "requires_plugin_enabled": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "staff",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.651Z"
             },
             "plugin": "Events",
             "depends_on": [],
@@ -293,6 +311,7 @@
             "upcoming_change": {
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/411435",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -301,7 +320,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.652Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -319,13 +339,15 @@
               "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/399365",
               "requires_plugin_enabled": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "staff",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.654Z"
             },
             "plugin": "Topic Voting",
             "depends_on": [],
@@ -343,6 +365,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/407727",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "admins",
               "allow_enabled_for": null,
@@ -350,11 +373,12 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_invite_modal_with_roles.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_invite_modal_with_roles.png",
                 "width": 700,
                 "height": 410
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.657Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -372,6 +396,7 @@
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/407068",
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -380,11 +405,12 @@
               "body_class": null,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_local_logins_via_code.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_local_logins_via_code.png",
                 "width": 806,
                 "height": 730
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.659Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -402,22 +428,22 @@
             "groups": null
           },
           {
-            "setting": "enable_markdown_endpoints",
-            "humanized_name": "Enable markdown endpoints",
-            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
+            "setting": "enable_main_outlet_grid_layout_change",
+            "humanized_name": "Enable main outlet grid layout change",
+            "description": "Place the composer inside the main layout grid so themes can position it in a grid column, and use a narrower sidebar.",
             "value": true,
             "upcoming_change": {
               "status": "beta",
-              "learn_more_url": "https://meta.discourse.org/t/-/413006",
-              "impact_type": "feature",
+              "body_class": true,
+              "learn_more_url": "https://meta.discourse.org/t/-/414357",
+              "group_setting": null,
+              "impact_type": "other",
               "impact_role": "all_members",
-              "allow_enabled_for": [
-                "everyone"
-              ],
-              "body_class": null,
+              "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.660Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -427,27 +453,25 @@
             "groups": null
           },
           {
-            "setting": "enable_new_chat_reactions_popup",
-            "humanized_name": "Enable new chat reactions popup",
-            "description": "Enable the redesigned reactions popup on chat messages, showing who reacted with infinite scroll and a native mobile experience.",
+            "setting": "enable_markdown_endpoints",
+            "humanized_name": "Enable markdown endpoints",
+            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
             "value": true,
             "upcoming_change": {
-              "status": "permanent",
-              "learn_more_url": "https://meta.discourse.org/t/-/406004",
+              "status": "stable",
+              "learn_more_url": "https://meta.discourse.org/t/-/413006",
+              "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
-              "allow_enabled_for": null,
+              "allow_enabled_for": [
+                "everyone"
+              ],
               "body_class": null,
-              "permanent_warning": true,
               "hide_settings": null,
-              "image": {
-                "url": "http://localhost:3048/plugins/chat/images/upcoming_changes/enable_new_chat_reactions_popup.png",
-                "width": 826,
-                "height": 1368
-              },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.662Z"
             },
-            "plugin": "Chat",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [],
@@ -464,17 +488,19 @@
               "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/403284",
               "body_class": true,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_new_checkbox_style.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_new_checkbox_style.png",
                 "width": 758,
                 "height": 396
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.663Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -492,6 +518,7 @@
               "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/397098",
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "site_setting_default",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -499,35 +526,8 @@
               ],
               "body_class": null,
               "hide_settings": null,
-              "enabled_for": "everyone"
-            },
-            "depends_on": [],
-            "depends_on_humanized_names": [],
-            "dependents": [],
-            "depends_on_met": true,
-            "overriding_defaults": false,
-            "groups": null
-          },
-          {
-            "setting": "enable_new_post_reactions_menu",
-            "humanized_name": "Enable new post reactions menu",
-            "description": "Enable the redesigned post likes and reactions menu, with infinite scroll and a native mobile experience.",
-            "value": true,
-            "upcoming_change": {
-              "status": "permanent",
-              "learn_more_url": "https://meta.discourse.org/t/-/389820",
-              "impact_type": "feature",
-              "impact_role": "all_members",
-              "allow_enabled_for": null,
-              "body_class": null,
-              "permanent_warning": true,
-              "hide_settings": null,
-              "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_new_post_reactions_menu.png",
-                "width": 269,
-                "height": 343
-              },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.664Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -544,6 +544,7 @@
             "upcoming_change": {
               "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/403390",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
@@ -551,13 +552,39 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/plugins/discourse-reactions/images/upcoming_changes/enable_new_post_reply_count_position.png",
+                "url": "http://localhost:3042/plugins/discourse-reactions/images/upcoming_changes/enable_new_post_reply_count_position.png",
                 "width": 319,
                 "height": 132
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.666Z"
             },
             "plugin": "Reactions",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "enable_new_reordering_controls",
+            "humanized_name": "Enable new reordering controls",
+            "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
+            "value": false,
+            "upcoming_change": {
+              "status": "alpha",
+              "learn_more_url": "https://meta.discourse.org/t/-/414613",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.667Z"
+            },
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [],
@@ -573,6 +600,7 @@
             "upcoming_change": {
               "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/394971",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "staff",
               "allow_enabled_for": null,
@@ -580,41 +608,13 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_simplified_category_creation.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_simplified_category_creation.png",
                 "width": 1113,
                 "height": 653
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.669Z"
             },
-            "depends_on": [],
-            "depends_on_humanized_names": [],
-            "dependents": [],
-            "depends_on_met": true,
-            "overriding_defaults": false,
-            "groups": null
-          },
-          {
-            "setting": "enable_solved_shared_issues",
-            "humanized_name": "Enable solved shared issues",
-            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
-            "value": true,
-            "upcoming_change": {
-              "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/402498",
-              "permanent_warning": false,
-              "impact_type": "feature",
-              "impact_role": "all_members",
-              "allow_enabled_for": null,
-              "body_class": null,
-              "hide_settings": null,
-              "image": {
-                "url": "http://localhost:3048/plugins/discourse-solved/images/upcoming_changes/enable_solved_shared_issues.png",
-                "width": 1200,
-                "height": 330
-              },
-              "enabled_for": "everyone"
-            },
-            "plugin": "Solved",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [],
@@ -631,6 +631,7 @@
               "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/398338",
               "requires_plugin_enabled": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "staff",
               "allow_enabled_for": null,
@@ -638,11 +639,12 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/plugins/discourse-solved/images/upcoming_changes/enable_support_category_type_setup.png",
+                "url": "http://localhost:3042/plugins/discourse-solved/images/upcoming_changes/enable_support_category_type_setup.png",
                 "width": 1031,
                 "height": 467
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.670Z"
             },
             "plugin": "Solved",
             "depends_on": [],
@@ -660,6 +662,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/404728",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
@@ -667,17 +670,48 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_unified_new.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_unified_new.png",
                 "width": 1112,
                 "height": 436
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.671Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": true,
+            "groups": null
+          },
+          {
+            "setting": "enable_user_menu_mentions_tab",
+            "humanized_name": "Enable user menu mentions tab",
+            "description": "Add a Mentions tab to the user menu that shows direct @username mentions separately from replies and group mentions.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/415579",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "image": {
+                "url": "http://localhost:3042/images/upcoming_changes/enable_user_menu_mentions_tab.png",
+                "width": 391,
+                "height": 442
+              },
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.673Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
             "groups": null
           },
           {
@@ -689,17 +723,19 @@
               "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/387322",
               "body_class": true,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/floating_dismiss_topics_on_mobile.png",
+                "url": "http://localhost:3042/images/upcoming_changes/floating_dismiss_topics_on_mobile.png",
                 "width": 486,
                 "height": 1077
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.674Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -716,6 +752,7 @@
             "upcoming_change": {
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/402273",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -724,7 +761,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.675Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -741,6 +779,7 @@
             "upcoming_change": {
               "status": "experimental",
               "learn_more_url": "https://meta.discourse.org/t/-/409316",
+              "group_setting": null,
               "impact_type": "other",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -749,7 +788,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.677Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -757,6 +797,53 @@
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
+          },
+          {
+            "setting": "live_enabled",
+            "humanized_name": "Live enabled",
+            "description": "Live brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "value": false,
+            "upcoming_change": {
+              "status": "experimental",
+              "learn_more_url": "https://meta.discourse.org/t/-/411337",
+              "requires_plugin_enabled": false,
+              "permanent_warning": false,
+              "group_setting": "live_allowed_groups",
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "hide_settings": null,
+              "image": {
+                "url": "http://localhost:3042/plugins/live/images/upcoming_changes/live_enabled.png",
+                "width": 752,
+                "height": 407
+              },
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.678Z"
+            },
+            "plugin": "Live",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [
+              "live_allowed_groups",
+              "live_create_room_allowed_groups",
+              "live_direct_calls_allowed_groups",
+              "live_video_allowed_groups",
+              "live_screen_share_allowed_groups",
+              "live_local_recording_allowed_groups",
+              "live_badges_enabled"
+            ],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": "anonymous_users,logged_in_users",
+            "group_setting": {
+              "setting": "live_allowed_groups",
+              "value": "4|5",
+              "mandatory_values": null,
+              "disallowed_groups": "0",
+              "requires_confirmation": null
+            }
           },
           {
             "setting": "modernize_foundation_theme",
@@ -767,12 +854,14 @@
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/395331",
               "body_class": true,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.680Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -789,13 +878,15 @@
             "upcoming_change": {
               "status": "experimental",
               "learn_more_url": "https://meta.discourse.org/t/-/410419",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.681Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -812,6 +903,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/406373",
+              "group_setting": null,
               "impact_type": "other",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -823,7 +915,8 @@
                 "allow_uncategorized_topics",
                 "suppress_uncategorized_badge"
               ],
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.682Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -840,13 +933,15 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/395099",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.684Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -863,13 +958,40 @@
             "upcoming_change": {
               "status": "permanent",
               "learn_more_url": "https://meta.discourse.org/t/-/395768",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "staff",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.685Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "review_queue_consistent_answers",
+            "humanized_name": "Review queue consistent answers",
+            "description": "Frame every review queue question so \"Yes\" always means there is a problem, and label reviewed items \"Problem confirmed\" or \"No problem found\" for every type.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/417015",
+              "group_setting": null,
+              "impact_type": "other",
+              "impact_role": "moderators",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.686Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -886,13 +1008,15 @@
             "upcoming_change": {
               "status": "experimental",
               "learn_more_url": "https://meta.discourse.org/t/-/413150",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.688Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -902,40 +1026,30 @@
             "groups": null
           },
           {
-            "setting": "voice_enabled",
-            "humanized_name": "Voice enabled",
-            "description": "Voice brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required.",
+            "setting": "update_whispers_allowed_groups_default",
+            "humanized_name": "Update whispers allowed groups default",
+            "description": "We are updating the default for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=whispers_allowed_groups\" data-setting-name=\"whispers_allowed_groups\" data-setting-area=\"group_permissions\" data-setting-category=\"basic\">Whispers allowed groups</a> setting to allow staff to post whispers by default. If you have previously changed this setting, your configuration will not change unless you reset the setting.",
             "value": false,
             "upcoming_change": {
-              "status": "experimental",
-              "learn_more_url": "https://meta.discourse.org/t/-/411337",
-              "requires_plugin_enabled": false,
+              "status": "alpha",
+              "learn_more_url": "https://meta.discourse.org/t/-/414354",
               "permanent_warning": false,
-              "impact_type": "feature",
-              "impact_role": "all_members",
+              "group_setting": null,
+              "impact_type": "site_setting_default",
+              "impact_role": "staff",
               "allow_enabled_for": [
                 "everyone"
               ],
               "body_class": null,
               "hide_settings": null,
-              "image": {
-                "url": "http://localhost:3048/plugins/voice/images/upcoming_changes/voice_enabled.png",
-                "width": 752,
-                "height": 407
-              },
-              "enabled_for": "no_one"
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-15T19:20:03.690Z"
             },
-            "plugin": "Voice",
             "depends_on": [],
             "depends_on_humanized_names": [],
-            "dependents": [
-              "voice_allowed_groups",
-              "voice_create_room_allowed_groups",
-              "voice_direct_calls_allowed_groups",
-              "voice_badges_enabled"
-            ],
+            "dependents": [],
             "depends_on_met": true,
-            "overriding_defaults": false,
+            "overriding_defaults": true,
             "groups": null
           }
         ]
@@ -946,46 +1060,63 @@
       "body": {
         "upcoming_changes": [
           {
-            "setting": "chat_pinned_messages",
-            "humanized_name": "Chat pinned messages",
-            "description": "Enable pinned messages in chat channels.",
+            "setting": "boards_enabled",
+            "humanized_name": "Boards enabled",
+            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control. Visit <a href='/boards'>/boards</a> to get started.",
             "value": true,
             "upcoming_change": {
               "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/397571",
+              "learn_more_url": "https://meta.discourse.org/t/-/411418",
+              "requires_plugin_enabled": false,
+              "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
-              "allow_enabled_for": null,
+              "allow_enabled_for": [
+                "everyone"
+              ],
               "body_class": null,
-              "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "image": {
+                "url": "http://localhost:3042/plugins/boards/images/upcoming_changes/boards_enabled.png",
+                "width": 1250,
+                "height": 851
+              },
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.639Z"
             },
-            "plugin": "Chat",
+            "plugin": "Boards",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [
-              "chat_pinning_messages_allowed_groups"
+              "boards_manage_board_allowed_groups"
             ],
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
           },
           {
-            "setting": "dashboard_improvements",
-            "humanized_name": "Dashboard improvements",
-            "description": "Enables the redesigned admin dashboard that lets you pin custom reports and includes improved site traffic, engagement, and other analytics tied to community success and value.",
+            "setting": "enable_composer_redesign",
+            "humanized_name": "Enable composer redesign",
+            "description": "Enable the redesigned composer.",
             "value": true,
             "upcoming_change": {
-              "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/404528",
-              "impact_type": "feature",
-              "impact_role": "admins",
+              "status": "beta",
+              "body_class": true,
+              "learn_more_url": "https://meta.discourse.org/t/-/407849",
+              "group_setting": null,
+              "impact_type": "other",
+              "impact_role": "all_members",
               "allow_enabled_for": null,
-              "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "image": {
+                "url": "http://localhost:3042/images/upcoming_changes/enable_composer_redesign.png",
+                "width": 1620,
+                "height": 1544
+              },
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.647Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1004,19 +1135,21 @@
               "learn_more_url": "https://meta.discourse.org/t/-/407100",
               "requires_plugin_enabled": false,
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
-              "impact_role": "admins",
+              "impact_role": "staff",
               "allow_enabled_for": [
                 "everyone"
               ],
               "body_class": null,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/plugins/discourse-workflows/images/upcoming_changes/enable_discourse_workflows.png",
+                "url": "http://localhost:3042/plugins/discourse-workflows/images/upcoming_changes/enable_discourse_workflows.png",
                 "width": 1200,
                 "height": 687
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.650Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -1034,6 +1167,7 @@
             "upcoming_change": {
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/411435",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -1042,7 +1176,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.652Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1059,6 +1194,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/407727",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "admins",
               "allow_enabled_for": null,
@@ -1066,11 +1202,12 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_invite_modal_with_roles.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_invite_modal_with_roles.png",
                 "width": 700,
                 "height": 410
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.657Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1088,6 +1225,7 @@
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/407068",
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -1096,11 +1234,12 @@
               "body_class": null,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_local_logins_via_code.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_local_logins_via_code.png",
                 "width": 806,
                 "height": 730
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.659Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -1118,22 +1257,22 @@
             "groups": null
           },
           {
-            "setting": "enable_markdown_endpoints",
-            "humanized_name": "Enable markdown endpoints",
-            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
+            "setting": "enable_main_outlet_grid_layout_change",
+            "humanized_name": "Enable main outlet grid layout change",
+            "description": "Place the composer inside the main layout grid so themes can position it in a grid column, and use a narrower sidebar.",
             "value": true,
             "upcoming_change": {
               "status": "beta",
-              "learn_more_url": "https://meta.discourse.org/t/-/413006",
-              "impact_type": "feature",
+              "body_class": true,
+              "learn_more_url": "https://meta.discourse.org/t/-/414357",
+              "group_setting": null,
+              "impact_type": "other",
               "impact_role": "all_members",
-              "allow_enabled_for": [
-                "everyone"
-              ],
-              "body_class": null,
+              "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.660Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1143,27 +1282,25 @@
             "groups": null
           },
           {
-            "setting": "enable_solved_shared_issues",
-            "humanized_name": "Enable solved shared issues",
-            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
+            "setting": "enable_markdown_endpoints",
+            "humanized_name": "Enable markdown endpoints",
+            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
             "value": true,
             "upcoming_change": {
               "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/402498",
+              "learn_more_url": "https://meta.discourse.org/t/-/413006",
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
-              "allow_enabled_for": null,
+              "allow_enabled_for": [
+                "everyone"
+              ],
               "body_class": null,
               "hide_settings": null,
-              "image": {
-                "url": "http://localhost:3048/plugins/discourse-solved/images/upcoming_changes/enable_solved_shared_issues.png",
-                "width": 1200,
-                "height": 330
-              },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.662Z"
             },
-            "plugin": "Solved",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [],
@@ -1179,6 +1316,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/404728",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
@@ -1186,17 +1324,48 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_unified_new.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_unified_new.png",
                 "width": 1112,
                 "height": 436
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.671Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": true,
+            "groups": null
+          },
+          {
+            "setting": "enable_user_menu_mentions_tab",
+            "humanized_name": "Enable user menu mentions tab",
+            "description": "Add a Mentions tab to the user menu that shows direct @username mentions separately from replies and group mentions.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/415579",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "image": {
+                "url": "http://localhost:3042/images/upcoming_changes/enable_user_menu_mentions_tab.png",
+                "width": 391,
+                "height": 442
+              },
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.673Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
             "groups": null
           },
           {
@@ -1207,6 +1376,7 @@
             "upcoming_change": {
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/402273",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -1215,7 +1385,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.675Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1233,12 +1404,14 @@
               "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/395331",
               "body_class": true,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.680Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1255,6 +1428,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/406373",
+              "group_setting": null,
               "impact_type": "other",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -1266,7 +1440,8 @@
                 "allow_uncategorized_topics",
                 "suppress_uncategorized_badge"
               ],
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.682Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1283,13 +1458,40 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/395099",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.684Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "review_queue_consistent_answers",
+            "humanized_name": "Review queue consistent answers",
+            "description": "Frame every review queue question so \"Yes\" always means there is a problem, and label reviewed items \"Problem confirmed\" or \"No problem found\" for every type.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/417015",
+              "group_setting": null,
+              "impact_type": "other",
+              "impact_role": "moderators",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.686Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1309,33 +1511,33 @@
       "updated": [
         {
           "before": {
-            "id": 409,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "YsMGMJGFQK4i0d7nytCrdOosTDQ=",
-            "created_at": "2026-10-17T07:07:54.237087",
-            "rotated_at": "2026-10-17T07:07:54.236008",
-            "updated_at": "2026-10-17T07:07:54.237087",
+            "auth_token": "m+tRXDGkZh9GsQCCMdYST0BuT70=",
+            "created_at": "2026-11-15T21:40:55.022225",
+            "rotated_at": "2026-11-15T21:40:55.02134",
+            "updated_at": "2026-11-15T21:40:55.022225",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "YsMGMJGFQK4i0d7nytCrdOosTDQ=",
+            "prev_auth_token": "m+tRXDGkZh9GsQCCMdYST0BuT70=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 409,
-            "seen_at": "2026-10-17T07:07:54.970152",
+            "id": 14,
+            "seen_at": "2026-11-15T21:40:55.545172",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "YsMGMJGFQK4i0d7nytCrdOosTDQ=",
-            "created_at": "2026-10-17T07:07:54.237087",
-            "rotated_at": "2026-10-17T07:07:54.236008",
-            "updated_at": "2026-10-17T07:07:54.237087",
+            "auth_token": "m+tRXDGkZh9GsQCCMdYST0BuT70=",
+            "created_at": "2026-11-15T21:40:55.022225",
+            "rotated_at": "2026-11-15T21:40:55.02134",
+            "updated_at": "2026-11-15T21:40:55.022225",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "YsMGMJGFQK4i0d7nytCrdOosTDQ=",
+            "prev_auth_token": "m+tRXDGkZh9GsQCCMdYST0BuT70=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1348,10 +1550,10 @@
         {
           "id": 1,
           "name": "last_visited_upcoming_changes_at",
-          "value": "2026-10-17T07:07:55Z",
+          "value": "2026-11-15T21:40:55Z",
           "user_id": 1,
-          "created_at": "2026-10-17T07:07:55.004693",
-          "updated_at": "2026-10-17T07:07:55.004693"
+          "created_at": "2026-11-15T21:40:55.572361",
+          "updated_at": "2026-11-15T21:40:55.572361"
         }
       ],
       "deleted": [],
@@ -1364,7 +1566,7 @@
   },
   "recorded_from": {
     "case": "263373944a07596fdc48c0ee99ebd5facd2558a396943ad7f07079d3e8e7ae6d",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

@@ -50,7 +50,7 @@ pub enum Outcome {
 }
 
 const MEMBERSHIP_COLUMNS: &str = "chat_channel_id, following, muted, notification_level, \
-     last_read_message_id, last_viewed_at, last_viewed_pins_at, starred";
+     last_read_message_id, last_viewed_at, last_viewed_pins_at, starred, muted_until";
 
 impl Context<'_> {
     /// `Chat::Channel.find_by(id:)`, live channels.

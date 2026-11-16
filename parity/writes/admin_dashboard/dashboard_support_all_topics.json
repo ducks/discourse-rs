@@ -20,8 +20,8 @@
       }
     }
   ],
-  "started_at": "2026-10-21T18:50:27.473629",
-  "transaction_started_at": "2026-10-21T18:50:23.756709",
+  "started_at": "2026-11-16T03:28:54.016136",
+  "transaction_started_at": "2026-11-16T03:28:53.27165",
   "responses": [
     {
       "status": 200,
@@ -44,7 +44,7 @@
                 },
                 {
                   "type": "dau_mau",
-                  "value": 100.0,
+                  "value": null,
                   "previous_value": null,
                   "percent_change": null,
                   "report_type": "dau_by_mau",
@@ -55,7 +55,7 @@
                 },
                 {
                   "type": "new_contributors",
-                  "value": 4,
+                  "value": null,
                   "previous_value": 0,
                   "percent_change": null,
                   "report_type": "new_contributors",
@@ -527,7 +527,7 @@
               "kpis": [
                 {
                   "type": "dau_mau",
-                  "value": 100.0,
+                  "value": null,
                   "previous_value": null,
                   "percent_change": null,
                   "report_type": "dau_by_mau",
@@ -538,7 +538,7 @@
                 },
                 {
                   "type": "daily_engaged_users",
-                  "value": 4.5,
+                  "value": null,
                   "previous_value": 0,
                   "percent_change": null,
                   "report_type": "daily_engaged_users",
@@ -588,7 +588,7 @@
                     "share": 40.0,
                     "share_formatted": "40.0%",
                     "promoted_in": 0,
-                    "demoted_in": 1,
+                    "demoted_in": 0,
                     "signups": 0
                   },
                   {
@@ -613,8 +613,8 @@
                   }
                 ],
                 "trend": {
-                  "direction": "dropping",
-                  "net": 1
+                  "direction": "stable",
+                  "net": 0
                 },
                 "total_members": 5
               },
@@ -634,21 +634,21 @@
                     "kind": "synthetic",
                     "group_id": null,
                     "name": "Returning",
-                    "count": 6,
-                    "share": 60.0,
-                    "share_formatted": "60.0%"
+                    "count": 0,
+                    "share": 0.0,
+                    "share_formatted": "0.0%"
                   },
                   {
                     "type": "staff",
                     "kind": "synthetic",
                     "group_id": null,
                     "name": "Staff",
-                    "count": 4,
-                    "share": 40.0,
-                    "share_formatted": "40.0%"
+                    "count": 0,
+                    "share": 0.0,
+                    "share_formatted": "0.0%"
                   }
                 ],
-                "total": 10,
+                "total": 0,
                 "category_ids": null,
                 "groups": [
                   "new_members",
@@ -657,48 +657,8 @@
                 ]
               },
               "activity_by_category": {
-                "rows": [
-                  {
-                    "category_id": 4,
-                    "name": "General",
-                    "color": "25AAE2",
-                    "slug": "general",
-                    "topics": 3,
-                    "posts": 7,
-                    "page_views": 0,
-                    "share": 62.5,
-                    "share_change": 62.5,
-                    "share_formatted": "62.5%",
-                    "share_change_formatted": "+62.5%"
-                  },
-                  {
-                    "category_id": 34,
-                    "name": "Sub General",
-                    "color": "AB9364",
-                    "slug": "sub-general",
-                    "topics": 2,
-                    "posts": 2,
-                    "page_views": 0,
-                    "share": 25.0,
-                    "share_change": 25.0,
-                    "share_formatted": "25.0%",
-                    "share_change_formatted": "+25.0%"
-                  },
-                  {
-                    "category_id": 2,
-                    "name": "Site Feedback",
-                    "color": "808281",
-                    "slug": "site-feedback",
-                    "topics": 1,
-                    "posts": 1,
-                    "page_views": 0,
-                    "share": 12.5,
-                    "share_change": 12.5,
-                    "share_formatted": "12.5%",
-                    "share_change_formatted": "+12.5%"
-                  }
-                ],
-                "total": 16,
+                "rows": [],
+                "total": 0,
                 "category_ids": null
               }
             }
@@ -728,9 +688,9 @@
             "id": "system",
             "data": {
               "version": {
-                "installed_version": "2026.10.0-latest",
-                "installed_sha": "bf55a44c2872738f7ae2664d6fec3d6d8779190f",
-                "installed_describe": "v2026.10.0-latest +114",
+                "installed_version": "2026.11.0-latest.1",
+                "installed_sha": "9daeae2a745b73533215775ebf132191ca4c5056",
+                "installed_describe": "v2026.11.0-latest +576",
                 "git_branch": "unknown",
                 "updated_at": null,
                 "version_check_pending": true,
@@ -739,19 +699,18 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 64266797056,
+                  "free_bytes": 34504032256,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
-                  "used_bytes": 1368569,
-                  "free_bytes": 64266797056,
+                  "used_bytes": 618825,
+                  "free_bytes": 34504032256,
                   "remote": false
                 }
               },
-              "discourse_updated_at": "2026-09-25T20:35:25.000+00:00",
-              "dashboard_updated_at": "2026-10-21T18:50:27.753Z"
+              "discourse_updated_at": "2026-11-13T23:41:32.000+00:00"
             }
           },
           {
@@ -773,16 +732,12 @@
                 {
                   "id": 34,
                   "name": "Sub General"
-                },
-                {
-                  "id": 1,
-                  "name": "Uncategorized"
                 }
               ],
               "category_ids": [],
               "kpis": {
                 "resolution_rate": {
-                  "value": 0.0,
+                  "value": null,
                   "previous_value": null,
                   "report_type": "accepted_solutions",
                   "report_query": {
@@ -791,55 +746,44 @@
                   }
                 },
                 "staff_involvement": {
-                  "value": 0.0,
+                  "value": null,
                   "previous_value": null
                 },
                 "avg_first_reply": {
-                  "value": 0,
+                  "value": null,
                   "previous_value": null
                 }
               },
               "topic_outcomes": {
                 "resolved": 0,
-                "in_progress": 1,
-                "unanswered": 5
+                "in_progress": 0,
+                "unanswered": 0
               },
               "whos_answering": {
-                "rows": [
-                  {
-                    "type": "member",
-                    "count": 2,
-                    "share": 67
-                  },
-                  {
-                    "type": "staff",
-                    "count": 1,
-                    "share": 33
-                  }
-                ],
-                "total": 3
+                "rows": [],
+                "total": 0
               },
               "response_time_distribution": {
                 "buckets": [
                   {
                     "key": "lt_1h",
-                    "count": 1,
-                    "share": 100
+                    "count": 0,
+                    "share": 0.0
                   },
                   {
                     "key": "1_4h",
                     "count": 0,
-                    "share": 0
+                    "share": 0.0
                   },
                   {
                     "key": "4_24h",
                     "count": 0,
-                    "share": 0
+                    "share": 0.0
                   },
                   {
                     "key": "gt_24h",
                     "count": 0,
-                    "share": 0
+                    "share": 0.0
                   }
                 ],
                 "trend": {
@@ -870,9 +814,9 @@
             "identifier": "rails_env"
           },
           {
-            "id": 34,
+            "id": 4,
             "priority": "low",
-            "message": "There are 6 email jobs that failed. Check your app.yml and ensure that the mail server settings are correct. <a href=\"/sidekiq/retries\" target=\"_blank\">See the failed jobs in Sidekiq</a>.",
+            "message": "There are 9 email jobs that failed. Check your app.yml and ensure that the mail server settings are correct. <a href=\"/sidekiq/retries\" target=\"_blank\">See the failed jobs in Sidekiq</a>.",
             "identifier": "failing_emails"
           }
         ],
@@ -929,15 +873,10 @@
           {
             "id": 34,
             "name": "Sub General"
-          },
-          {
-            "id": 1,
-            "name": "Uncategorized"
           }
         ],
         "category_ids": [
-          3,
-          1
+          3
         ],
         "kpis": {
           "resolution_rate": {
@@ -948,7 +887,7 @@
               "start_date": "2026-09-22",
               "end_date": "2026-10-21",
               "filters": {
-                "category_ids": "3,1"
+                "category_ids": "3"
               }
             }
           },
@@ -1008,33 +947,33 @@
       "updated": [
         {
           "before": {
-            "id": 413,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "hAooqaEV+oYrh+SlhyQL42ph6qk=",
-            "created_at": "2026-10-21T18:50:25.44856",
-            "rotated_at": "2026-10-21T18:50:25.442249",
-            "updated_at": "2026-10-21T18:50:25.44856",
+            "auth_token": "o/bo1JFrR3mbDJFaaujG97aNixo=",
+            "created_at": "2026-11-16T03:28:53.550597",
+            "rotated_at": "2026-11-16T03:28:53.54924",
+            "updated_at": "2026-11-16T03:28:53.550597",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "hAooqaEV+oYrh+SlhyQL42ph6qk=",
+            "prev_auth_token": "o/bo1JFrR3mbDJFaaujG97aNixo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 413,
-            "seen_at": "2026-10-21T18:50:27.485833",
+            "id": 14,
+            "seen_at": "2026-11-16T03:28:54.020569",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "hAooqaEV+oYrh+SlhyQL42ph6qk=",
-            "created_at": "2026-10-21T18:50:25.44856",
-            "rotated_at": "2026-10-21T18:50:25.442249",
-            "updated_at": "2026-10-21T18:50:25.44856",
+            "auth_token": "o/bo1JFrR3mbDJFaaujG97aNixo=",
+            "created_at": "2026-11-16T03:28:53.550597",
+            "rotated_at": "2026-11-16T03:28:53.54924",
+            "updated_at": "2026-11-16T03:28:53.550597",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "hAooqaEV+oYrh+SlhyQL42ph6qk=",
+            "prev_auth_token": "o/bo1JFrR3mbDJFaaujG97aNixo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1060,7 +999,7 @@
   ],
   "recorded_from": {
     "case": "4ecf48a3904ed5f13b08d472a4dc2d0ee17a953e0ef0bf0b6f547a92cd37f7c6",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

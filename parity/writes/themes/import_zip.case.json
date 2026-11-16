@@ -1,10 +1,28 @@
 {
   "user": "admin",
+  "not_yet": "747aa636644 (Discourse): themes serialize translations_locale (object editor fields translated as site texts); not ported",
   "requests": [
-    {"method": "POST", "path": "/admin/themes/import.json", "params": {"theme": {"fixture": "theme_fancy.zip"}}},
-    {"method": "GET", "path": "/admin/themes/{{responses.0.body.theme.id}}.json"},
-    {"method": "GET", "path": "/admin/config/customize/themes.json"},
-    {"method": "GET", "path": "/admin/themes.json"}
+    {
+      "method": "POST",
+      "path": "/admin/themes/import.json",
+      "params": {
+        "theme": {
+          "fixture": "theme_fancy.zip"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/{{responses.0.body.theme.id}}.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/customize/themes.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes.json"
+    }
   ],
   "unordered_responses": [
     "/responses/0/body/theme/theme_fields",

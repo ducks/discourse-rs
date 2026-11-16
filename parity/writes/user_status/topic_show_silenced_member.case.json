@@ -16,5 +16,8 @@
   "ignore": [
     "/responses/0/body/post_stream/posts/*/user_status/message_bus_last_id",
     "/responses/0/body/post_stream/posts/*/mentioned_users/*/status/message_bus_last_id"
+  ],
+  "unordered_responses": [
+    "/responses/0/body/bookmarks"
   ]
 }

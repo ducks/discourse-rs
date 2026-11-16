@@ -10,7 +10,6 @@ use discourse_rs::config::RailsEnv;
 use serde_json::{Value, json};
 use sqlx::PgPool;
 
-const INTEGER: i32 = 3;
 const BOOL: i32 = 5;
 
 /// Seeded users: admin (1, staff), user0 (2), user1 (3).
@@ -150,7 +149,13 @@ async fn a_member_bulk_deletes_their_own_topic() {
         "topic_ids[]={BY_USER1}&topic_ids[]={BY_USER0}&topic_ids[]={BY_ADMIN}&operation[type]=delete"
     );
 
-    // Older than a day: left alone, as the others' are.
+    // Older than a day: left alone, as the others' are. The seed's topics
+    // are as old as the seed, so this one is made old.
+    sqlx::query("UPDATE topics SET created_at = now() - interval '2 days' WHERE id = $1")
+        .bind(BY_USER1)
+        .execute(&db.pool)
+        .await
+        .unwrap();
     let before = deletion_effects(&db.pool).await;
     let (status, reply) = bulk(&mut user1, &body).await;
     assert_eq!(status, 200, "{reply}");
@@ -204,8 +209,7 @@ async fn a_member_bulk_deletes_their_own_topic() {
 #[tokio::test]
 async fn change_category_without_uncategorized_topics() {
     let db = TestDb::new().await;
-    // The seeds leave uncategorized_category_id at -1.
-    set_setting(&db.pool, "uncategorized_category_id", INTEGER, "1").await;
+    common::restore_uncategorized(&db.pool).await;
     set_setting(&db.pool, "allow_uncategorized_topics", BOOL, "f").await;
     let mut admin = Client::logged_in(site(&db).await, "admin").await;
     let topics = format!("topic_ids[]={BY_USER0}&topic_ids[]={BY_USER1}");
@@ -240,8 +244,7 @@ async fn change_category_without_uncategorized_topics() {
 #[tokio::test]
 async fn change_category_to_uncategorized() {
     let db = TestDb::new().await;
-    // The seeds leave uncategorized_category_id at -1.
-    set_setting(&db.pool, "uncategorized_category_id", INTEGER, "1").await;
+    common::restore_uncategorized(&db.pool).await;
     set_setting(&db.pool, "allow_uncategorized_topics", BOOL, "t").await;
     let mut admin = Client::logged_in(site(&db).await, "admin").await;
 

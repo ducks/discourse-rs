@@ -582,11 +582,11 @@ fn type_name(def: &Definition) -> String {
 pub fn humanized_name(setting: &str) -> String {
     const ACRONYMS: &[&str] = &[
         "2fa", "acl", "ai", "api", "arn", "aws", "bg", "cdn", "cors", "csp", "csrf", "css", "cta",
-        "csv", "cx", "db", "dm", "dns", "eu", "faq", "fg", "ga", "gb", "gif", "gpu", "gpt", "gtm",
-        "hd", "html", "http", "https", "iam", "id", "imap", "ip", "jpg", "json", "kb", "llm", "mb",
-        "mfa", "oauth", "oidc", "pdf", "pm", "png", "pop3", "rest", "rss", "s3", "saml", "smtp",
-        "sso", "svg", "tei", "tl", "tl0", "tl1", "tl2", "tl3", "tl4", "tld", "totp", "txt", "ui",
-        "url", "ux", "vpc", "xml", "yaml", "yml",
+        "csv", "cx", "db", "dm", "dns", "dsa", "eu", "faq", "fg", "ga", "gb", "gif", "gpu", "gpt",
+        "gtm", "hd", "html", "http", "https", "iam", "id", "imap", "ip", "jpg", "json", "kb",
+        "llm", "mb", "mfa", "oauth", "oidc", "pdf", "pm", "png", "pop3", "rest", "rss", "s3",
+        "saml", "smtp", "sso", "svg", "tei", "tl", "tl0", "tl1", "tl2", "tl3", "tl4", "tld",
+        "totp", "txt", "ui", "url", "ux", "vpc", "xml", "yaml", "yml",
     ];
     const MIXED_CASE: [(&str, &str); 45] = [
         ("apple", "Apple"),

@@ -653,18 +653,18 @@ async fn recent_notifications_bump_the_seen_id_unless_silent() {
         .collect();
     // Unread high priority first (the bookmark reminder is the newest),
     // then unread non-likes, the like, the read one.
-    assert_eq!(ids, vec![52, 50, 48, 44, 51, 47, 41, 7, 45, 2]);
+    assert_eq!(ids, vec![24, 19, 17, 16, 28, 26, 20, 7, 21, 2]);
 
     // Without `silent` the newest visible id is recorded on the user.
     let reply = client.get("/notifications.json?recent=true&limit=3").await;
     let json = reply.json();
-    assert_eq!(json["seen_notification_id"], 52);
+    assert_eq!(json["seen_notification_id"], 28);
     assert_eq!(json["notifications"].as_array().unwrap().len(), 3);
     let seen: i64 = sqlx::query_scalar("SELECT seen_notification_id FROM users WHERE id = 3")
         .fetch_one(&db.pool)
         .await
         .unwrap();
-    assert_eq!(seen, 52);
+    assert_eq!(seen, 28);
     // And the counters current.json derives from it follow.
     let reply = client
         .send(
@@ -680,7 +680,7 @@ async fn recent_notifications_bump_the_seen_id_unless_silent() {
         current["current_user"]["unread_high_priority_notifications"],
         4
     );
-    assert_eq!(current["current_user"]["seen_notification_id"], 52);
+    assert_eq!(current["current_user"]["seen_notification_id"], 28);
 
     // Anonymous: 403 not_logged_in, like Rails' requires_login.
     let mut anon = Client::new(app_state);
@@ -968,11 +968,11 @@ async fn the_user_menu_pairs_unread_reminders_with_the_other_bookmarks() {
             .collect()
     };
 
-    // Notification 52 is the fired reminder of bookmark 5.
+    // Notification 24 is the fired reminder of bookmark 5.
     let reply = client.get(path).await;
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     let json = reply.json();
-    assert_eq!(ids(&json, "notifications"), vec![52]);
+    assert_eq!(ids(&json, "notifications"), vec![24]);
     assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
     // The topic bookmark links to the first unread post (2 read, so 3).
     let topic = json["bookmarks"]
@@ -1000,7 +1000,7 @@ async fn the_user_menu_pairs_unread_reminders_with_the_other_bookmarks() {
         .await
         .unwrap();
     let json = client.get(path).await.json();
-    assert_eq!(ids(&json, "notifications"), vec![52]);
+    assert_eq!(ids(&json, "notifications"), vec![24]);
     assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
 
     // And goes once the viewer can't see the post any more.
@@ -1025,9 +1025,9 @@ async fn the_user_menu_pairs_unread_reminders_with_the_other_bookmarks() {
     .await
     .unwrap();
     let json = client.get(path).await.json();
-    assert_eq!(ids(&json, "notifications"), vec![52]);
+    assert_eq!(ids(&json, "notifications"), vec![24]);
     assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
-    sqlx::query("UPDATE notifications SET read = TRUE WHERE id = 52")
+    sqlx::query("UPDATE notifications SET read = TRUE WHERE id = 24")
         .execute(&db.pool)
         .await
         .unwrap();
@@ -2377,14 +2377,17 @@ async fn the_composer_draws_the_rich_editor_toggle_in_the_composition_mode() {
     assert!(head[loader..].contains(r#"data-base-path=""></script>"#));
 
     let composer = between(&page, r#"<div id="reply-control""#, "</textarea>");
-    assert!(composer.contains(r#"data-label-switch-to-markdown="Switch to standard Markdown editor (%{keyboardShortcut})""#));
     assert!(composer.contains(
-        r#"data-label-switch-to-rich-text-no-shortcut="Switch to new rich text editor""#
+        r#"data-label-switch-to-markdown="Switch to Markdown editor (%{keyboardShortcut})""#
     ));
+    assert!(
+        composer
+            .contains(r#"data-label-switch-to-rich-text-no-shortcut="Switch to rich text editor""#)
+    );
     assert!(composer.contains(r#"data-label-unsupported-token="The rich text editor doesn’t support all features used in this post; switching you to the Markdown editor.""#));
     assert!(composer.contains(r#"data-allow-preview="false" data-composition-mode="1""#));
     assert!(composer.contains(r#"<div class="d-editor-container --rich-editor-enabled">"#));
-    assert!(composer.contains(r#"role="toolbar"><button aria-checked="true" aria-keyshortcuts="Ctrl+M" aria-label="Switch to standard Markdown editor (Ctrl M)" class="composer-toggle-switch --rte" data-rich-editor="true" role="switch" title="Switch to standard Markdown editor (Ctrl M)" type="button"><span class="composer-toggle-switch__slider"><span aria-hidden="true" class="composer-toggle-switch__left-icon"><svg class="fa d-icon d-icon-fab-markdown"#));
+    assert!(composer.contains(r#"role="toolbar"><button aria-checked="true" aria-keyshortcuts="Ctrl+M" aria-label="Switch to Markdown editor (Ctrl M)" class="composer-toggle-switch --rte" data-rich-editor="true" role="switch" title="Switch to Markdown editor (Ctrl M)" type="button"><span class="composer-toggle-switch__slider"><span aria-hidden="true" class="composer-toggle-switch__left-icon"><svg class="fa d-icon d-icon-fab-markdown"#));
     assert!(composer.contains(r#"<span aria-hidden="true" class="composer-toggle-switch__right-icon --active"><svg class="fa d-icon d-icon-a "#));
 
     // In markdown mode: the preview, and the switch the other way.
@@ -2399,7 +2402,7 @@ async fn the_composer_draws_the_rich_editor_toggle_in_the_composition_mode() {
     let composer = between(&page, r#"<div id="reply-control""#, "</textarea>");
     assert!(composer.contains(r#"data-allow-preview="true" data-composition-mode="0""#));
     assert!(composer.contains(r#"<div class="d-editor-container --markdown-editor-enabled">"#));
-    assert!(composer.contains(r#"role="toolbar"><button aria-checked="false" aria-keyshortcuts="Ctrl+M" aria-label="Switch to new rich text editor (Ctrl M)" class="composer-toggle-switch --markdown" data-rich-editor="false""#));
+    assert!(composer.contains(r#"role="toolbar"><button aria-checked="false" aria-keyshortcuts="Ctrl+M" aria-label="Switch to rich text editor (Ctrl M)" class="composer-toggle-switch --markdown" data-rich-editor="false""#));
     assert!(composer.contains(r#"class="composer-toggle-switch__left-icon --active"><svg"#));
 
     // Both icons are in the sprite.
@@ -2563,7 +2566,7 @@ async fn the_composer_preview_loads_the_renderer_and_settings() {
     .unwrap();
     assert_eq!(
         html,
-        r#"<p><strong>hi</strong> <img src="/images/emoji/twitter/smile.png?v=15" title=":smile:" class="emoji" alt=":smile:" loading="lazy" width="20" height="20"> <a href="https://example.com">https://example.com</a></p>"#
+        r#"<p><strong>hi</strong> <img src="/images/emoji/twitter/smile.png?v=16" title=":smile:" class="emoji" alt=":smile:" loading="lazy" width="20" height="20"> <a href="https://example.com">https://example.com</a></p>"#
     );
 }
 

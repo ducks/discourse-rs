@@ -2211,9 +2211,22 @@ pub async fn connect(
         .execute(&mut *tx)
         .await?;
     }
-    after_authenticate(&state, &mut tx, &settings, auth, Some(user_id)).await?;
+    let (result, _) = after_authenticate(&state, &mut tx, &settings, auth, Some(user_id)).await?;
     crate::session::server::delete(&mut tx, &session_id, &format!("omniauth_reconnect_{token}"))
         .await?;
+    // The user hears of the new connection (8dece8319b1).
+    if !result.failed {
+        crate::jobs::enqueue(
+            &mut tx,
+            "critical_user_email",
+            json!({
+                "type": "account_associated",
+                "user_id": user_id,
+                "provider_name": authenticator.display_name(),
+            }),
+        )
+        .await?;
+    }
     tx.commit().await?;
     let mut response = axum::Json(json!({"success": "OK"})).into_response();
     if let Some(cookie) = session.set_cookie(&state, &settings)? {

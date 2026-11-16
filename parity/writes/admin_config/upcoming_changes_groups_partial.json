@@ -22,8 +22,8 @@
       }
     }
   ],
-  "started_at": "2026-10-17T07:17:45.298303",
-  "transaction_started_at": "2026-10-17T07:17:41.923125",
+  "started_at": "2026-11-15T21:40:54.412008",
+  "transaction_started_at": "2026-11-15T21:40:53.4476",
   "responses": [
     {
       "status": 200,
@@ -36,50 +36,37 @@
       "body": {
         "upcoming_changes": [
           {
-            "setting": "chat_pinned_messages",
-            "humanized_name": "Chat pinned messages",
-            "description": "Enable pinned messages in chat channels.",
+            "setting": "boards_enabled",
+            "humanized_name": "Boards enabled",
+            "description": "Organize topics, and lightweight standalone “floater” cards, into configurable, drag-and-drop kanban-style boards and columns, all with a purpose built management UI and per-board access control. Visit <a href='/boards'>/boards</a> to get started.",
             "value": true,
             "upcoming_change": {
               "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/397571",
+              "learn_more_url": "https://meta.discourse.org/t/-/411418",
+              "requires_plugin_enabled": false,
+              "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
-              "allow_enabled_for": null,
+              "allow_enabled_for": [
+                "everyone"
+              ],
               "body_class": null,
-              "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "image": {
+                "url": "http://localhost:3042/plugins/boards/images/upcoming_changes/boards_enabled.png",
+                "width": 1250,
+                "height": 851
+              },
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.639Z"
             },
-            "plugin": "Chat",
+            "plugin": "Boards",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [
-              "chat_pinning_messages_allowed_groups"
+              "boards_manage_board_allowed_groups"
             ],
-            "depends_on_met": true,
-            "overriding_defaults": false,
-            "groups": null
-          },
-          {
-            "setting": "dashboard_improvements",
-            "humanized_name": "Dashboard improvements",
-            "description": "Enables the redesigned admin dashboard that lets you pin custom reports and includes improved site traffic, engagement, and other analytics tied to community success and value.",
-            "value": true,
-            "upcoming_change": {
-              "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/404528",
-              "impact_type": "feature",
-              "impact_role": "admins",
-              "allow_enabled_for": null,
-              "body_class": null,
-              "permanent_warning": true,
-              "hide_settings": null,
-              "enabled_for": "everyone"
-            },
-            "depends_on": [],
-            "depends_on_humanized_names": [],
-            "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
@@ -92,6 +79,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/407727",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "admins",
               "allow_enabled_for": null,
@@ -99,11 +87,12 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_invite_modal_with_roles.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_invite_modal_with_roles.png",
                 "width": 700,
                 "height": 410
               },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.657Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -113,27 +102,25 @@
             "groups": null
           },
           {
-            "setting": "enable_solved_shared_issues",
-            "humanized_name": "Enable solved shared issues",
-            "description": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
+            "setting": "enable_markdown_endpoints",
+            "humanized_name": "Enable markdown endpoints",
+            "description": "Serve supported topics and topic lists as Markdown through .md URLs and requests with an Accept: text/markdown header. Normal visibility and profile privacy rules always apply.",
             "value": true,
             "upcoming_change": {
               "status": "stable",
-              "learn_more_url": "https://meta.discourse.org/t/-/402498",
+              "learn_more_url": "https://meta.discourse.org/t/-/413006",
               "permanent_warning": false,
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
-              "allow_enabled_for": null,
+              "allow_enabled_for": [
+                "everyone"
+              ],
               "body_class": null,
               "hide_settings": null,
-              "image": {
-                "url": "http://localhost:3048/plugins/discourse-solved/images/upcoming_changes/enable_solved_shared_issues.png",
-                "width": 1200,
-                "height": 330
-              },
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.662Z"
             },
-            "plugin": "Solved",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [],
@@ -149,6 +136,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/404728",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
@@ -156,11 +144,12 @@
               "permanent_warning": true,
               "hide_settings": null,
               "image": {
-                "url": "http://localhost:3048/images/upcoming_changes/enable_unified_new.png",
+                "url": "http://localhost:3042/images/upcoming_changes/enable_unified_new.png",
                 "width": 1112,
                 "height": 436
               },
-              "enabled_for": "groups"
+              "enabled_for": "groups",
+              "status_changed_at": "2026-11-15T19:20:03.671Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -177,6 +166,7 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/406373",
+              "group_setting": null,
               "impact_type": "other",
               "impact_role": "all_members",
               "allow_enabled_for": [
@@ -188,7 +178,8 @@
                 "allow_uncategorized_topics",
                 "suppress_uncategorized_badge"
               ],
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.682Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -205,13 +196,15 @@
             "upcoming_change": {
               "status": "stable",
               "learn_more_url": "https://meta.discourse.org/t/-/395099",
+              "group_setting": null,
               "impact_type": "feature",
               "impact_role": "all_members",
               "allow_enabled_for": null,
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "everyone"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-15T19:20:03.684Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -231,8 +224,8 @@
           "id": 1,
           "name": "enable_unified_new",
           "group_ids": "3|12",
-          "created_at": "2026-10-17T07:17:41.923125",
-          "updated_at": "2026-10-17T07:17:41.923125"
+          "created_at": "2026-11-15T21:40:53.4476",
+          "updated_at": "2026-11-15T21:40:53.4476"
         }
       ],
       "deleted": [],
@@ -244,33 +237,33 @@
       "updated": [
         {
           "before": {
-            "id": 409,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "KONf6Vt4ls7ufRVrbYF92MpMvkk=",
-            "created_at": "2026-10-17T07:17:43.459081",
-            "rotated_at": "2026-10-17T07:17:43.453722",
-            "updated_at": "2026-10-17T07:17:43.459081",
+            "auth_token": "Z2O+RS4An13jLYDEI+bXtP3hrnE=",
+            "created_at": "2026-11-15T21:40:53.738054",
+            "rotated_at": "2026-11-15T21:40:53.737289",
+            "updated_at": "2026-11-15T21:40:53.738054",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "KONf6Vt4ls7ufRVrbYF92MpMvkk=",
+            "prev_auth_token": "Z2O+RS4An13jLYDEI+bXtP3hrnE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 409,
-            "seen_at": "2026-10-17T07:17:45.306092",
+            "id": 14,
+            "seen_at": "2026-11-15T21:40:54.418226",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "KONf6Vt4ls7ufRVrbYF92MpMvkk=",
-            "created_at": "2026-10-17T07:17:43.459081",
-            "rotated_at": "2026-10-17T07:17:43.453722",
-            "updated_at": "2026-10-17T07:17:43.459081",
+            "auth_token": "Z2O+RS4An13jLYDEI+bXtP3hrnE=",
+            "created_at": "2026-11-15T21:40:53.738054",
+            "rotated_at": "2026-11-15T21:40:53.737289",
+            "updated_at": "2026-11-15T21:40:53.738054",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "KONf6Vt4ls7ufRVrbYF92MpMvkk=",
+            "prev_auth_token": "Z2O+RS4An13jLYDEI+bXtP3hrnE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -283,10 +276,10 @@
         {
           "id": 1,
           "name": "last_visited_upcoming_changes_at",
-          "value": "2026-10-17T07:17:45Z",
+          "value": "2026-11-15T21:40:54Z",
           "user_id": 1,
-          "created_at": "2026-10-17T07:17:45.391041",
-          "updated_at": "2026-10-17T07:17:45.391041"
+          "created_at": "2026-11-15T21:40:54.487514",
+          "updated_at": "2026-11-15T21:40:54.487514"
         }
       ],
       "deleted": [],
@@ -295,7 +288,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 123,
           "context": null,
@@ -305,9 +298,10 @@
           "topic_id": null,
           "new_value": "3|12",
           "admin_only": true,
-          "created_at": "2026-10-17T07:17:45.337767",
+          "created_at": "2026-11-15T21:40:54.436968",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T07:17:45.337767",
+          "updated_at": "2026-11-15T21:40:54.436968",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -324,11 +318,11 @@
   "next_ids": {
     "site_setting_groups": 1,
     "user_custom_fields": 1,
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "148c641ea5b74249941cf6d9cf880bebe68da07528270e858631334912ed84bc",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

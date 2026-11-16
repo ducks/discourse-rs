@@ -139,28 +139,30 @@ pub(crate) fn categories_scoped_to(guardian: &Guardian, permissions: &str) -> St
 /// category channels whose category the viewer may post in, and (unless
 /// excluded) the direct message channels they are in (those through
 /// Chat::Channel, so not trashed; the category channels come through a
-/// join, trashed or not). Anonymous access to
-/// public channels is not ported.
+/// join, trashed or not). An anonymous viewer, while
+/// `Chat.anonymous_public_channel_access_allowed?`, gets those of
+/// `Category.secured`: the categories that aren't read restricted.
 pub fn allowed_channel_ids_sql(
     settings: &SiteSettings,
     guardian: &Guardian,
     exclude_dm_channels: bool,
 ) -> Result<String, AppError> {
-    if guardian.is_anonymous()
+    let categories = if guardian.is_anonymous()
         && settings.get("enable_public_channels")?.truthy()
         && settings
             .group_ids("chat_allowed_groups")?
             .contains(&crate::guardian::auto_groups::ANONYMOUS_USERS)
     {
-        return Err(Unsupported("anonymous access to chat channels").into());
-    }
-    // POST_CREATION_PERMISSIONS: full (1) and create_post (2).
+        "NOT categories.read_restricted".to_string()
+    } else {
+        // POST_CREATION_PERMISSIONS: full (1) and create_post (2).
+        categories_scoped_to(guardian, "1, 2")
+    };
     let mut sql = format!(
         "SELECT chat_channels.id FROM categories \
          INNER JOIN chat_channels ON chat_channels.chatable_id = categories.id \
            AND chat_channels.chatable_type = 'Category' \
-         WHERE {}",
-        categories_scoped_to(guardian, "1, 2")
+         WHERE {categories}"
     );
     if let (false, Some(user_id)) = (exclude_dm_channels, guardian.user_id()) {
         sql.push_str(&format!(

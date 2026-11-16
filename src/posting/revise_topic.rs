@@ -962,7 +962,14 @@ pub async fn finish(
     // ... and to discourse-narrative-bot: the first post's author's edit.
     crate::plugins::narrative_bot::post_edited(&mut *conn, s, post.id).await?;
     if p.editor_id != -1 {
-        crate::jobs::enqueue(&mut *conn, "post_alert", json!({"post_id": post.id})).await?;
+        // alert_users(old_raw) with the raw unchanged: no added mentions
+        // (Discourse 1cb76a9fd1d).
+        crate::jobs::enqueue(
+            &mut *conn,
+            "post_alert",
+            json!({"post_id": post.id, "added_mentions": []}),
+        )
+        .await?;
     }
     let mut publish = Map::new();
     if !revised.diff.is_empty() {

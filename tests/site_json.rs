@@ -374,8 +374,7 @@ async fn subcategories_set_has_children_and_follow_their_parent() {
 #[tokio::test]
 async fn uncategorized_category_uses_translated_texts() {
     let db = TestDb::new().await;
-    // The snapshot has uncategorized_category_id = -1; point it at category 1.
-    set_setting(&db.pool, "uncategorized_category_id", INTEGER, "1").await;
+    common::restore_uncategorized(&db.pool).await;
 
     let json = get_site(&db.pool).await;
     let uncategorized = &json["categories"][0];

@@ -1154,7 +1154,9 @@ async fn recover_definition(
     if tags || embed {
         return Err(Unsupported("recovering a tagged or embedded category definition").into());
     }
-    if ctx.settings.get("boards_enabled").is_ok_and(|v| v.truthy()) {
+    if ctx.settings.get("boards_enabled").is_ok_and(|v| v.truthy())
+        && crate::plugins::boards_to_sync(&mut *conn).await?
+    {
         return Err(Unsupported("the boards plugin's topic_recovered sync").into());
     }
     sqlx::query("UPDATE topics SET deleted_at = NULL, deleted_by_id = NULL WHERE id = $1")

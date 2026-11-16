@@ -2,15 +2,15 @@
   "name": "browser_pageview_rollups",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-14T16:28:11.166472",
-  "transaction_started_at": "2026-10-14T16:28:09.017917",
+  "started_at": "2026-11-15T23:26:47.942272",
+  "transaction_started_at": "2026-11-15T23:26:47.187809",
   "responses": [],
   "changes": {
     "browser_pageview_country_daily_rollups": {
       "inserted": [
         {
           "id": 1,
-          "date": "2026-10-11",
+          "date": "2026-11-12",
           "count": 1,
           "country_code": null,
           "logged_in_count": 0,
@@ -19,7 +19,7 @@
         },
         {
           "id": 2,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 2,
           "country_code": "DE",
           "logged_in_count": 0,
@@ -28,7 +28,7 @@
         },
         {
           "id": 3,
-          "date": "2026-10-14",
+          "date": "2026-11-15",
           "count": 1,
           "country_code": "US",
           "logged_in_count": 1,
@@ -43,7 +43,7 @@
       "inserted": [
         {
           "id": 1,
-          "date": "2026-10-11",
+          "date": "2026-11-12",
           "count": 1,
           "entry_url": "/",
           "logged_in_count": 0,
@@ -52,7 +52,7 @@
         },
         {
           "id": 2,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 1,
           "entry_url": "/latest",
           "logged_in_count": 0,
@@ -61,7 +61,7 @@
         },
         {
           "id": 3,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 1,
           "entry_url": "/t/35",
           "logged_in_count": 0,
@@ -88,7 +88,7 @@
             "language": null,
             "referrer": null,
             "topic_id": null,
-            "created_at": "2026-10-13T16:29:09.017917",
+            "created_at": "2026-11-14T23:27:47.187809",
             "ip_address": "10.0.0.1",
             "session_id": "s1",
             "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
@@ -110,7 +110,7 @@
             "language": null,
             "referrer": null,
             "topic_id": null,
-            "created_at": "2026-10-13T16:29:09.017917",
+            "created_at": "2026-11-14T23:27:47.187809",
             "ip_address": "10.0.0.1",
             "session_id": "s1",
             "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
@@ -134,7 +134,7 @@
             "language": null,
             "referrer": "https://www.Google.com/search?q=x&utm_source=y#frag",
             "topic_id": 35,
-            "created_at": "2026-10-13T16:28:09.017917",
+            "created_at": "2026-11-14T23:26:47.187809",
             "ip_address": "10.0.0.1",
             "session_id": "s1",
             "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
@@ -156,7 +156,7 @@
             "language": null,
             "referrer": "https://www.Google.com/search?q=x&utm_source=y#frag",
             "topic_id": 35,
-            "created_at": "2026-10-13T16:28:09.017917",
+            "created_at": "2026-11-14T23:26:47.187809",
             "ip_address": "10.0.0.1",
             "session_id": "s1",
             "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
@@ -180,7 +180,7 @@
             "language": null,
             "referrer": "http://localhost/latest",
             "topic_id": null,
-            "created_at": "2026-10-14T14:28:09.017917",
+            "created_at": "2026-11-15T21:26:47.187809",
             "ip_address": "10.0.0.2",
             "session_id": "s2",
             "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
@@ -202,7 +202,7 @@
             "language": null,
             "referrer": "http://localhost/latest",
             "topic_id": null,
-            "created_at": "2026-10-14T14:28:09.017917",
+            "created_at": "2026-11-15T21:26:47.187809",
             "ip_address": "10.0.0.2",
             "session_id": "s2",
             "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
@@ -226,7 +226,7 @@
             "language": null,
             "referrer": "https://news.example.com:8443/a/b/?ref_src=z&k=1",
             "topic_id": null,
-            "created_at": "2026-10-11T16:28:09.017917",
+            "created_at": "2026-11-12T23:26:47.187809",
             "ip_address": "10.0.0.3",
             "session_id": "s3",
             "user_agent": "curl/8.0",
@@ -248,7 +248,7 @@
             "language": null,
             "referrer": "https://news.example.com:8443/a/b/?ref_src=z&k=1",
             "topic_id": null,
-            "created_at": "2026-10-11T16:28:09.017917",
+            "created_at": "2026-11-12T23:26:47.187809",
             "ip_address": "10.0.0.3",
             "session_id": "s3",
             "user_agent": "curl/8.0",
@@ -266,7 +266,7 @@
       "inserted": [
         {
           "id": 4,
-          "date": "2026-10-11",
+          "date": "2026-11-12",
           "count": 1,
           "logged_in_count": 0,
           "normalized_referrer": "news.example.com/a/b?k=1",
@@ -275,7 +275,7 @@
         },
         {
           "id": 5,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 1,
           "logged_in_count": 0,
           "normalized_referrer": "google.com/search?q=x",
@@ -284,7 +284,7 @@
         },
         {
           "id": 6,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "count": 1,
           "logged_in_count": 0,
           "normalized_referrer": null,
@@ -293,7 +293,7 @@
         },
         {
           "id": 7,
-          "date": "2026-10-14",
+          "date": "2026-11-15",
           "count": 1,
           "logged_in_count": 1,
           "normalized_referrer": "localhost/latest",
@@ -308,7 +308,7 @@
       "inserted": [
         {
           "id": 1,
-          "date": "2026-10-11",
+          "date": "2026-11-12",
           "bounced": 1,
           "sessions": 1,
           "logged_in": false,
@@ -319,7 +319,7 @@
         },
         {
           "id": 2,
-          "date": "2026-10-13",
+          "date": "2026-11-14",
           "bounced": 0,
           "sessions": 1,
           "logged_in": false,
@@ -330,7 +330,7 @@
         },
         {
           "id": 3,
-          "date": "2026-10-14",
+          "date": "2026-11-15",
           "bounced": 1,
           "sessions": 1,
           "logged_in": true,
@@ -364,7 +364,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "f5f01afff0b11eca6d0e819e535604d02ab10e708b30e55415e1d282f6f404e8",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

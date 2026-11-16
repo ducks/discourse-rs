@@ -541,18 +541,24 @@ pub async fn create(
     }
     let mut conn = state.pool.acquire().await?;
     let settings = settings(&state, &mut conn).await?;
-    // build_scopes
+    // ApiKeyScope.build_from_params: a scope that is not a hash, or names
+    // no mapping, is InvalidParameters.new(:scopes) (612ca6d1d7e).
+    let invalid_scopes = || crate::routes::search::invalid_parameters(&state, "scopes");
     let mut scopes: Vec<(String, String, Option<Value>)> = Vec::new();
     for s in &scope_list {
-        let Some(scope_id) = s.get("scope_id").and_then(crate::params::scalar) else {
-            return Err(Unsupported("an API key scope without a scope_id").into());
+        if !s.is_object() {
+            return Ok(invalid_scopes());
+        }
+        let scope_id = s
+            .get("scope_id")
+            .and_then(crate::params::scalar)
+            .unwrap_or_default();
+        let mut parts = scope_id.split(':');
+        let (Some(resource), Some(action)) = (parts.next(), parts.next()) else {
+            return Ok(invalid_scopes());
         };
-        let Some((resource, action)) = scope_id.split_once(':') else {
-            return Err(Unsupported("an API key scope_id without an action").into());
-        };
-        let action = action.split(':').next().unwrap_or_default();
         let Some(mapping) = api_key_scopes::enabled_mapping(resource, action, &settings)? else {
-            return Ok(invalid_parameters(&state));
+            return Ok(invalid_scopes());
         };
         let allowed = mapping.restrictable_parameters().map(|names| {
             let mut out = Map::new();

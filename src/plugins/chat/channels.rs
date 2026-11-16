@@ -85,6 +85,8 @@ pub struct MembershipRow {
     pub last_viewed_at: NaiveDateTime,
     pub last_viewed_pins_at: Option<NaiveDateTime>,
     pub starred: bool,
+    /// A timed mute's end (Discourse adaf584f41b).
+    pub muted_until: Option<NaiveDateTime>,
 }
 
 /// `UserChatChannelMembership::NOTIFICATION_LEVELS`
@@ -235,7 +237,7 @@ impl Context<'_> {
         };
         Ok(sqlx::query_as(
             "SELECT chat_channel_id, following, muted, notification_level, last_read_message_id, \
-                    last_viewed_at, last_viewed_pins_at, starred \
+                    last_viewed_at, last_viewed_pins_at, starred, muted_until \
              FROM user_chat_channel_memberships WHERE user_id = $1",
         )
         .bind(user_id)
@@ -419,6 +421,8 @@ impl Context<'_> {
                 "archive_status": 0,
                 "user_tracking_state": 0,
                 "user_has_threads": 0,
+                // Discourse adaf584f41b
+                "user_channel_mute": 0,
             }}),
         );
         out.insert(
@@ -822,6 +826,10 @@ impl Context<'_> {
         let mut out = Map::new();
         out.insert("following".into(), json!(m.following));
         out.insert("muted".into(), json!(m.muted));
+        out.insert(
+            "muted_until".into(),
+            m.muted_until.map_or(Value::Null, |t| json!(time_json(t))),
+        );
         out.insert(
             "notification_level".into(),
             json!(

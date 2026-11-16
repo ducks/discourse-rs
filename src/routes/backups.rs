@@ -630,58 +630,6 @@ pub async fn upload_backup_chunk(
     Ok(StatusCode::OK.into_response())
 }
 
-/// GET /admin/backups/upload_url (#create_upload_url): checked as Rails
-/// checks it; a local store has no upload URL (NotImplementedError).
-pub async fn create_upload_url(
-    State(state): State<AppState>,
-    AuthGuardian(guardian): AuthGuardian,
-    headers: HeaderMap,
-    uri: Uri,
-    body: Bytes,
-) -> Result<Response, AppError> {
-    if let Some(r) = admin_only(&state, &guardian) {
-        return Ok(r);
-    }
-    if !xhr_or_json(&uri, &headers) {
-        return Ok(super::session::render_empty());
-    }
-    let settings = settings(&state).await?;
-    if let Some(r) = backups_disabled(&state, &settings)? {
-        return Ok(r);
-    }
-    let p = crate::params::parse(uri.query(), &headers, &body);
-    // params.require(:filename): blank is missing too.
-    let Some(filename) = p
-        .get("filename")
-        .and_then(crate::params::scalar)
-        .filter(|f| !f.is_empty())
-    else {
-        return Ok(param_missing("filename"));
-    };
-    let error = |key: &str| {
-        let text = state.i18n.t(key).unwrap_or(key).to_string();
-        (
-            StatusCode::UNPROCESSABLE_ENTITY,
-            Json(json!({ "errors": [text] })),
-        )
-            .into_response()
-    };
-    if !store::valid_extension(&filename) {
-        return Ok(error("backup.backup_file_should_be_tar_gz"));
-    }
-    if !store::valid_filename(&filename) {
-        return Ok(error("backup.invalid_filename"));
-    }
-    let store = BackupStore::create(&state.config, &settings)?;
-    match store.generate_upload_url(&filename).await {
-        Ok(url) => Ok(Json(json!({ "success": "OK", "url": url })).into_response()),
-        Err(e) if matches!(e.downcast_ref(), Some(BackupStoreError::FileExists)) => {
-            Ok(error("backup.file_exists"))
-        }
-        Err(e) => storage_error(e),
-    }
-}
-
 /// POST /admin/backups(.json) (#create): a backup started (the port
 /// queues what Rails spawns), logged as backup_create. One a minute, for
 /// staff too.

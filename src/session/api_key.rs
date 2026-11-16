@@ -48,8 +48,9 @@ fn scopes_permit(
     if scopes.is_empty() {
         return Ok(true);
     }
+    let blog_enabled = settings.get("blog_enabled")?.truthy();
     if *request.method == Method::GET
-        && crate::api_key_scopes::recognize(request.method, request.path)
+        && crate::api_key_scopes::recognize(request.method, request.path, blog_enabled)
             .ok()
             .flatten()
             .is_some_and(|(action, _)| action == "session#scopes" || action == "about#index")
@@ -65,7 +66,7 @@ fn scopes_permit(
         let allowed: Option<serde_json::Map<String, serde_json::Value>> = allowed
             .as_deref()
             .and_then(|a| serde_json::from_str(a).ok());
-        if crate::api_key_scopes::matches(mapping, allowed.as_ref(), request)? {
+        if crate::api_key_scopes::matches(mapping, allowed.as_ref(), request, blog_enabled)? {
             return Ok(true);
         }
     }

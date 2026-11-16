@@ -2,8 +2,8 @@
   "name": "reindex_category",
   "user": null,
   "requests": [],
-  "started_at": "2026-10-13T01:40:05.456607",
-  "transaction_started_at": "2026-10-13T01:40:04.712812",
+  "started_at": "2026-11-16T00:13:11.268532",
+  "transaction_started_at": "2026-11-16T00:13:10.725453",
   "responses": [],
   "changes": {
     "category_search_data": {
@@ -35,6 +35,24 @@
         {
           "before": {
             "locale": "en",
+            "post_id": 45,
+            "version": 5,
+            "raw_data": "This topic is deleted and must not appear anywhere.",
+            "search_data": "'anywher':14 'appear':13 'delet':3A,9 'fixtur':2A 'general':5B 'must':11 'pariti':1A 'topic':4A,7",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 45,
+            "version": 0,
+            "raw_data": "This topic is deleted and must not appear anywhere.",
+            "search_data": "'anywher':14 'appear':13 'delet':3A,9 'fixtur':2A 'general':5B 'must':11 'pariti':1A 'topic':4A,7",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
             "post_id": 3,
             "version": 5,
             "raw_data": "Create topics here that don't fit into any other existing category.",
@@ -47,24 +65,6 @@
             "version": 5,
             "raw_data": "Create topics here that don't fit into any other existing category.",
             "search_data": "'categori':4A,18 'creat':7 'exist':17 'fit':13 'general':3A,5B 'renam':6B 'topic':8",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
-            "post_id": 6,
-            "version": 5,
-            "raw_data": "We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .",
-            "search_data": "'/about':135 '/c/site-feedback/2':128 '/faq':112 '/latest':61 '/my/preferences/account':39 'ad':28 'admin':138 'alreadi':66 'appreci':84 'ask':51,95,126 'book':54 'brows':62 'comment':90 'communiti':59,113 'contact':136 'contribut':88 'd':47 'discours':3A 'discuss':63,102 'entertain':77 'feedback':99,133 'feel':123 'find':71 'free':124 'full':131 'general':5B 'get':21,55 'glad':9 'guidelin':114 'handshak':87 'happen':67 'head':24 'heart':80 'help':118 'inform':32,75 'interest':37,74 'introduc':25 'join':11 'know':57 'like':48 'need':117 'new':107 'offer':98 'one':44 'open':53 'perspect':94 'pictur':30 'pleas':109 'post':73 'profil':41 'question':96 'repli':104 'review':110 'share':91 'show':82 'site':132 'speak':23 'squar':130 'square-ful':129 'start':22,106 'suggest':122 'support':86 'thing':16,45 'topic':108 'us':12 'use':78 'wave':4A 'welcom':1A",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 6,
-            "version": 5,
-            "raw_data": "We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .",
-            "search_data": "'/about':136 '/c/site-feedback/2':129 '/faq':113 '/latest':62 '/my/preferences/account':40 'ad':29 'admin':139 'alreadi':67 'appreci':85 'ask':52,96,127 'book':55 'brows':63 'comment':91 'communiti':60,114 'contact':137 'contribut':89 'd':48 'discours':3A 'discuss':64,103 'entertain':78 'feedback':100,134 'feel':124 'find':72 'free':125 'full':132 'general':5B 'get':22,56 'glad':10 'guidelin':115 'handshak':88 'happen':68 'head':25 'heart':81 'help':119 'inform':33,76 'interest':38,75 'introduc':26 'join':12 'know':58 'like':49 'need':118 'new':108 'offer':99 'one':45 'open':54 'perspect':95 'pictur':31 'pleas':110 'post':74 'profil':42 'question':97 'renam':6B 'repli':105 'review':111 'share':92 'show':83 'site':133 'speak':24 'squar':131 'square-ful':130 'start':23,107 'suggest':123 'support':87 'thing':17,46 'topic':109 'us':13 'use':79 'wave':4A 'welcom':1A",
             "private_message": false
           }
         },
@@ -143,6 +143,24 @@
         {
           "before": {
             "locale": "en",
+            "post_id": 6,
+            "version": 5,
+            "raw_data": "We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .",
+            "search_data": "'/about':135 '/c/site-feedback/2':128 '/faq':112 '/latest':61 '/my/preferences/account':39 'add':28 'admin':138 'alreadi':66 'appreci':84 'ask':51,95,126 'book':54 'brows':62 'comment':90 'communiti':59,113 'contact':136 'contribut':88 'd':47 'discours':3A 'discuss':63,102 'entertain':77 'feedback':99,133 'feel':123 'find':71 'free':124 'full':131 'general':5B 'get':21,55 'glad':9 'guidelin':114 'handshak':87 'happen':67 'head':24 'heart':80 'help':118 'inform':32,75 'interest':37,74 'introduc':25 'join':11 'know':57 'like':48 'need':117 'new':107 'offer':98 'one':44 'open':53 'perspect':94 'pictur':30 'pleas':109 'post':73 'profil':41 'question':96 'repli':104 'review':110 'share':91 'show':82 'site':132 'speak':23 'squar':130 'square-ful':129 'start':22,106 'suggest':122 'support':86 'thing':16,45 'topic':108 'us':12 'use':78 'wave':4A 'welcom':1A",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 6,
+            "version": 5,
+            "raw_data": "We are so glad you joined us. Here are some things you can do to get started: :speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to /my/preferences/account your profile . What is one thing you'd like to be asked about? :open_book: Get to know the community by /latest browsing discussions that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support! :handshake: Contribute by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the /faq Community Guidelines . If you need help or have a suggestion, feel free to ask in /c/site-feedback/2 #square-full Site Feedback or /about contact the admins .",
+            "search_data": "'/about':136 '/c/site-feedback/2':129 '/faq':113 '/latest':62 '/my/preferences/account':40 'add':29 'admin':139 'alreadi':67 'appreci':85 'ask':52,96,127 'book':55 'brows':63 'comment':91 'communiti':60,114 'contact':137 'contribut':89 'd':48 'discours':3A 'discuss':64,103 'entertain':78 'feedback':100,134 'feel':124 'find':72 'free':125 'full':132 'general':5B 'get':22,56 'glad':10 'guidelin':115 'handshak':88 'happen':68 'head':25 'heart':81 'help':119 'inform':33,76 'interest':38,75 'introduc':26 'join':12 'know':58 'like':49 'need':118 'new':108 'offer':99 'one':45 'open':54 'perspect':95 'pictur':31 'pleas':110 'post':74 'profil':42 'question':97 'renam':6B 'repli':105 'review':111 'share':92 'show':83 'site':133 'speak':24 'squar':131 'square-ful':130 'start':23,107 'suggest':123 'support':87 'thing':17,46 'topic':109 'us':13 'use':79 'wave':4A 'welcom':1A",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
             "post_id": 43,
             "version": 5,
             "raw_data": "This topic is unlisted and must not appear in latest for anonymous users.",
@@ -212,7 +230,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "1eeffbee1400f987203be5e83b788f8ac034bb705274d3dcb3d3d151b4cb918e",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

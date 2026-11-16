@@ -2,7 +2,7 @@
 # Build static/vendor/icons.svg: the Font Awesome Free icons the pages use,
 # as <symbol>s named as Discourse names them (<use href="#bars">), from the
 # sprites Discourse vendors and serves (vendor/assets/svg-icons/fontawesome,
-# Font Awesome Free 6.6.0 at the vendored commit; SvgSprite builds the
+# Font Awesome Free 7.3.1 at the vendored commit; SvgSprite builds the
 # page's sprite from these, not from the npm package). Icons are CC BY 4.0
 # (static/vendor/fontawesome-LICENSE.txt).
 #
@@ -245,6 +245,9 @@ ICONS=(
   caret-up
   # The topic lists' bulk actions (Reset Bump Dates).
   anchor
+  # The admin reports' mode toggle (src/admin/report_view.rs).
+  table
+  signal
 )
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
@@ -297,5 +300,8 @@ out="$root/static/vendor/icons.svg"
     echo "  ${found/<symbol id=\"$id\"/<symbol id=\"$name\"}"
   done
   echo '</svg>'
-} > "$out"
+  # SvgSprite.symbols_for sets overflow="visible" on every symbol (Discourse
+  # 0fdc2022492): browsers clip a <use> copy to its viewBox otherwise, and
+  # some Font Awesome 7 glyphs draw past theirs.
+} | sed -E 's/^(  <symbol [^>]*[^/])>/\1 overflow="visible">/' > "$out"
 echo "wrote $out (${#ICONS[@]} icons)" >&2

@@ -64,8 +64,8 @@
       "path": "/admin/reports/signups.json"
     }
   ],
-  "started_at": "2026-10-14T15:02:43.97117",
-  "transaction_started_at": "2026-10-14T15:02:41.933895",
+  "started_at": "2026-11-15T21:46:15.899477",
+  "transaction_started_at": "2026-11-15T21:46:14.941932",
   "responses": [
     {
       "status": 200,
@@ -78,10 +78,6 @@
           "description": "New account registrations for this period.",
           "description_link": null,
           "data": [
-            {
-              "x": "2026-10-09",
-              "y": 1
-            },
             {
               "x": "2026-10-11",
               "y": 1
@@ -140,10 +136,6 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-09",
-              "y": 1
-            },
-            {
               "x": "2026-10-11",
               "y": 1
             }
@@ -199,16 +191,7 @@
           "yaxis": "Number of signups",
           "description": "New account registrations for this period.",
           "description_link": null,
-          "data": [
-            {
-              "x": "2026-10-09",
-              "y": 1
-            },
-            {
-              "x": "2026-10-11",
-              "y": 1
-            }
-          ],
+          "data": [],
           "start_date": "2026-09-20T00:00:00Z",
           "end_date": "2026-10-31T23:59:59Z",
           "prev_data": null,
@@ -263,11 +246,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-09-09",
-              "y": 1
-            },
-            {
-              "x": "2026-10-09",
+              "x": "2026-09-06",
               "y": 1
             },
             {
@@ -280,7 +259,7 @@
           "prev_data": null,
           "prev_start_date": "2026-07-02T00:00:00Z",
           "prev_end_date": "2026-09-01T00:00:00Z",
-          "prev30Days": 1,
+          "prev30Days": 0,
           "dates_filtering": true,
           "report_key": "reports:signups:20260901:20261031:[:total, :prev30Days]:1:5:1:true:false",
           "primary_color": "rgba(0,136,204,1)",
@@ -318,17 +297,17 @@
             "users": [
               {
                 "user": {
-                  "id": 4,
-                  "username": "user2",
-                  "name": "User2",
-                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+                  "id": 2,
+                  "username": "user0",
+                  "name": "User0",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png"
                 },
-                "timestamp": "2026-10-11T15:02:41Z"
+                "timestamp": "2026-10-11T21:46:14Z"
               }
             ]
           },
           "related_items_totals": {
-            "users": 3
+            "users": 2
           }
         }
       }
@@ -345,11 +324,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-09",
-              "y": 1
-            },
-            {
-              "x": "2026-10-11",
+              "x": "2026-09-06",
               "y": 1
             }
           ],
@@ -358,7 +333,7 @@
           "prev_data": null,
           "prev_start_date": "2026-07-02T00:00:00Z",
           "prev_end_date": "2026-09-01T00:00:00Z",
-          "prev30Days": 1,
+          "prev30Days": 0,
           "dates_filtering": true,
           "report_key": "reports:signups:20260901:20261031:[:total, :prev30Days]:{\"group\":\"12\"}:5:1:true:false",
           "primary_color": "rgba(0,136,204,1)",
@@ -395,26 +370,17 @@
             "users": [
               {
                 "user": {
-                  "id": 4,
-                  "username": "user2",
-                  "name": "User2",
-                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png"
+                  "id": 5,
+                  "username": "user3",
+                  "name": "User3",
+                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png"
                 },
-                "timestamp": "2026-10-11T15:02:41Z"
-              },
-              {
-                "user": {
-                  "id": 3,
-                  "username": "user1",
-                  "name": "User1",
-                  "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png"
-                },
-                "timestamp": "2026-10-09T15:02:41Z"
+                "timestamp": "2026-09-06T21:46:14Z"
               }
             ]
           },
           "related_items_totals": {
-            "users": 2
+            "users": 1
           }
         }
       }
@@ -430,14 +396,14 @@
           "description": "New account registrations for this period.",
           "description_link": null,
           "data": [],
-          "start_date": "2026-10-13T00:00:00Z",
-          "end_date": "2026-11-12T23:59:59Z",
+          "start_date": "2026-11-14T00:00:00Z",
+          "end_date": "2026-12-14T23:59:59Z",
           "prev_data": null,
-          "prev_start_date": "2026-09-12T00:00:00Z",
-          "prev_end_date": "2026-10-13T00:00:00Z",
-          "prev30Days": 2,
+          "prev_start_date": "2026-10-14T00:00:00Z",
+          "prev_end_date": "2026-11-14T00:00:00Z",
+          "prev30Days": 3,
           "dates_filtering": true,
-          "report_key": "reports:signups:20261013:20261112:[:total, :prev30Days]:5:1:true:false",
+          "report_key": "reports:signups:20261114:20261214:[:total, :prev30Days]:5:1:true:false",
           "primary_color": "rgba(0,136,204,1)",
           "secondary_color": "rgba(0,136,204,0.1)",
           "available_filters": [
@@ -479,33 +445,33 @@
       "updated": [
         {
           "before": {
-            "id": 222,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "piA6wrmas/SXAwgwCa9g7Zlp3WQ=",
-            "created_at": "2026-10-14T15:02:42.478355",
-            "rotated_at": "2026-10-14T15:02:42.476771",
-            "updated_at": "2026-10-14T15:02:42.478355",
+            "auth_token": "HN9xFkVSZmOTxeWOgsSJ1+20+LI=",
+            "created_at": "2026-11-15T21:46:15.25445",
+            "rotated_at": "2026-11-15T21:46:15.253517",
+            "updated_at": "2026-11-15T21:46:15.25445",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "piA6wrmas/SXAwgwCa9g7Zlp3WQ=",
+            "prev_auth_token": "HN9xFkVSZmOTxeWOgsSJ1+20+LI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 222,
-            "seen_at": "2026-10-14T15:02:43.97815",
+            "id": 14,
+            "seen_at": "2026-11-15T21:46:15.905803",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "piA6wrmas/SXAwgwCa9g7Zlp3WQ=",
-            "created_at": "2026-10-14T15:02:42.478355",
-            "rotated_at": "2026-10-14T15:02:42.476771",
-            "updated_at": "2026-10-14T15:02:42.478355",
+            "auth_token": "HN9xFkVSZmOTxeWOgsSJ1+20+LI=",
+            "created_at": "2026-11-15T21:46:15.25445",
+            "rotated_at": "2026-11-15T21:46:15.253517",
+            "updated_at": "2026-11-15T21:46:15.25445",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "piA6wrmas/SXAwgwCa9g7Zlp3WQ=",
+            "prev_auth_token": "HN9xFkVSZmOTxeWOgsSJ1+20+LI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -524,7 +490,7 @@
   ],
   "recorded_from": {
     "case": "6a1ff7280607eda6220d863214aa04b0c214d97e0eb2b57ce6abe228acfcc920",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

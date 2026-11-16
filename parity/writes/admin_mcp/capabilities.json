@@ -69,8 +69,8 @@
       }
     }
   ],
-  "started_at": "2026-10-17T08:16:31.388999",
-  "transaction_started_at": "2026-10-17T08:16:29.517953",
+  "started_at": "2026-11-15T21:45:22.873009",
+  "transaction_started_at": "2026-11-15T21:45:22.060737",
   "responses": [
     {
       "status": 200,
@@ -83,21 +83,30 @@
           "discourse-reactions:write",
           "discourse-solved:write",
           "discourse-topic-voting:write",
+          "mcp:categories:read",
+          "mcp:categories:write",
           "mcp:content:read",
           "mcp:content:write",
           "mcp:data-explorer:read",
           "mcp:drafts:read",
           "mcp:drafts:write",
+          "mcp:groups:read",
+          "mcp:groups:write",
           "mcp:moderation:read",
           "mcp:moderation:write",
           "mcp:private-messages:read",
           "mcp:private-messages:write",
           "mcp:profile:read",
           "mcp:profile:write",
+          "mcp:reports:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
+          "mcp:tag-groups:read",
+          "mcp:tag-groups:write",
           "mcp:themes:read",
-          "mcp:themes:write"
+          "mcp:themes:write",
+          "mcp:users:read",
+          "mcp:users:write"
         ],
         "primitives": [
           {
@@ -181,6 +190,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_category",
+            "field_name": "primitive_tool_7f4714661ed34db9",
+            "identifier": "discourse_create_category",
+            "kind": "tool",
+            "title": "Create category",
+            "description": "Creates a category and returns its ID, slug, and name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_group",
+            "field_name": "primitive_tool_2168a86badb026d6",
+            "identifier": "discourse_create_group",
+            "kind": "tool",
+            "title": "Create group",
+            "description": "Creates a group and returns its ID and name. Requires group creation rights.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_create_post",
             "field_name": "primitive_tool_db18db3d12f6441b",
             "identifier": "discourse_create_post",
@@ -207,6 +248,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_tag_group",
+            "field_name": "primitive_tool_03e3927a6b9a127c",
+            "identifier": "discourse_create_tag_group",
+            "kind": "tool",
+            "title": "Create tag group",
+            "description": "Creates a tag group. Requires staff authority and tagging enabled. Tags use ID or name selectors; synonyms resolve to original tags. Name selectors require allow_tag_creation=true and may create tags. permissions maps group IDs to full or readonly; group 0 means everyone. Omitted permissions default to everyone/full.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -245,6 +302,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_user",
+            "field_name": "primitive_tool_81dad7a5f588415d",
+            "identifier": "discourse_create_user",
+            "kind": "tool",
+            "title": "Create user",
+            "description": "Creates a user as an administrator. Registrations must be open. Supply the site's invite code if required and required user fields keyed by field ID. Missing-field errors identify the field name and ID.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_current_user_get",
             "field_name": "primitive_tool_2460f13c1aa9ca7d",
             "identifier": "discourse_current_user_get",
@@ -255,6 +328,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_category",
+            "field_name": "primitive_tool_58a8916174e79eb7",
+            "identifier": "discourse_delete_category",
+            "kind": "tool",
+            "title": "Delete category",
+            "description": "Deletes an empty category after confirming its current name.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:categories:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -277,6 +366,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_delete_group",
+            "field_name": "primitive_tool_e902e7a8868ad0ec",
+            "identifier": "discourse_delete_group",
+            "kind": "tool",
+            "title": "Delete group",
+            "description": "Deletes a group after confirming its current name. Administrators only. Automatic groups cannot be deleted.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_tag_group",
+            "field_name": "primitive_tool_72611c1faffbcec6",
+            "identifier": "discourse_delete_tag_group",
+            "kind": "tool",
+            "title": "Delete tag group",
+            "description": "Deletes a tag group and its membership, permission and category relationships, including required-tag rules. Tags and topic tags remain. Requires staff authority, tagging enabled, confirm=true and the exact current expected_name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_theme",
+            "field_name": "primitive_tool_723f0532e40f0399",
+            "identifier": "discourse_delete_theme",
+            "kind": "tool",
+            "title": "Delete theme",
+            "description": "Deletes a theme and its component links. Requires edit permission, the current name, and confirmation. Default and system themes cannot be deleted.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_filter_topics",
             "field_name": "primitive_tool_0e686b5bde2f028b",
             "identifier": "discourse_filter_topics",
@@ -287,6 +424,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_category",
+            "field_name": "primitive_tool_d13de2830c6214da",
+            "identifier": "discourse_get_category",
+            "kind": "tool",
+            "title": "Get category",
+            "description": "Reads category details needed for category management.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -319,6 +472,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_group",
+            "field_name": "primitive_tool_18e4d95fc6857eec",
+            "identifier": "discourse_get_group",
+            "kind": "tool",
+            "title": "Get group",
+            "description": "Gets safe details and caller capabilities for one visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -373,6 +542,22 @@
             "available": false
           },
           {
+            "id": "tool:discourse_get_report",
+            "field_name": "primitive_tool_fbb12ff6ea48277d",
+            "identifier": "discourse_get_report",
+            "kind": "tool",
+            "title": "Get report",
+            "description": "Retrieves one report from the caller's current report catalog. Requires staff access; admin-only reports and related items retain their normal restrictions. Dates use YYYY-MM-DD and default to the last 30 days ending on end_date or today. Date ranges cannot exceed 366 days. Filters accept scalar values or arrays, as supported by each report. limit bounds rows only where the report supports it; omitting it preserves that report's default. cache opts into the existing report cache and requires administrator access; include_related_items defaults to false. This runs registered reports, not arbitrary SQL.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_get_review_queue_count",
             "field_name": "primitive_tool_105a65acb9eb981b",
             "identifier": "discourse_get_review_queue_count",
@@ -399,6 +584,22 @@
             "risk": "moderation",
             "required_scopes": [
               "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_tag_group",
+            "field_name": "primitive_tool_810e83db62b1735b",
+            "identifier": "discourse_get_tag_group",
+            "kind": "tool",
+            "title": "Get tag group",
+            "description": "Reads tag-group configuration, including tags, parent, one-per-topic policy and permissions. Requires staff authority.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -485,6 +686,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_handle_group_membership_request",
+            "field_name": "primitive_tool_266723c0794ce65d",
+            "identifier": "discourse_handle_group_membership_request",
+            "kind": "tool",
+            "title": "Handle group membership request",
+            "description": "Approves or denies one pending membership request for a group the authenticated user may manage. Approving adds the requester to the group.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_install_theme",
+            "field_name": "primitive_tool_6c965a650b3cce5d",
+            "identifier": "discourse_install_theme",
+            "kind": "tool",
+            "title": "Install theme",
+            "description": "Installs executable theme code from exactly one repository URL or base64 archive. Requires administrator access and confirmation. Repository installs always run migrations and require confirm_run_migrations. Archive migrations are opt-in. Archive component imports default to none; merge and sync require run_migrations and confirm_run_migrations. Only archives can replace an existing theme; confirm its current name before replacement. Returns a theme summary without source code and reports any archive components that could not be imported.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_group_members",
+            "field_name": "primitive_tool_465441113fce8557",
+            "identifier": "discourse_invite_group_members",
+            "kind": "tool",
+            "title": "Invite group members by email",
+            "description": "Adds existing accounts that match an address and invites the rest to the forum with the group preassigned. Requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_invite_to_private_message",
             "field_name": "primitive_tool_f54fa0cbc0d051ca",
             "identifier": "discourse_invite_to_private_message",
@@ -517,6 +766,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_group_members",
+            "field_name": "primitive_tool_05ba0ee0d4c50634",
+            "identifier": "discourse_list_group_members",
+            "kind": "tool",
+            "title": "List group members",
+            "description": "Lists members and owners when the authenticated user may see them.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_membership_requests",
+            "field_name": "primitive_tool_d72fcacde1774179",
+            "identifier": "discourse_list_group_membership_requests",
+            "kind": "tool",
+            "title": "List group membership requests",
+            "description": "Lists pending requests for a group the authenticated user may manage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_posts",
+            "field_name": "primitive_tool_5c5636f856561243",
+            "identifier": "discourse_list_group_posts",
+            "kind": "tool",
+            "title": "List group posts",
+            "description": "Lists visible public-topic posts authored by members of a visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_groups",
+            "field_name": "primitive_tool_806f48a0a543e91f",
+            "identifier": "discourse_list_groups",
+            "kind": "tool",
+            "title": "List groups",
+            "description": "Lists groups visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_latest_posts",
             "field_name": "primitive_tool_a61ae05157131e18",
             "identifier": "discourse_list_latest_posts",
@@ -543,6 +856,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reports",
+            "field_name": "primitive_tool_45e64bd524674273",
+            "identifier": "discourse_list_reports",
+            "kind": "tool",
+            "title": "List reports",
+            "description": "Lists the caller's available Discourse reports, including enabled plugin reports. Requires staff access. Use the returned report types with discourse_get_report.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -597,6 +926,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_tag_groups",
+            "field_name": "primitive_tool_2db6c55f17ce0c25",
+            "identifier": "discourse_list_tag_groups",
+            "kind": "tool",
+            "title": "List tag groups",
+            "description": "Lists staff tag-group inventory with permissions and parent tags, ordered by name and ID. Requires staff authority. Paginate with limit and offset; reads remain available when tagging is disabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_themes",
+            "field_name": "primitive_tool_b5d51aa1896790de",
+            "identifier": "discourse_list_themes",
+            "kind": "tool",
+            "title": "List themes",
+            "description": "Lists installed themes and components. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_user_actions",
             "field_name": "primitive_tool_13f3d5b18a439b5a",
             "identifier": "discourse_list_user_actions",
@@ -623,6 +984,86 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_users",
+            "field_name": "primitive_tool_a447c1e56e396389",
+            "identifier": "discourse_list_users",
+            "kind": "tool",
+            "title": "List users",
+            "description": "Lists and filters users visible through Discourse's staff user directory.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_members",
+            "field_name": "primitive_tool_b408514c90dfb6da",
+            "identifier": "discourse_manage_group_members",
+            "kind": "tool",
+            "title": "Manage group members",
+            "description": "Adds or removes members of a group the authenticated user may manage. Provide exactly one of usernames, user_ids, or user_emails. The user_emails selector requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_membership",
+            "field_name": "primitive_tool_d9e750f0af46fadb",
+            "identifier": "discourse_manage_group_membership",
+            "kind": "tool",
+            "title": "Manage own group membership",
+            "description": "Joins a group that allows public admission, leaves a group that allows public exit, or requests membership with a reason.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_owners",
+            "field_name": "primitive_tool_b2ed746f50ba5bea",
+            "identifier": "discourse_manage_group_owners",
+            "kind": "tool",
+            "title": "Manage group owners",
+            "description": "Grants or revokes group ownership. Adding an owner also adds them as a member. Automatic groups cannot be changed.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_user_activation",
+            "field_name": "primitive_tool_5bba3abf3e738821",
+            "identifier": "discourse_manage_user_activation",
+            "kind": "tool",
+            "title": "Manage user activation",
+            "description": "Activates, approves, activates and approves, or deactivates an eligible user.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -837,6 +1278,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_tag_groups",
+            "field_name": "primitive_tool_51456312005b67e5",
+            "identifier": "discourse_search_tag_groups",
+            "kind": "tool",
+            "title": "Search tag groups",
+            "description": "Searches visible tag groups and visible member tags. Omits staff configuration. q and names combine; q supports SQL LIKE wildcards. truncated signals possible additional results.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -847,6 +1304,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_sync_remote_theme",
+            "field_name": "primitive_tool_451d034f6910fbaa",
+            "identifier": "discourse_sync_remote_theme",
+            "kind": "tool",
+            "title": "Sync remote theme",
+            "description": "Checks a theme repository for updates or installs its latest code. Requires edit permission. Updating runs migrations and requires both code and migration confirmation. Checking also updates stored remote-version metadata. Returns a theme summary. When completing a pending installation, also reports skipped components with their errors.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -901,6 +1374,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_category",
+            "field_name": "primitive_tool_b281fdf78b9ae6de",
+            "identifier": "discourse_update_category",
+            "kind": "tool",
+            "title": "Update category",
+            "description": "Updates basic details for a category.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_group",
+            "field_name": "primitive_tool_66d21dfae24afc55",
+            "identifier": "discourse_update_group",
+            "kind": "tool",
+            "title": "Update group",
+            "description": "Updates the group settings the authenticated user may change. Fields the user cannot change are ignored.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_post",
             "field_name": "primitive_tool_6394003e5b2a6e25",
             "identifier": "discourse_update_post",
@@ -933,12 +1438,60 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_tag_group",
+            "field_name": "primitive_tool_d6732f80e3ca66d0",
+            "identifier": "discourse_update_tag_group",
+            "kind": "tool",
+            "title": "Update tag group",
+            "description": "Updates supplied fields, preserving omitted fields. tags replaces all member tags; [] clears them. parent_tag=null clears the parent. permissions replaces the full permission map. Synonyms resolve to original tags. Name selectors require allow_tag_creation=true. Requires staff authority and tagging enabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_theme",
             "field_name": "primitive_tool_fdc61efa928e1c7a",
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
             "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_setting",
+            "field_name": "primitive_tool_c7da69dbdb1d869c",
+            "identifier": "discourse_update_theme_setting",
+            "kind": "tool",
+            "title": "Update theme setting",
+            "description": "Sets a declared theme setting or restores its declared default. Requires edit permission. Use pipe-separated strings for list settings and arrays of objects for object settings. Reverting requires confirm and must omit value.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_translations",
+            "field_name": "primitive_tool_d31561dc41c17f4b",
+            "identifier": "discourse_update_theme_translations",
+            "kind": "tool",
+            "title": "Update theme translations",
+            "description": "Updates declared theme translations for one locale. Requires edit permission and the current theme name. Unknown keys reject the whole batch.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -991,6 +1544,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_theme_asset",
+            "field_name": "primitive_tool_308dcce01df72ac6",
+            "identifier": "discourse_upload_theme_asset",
+            "kind": "tool",
+            "title": "Upload theme asset",
+            "description": "Uploads base64 asset data for use in a theme. Requires administrator access. Returns an unattached upload ID; use discourse_update_theme to attach it to a theme field. Site upload and MCP request-size limits apply.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1083,9 +1652,9 @@
       "status": 200,
       "body": {
         "enabled": true,
-        "endpoint": "http://localhost:3048/mcp",
+        "endpoint": "http://localhost:3042/mcp",
         "protocol_version": "2026-07-28",
-        "server_version": "2026.10.0-latest",
+        "server_version": "2026.11.0-latest.1",
         "status": "available",
         "catalog": {
           "tools": 2,
@@ -1169,7 +1738,7 @@
             "scopes": [
               "mcp:profile:read"
             ],
-            "consented_at": "2026-10-16T08:16:29.517Z",
+            "consented_at": "2026-11-14T21:45:22.060Z",
             "revoked_at": null,
             "last_used_at": null,
             "token_count": 1
@@ -1185,7 +1754,7 @@
               "mcp:profile:read",
               "mcp:themes:write"
             ],
-            "consented_at": "2026-10-16T08:16:29.517Z",
+            "consented_at": "2026-11-14T21:45:22.060Z",
             "revoked_at": null,
             "last_used_at": null,
             "token_count": 0
@@ -1207,21 +1776,30 @@
           "discourse-reactions:write",
           "discourse-solved:write",
           "discourse-topic-voting:write",
+          "mcp:categories:read",
+          "mcp:categories:write",
           "mcp:content:read",
           "mcp:content:write",
           "mcp:data-explorer:read",
           "mcp:drafts:read",
           "mcp:drafts:write",
+          "mcp:groups:read",
+          "mcp:groups:write",
           "mcp:moderation:read",
           "mcp:moderation:write",
           "mcp:private-messages:read",
           "mcp:private-messages:write",
           "mcp:profile:read",
           "mcp:profile:write",
+          "mcp:reports:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
+          "mcp:tag-groups:read",
+          "mcp:tag-groups:write",
           "mcp:themes:read",
-          "mcp:themes:write"
+          "mcp:themes:write",
+          "mcp:users:read",
+          "mcp:users:write"
         ],
         "primitives": [
           {
@@ -1305,6 +1883,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_category",
+            "field_name": "primitive_tool_7f4714661ed34db9",
+            "identifier": "discourse_create_category",
+            "kind": "tool",
+            "title": "Create category",
+            "description": "Creates a category and returns its ID, slug, and name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_group",
+            "field_name": "primitive_tool_2168a86badb026d6",
+            "identifier": "discourse_create_group",
+            "kind": "tool",
+            "title": "Create group",
+            "description": "Creates a group and returns its ID and name. Requires group creation rights.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_create_post",
             "field_name": "primitive_tool_db18db3d12f6441b",
             "identifier": "discourse_create_post",
@@ -1331,6 +1941,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_tag_group",
+            "field_name": "primitive_tool_03e3927a6b9a127c",
+            "identifier": "discourse_create_tag_group",
+            "kind": "tool",
+            "title": "Create tag group",
+            "description": "Creates a tag group. Requires staff authority and tagging enabled. Tags use ID or name selectors; synonyms resolve to original tags. Name selectors require allow_tag_creation=true and may create tags. permissions maps group IDs to full or readonly; group 0 means everyone. Omitted permissions default to everyone/full.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1369,6 +1995,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_create_user",
+            "field_name": "primitive_tool_81dad7a5f588415d",
+            "identifier": "discourse_create_user",
+            "kind": "tool",
+            "title": "Create user",
+            "description": "Creates a user as an administrator. Registrations must be open. Supply the site's invite code if required and required user fields keyed by field ID. Missing-field errors identify the field name and ID.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_current_user_get",
             "field_name": "primitive_tool_2460f13c1aa9ca7d",
             "identifier": "discourse_current_user_get",
@@ -1379,6 +2021,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:profile:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_category",
+            "field_name": "primitive_tool_58a8916174e79eb7",
+            "identifier": "discourse_delete_category",
+            "kind": "tool",
+            "title": "Delete category",
+            "description": "Deletes an empty category after confirming its current name.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:categories:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1401,6 +2059,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_delete_group",
+            "field_name": "primitive_tool_e902e7a8868ad0ec",
+            "identifier": "discourse_delete_group",
+            "kind": "tool",
+            "title": "Delete group",
+            "description": "Deletes a group after confirming its current name. Administrators only. Automatic groups cannot be deleted.",
+            "provider": "core",
+            "risk": "destructive",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_tag_group",
+            "field_name": "primitive_tool_72611c1faffbcec6",
+            "identifier": "discourse_delete_tag_group",
+            "kind": "tool",
+            "title": "Delete tag group",
+            "description": "Deletes a tag group and its membership, permission and category relationships, including required-tag rules. Tags and topic tags remain. Requires staff authority, tagging enabled, confirm=true and the exact current expected_name.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_theme",
+            "field_name": "primitive_tool_723f0532e40f0399",
+            "identifier": "discourse_delete_theme",
+            "kind": "tool",
+            "title": "Delete theme",
+            "description": "Deletes a theme and its component links. Requires edit permission, the current name, and confirmation. Default and system themes cannot be deleted.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_filter_topics",
             "field_name": "primitive_tool_0e686b5bde2f028b",
             "identifier": "discourse_filter_topics",
@@ -1411,6 +2117,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_category",
+            "field_name": "primitive_tool_d13de2830c6214da",
+            "identifier": "discourse_get_category",
+            "kind": "tool",
+            "title": "Get category",
+            "description": "Reads category details needed for category management.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1443,6 +2165,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:drafts:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_group",
+            "field_name": "primitive_tool_18e4d95fc6857eec",
+            "identifier": "discourse_get_group",
+            "kind": "tool",
+            "title": "Get group",
+            "description": "Gets safe details and caller capabilities for one visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1497,6 +2235,22 @@
             "available": false
           },
           {
+            "id": "tool:discourse_get_report",
+            "field_name": "primitive_tool_fbb12ff6ea48277d",
+            "identifier": "discourse_get_report",
+            "kind": "tool",
+            "title": "Get report",
+            "description": "Retrieves one report from the caller's current report catalog. Requires staff access; admin-only reports and related items retain their normal restrictions. Dates use YYYY-MM-DD and default to the last 30 days ending on end_date or today. Date ranges cannot exceed 366 days. Filters accept scalar values or arrays, as supported by each report. limit bounds rows only where the report supports it; omitting it preserves that report's default. cache opts into the existing report cache and requires administrator access; include_related_items defaults to false. This runs registered reports, not arbitrary SQL.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_get_review_queue_count",
             "field_name": "primitive_tool_105a65acb9eb981b",
             "identifier": "discourse_get_review_queue_count",
@@ -1523,6 +2277,22 @@
             "risk": "moderation",
             "required_scopes": [
               "mcp:moderation:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_get_tag_group",
+            "field_name": "primitive_tool_810e83db62b1735b",
+            "identifier": "discourse_get_tag_group",
+            "kind": "tool",
+            "title": "Get tag group",
+            "description": "Reads tag-group configuration, including tags, parent, one-per-topic policy and permissions. Requires staff authority.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1609,6 +2379,54 @@
             "available": true
           },
           {
+            "id": "tool:discourse_handle_group_membership_request",
+            "field_name": "primitive_tool_266723c0794ce65d",
+            "identifier": "discourse_handle_group_membership_request",
+            "kind": "tool",
+            "title": "Handle group membership request",
+            "description": "Approves or denies one pending membership request for a group the authenticated user may manage. Approving adds the requester to the group.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_install_theme",
+            "field_name": "primitive_tool_6c965a650b3cce5d",
+            "identifier": "discourse_install_theme",
+            "kind": "tool",
+            "title": "Install theme",
+            "description": "Installs executable theme code from exactly one repository URL or base64 archive. Requires administrator access and confirmation. Repository installs always run migrations and require confirm_run_migrations. Archive migrations are opt-in. Archive component imports default to none; merge and sync require run_migrations and confirm_run_migrations. Only archives can replace an existing theme; confirm its current name before replacement. Returns a theme summary without source code and reports any archive components that could not be imported.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_invite_group_members",
+            "field_name": "primitive_tool_465441113fce8557",
+            "identifier": "discourse_invite_group_members",
+            "kind": "tool",
+            "title": "Invite group members by email",
+            "description": "Adds existing accounts that match an address and invites the rest to the forum with the group preassigned. Requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "external_side_effect",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_invite_to_private_message",
             "field_name": "primitive_tool_f54fa0cbc0d051ca",
             "identifier": "discourse_invite_to_private_message",
@@ -1641,6 +2459,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_group_members",
+            "field_name": "primitive_tool_05ba0ee0d4c50634",
+            "identifier": "discourse_list_group_members",
+            "kind": "tool",
+            "title": "List group members",
+            "description": "Lists members and owners when the authenticated user may see them.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_membership_requests",
+            "field_name": "primitive_tool_d72fcacde1774179",
+            "identifier": "discourse_list_group_membership_requests",
+            "kind": "tool",
+            "title": "List group membership requests",
+            "description": "Lists pending requests for a group the authenticated user may manage.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_group_posts",
+            "field_name": "primitive_tool_5c5636f856561243",
+            "identifier": "discourse_list_group_posts",
+            "kind": "tool",
+            "title": "List group posts",
+            "description": "Lists visible public-topic posts authored by members of a visible group.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_groups",
+            "field_name": "primitive_tool_806f48a0a543e91f",
+            "identifier": "discourse_list_groups",
+            "kind": "tool",
+            "title": "List groups",
+            "description": "Lists groups visible to the authenticated user.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_latest_posts",
             "field_name": "primitive_tool_a61ae05157131e18",
             "identifier": "discourse_list_latest_posts",
@@ -1667,6 +2549,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:private-messages:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_reports",
+            "field_name": "primitive_tool_45e64bd524674273",
+            "identifier": "discourse_list_reports",
+            "kind": "tool",
+            "title": "List reports",
+            "description": "Lists the caller's available Discourse reports, including enabled plugin reports. Requires staff access. Use the returned report types with discourse_get_report.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:reports:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1721,6 +2619,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_tag_groups",
+            "field_name": "primitive_tool_2db6c55f17ce0c25",
+            "identifier": "discourse_list_tag_groups",
+            "kind": "tool",
+            "title": "List tag groups",
+            "description": "Lists staff tag-group inventory with permissions and parent tags, ordered by name and ID. Requires staff authority. Paginate with limit and offset; reads remain available when tagging is disabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_themes",
+            "field_name": "primitive_tool_b5d51aa1896790de",
+            "identifier": "discourse_list_themes",
+            "kind": "tool",
+            "title": "List themes",
+            "description": "Lists installed themes and components. Requires administrator access.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_list_user_actions",
             "field_name": "primitive_tool_13f3d5b18a439b5a",
             "identifier": "discourse_list_user_actions",
@@ -1747,6 +2677,86 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_users",
+            "field_name": "primitive_tool_a447c1e56e396389",
+            "identifier": "discourse_list_users",
+            "kind": "tool",
+            "title": "List users",
+            "description": "Lists and filters users visible through Discourse's staff user directory.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_members",
+            "field_name": "primitive_tool_b408514c90dfb6da",
+            "identifier": "discourse_manage_group_members",
+            "kind": "tool",
+            "title": "Manage group members",
+            "description": "Adds or removes members of a group the authenticated user may manage. Provide exactly one of usernames, user_ids, or user_emails. The user_emails selector requires permission to view email addresses.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_membership",
+            "field_name": "primitive_tool_d9e750f0af46fadb",
+            "identifier": "discourse_manage_group_membership",
+            "kind": "tool",
+            "title": "Manage own group membership",
+            "description": "Joins a group that allows public admission, leaves a group that allows public exit, or requests membership with a reason.",
+            "provider": "core",
+            "risk": "write",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_group_owners",
+            "field_name": "primitive_tool_b2ed746f50ba5bea",
+            "identifier": "discourse_manage_group_owners",
+            "kind": "tool",
+            "title": "Manage group owners",
+            "description": "Grants or revokes group ownership. Adding an owner also adds them as a member. Automatic groups cannot be changed.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_manage_user_activation",
+            "field_name": "primitive_tool_5bba3abf3e738821",
+            "identifier": "discourse_manage_user_activation",
+            "kind": "tool",
+            "title": "Manage user activation",
+            "description": "Activates, approves, activates and approves, or deactivates an eligible user.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:users:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1961,6 +2971,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_tag_groups",
+            "field_name": "primitive_tool_51456312005b67e5",
+            "identifier": "discourse_search_tag_groups",
+            "kind": "tool",
+            "title": "Search tag groups",
+            "description": "Searches visible tag groups and visible member tags. Omits staff configuration. q and names combine; q supports SQL LIKE wildcards. truncated signals possible additional results.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -1971,6 +2997,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_sync_remote_theme",
+            "field_name": "primitive_tool_451d034f6910fbaa",
+            "identifier": "discourse_sync_remote_theme",
+            "kind": "tool",
+            "title": "Sync remote theme",
+            "description": "Checks a theme repository for updates or installs its latest code. Requires edit permission. Updating runs migrations and requires both code and migration confirmation. Checking also updates stored remote-version metadata. Returns a theme summary. When completing a pending installation, also reports skipped components with their errors.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2025,6 +3067,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_category",
+            "field_name": "primitive_tool_b281fdf78b9ae6de",
+            "identifier": "discourse_update_category",
+            "kind": "tool",
+            "title": "Update category",
+            "description": "Updates basic details for a category.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:categories:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_group",
+            "field_name": "primitive_tool_66d21dfae24afc55",
+            "identifier": "discourse_update_group",
+            "kind": "tool",
+            "title": "Update group",
+            "description": "Updates the group settings the authenticated user may change. Fields the user cannot change are ignored.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_post",
             "field_name": "primitive_tool_6394003e5b2a6e25",
             "identifier": "discourse_update_post",
@@ -2057,12 +3131,60 @@
             "available": true
           },
           {
+            "id": "tool:discourse_update_tag_group",
+            "field_name": "primitive_tool_d6732f80e3ca66d0",
+            "identifier": "discourse_update_tag_group",
+            "kind": "tool",
+            "title": "Update tag group",
+            "description": "Updates supplied fields, preserving omitted fields. tags replaces all member tags; [] clears them. parent_tag=null clears the parent. permissions replaces the full permission map. Synonyms resolve to original tags. Name selectors require allow_tag_creation=true. Requires staff authority and tagging enabled.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:tag-groups:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_update_theme",
             "field_name": "primitive_tool_fdc61efa928e1c7a",
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
             "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_setting",
+            "field_name": "primitive_tool_c7da69dbdb1d869c",
+            "identifier": "discourse_update_theme_setting",
+            "kind": "tool",
+            "title": "Update theme setting",
+            "description": "Sets a declared theme setting or restores its declared default. Requires edit permission. Use pipe-separated strings for list settings and arrays of objects for object settings. Reverting requires confirm and must omit value.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_theme_translations",
+            "field_name": "primitive_tool_d31561dc41c17f4b",
+            "identifier": "discourse_update_theme_translations",
+            "kind": "tool",
+            "title": "Update theme translations",
+            "description": "Updates declared theme translations for one locale. Requires edit permission and the current theme name. Unknown keys reject the whole batch.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -2115,6 +3237,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:content:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_upload_theme_asset",
+            "field_name": "primitive_tool_308dcce01df72ac6",
+            "identifier": "discourse_upload_theme_asset",
+            "kind": "tool",
+            "title": "Upload theme asset",
+            "description": "Uploads base64 asset data for use in a theme. Requires administrator access. Returns an unattached upload ID; use discourse_update_theme to attach it to a theme field. Site upload and MCP request-size limits apply.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2211,148 +3349,211 @@
           "id": 1,
           "scope": "chat:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 2,
           "scope": "chat:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 3,
           "scope": "discourse-calendar:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 4,
           "scope": "discourse-reactions:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 5,
           "scope": "discourse-solved:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 6,
           "scope": "discourse-topic-voting:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 7,
-          "scope": "mcp:content:read",
+          "scope": "mcp:categories:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 8,
-          "scope": "mcp:content:write",
+          "scope": "mcp:categories:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 9,
-          "scope": "mcp:data-explorer:read",
+          "scope": "mcp:content:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 10,
-          "scope": "mcp:drafts:read",
+          "scope": "mcp:content:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 11,
-          "scope": "mcp:drafts:write",
+          "scope": "mcp:data-explorer:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 12,
-          "scope": "mcp:moderation:read",
+          "scope": "mcp:drafts:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 13,
-          "scope": "mcp:moderation:write",
+          "scope": "mcp:drafts:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 14,
-          "scope": "mcp:private-messages:read",
+          "scope": "mcp:groups:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 15,
-          "scope": "mcp:private-messages:write",
+          "scope": "mcp:groups:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 16,
-          "scope": "mcp:profile:read",
+          "scope": "mcp:moderation:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 17,
-          "scope": "mcp:profile:write",
+          "scope": "mcp:moderation:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 18,
-          "scope": "mcp:site-settings:read",
+          "scope": "mcp:private-messages:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 19,
-          "scope": "mcp:site-settings:write",
+          "scope": "mcp:private-messages:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 20,
-          "scope": "mcp:themes:read",
+          "scope": "mcp:profile:read",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         },
         {
           "id": 21,
+          "scope": "mcp:profile:write",
+          "group_id": 1,
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
+        },
+        {
+          "id": 22,
+          "scope": "mcp:reports:read",
+          "group_id": 1,
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
+        },
+        {
+          "id": 23,
+          "scope": "mcp:site-settings:read",
+          "group_id": 1,
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
+        },
+        {
+          "id": 24,
+          "scope": "mcp:site-settings:write",
+          "group_id": 1,
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
+        },
+        {
+          "id": 25,
+          "scope": "mcp:tag-groups:read",
+          "group_id": 1,
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
+        },
+        {
+          "id": 26,
+          "scope": "mcp:tag-groups:write",
+          "group_id": 1,
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
+        },
+        {
+          "id": 27,
+          "scope": "mcp:themes:read",
+          "group_id": 1,
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
+        },
+        {
+          "id": 28,
           "scope": "mcp:themes:write",
           "group_id": 1,
-          "created_at": "2026-10-17T08:16:32.039101",
-          "updated_at": "2026-10-17T08:16:32.039101"
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
+        },
+        {
+          "id": 29,
+          "scope": "mcp:users:read",
+          "group_id": 1,
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
+        },
+        {
+          "id": 30,
+          "scope": "mcp:users:write",
+          "group_id": 1,
+          "created_at": "2026-11-15T21:45:23.549465",
+          "updated_at": "2026-11-15T21:45:23.549465"
         }
       ],
       "deleted": [],
@@ -2371,11 +3572,11 @@
             ],
             "user_id": 1,
             "resource": "http://localhost/mcp",
-            "created_at": "2026-10-17T08:16:29.517953",
-            "expires_at": "2026-10-17T09:16:29.517953",
+            "created_at": "2026-11-15T21:45:22.060737",
+            "expires_at": "2026-11-15T22:45:22.060737",
             "revoked_at": null,
             "token_hash": "hash-a",
-            "updated_at": "2026-10-17T08:16:29.517953",
+            "updated_at": "2026-11-15T21:45:22.060737",
             "last_used_at": null,
             "grant_version": 1,
             "mcp_oauth_client_id": 501,
@@ -2389,11 +3590,11 @@
             ],
             "user_id": 1,
             "resource": "http://localhost/mcp",
-            "created_at": "2026-10-17T08:16:29.517953",
-            "expires_at": "2026-10-17T09:16:29.517953",
-            "revoked_at": "2026-10-17T08:16:31.789922",
+            "created_at": "2026-11-15T21:45:22.060737",
+            "expires_at": "2026-11-15T22:45:22.060737",
+            "revoked_at": "2026-11-15T21:45:23.387455",
             "token_hash": "hash-a",
-            "updated_at": "2026-10-17T08:16:31.789922",
+            "updated_at": "2026-11-15T21:45:23.387455",
             "last_used_at": null,
             "grant_version": 1,
             "mcp_oauth_client_id": 501,
@@ -2412,10 +3613,10 @@
             "status": "active",
             "user_id": 1,
             "resource": "http://localhost/mcp",
-            "created_at": "2026-10-16T08:16:29.517953",
+            "created_at": "2026-11-14T21:45:22.060737",
             "revoked_at": null,
-            "updated_at": "2026-10-16T08:16:29.517953",
-            "consented_at": "2026-10-16T08:16:29.517953",
+            "updated_at": "2026-11-14T21:45:22.060737",
+            "consented_at": "2026-11-14T21:45:22.060737",
             "grant_version": 1,
             "revoked_reason": null,
             "revoked_by_user_id": null,
@@ -2427,10 +3628,10 @@
             "status": "consent_required",
             "user_id": 1,
             "resource": "http://localhost/mcp",
-            "created_at": "2026-10-16T08:16:29.517953",
+            "created_at": "2026-11-14T21:45:22.060737",
             "revoked_at": null,
-            "updated_at": "2026-10-17T08:16:31.789922",
-            "consented_at": "2026-10-16T08:16:29.517953",
+            "updated_at": "2026-11-15T21:45:23.387455",
+            "consented_at": "2026-11-14T21:45:22.060737",
             "grant_version": 1,
             "revoked_reason": null,
             "revoked_by_user_id": null,
@@ -2446,9 +3647,9 @@
           "id": 2,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.434685",
+          "created_at": "2026-11-15T21:45:22.894657",
           "identifier": "chat_message_create",
-          "updated_at": "2026-10-17T08:16:31.434685",
+          "updated_at": "2026-11-15T21:45:22.894657",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -2456,9 +3657,9 @@
           "id": 4,
           "kind": "resource_template",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.447905",
+          "created_at": "2026-11-15T21:45:22.902942",
           "identifier": "discourse.post",
-          "updated_at": "2026-10-17T08:16:31.447905",
+          "updated_at": "2026-11-15T21:45:22.902942",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -2466,9 +3667,9 @@
           "id": 5,
           "kind": "prompt",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.455187",
+          "created_at": "2026-11-15T21:45:22.906005",
           "identifier": "discourse.research_topic",
-          "updated_at": "2026-10-17T08:16:31.455187",
+          "updated_at": "2026-11-15T21:45:22.906005",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -2476,9 +3677,9 @@
           "id": 6,
           "kind": "resource_template",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.461843",
+          "created_at": "2026-11-15T21:45:22.908971",
           "identifier": "discourse.topic",
-          "updated_at": "2026-10-17T08:16:31.461843",
+          "updated_at": "2026-11-15T21:45:22.908971",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -2486,9 +3687,9 @@
           "id": 7,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.4679",
+          "created_at": "2026-11-15T21:45:22.912605",
           "identifier": "discourse_bookmark_list",
-          "updated_at": "2026-10-17T08:16:31.4679",
+          "updated_at": "2026-11-15T21:45:22.912605",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -2496,9 +3697,9 @@
           "id": 8,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.475022",
+          "created_at": "2026-11-15T21:45:22.915409",
           "identifier": "discourse_calendar_event_list",
-          "updated_at": "2026-10-17T08:16:31.475022",
+          "updated_at": "2026-11-15T21:45:22.915409",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -2506,9 +3707,9 @@
           "id": 9,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.481478",
+          "created_at": "2026-11-15T21:45:22.918179",
           "identifier": "discourse_category_list",
-          "updated_at": "2026-10-17T08:16:31.481478",
+          "updated_at": "2026-11-15T21:45:22.918179",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -2516,9 +3717,9 @@
           "id": 10,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.487888",
-          "identifier": "discourse_create_post",
-          "updated_at": "2026-10-17T08:16:31.487888",
+          "created_at": "2026-11-15T21:45:22.921294",
+          "identifier": "discourse_create_category",
+          "updated_at": "2026-11-15T21:45:22.921294",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -2526,519 +3727,9 @@
           "id": 11,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.49414",
-          "identifier": "discourse_create_private_message",
-          "updated_at": "2026-10-17T08:16:31.49414",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 13,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.508326",
-          "identifier": "discourse_create_topic",
-          "updated_at": "2026-10-17T08:16:31.508326",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 14,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.51557",
-          "identifier": "discourse_current_user_get",
-          "updated_at": "2026-10-17T08:16:31.51557",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 15,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.521957",
-          "identifier": "discourse_delete_draft",
-          "updated_at": "2026-10-17T08:16:31.521957",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 16,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.528525",
-          "identifier": "discourse_filter_topics",
-          "updated_at": "2026-10-17T08:16:31.528525",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 17,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.534823",
-          "identifier": "discourse_get_chat_messages",
-          "updated_at": "2026-10-17T08:16:31.534823",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 18,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.541714",
-          "identifier": "discourse_get_draft",
-          "updated_at": "2026-10-17T08:16:31.541714",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 19,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.549064",
-          "identifier": "discourse_get_post_replies",
-          "updated_at": "2026-10-17T08:16:31.549064",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 20,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.556752",
-          "identifier": "discourse_get_post_revision",
-          "updated_at": "2026-10-17T08:16:31.556752",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 21,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.564369",
-          "identifier": "discourse_get_query",
-          "updated_at": "2026-10-17T08:16:31.564369",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 22,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.571233",
-          "identifier": "discourse_get_review_queue_count",
-          "updated_at": "2026-10-17T08:16:31.571233",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 23,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.57674",
-          "identifier": "discourse_get_reviewable",
-          "updated_at": "2026-10-17T08:16:31.57674",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 24,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.582701",
-          "identifier": "discourse_get_theme",
-          "updated_at": "2026-10-17T08:16:31.582701",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 25,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.586629",
-          "identifier": "discourse_get_topic_view_stats",
-          "updated_at": "2026-10-17T08:16:31.586629",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 26,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.589932",
-          "identifier": "discourse_get_user",
-          "updated_at": "2026-10-17T08:16:31.589932",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 27,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.593607",
-          "identifier": "discourse_get_user_moderation_summary",
-          "updated_at": "2026-10-17T08:16:31.593607",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 28,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.597659",
-          "identifier": "discourse_get_user_summary",
-          "updated_at": "2026-10-17T08:16:31.597659",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 29,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.601572",
-          "identifier": "discourse_invite_to_private_message",
-          "updated_at": "2026-10-17T08:16:31.601572",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 30,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.605055",
-          "identifier": "discourse_list_directory_items",
-          "updated_at": "2026-10-17T08:16:31.605055",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 31,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.608606",
-          "identifier": "discourse_list_latest_posts",
-          "updated_at": "2026-10-17T08:16:31.608606",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 32,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.61243",
-          "identifier": "discourse_list_private_messages",
-          "updated_at": "2026-10-17T08:16:31.61243",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 33,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.616706",
-          "identifier": "discourse_list_reviewable_topics",
-          "updated_at": "2026-10-17T08:16:31.616706",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 34,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.622277",
-          "identifier": "discourse_list_reviewables",
-          "updated_at": "2026-10-17T08:16:31.622277",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 35,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.626388",
-          "identifier": "discourse_list_site_settings",
-          "updated_at": "2026-10-17T08:16:31.626388",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 36,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.630387",
-          "identifier": "discourse_list_user_actions",
-          "updated_at": "2026-10-17T08:16:31.630387",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 37,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.634557",
-          "identifier": "discourse_list_user_posts",
-          "updated_at": "2026-10-17T08:16:31.634557",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 38,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.638769",
-          "identifier": "discourse_notification_list",
-          "updated_at": "2026-10-17T08:16:31.638769",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 39,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.644044",
-          "identifier": "discourse_perform_reviewable_action",
-          "updated_at": "2026-10-17T08:16:31.644044",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 40,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.648251",
-          "identifier": "discourse_post_set_deleted",
-          "updated_at": "2026-10-17T08:16:31.648251",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 41,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.652137",
-          "identifier": "discourse_reactions_post_reaction_set",
-          "updated_at": "2026-10-17T08:16:31.652137",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 42,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.665815",
-          "identifier": "discourse_read_post",
-          "updated_at": "2026-10-17T08:16:31.665815",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 43,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.673561",
-          "identifier": "discourse_read_private_message",
-          "updated_at": "2026-10-17T08:16:31.673561",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 44,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.680298",
-          "identifier": "discourse_read_topic",
-          "updated_at": "2026-10-17T08:16:31.680298",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 45,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.685953",
-          "identifier": "discourse_read_topic_posts",
-          "updated_at": "2026-10-17T08:16:31.685953",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 46,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.691747",
-          "identifier": "discourse_reply_private_message",
-          "updated_at": "2026-10-17T08:16:31.691747",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 47,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.696613",
-          "identifier": "discourse_run_query",
-          "updated_at": "2026-10-17T08:16:31.696613",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 48,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.701572",
-          "identifier": "discourse_save_draft",
-          "updated_at": "2026-10-17T08:16:31.701572",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 49,
-          "kind": "tool",
-          "enabled": true,
-          "created_at": "2026-10-17T08:16:31.707752",
-          "identifier": "discourse_search",
-          "updated_at": "2026-10-17T08:16:31.707752",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 50,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.714327",
-          "identifier": "discourse_search_posts",
-          "updated_at": "2026-10-17T08:16:31.714327",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 51,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.721227",
-          "identifier": "discourse_solved_solution_set",
-          "updated_at": "2026-10-17T08:16:31.721227",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 52,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.726968",
-          "identifier": "discourse_tag_list",
-          "updated_at": "2026-10-17T08:16:31.726968",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 53,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.732472",
-          "identifier": "discourse_topic_list",
-          "updated_at": "2026-10-17T08:16:31.732472",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 54,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.739198",
-          "identifier": "discourse_topic_voting_vote_set",
-          "updated_at": "2026-10-17T08:16:31.739198",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 55,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.746006",
-          "identifier": "discourse_update_post",
-          "updated_at": "2026-10-17T08:16:31.746006",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 56,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.75222",
-          "identifier": "discourse_update_site_setting",
-          "updated_at": "2026-10-17T08:16:31.75222",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 57,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.757323",
-          "identifier": "discourse_update_theme",
-          "updated_at": "2026-10-17T08:16:31.757323",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 58,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.762701",
-          "identifier": "discourse_update_topic",
-          "updated_at": "2026-10-17T08:16:31.762701",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 59,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.770178",
-          "identifier": "discourse_update_user",
-          "updated_at": "2026-10-17T08:16:31.770178",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 60,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.776399",
-          "identifier": "discourse_upload_file",
-          "updated_at": "2026-10-17T08:16:31.776399",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 61,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.782345",
-          "identifier": "discourse_user_status_set",
-          "updated_at": "2026-10-17T08:16:31.782345",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 1,
-          "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.426483",
-          "identifier": "chat_channel_list",
-          "updated_at": "2026-10-17T08:16:32.095406",
-          "emergency_blocked": false,
-          "consent_required_at": null
-        },
-        {
-          "id": 3,
-          "kind": "prompt",
-          "enabled": false,
-          "created_at": "2026-10-17T08:16:31.441521",
-          "identifier": "discourse.draft_reply",
-          "updated_at": "2026-10-17T08:16:32.103036",
+          "created_at": "2026-11-15T21:45:22.924647",
+          "identifier": "discourse_create_group",
+          "updated_at": "2026-11-15T21:45:22.924647",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3046,11 +3737,871 @@
           "id": 12,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-10-17T08:16:31.500661",
-          "identifier": "discourse_create_theme",
-          "updated_at": "2026-10-17T08:16:32.122546",
+          "created_at": "2026-11-15T21:45:22.92761",
+          "identifier": "discourse_create_post",
+          "updated_at": "2026-11-15T21:45:22.92761",
           "emergency_blocked": false,
-          "consent_required_at": "2026-10-17T08:16:31.912974"
+          "consent_required_at": null
+        },
+        {
+          "id": 13,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.930585",
+          "identifier": "discourse_create_private_message",
+          "updated_at": "2026-11-15T21:45:22.930585",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 14,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.934422",
+          "identifier": "discourse_create_tag_group",
+          "updated_at": "2026-11-15T21:45:22.934422",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 16,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.941329",
+          "identifier": "discourse_create_topic",
+          "updated_at": "2026-11-15T21:45:22.941329",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 17,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.945516",
+          "identifier": "discourse_create_user",
+          "updated_at": "2026-11-15T21:45:22.945516",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 18,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.948813",
+          "identifier": "discourse_current_user_get",
+          "updated_at": "2026-11-15T21:45:22.948813",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 19,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.952261",
+          "identifier": "discourse_delete_category",
+          "updated_at": "2026-11-15T21:45:22.952261",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 20,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.955445",
+          "identifier": "discourse_delete_draft",
+          "updated_at": "2026-11-15T21:45:22.955445",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 21,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.958592",
+          "identifier": "discourse_delete_group",
+          "updated_at": "2026-11-15T21:45:22.958592",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 22,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.962246",
+          "identifier": "discourse_delete_tag_group",
+          "updated_at": "2026-11-15T21:45:22.962246",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 23,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.966486",
+          "identifier": "discourse_delete_theme",
+          "updated_at": "2026-11-15T21:45:22.966486",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 24,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.970475",
+          "identifier": "discourse_filter_topics",
+          "updated_at": "2026-11-15T21:45:22.970475",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 25,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.973813",
+          "identifier": "discourse_get_category",
+          "updated_at": "2026-11-15T21:45:22.973813",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 26,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.977198",
+          "identifier": "discourse_get_chat_messages",
+          "updated_at": "2026-11-15T21:45:22.977198",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 27,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.980785",
+          "identifier": "discourse_get_draft",
+          "updated_at": "2026-11-15T21:45:22.980785",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 28,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.985332",
+          "identifier": "discourse_get_group",
+          "updated_at": "2026-11-15T21:45:22.985332",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 29,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.988724",
+          "identifier": "discourse_get_post_replies",
+          "updated_at": "2026-11-15T21:45:22.988724",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 30,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.992315",
+          "identifier": "discourse_get_post_revision",
+          "updated_at": "2026-11-15T21:45:22.992315",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 31,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.995683",
+          "identifier": "discourse_get_query",
+          "updated_at": "2026-11-15T21:45:22.995683",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 32,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.999614",
+          "identifier": "discourse_get_report",
+          "updated_at": "2026-11-15T21:45:22.999614",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 33,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.003104",
+          "identifier": "discourse_get_review_queue_count",
+          "updated_at": "2026-11-15T21:45:23.003104",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 34,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.006529",
+          "identifier": "discourse_get_reviewable",
+          "updated_at": "2026-11-15T21:45:23.006529",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 35,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.009614",
+          "identifier": "discourse_get_tag_group",
+          "updated_at": "2026-11-15T21:45:23.009614",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 36,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.01257",
+          "identifier": "discourse_get_theme",
+          "updated_at": "2026-11-15T21:45:23.01257",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 37,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.015357",
+          "identifier": "discourse_get_topic_view_stats",
+          "updated_at": "2026-11-15T21:45:23.015357",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 38,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.017912",
+          "identifier": "discourse_get_user",
+          "updated_at": "2026-11-15T21:45:23.017912",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 39,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.02062",
+          "identifier": "discourse_get_user_moderation_summary",
+          "updated_at": "2026-11-15T21:45:23.02062",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 40,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.023335",
+          "identifier": "discourse_get_user_summary",
+          "updated_at": "2026-11-15T21:45:23.023335",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 41,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.026017",
+          "identifier": "discourse_handle_group_membership_request",
+          "updated_at": "2026-11-15T21:45:23.026017",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 42,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.028825",
+          "identifier": "discourse_install_theme",
+          "updated_at": "2026-11-15T21:45:23.028825",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 43,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.03164",
+          "identifier": "discourse_invite_group_members",
+          "updated_at": "2026-11-15T21:45:23.03164",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 44,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.034552",
+          "identifier": "discourse_invite_to_private_message",
+          "updated_at": "2026-11-15T21:45:23.034552",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 45,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.037456",
+          "identifier": "discourse_list_directory_items",
+          "updated_at": "2026-11-15T21:45:23.037456",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 46,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.045769",
+          "identifier": "discourse_list_group_members",
+          "updated_at": "2026-11-15T21:45:23.045769",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 47,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.054773",
+          "identifier": "discourse_list_group_membership_requests",
+          "updated_at": "2026-11-15T21:45:23.054773",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 48,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.065966",
+          "identifier": "discourse_list_group_posts",
+          "updated_at": "2026-11-15T21:45:23.065966",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 49,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.075457",
+          "identifier": "discourse_list_groups",
+          "updated_at": "2026-11-15T21:45:23.075457",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 50,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.087181",
+          "identifier": "discourse_list_latest_posts",
+          "updated_at": "2026-11-15T21:45:23.087181",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 51,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.100865",
+          "identifier": "discourse_list_private_messages",
+          "updated_at": "2026-11-15T21:45:23.100865",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 52,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.123014",
+          "identifier": "discourse_list_reports",
+          "updated_at": "2026-11-15T21:45:23.123014",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 53,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.132328",
+          "identifier": "discourse_list_reviewable_topics",
+          "updated_at": "2026-11-15T21:45:23.132328",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 54,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.141448",
+          "identifier": "discourse_list_reviewables",
+          "updated_at": "2026-11-15T21:45:23.141448",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 55,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.150991",
+          "identifier": "discourse_list_site_settings",
+          "updated_at": "2026-11-15T21:45:23.150991",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 56,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.160518",
+          "identifier": "discourse_list_tag_groups",
+          "updated_at": "2026-11-15T21:45:23.160518",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 57,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.168399",
+          "identifier": "discourse_list_themes",
+          "updated_at": "2026-11-15T21:45:23.168399",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 58,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.17745",
+          "identifier": "discourse_list_user_actions",
+          "updated_at": "2026-11-15T21:45:23.17745",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 59,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.186971",
+          "identifier": "discourse_list_user_posts",
+          "updated_at": "2026-11-15T21:45:23.186971",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 60,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.194204",
+          "identifier": "discourse_list_users",
+          "updated_at": "2026-11-15T21:45:23.194204",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 61,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.201977",
+          "identifier": "discourse_manage_group_members",
+          "updated_at": "2026-11-15T21:45:23.201977",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 62,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.209145",
+          "identifier": "discourse_manage_group_membership",
+          "updated_at": "2026-11-15T21:45:23.209145",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 63,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.214341",
+          "identifier": "discourse_manage_group_owners",
+          "updated_at": "2026-11-15T21:45:23.214341",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 64,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.219001",
+          "identifier": "discourse_manage_user_activation",
+          "updated_at": "2026-11-15T21:45:23.219001",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 65,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.229709",
+          "identifier": "discourse_notification_list",
+          "updated_at": "2026-11-15T21:45:23.229709",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 66,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.238142",
+          "identifier": "discourse_perform_reviewable_action",
+          "updated_at": "2026-11-15T21:45:23.238142",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 67,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.246801",
+          "identifier": "discourse_post_set_deleted",
+          "updated_at": "2026-11-15T21:45:23.246801",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 68,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.259609",
+          "identifier": "discourse_reactions_post_reaction_set",
+          "updated_at": "2026-11-15T21:45:23.259609",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 69,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.27419",
+          "identifier": "discourse_read_post",
+          "updated_at": "2026-11-15T21:45:23.27419",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 70,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.282676",
+          "identifier": "discourse_read_private_message",
+          "updated_at": "2026-11-15T21:45:23.282676",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 71,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.286784",
+          "identifier": "discourse_read_topic",
+          "updated_at": "2026-11-15T21:45:23.286784",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 72,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.290468",
+          "identifier": "discourse_read_topic_posts",
+          "updated_at": "2026-11-15T21:45:23.290468",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 73,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.294635",
+          "identifier": "discourse_reply_private_message",
+          "updated_at": "2026-11-15T21:45:23.294635",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 74,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.298214",
+          "identifier": "discourse_run_query",
+          "updated_at": "2026-11-15T21:45:23.298214",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 75,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.302306",
+          "identifier": "discourse_save_draft",
+          "updated_at": "2026-11-15T21:45:23.302306",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 76,
+          "kind": "tool",
+          "enabled": true,
+          "created_at": "2026-11-15T21:45:23.306406",
+          "identifier": "discourse_search",
+          "updated_at": "2026-11-15T21:45:23.306406",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 77,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.310196",
+          "identifier": "discourse_search_posts",
+          "updated_at": "2026-11-15T21:45:23.310196",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 78,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.313658",
+          "identifier": "discourse_search_tag_groups",
+          "updated_at": "2026-11-15T21:45:23.313658",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 79,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.318118",
+          "identifier": "discourse_solved_solution_set",
+          "updated_at": "2026-11-15T21:45:23.318118",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 80,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.322108",
+          "identifier": "discourse_sync_remote_theme",
+          "updated_at": "2026-11-15T21:45:23.322108",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 81,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.325554",
+          "identifier": "discourse_tag_list",
+          "updated_at": "2026-11-15T21:45:23.325554",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 82,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.329005",
+          "identifier": "discourse_topic_list",
+          "updated_at": "2026-11-15T21:45:23.329005",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 83,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.333016",
+          "identifier": "discourse_topic_voting_vote_set",
+          "updated_at": "2026-11-15T21:45:23.333016",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 84,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.336748",
+          "identifier": "discourse_update_category",
+          "updated_at": "2026-11-15T21:45:23.336748",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 85,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.340277",
+          "identifier": "discourse_update_group",
+          "updated_at": "2026-11-15T21:45:23.340277",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 86,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.343711",
+          "identifier": "discourse_update_post",
+          "updated_at": "2026-11-15T21:45:23.343711",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 87,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.347586",
+          "identifier": "discourse_update_site_setting",
+          "updated_at": "2026-11-15T21:45:23.347586",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 88,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.352592",
+          "identifier": "discourse_update_tag_group",
+          "updated_at": "2026-11-15T21:45:23.352592",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 89,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.356684",
+          "identifier": "discourse_update_theme",
+          "updated_at": "2026-11-15T21:45:23.356684",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 90,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.360135",
+          "identifier": "discourse_update_theme_setting",
+          "updated_at": "2026-11-15T21:45:23.360135",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 91,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.364192",
+          "identifier": "discourse_update_theme_translations",
+          "updated_at": "2026-11-15T21:45:23.364192",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 92,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.368133",
+          "identifier": "discourse_update_topic",
+          "updated_at": "2026-11-15T21:45:23.368133",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 93,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.371623",
+          "identifier": "discourse_update_user",
+          "updated_at": "2026-11-15T21:45:23.371623",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 94,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.375153",
+          "identifier": "discourse_upload_file",
+          "updated_at": "2026-11-15T21:45:23.375153",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 95,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.378742",
+          "identifier": "discourse_upload_theme_asset",
+          "updated_at": "2026-11-15T21:45:23.378742",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 96,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:23.382927",
+          "identifier": "discourse_user_status_set",
+          "updated_at": "2026-11-15T21:45:23.382927",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 1,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.891227",
+          "identifier": "chat_channel_list",
+          "updated_at": "2026-11-15T21:45:23.574289",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 3,
+          "kind": "prompt",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.899432",
+          "identifier": "discourse.draft_reply",
+          "updated_at": "2026-11-15T21:45:23.578108",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 15,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-15T21:45:22.937853",
+          "identifier": "discourse_create_theme",
+          "updated_at": "2026-11-15T21:45:23.590873",
+          "emergency_blocked": false,
+          "consent_required_at": "2026-11-15T21:45:23.46698"
         }
       ],
       "deleted": [],
@@ -3062,33 +4613,33 @@
       "updated": [
         {
           "before": {
-            "id": 412,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "cgkI12bLhUnUYBlfUR+GX3wumR0=",
-            "created_at": "2026-10-17T08:16:30.097046",
-            "rotated_at": "2026-10-17T08:16:30.095644",
-            "updated_at": "2026-10-17T08:16:30.097046",
+            "auth_token": "f5rCS/r+ctDvEzpsups+Ncql1o8=",
+            "created_at": "2026-11-15T21:45:22.364506",
+            "rotated_at": "2026-11-15T21:45:22.363722",
+            "updated_at": "2026-11-15T21:45:22.364506",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "cgkI12bLhUnUYBlfUR+GX3wumR0=",
+            "prev_auth_token": "f5rCS/r+ctDvEzpsups+Ncql1o8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 412,
-            "seen_at": "2026-10-17T08:16:31.39746",
+            "id": 14,
+            "seen_at": "2026-11-15T21:45:22.878086",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "cgkI12bLhUnUYBlfUR+GX3wumR0=",
-            "created_at": "2026-10-17T08:16:30.097046",
-            "rotated_at": "2026-10-17T08:16:30.095644",
-            "updated_at": "2026-10-17T08:16:30.097046",
+            "auth_token": "f5rCS/r+ctDvEzpsups+Ncql1o8=",
+            "created_at": "2026-11-15T21:45:22.364506",
+            "rotated_at": "2026-11-15T21:45:22.363722",
+            "updated_at": "2026-11-15T21:45:22.364506",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "cgkI12bLhUnUYBlfUR+GX3wumR0=",
+            "prev_auth_token": "f5rCS/r+ctDvEzpsups+Ncql1o8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -3099,7 +4650,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 23,
           "context": null,
@@ -3109,9 +4660,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-17T08:16:31.795291",
+          "created_at": "2026-11-15T21:45:23.391269",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T08:16:31.795291",
+          "updated_at": "2026-11-15T21:45:23.391269",
           "category_id": null,
           "custom_type": "mcp_primitives_updated",
           "reviewable_id": null,
@@ -3120,7 +4672,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 23,
           "context": null,
@@ -3130,9 +4682,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-17T08:16:31.878309",
+          "created_at": "2026-11-15T21:45:23.443022",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T08:16:31.878309",
+          "updated_at": "2026-11-15T21:45:23.443022",
           "category_id": null,
           "custom_type": "mcp_primitive_emergency_block_updated",
           "reviewable_id": null,
@@ -3141,7 +4694,7 @@
           "target_user_id": null
         },
         {
-          "id": 76,
+          "id": 70,
           "email": null,
           "action": 23,
           "context": null,
@@ -3151,9 +4704,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-17T08:16:31.922491",
+          "created_at": "2026-11-15T21:45:23.472215",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T08:16:31.922491",
+          "updated_at": "2026-11-15T21:45:23.472215",
           "category_id": null,
           "custom_type": "mcp_primitive_emergency_block_updated",
           "reviewable_id": null,
@@ -3162,7 +4716,7 @@
           "target_user_id": null
         },
         {
-          "id": 77,
+          "id": 71,
           "email": null,
           "action": 23,
           "context": null,
@@ -3172,9 +4726,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-17T08:16:31.953817",
+          "created_at": "2026-11-15T21:45:23.492426",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T08:16:31.953817",
+          "updated_at": "2026-11-15T21:45:23.492426",
           "category_id": null,
           "custom_type": "mcp_primitive_emergency_block_updated",
           "reviewable_id": null,
@@ -3183,7 +4738,7 @@
           "target_user_id": null
         },
         {
-          "id": 78,
+          "id": 72,
           "email": null,
           "action": 23,
           "context": null,
@@ -3193,9 +4748,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-10-17T08:16:32.227347",
+          "created_at": "2026-11-15T21:45:23.687588",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T08:16:32.227347",
+          "updated_at": "2026-11-15T21:45:23.687588",
           "category_id": null,
           "custom_type": "mcp_primitives_updated",
           "reviewable_id": null,
@@ -3212,7 +4768,7 @@
   "next_ids": {
     "mcp_group_scopes": 1,
     "mcp_primitives": 1,
-    "user_histories": 74
+    "user_histories": 68
   },
   "settings": {
     "mcp_server_enabled": true,
@@ -3226,7 +4782,7 @@
   ],
   "recorded_from": {
     "case": "f7555ccd2adce23294c5394f487f2a67ed45aceeffc5aa7750ee0a9f96ef4127",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

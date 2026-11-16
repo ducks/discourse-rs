@@ -150,7 +150,7 @@ impl Context<'_> {
     async fn chatable_channel(&mut self, channel: &ChannelRow, q: i32) -> Result<Value, AppError> {
         let membership: Option<MembershipRow> = sqlx::query_as(
             "SELECT chat_channel_id, following, muted, notification_level, last_read_message_id, \
-                    last_viewed_at, last_viewed_pins_at, starred \
+                    last_viewed_at, last_viewed_pins_at, starred, muted_until \
              FROM user_chat_channel_memberships WHERE user_id = $1 AND chat_channel_id = $2",
         )
         .bind(self.guardian.user_id())

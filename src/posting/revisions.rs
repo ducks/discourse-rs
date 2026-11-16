@@ -169,6 +169,8 @@ struct RevisionRow {
     number: i32,
     user_id: Option<i32>,
     hidden: bool,
+    /// Skipped when navigating (Discourse eb607b16c60).
+    unlisted: bool,
     modifications: Option<String>,
     created_at: NaiveDateTime,
 }
@@ -202,7 +204,7 @@ pub async fn show(
                 return Ok(RevisionResult::InvalidRevision);
             }
             sqlx::query_as(
-                "SELECT number, user_id, hidden, modifications, created_at FROM post_revisions \
+                "SELECT number, user_id, hidden, unlisted, modifications, created_at FROM post_revisions \
                  WHERE post_id = $1 AND number = $2",
             )
             .bind(post_id)
@@ -212,7 +214,7 @@ pub async fn show(
         }
         Which::Latest => {
             sqlx::query_as(
-                "SELECT number, user_id, hidden, modifications, created_at FROM post_revisions \
+                "SELECT number, user_id, hidden, unlisted, modifications, created_at FROM post_revisions \
                  WHERE post_id = $1 AND (NOT hidden OR $2) ORDER BY number DESC LIMIT 1",
             )
             .bind(post_id)
@@ -243,12 +245,17 @@ async fn serialize(
     let s = ctx.settings;
     let staff = guardian.is_staff();
     let rows: Vec<RevisionRow> = sqlx::query_as(
-        "SELECT number, user_id, hidden, modifications, created_at FROM post_revisions \
+        "SELECT number, user_id, hidden, unlisted, modifications, created_at FROM post_revisions \
          WHERE post_id = $1 ORDER BY number DESC LIMIT 99",
     )
     .bind(access.post.id)
     .fetch_all(&mut *conn)
     .await?;
+    // navigable_revisions skips unlisted revisions for who may not see
+    // them (Discourse eb607b16c60): not ported.
+    if rows.iter().any(|r| r.unlisted) {
+        return Err(crate::Unsupported("navigating post revisions with unlisted ones").into());
+    }
     #[derive(sqlx::FromRow)]
     struct Latest {
         raw: String,
@@ -400,6 +407,11 @@ async fn serialize(
         }),
     );
     out.insert("current_hidden".into(), json!(current_hidden));
+    out.insert("unlisted".into(), json!(object.unlisted));
+    out.insert(
+        "unlisted_revision_count".into(),
+        json!(rows.iter().filter(|r| r.unlisted).count()),
+    );
     out.insert("first_revision".into(), json!(first_revision));
     out.insert("previous_revision".into(), json!(previous_revision));
     out.insert("current_revision".into(), json!(current_revision));

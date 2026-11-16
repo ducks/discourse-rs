@@ -204,15 +204,6 @@ pub async fn dashboard(
     }
     let mut conn = state.pool.acquire().await?;
     let shell = Shell::load(&mut conn, &state, &guardian, &headers, "admin_home").await?;
-    let improvements = guardian
-        .upcoming_change_enabled(&mut conn, &shell.settings, "dashboard_improvements")
-        .await?;
-    if !improvements {
-        return Err(crate::Unsupported(
-            "the legacy admin dashboard page (dashboard_improvements off)",
-        )
-        .into());
-    }
     let today = crate::clock::now().date_naive();
     let range = crate::admin::dashboard_view::Range::from_params(
         params.range.as_deref(),
@@ -738,16 +729,10 @@ pub async fn reports_index(
     let shell = Shell::load(&mut conn, &state, &guardian, &headers, "admin_all_reports").await?;
     let list = super::reports::list_doc(&mut conn, &state, &shell.settings, &guardian).await?;
     let reports = list.as_array().cloned().unwrap_or_default();
-    let hidden_setting = shell.settings.get("dashboard_hidden_reports")?.to_s();
-    let hidden: Vec<&str> = hidden_setting
-        .split('|')
-        .filter(|v| !v.is_empty())
-        .collect();
     let cx = shell.cx(&state);
     let content = crate::admin::reports_view::index(
         &cx,
         &reports,
-        &hidden,
         &crate::admin::reports_view::Filters {
             filter: &filter,
             group: &group,

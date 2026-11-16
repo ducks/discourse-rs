@@ -188,7 +188,7 @@ impl Context<'_> {
             &mut *self.conn,
             "/chat/channel-status",
             &json!({ "chat_channel_id": channel.id, "status": status_name(target) }),
-            Some(&audience),
+            audience.as_deref(),
         )
         .await?;
         Ok(())

@@ -15,6 +15,7 @@
     "INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 1401)"
   ],
   "ignore": [
+    "/jobs/1/1/payload/user_auth_tokens",
     "/jobs/1/1/payload/sidebar_category_ids"
   ]
 }

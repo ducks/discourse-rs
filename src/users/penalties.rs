@@ -153,9 +153,12 @@ struct Target {
     moderator: bool,
     suspended_till: Option<NaiveDateTime>,
     silenced_till: Option<NaiveDateTime>,
+    /// `silenced?`: a silence that has not ended.
+    silenced: bool,
 }
 
-const TARGET_COLUMNS: &str = "id, admin, moderator, suspended_till, silenced_till";
+const TARGET_COLUMNS: &str = "id, admin, moderator, suspended_till, silenced_till, \
+                              COALESCE(silenced_till > now(), FALSE) AS silenced";
 
 async fn target(conn: &mut PgConnection, user_id: i32) -> Result<Option<Target>, sqlx::Error> {
     sqlx::query_as(&format!("SELECT {TARGET_COLUMNS} FROM users WHERE id = $1"))
@@ -343,9 +346,10 @@ pub(crate) async fn suspend_user(
     .await?;
     let details = staff_message(s.reason, s.message);
     let history_id: i32 = sqlx::query_scalar(
+        // expires_at: the suspension's end as scheduled (Discourse 6b70ebfe046).
         "INSERT INTO user_histories (action, acting_user_id, target_user_id, details, post_id, reviewable_id, \
-                                     admin_only, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, $6, FALSE, clock_timestamp(), clock_timestamp()) RETURNING id",
+                                     admin_only, expires_at, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7, clock_timestamp(), clock_timestamp()) RETURNING id",
     )
     .bind(SUSPEND_USER)
     .bind(s.actor_id)
@@ -353,6 +357,7 @@ pub(crate) async fn suspend_user(
     .bind(&details)
     .bind(s.post_id)
     .bind(s.reviewable_id)
+    .bind(s.until)
     .fetch_one(&mut *tx)
     .await?;
     tx.commit().await?;
@@ -376,8 +381,11 @@ pub(crate) async fn suspend_user(
         }),
     )
     .await?;
-    if s.message.is_some_and(|m| !m.trim().is_empty()) {
-        // Enqueued by class, as UserSuspender does.
+    // Enqueued by class, as UserSuspender does: with a message, or always
+    // with DSA reporting on (1488f8b5c1d).
+    if s.message.is_some_and(|m| !m.trim().is_empty())
+        || payloads.settings.get("dsa_reporting_enabled")?.truthy()
+    {
         crate::jobs::enqueue(
             &mut conn,
             "Jobs::CriticalUserEmail",
@@ -745,14 +753,15 @@ struct Silenced {
 
 /// `UserSilencer.new(user, actor, message_body:, keep_posts: true,
 /// silenced_till:, reason:, post_id:, reviewable_id:).silence` for a user
-/// who is not staff: nothing for a silence still on record.
+/// who is not staff: nothing for a silence that has not ended
+/// (`silenced?` since fe97c2951fd).
 async fn silence_user(
     pool: &PgPool,
     ctx: &Ctx<'_>,
     user: &Target,
     s: &Suspension<'_>,
 ) -> Result<Option<Silenced>, AppError> {
-    if user.silenced_till.is_some() {
+    if user.silenced {
         return Ok(None);
     }
     let mut tx = pool.begin().await?;
@@ -766,9 +775,10 @@ async fn silence_user(
     let details = staff_message(s.reason, s.message);
     // log_params[:post_id] = post_id.to_i
     let (history_id, at): (i32, NaiveDateTime) = sqlx::query_as(
+        // expires_at: the silence's end as scheduled (Discourse 6b70ebfe046).
         "INSERT INTO user_histories (action, acting_user_id, target_user_id, context, details, post_id, \
-                                     reviewable_id, admin_only, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE, clock_timestamp(), clock_timestamp()) \
+                                     reviewable_id, admin_only, expires_at, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE, $8, clock_timestamp(), clock_timestamp()) \
          RETURNING id, created_at",
     )
     .bind(SILENCE_USER)
@@ -778,6 +788,7 @@ async fn silence_user(
     .bind(&details)
     .bind(s.post_id)
     .bind(s.reviewable_id)
+    .bind(s.until)
     .fetch_one(&mut *tx)
     .await?;
     tx.commit().await?;
@@ -923,8 +934,9 @@ pub async fn silencer_silence(
     reviewable_id: Option<i64>,
     keep_posts: bool,
 ) -> Result<bool, AppError> {
-    let (staff, trust_level, silenced_till): (bool, i32, Option<NaiveDateTime>) = sqlx::query_as(
-        "SELECT admin OR moderator, trust_level, silenced_till FROM users WHERE id = $1",
+    let (staff, trust_level, silenced): (bool, i32, bool) = sqlx::query_as(
+        "SELECT admin OR moderator, trust_level, COALESCE(silenced_till > now(), FALSE) \
+         FROM users WHERE id = $1",
     )
     .bind(user_id)
     .fetch_one(pool)
@@ -935,7 +947,7 @@ pub async fn silencer_silence(
     if trust_level == 0 && !keep_posts {
         return Err(Unsupported("silencing a trust level 0 user (hide_posts)").into());
     }
-    if silenced_till.is_some() {
+    if silenced {
         return Ok(false);
     }
     let mut tx = pool.begin().await?;
@@ -946,10 +958,11 @@ pub async fn silencer_silence(
     .bind(until)
     .execute(&mut *tx)
     .await?;
+    // expires_at: the silence's end as scheduled (Discourse 6b70ebfe046).
     sqlx::query(
         "INSERT INTO user_histories (action, acting_user_id, target_user_id, context, details, reviewable_id, \
-                                     admin_only, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, $6, FALSE, clock_timestamp(), clock_timestamp())",
+                                     admin_only, expires_at, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, FALSE, $7, clock_timestamp(), clock_timestamp())",
     )
     .bind(SILENCE_USER)
     .bind(by_user_id)
@@ -957,6 +970,7 @@ pub async fn silencer_silence(
     .bind(format!("silenced_by_staff: {reason}"))
     .bind(staff_message(reason, None))
     .bind(reviewable_id)
+    .bind(until)
     .execute(&mut *tx)
     .await?;
     tx.commit().await?;

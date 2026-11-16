@@ -28,5 +28,8 @@
       "method": "GET",
       "path": "/posts/35/revisions/latest.json"
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/tags"
   ]
 }

@@ -1,5 +1,6 @@
 {
   "user": "admin",
+  "not_yet": "a9f8c119c71 (Discourse): the seed no longer has the Uncategorized category, and AllowUncategorizedTopicsValidator refuses allow_uncategorized_topics while uncategorized_category_id names no category, so the settings fail on Rails before the case runs; the case needs the category created before its settings, and this recording is from bf55a44",
   "settings": {
     "allow_uncategorized_topics": true,
     "uncategorized_category_id": 1

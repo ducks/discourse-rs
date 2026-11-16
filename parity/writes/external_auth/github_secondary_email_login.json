@@ -19,14 +19,14 @@
       "path": "/u/user1.json"
     }
   ],
-  "started_at": "2026-10-16T04:46:32.255306",
-  "transaction_started_at": "2026-10-16T04:46:30.277782",
+  "started_at": "2026-11-15T22:50:21.627934",
+  "transaction_started_at": "2026-11-15T22:50:20.880296",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/gh/login/oauth/authorize?client_id=ghclient1&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fgithub%2Fcallback&response_type=code&scope=user%3Aemail&state=8e728f5136a7075a00e7b80f843232a05d2681072d6160dc...",
+      "body": "Redirecting to http://fixtures.localhost:8099/gh/login/oauth/authorize?client_id=ghclient1&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fgithub%2Fcallback&response_type=code&scope=user%3Aemail&state=4ea2c577b9e397e7a84543159d28ae3eac101c8509bafb8f...",
       "headers": {
-        "Location": "/gh/login/oauth/authorize?client_id=ghclient1&redirect_uri=http%3A%2F%2Flocalhost%3A3049%2Fauth%2Fgithub%2Fcallback&response_type=code&scope=user%3Aemail&state=8e728f5136a7075a00e7b80f843232a05d2681072d6160dc"
+        "Location": "/gh/login/oauth/authorize?client_id=ghclient1&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fgithub%2Fcallback&response_type=code&scope=user%3Aemail&state=4ea2c577b9e397e7a84543159d28ae3eac101c8509bafb8f"
       }
     },
     {
@@ -86,7 +86,7 @@
           "unseen_reviewable_count": 0,
           "new_personal_messages_notifications_count": 3,
           "read_faq": false,
-          "previous_visit_at": "2026-10-01T15:50:01.377Z",
+          "previous_visit_at": null,
           "seen_notification_id": 0,
           "flair_group_id": null,
           "can_create_topic": true,
@@ -124,6 +124,13 @@
             "12": 3,
             "5": 1
           },
+          "available_notification_types": [
+            1,
+            5,
+            6,
+            12,
+            24
+          ],
           "display_sidebar_tags": true,
           "sidebar_tags": [],
           "sidebar_category_ids": [
@@ -256,6 +263,9 @@
           "can_localize_content": false,
           "is_impersonating": false,
           "impersonation_expires_at": null,
+          "can_manage_boards": false,
+          "can_edit_any_boards": false,
+          "can_see_any_boards": false,
           "can_chat": true,
           "can_direct_message": true,
           "has_chat_enabled": true,
@@ -286,7 +296,7 @@
             "bookmark_auto_delete_preference": 3,
             "notify_on_linked_posts": true,
             "should_be_redirected_to_top": false,
-            "treat_as_new_topic_start_date": "2026-07-25T05:59:16.250Z",
+            "treat_as_new_topic_start_date": "2026-11-03T05:08:00.404Z",
             "sidebar_link_to_filtered_list": false,
             "sidebar_show_count_of_new_items": false,
             "composition_mode": 1,
@@ -320,28 +330,28 @@
         "user_badges": [
           {
             "id": 10,
-            "granted_at": "2026-09-30T06:20:36.833Z",
-            "created_at": "2026-09-30T06:20:36.833Z",
+            "granted_at": "2026-11-15T19:18:38.343Z",
+            "created_at": "2026-11-15T19:18:38.343Z",
             "count": 1,
             "badge_id": 2,
             "user_id": 3,
             "granted_by_id": -1
           },
           {
-            "id": 15,
-            "granted_at": "2026-09-30T07:28:30.313Z",
-            "created_at": "2026-09-30T07:28:37.785Z",
+            "id": 16,
+            "granted_at": "2026-11-15T19:19:55.302Z",
+            "created_at": "2026-11-15T19:20:32.791Z",
             "count": 1,
             "badge_id": 11,
             "user_id": 3,
             "granted_by_id": -1
           },
           {
-            "id": 3,
-            "granted_at": "2026-09-30T06:20:02.086Z",
-            "created_at": "2026-09-30T06:20:02.086Z",
+            "id": 18,
+            "granted_at": "2026-11-15T19:20:01.402Z",
+            "created_at": "2026-11-15T19:20:32.813Z",
             "count": 1,
-            "badge_id": 1,
+            "badge_id": 5,
             "user_id": 3,
             "granted_by_id": -1
           }
@@ -384,19 +394,19 @@
             "badge_type_id": 3
           },
           {
-            "id": 1,
-            "name": "Basic",
-            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> all essential community functions",
-            "grant_count": 5,
+            "id": 5,
+            "name": "Welcome",
+            "description": "Received a like",
+            "grant_count": 2,
             "allow_title": false,
             "multiple_grant": false,
-            "icon": "user",
+            "icon": "heart",
             "image_url": null,
             "listable": true,
             "enabled": true,
-            "badge_grouping_id": 4,
+            "badge_grouping_id": 2,
             "system": true,
-            "slug": "basic",
+            "slug": "welcome",
             "manually_grantable": false,
             "show_in_post_header": false,
             "badge_type_id": 3
@@ -435,9 +445,9 @@
           "email": "user1@example.com",
           "secondary_emails": [],
           "unconfirmed_emails": [],
-          "last_posted_at": "2026-09-30T07:28:29.580Z",
-          "last_seen_at": "2026-10-01T22:32:51.040Z",
-          "created_at": "2026-07-25T05:59:16.250Z",
+          "last_posted_at": "2026-11-15T19:19:54.764Z",
+          "last_seen_at": "2026-11-15T19:40:02.306Z",
+          "created_at": "2026-11-03T05:08:00.404Z",
           "ignored": false,
           "muted": false,
           "can_ignore_user": false,
@@ -462,13 +472,15 @@
           "pending_posts_count": 0,
           "can_chat_user": true,
           "can_edit": true,
+          "can_edit_avatar": true,
+          "can_upload_avatar": true,
           "can_edit_username": false,
           "can_edit_email": true,
           "can_edit_name": true,
           "uploaded_avatar_id": null,
           "has_title_badges": false,
           "pending_count": 0,
-          "profile_view_count": 3,
+          "profile_view_count": 2,
           "second_factor_enabled": false,
           "second_factor_backup_enabled": false,
           "associated_accounts": [
@@ -494,6 +506,8 @@
           "watched_first_post_category_ids": [],
           "system_avatar_upload_id": null,
           "system_avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+          "associated_account_avatars": [],
+          "selected_user_associated_account_id": null,
           "muted_usernames": [],
           "can_mute_users": true,
           "ignored_usernames": [],
@@ -508,88 +522,64 @@
           "user_passkeys": [],
           "user_auth_tokens": [
             {
-              "id": 110,
+              "id": 1,
               "client_ip": "172.17.0.1",
               "location": "unknown",
-              "browser": "Google Chrome",
-              "device": "GNU/Linux Computer",
-              "os": "Linux",
-              "icon": "fab-linux",
-              "created_at": "2026-10-15T14:59:54.874Z",
-              "seen_at": "2026-10-15T14:59:55.004Z",
+              "browser": "Unknown browser",
+              "device": "unknown device",
+              "os": "unknown operating system",
+              "icon": "question",
+              "created_at": "2026-11-15T19:35:24.117Z",
+              "seen_at": "2026-11-15T19:35:24.275Z",
               "is_active": false
             },
             {
-              "id": 112,
+              "id": 5,
               "client_ip": "172.17.0.1",
               "location": "unknown",
-              "browser": "Google Chrome",
-              "device": "GNU/Linux Computer",
-              "os": "Linux",
-              "icon": "fab-linux",
-              "created_at": "2026-10-15T15:07:16.815Z",
-              "seen_at": "2026-10-15T15:07:17.278Z",
+              "browser": "Unknown browser",
+              "device": "unknown device",
+              "os": "unknown operating system",
+              "icon": "question",
+              "created_at": "2026-11-15T19:44:27.327Z",
+              "seen_at": "2026-11-15T19:44:27.465Z",
               "is_active": false
             },
             {
-              "id": 104,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Google Chrome",
-              "device": "GNU/Linux Computer",
-              "os": "Linux",
-              "icon": "fab-linux",
-              "created_at": "2026-10-15T14:13:08.764Z",
-              "seen_at": "2026-10-15T14:13:08.916Z",
-              "is_active": false
-            },
-            {
-              "id": 106,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Google Chrome",
-              "device": "Android Device",
-              "os": "Android",
-              "icon": "fab-android",
-              "created_at": "2026-10-15T14:14:22.372Z",
-              "seen_at": "2026-10-15T14:14:22.473Z",
-              "is_active": false
-            },
-            {
-              "id": 108,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Google Chrome",
-              "device": "GNU/Linux Computer",
-              "os": "Linux",
-              "icon": "fab-linux",
-              "created_at": "2026-10-15T14:38:52.392Z",
-              "seen_at": "2026-10-15T14:38:52.945Z",
-              "is_active": false
-            },
-            {
-              "id": 113,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Google Chrome",
-              "device": "GNU/Linux Computer",
-              "os": "Linux",
-              "icon": "fab-linux",
-              "created_at": "2026-10-15T15:47:38.801Z",
-              "seen_at": "2026-10-15T15:47:39.330Z",
-              "is_active": false
-            },
-            {
-              "id": 115,
+              "id": 14,
               "client_ip": "127.0.0.1",
               "location": "unknown",
               "browser": "Unknown browser",
               "device": "unknown device",
               "os": "unknown operating system",
               "icon": "question",
-              "created_at": "2026-10-16T04:46:32.760Z",
-              "seen_at": "2026-10-16T04:46:33.577Z",
+              "created_at": "2026-11-15T22:50:21.722Z",
+              "seen_at": "2026-11-15T22:50:21.745Z",
               "is_active": true
+            },
+            {
+              "id": 9,
+              "client_ip": "172.17.0.1",
+              "location": "unknown",
+              "browser": "Unknown browser",
+              "device": "unknown device",
+              "os": "unknown operating system",
+              "icon": "question",
+              "created_at": "2026-11-15T21:23:05.533Z",
+              "seen_at": "2026-11-15T21:23:05.694Z",
+              "is_active": false
+            },
+            {
+              "id": 13,
+              "client_ip": "172.17.0.1",
+              "location": "unknown",
+              "browser": "Unknown browser",
+              "device": "unknown device",
+              "os": "unknown operating system",
+              "icon": "question",
+              "created_at": "2026-11-15T21:32:23.773Z",
+              "seen_at": "2026-11-15T21:32:23.773Z",
+              "is_active": false
             }
           ],
           "user_notification_schedule": {
@@ -620,8 +610,8 @@
           "accepted_answers": 0,
           "featured_user_badge_ids": [
             10,
-            15,
-            3
+            16,
+            18
           ],
           "invited_by": null,
           "groups": [
@@ -847,15 +837,16 @@
             ]
           },
           "user_id": 3,
-          "last_used": "2026-10-16T04:46:32.666749",
-          "created_at": "2026-10-16T04:46:32.667958",
-          "updated_at": "2026-10-16T04:46:32.667958",
+          "last_used": "2026-11-15T22:50:21.701464",
+          "created_at": "2026-11-15T22:50:21.702615",
+          "updated_at": "2026-11-15T22:50:21.702615",
           "credentials": {
             "token": "gh-token-2",
             "expires": false
           },
           "provider_uid": "1002",
-          "provider_name": "github"
+          "provider_name": "github",
+          "avatar_upload_id": null
         }
       ],
       "deleted": [],
@@ -869,10 +860,10 @@
           "action": "generate",
           "user_id": 3,
           "client_ip": "127.0.0.1",
-          "auth_token": "Qr8fw0mQwR4tifE1iuW1eWKCJNs=",
-          "created_at": "2026-10-16T04:46:32.771473",
+          "auth_token": "NQ9w4evLkQLG0eZpEh58xtLB5mw=",
+          "created_at": "2026-11-15T22:50:21.725712",
           "user_agent": null,
-          "user_auth_token_id": 115
+          "user_auth_token_id": 14
         }
       ],
       "deleted": [],
@@ -881,17 +872,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 115,
-          "seen_at": "2026-10-16T04:46:33.577271",
+          "id": 14,
+          "seen_at": "2026-11-15T22:50:21.745379",
           "user_id": 3,
           "client_ip": "127.0.0.1",
-          "auth_token": "Qr8fw0mQwR4tifE1iuW1eWKCJNs=",
-          "created_at": "2026-10-16T04:46:32.760071",
-          "rotated_at": "2026-10-16T04:46:32.754003",
-          "updated_at": "2026-10-16T04:46:32.760071",
+          "auth_token": "NQ9w4evLkQLG0eZpEh58xtLB5mw=",
+          "created_at": "2026-11-15T22:50:21.722725",
+          "rotated_at": "2026-11-15T22:50:21.721496",
+          "updated_at": "2026-11-15T22:50:21.722725",
           "user_agent": null,
           "auth_token_seen": true,
-          "prev_auth_token": "Qr8fw0mQwR4tifE1iuW1eWKCJNs=",
+          "prev_auth_token": "NQ9w4evLkQLG0eZpEh58xtLB5mw=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": true,
           "impersonation_expires_at": null
@@ -905,7 +896,7 @@
   "next_ids": {
     "user_associated_accounts": 1,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 115
+    "user_auth_tokens": 14
   },
   "settings": {
     "auth_require_interaction": false,
@@ -945,7 +936,7 @@
   ],
   "recorded_from": {
     "case": "f6dc2c8ef36453477d5584c69da46e0ab930cec9f2a81f923a83b701c6761bbd",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

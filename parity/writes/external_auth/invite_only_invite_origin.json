@@ -19,14 +19,14 @@
       "path": "/invites/Fixture901"
     }
   ],
-  "started_at": "2026-10-16T09:20:05.510162",
-  "transaction_started_at": "2026-10-16T09:20:04.674621",
+  "started_at": "2026-11-15T22:50:26.942931",
+  "transaction_started_at": "2026-11-15T22:50:26.294864",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3050%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=35d9a1f6dd86d454d378f1862bc6fe26bef4f422fb9aa5a1...",
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=6f5e3561e634dadfffc729ba9aa897d89cc2fe1649ae2157...",
       "headers": {
-        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3050%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=35d9a1f6dd86d454d378f1862bc6fe26bef4f422fb9aa5a1"
+        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=6f5e3561e634dadfffc729ba9aa897d89cc2fe1649ae2157"
       }
     },
     {
@@ -85,15 +85,16 @@
           },
           "extra": {},
           "user_id": null,
-          "last_used": "2026-10-16T09:20:05.620989",
-          "created_at": "2026-10-16T09:20:05.622489",
-          "updated_at": "2026-10-16T09:20:05.622489",
+          "last_used": "2026-11-15T22:50:26.994226",
+          "created_at": "2026-11-15T22:50:26.995345",
+          "updated_at": "2026-11-15T22:50:26.995345",
           "credentials": {
             "token": "access-2",
             "expires": false
           },
           "provider_uid": "abc-7",
-          "provider_name": "oauth2_basic"
+          "provider_name": "oauth2_basic",
+          "avatar_upload_id": null
         }
       ],
       "deleted": [],
@@ -149,7 +150,7 @@
   ],
   "recorded_from": {
     "case": "7bb6189e2eb2119bccdc04454674948b8c3e2a91a28e1129b7e63a3515c7d54c",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

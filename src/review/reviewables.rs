@@ -694,9 +694,9 @@ pub struct NewFlaggedPost {
 
 /// `ReviewableFlaggedPost.needs_review!`: the post's reviewable set back
 /// to pending (potential_spam and potentially_illegal only ever turned
-/// on), and when it had been reviewed its score recalculated and a
-/// `transitioned` history logged by the flagger; a new one when the post
-/// has none.
+/// on), and when it had been reviewed (re-opened, 06ca4ae7f94) its score
+/// recalculated without an event and a `transitioned` history logged by
+/// the system user; a new one when the post has none.
 pub async fn flagged_post_needs_review(
     conn: &mut PgConnection,
     p: &crate::web_hooks::Payloads<'_>,
@@ -723,11 +723,16 @@ pub async fn flagged_post_needs_review(
             id,
             loaded_score: 0.0,
             topic_id: Some(r.topic_id),
+            reopened: false,
         });
     };
-    if old_status != PENDING {
-        recalculate_score(&mut *conn, p, id).await?;
-        // log_history(:transitioned, created_by), the status now pending.
+    let reopened = old_status != PENDING;
+    let mut loaded_score = loaded_score;
+    if reopened {
+        // recalculate_score(event: :skip), its score the one held now.
+        loaded_score = recalculate(&mut *conn, id).await?;
+        // log_history(:transitioned, Discourse.system_user), the status now
+        // pending.
         sqlx::query(
             "INSERT INTO reviewable_histories (reviewable_id, reviewable_history_type, status, \
                                                created_by_id, edited, created_at, updated_at) \
@@ -736,7 +741,7 @@ pub async fn flagged_post_needs_review(
         .bind(id)
         .bind(HISTORY_TRANSITIONED)
         .bind(PENDING)
-        .bind(r.created_by_id)
+        .bind(crate::avatar::SYSTEM_USER_ID)
         .execute(&mut *conn)
         .await?;
     }
@@ -744,6 +749,7 @@ pub async fn flagged_post_needs_review(
         id,
         loaded_score,
         topic_id,
+        reopened,
     })
 }
 
@@ -757,6 +763,9 @@ pub struct InReview {
     /// on the reviewable (not the topic), as on Rails.
     pub loaded_score: f64,
     pub topic_id: Option<i32>,
+    /// Back to pending from a review: add_score announces the transition
+    /// instead of the new score (06ca4ae7f94).
+    pub reopened: bool,
 }
 
 /// `Jobs::TruncateUserFlagStats.truncate_to`
@@ -855,11 +864,27 @@ pub async fn recalculate_score(
     p: &crate::web_hooks::Payloads<'_>,
     reviewable_id: i64,
 ) -> Result<(), AppError> {
-    let topic_id: Option<i32> = sqlx::query_scalar(
+    recalculate(&mut *conn, reviewable_id).await?;
+    crate::web_hooks::enqueue_reviewable_hooks(
+        &mut *conn,
+        p,
+        "reviewable_score_updated",
+        reviewable_id,
+    )
+    .await
+}
+
+/// `recalculate_score(event: :skip)`: the reviewable's and its topic's
+/// scores, the reviewable's returned.
+pub(crate) async fn recalculate(
+    conn: &mut PgConnection,
+    reviewable_id: i64,
+) -> Result<f64, AppError> {
+    let (score, topic_id): (f64, Option<i32>) = sqlx::query_as(
         "UPDATE reviewables SET score = COALESCE(( \
              SELECT sum(score) FROM reviewable_scores AS rs \
              WHERE rs.reviewable_id = $1 AND rs.status IN ($2, $3)), 0.0) \
-         WHERE id = $1 RETURNING topic_id",
+         WHERE id = $1 RETURNING score, topic_id",
     )
     .bind(reviewable_id)
     .bind(PENDING)
@@ -877,13 +902,7 @@ pub async fn recalculate_score(
     .bind(APPROVED)
     .execute(&mut *conn)
     .await?;
-    crate::web_hooks::enqueue_reviewable_hooks(
-        &mut *conn,
-        p,
-        "reviewable_score_updated",
-        reviewable_id,
-    )
-    .await
+    Ok(score)
 }
 
 /// `ReviewableFlaggedPost.needs_review!` for a post with no reviewable:
@@ -1017,14 +1036,14 @@ pub async fn add_score(
         json!({ "reviewable_id": reviewable_id }),
     )
     .await?;
-    // reviewable_score_updated's web hooks.
-    crate::web_hooks::enqueue_reviewable_hooks(
-        &mut *conn,
-        p,
-        "reviewable_score_updated",
-        reviewable_id,
-    )
-    .await?;
+    // reviewable_score_updated's web hooks, reviewable_transitioned_to's
+    // (pending) for a re-opened one the score does not act on.
+    let event = if reviewable.reopened && !new.take_action {
+        "reviewable_transitioned_to"
+    } else {
+        "reviewable_score_updated"
+    };
+    crate::web_hooks::enqueue_reviewable_hooks(&mut *conn, p, event, reviewable_id).await?;
     // topic.update(reviewable_score: topic.reviewable_score + rs.score) if topic
     if let Some(topic_id) = reviewable.topic_id {
         update_topic_reviewable_score(conn, s, topic_id, score).await?;

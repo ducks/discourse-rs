@@ -50,8 +50,8 @@
       }
     }
   ],
-  "started_at": "2026-10-14T23:35:53.938951",
-  "transaction_started_at": "2026-10-14T23:35:52.225987",
+  "started_at": "2026-11-16T00:08:11.344547",
+  "transaction_started_at": "2026-11-16T00:08:10.508167",
   "responses": [
     {
       "status": 422,
@@ -132,33 +132,33 @@
       "updated": [
         {
           "before": {
-            "id": 298,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "b2eDVEEhk4jqGgpCsTmPWSjloEk=",
-            "created_at": "2026-10-14T23:35:52.961112",
-            "rotated_at": "2026-10-14T23:35:52.959755",
-            "updated_at": "2026-10-14T23:35:52.961112",
+            "auth_token": "xrNX9ojqZtKl7qghoITSrtSrAcA=",
+            "created_at": "2026-11-16T00:08:10.875056",
+            "rotated_at": "2026-11-16T00:08:10.874268",
+            "updated_at": "2026-11-16T00:08:10.875056",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "b2eDVEEhk4jqGgpCsTmPWSjloEk=",
+            "prev_auth_token": "xrNX9ojqZtKl7qghoITSrtSrAcA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 298,
-            "seen_at": "2026-10-14T23:35:53.946621",
+            "id": 14,
+            "seen_at": "2026-11-16T00:08:11.3489",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "b2eDVEEhk4jqGgpCsTmPWSjloEk=",
-            "created_at": "2026-10-14T23:35:52.961112",
-            "rotated_at": "2026-10-14T23:35:52.959755",
-            "updated_at": "2026-10-14T23:35:52.961112",
+            "auth_token": "xrNX9ojqZtKl7qghoITSrtSrAcA=",
+            "created_at": "2026-11-16T00:08:10.875056",
+            "rotated_at": "2026-11-16T00:08:10.874268",
+            "updated_at": "2026-11-16T00:08:10.875056",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "b2eDVEEhk4jqGgpCsTmPWSjloEk=",
+            "prev_auth_token": "xrNX9ojqZtKl7qghoITSrtSrAcA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -169,7 +169,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 105,
           "context": "tag",
@@ -179,9 +179,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-10-14T23:35:54.134304",
+          "created_at": "2026-11-16T00:08:11.428258",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T23:35:54.134304",
+          "updated_at": "2026-11-16T00:08:11.428258",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -198,8 +199,8 @@
         {
           "id": 1,
           "action": 6,
-          "created_at": "2026-10-14T23:35:54.11174",
-          "updated_at": "2026-10-14T23:35:54.11174"
+          "created_at": "2026-11-16T00:08:11.417408",
+          "updated_at": "2026-11-16T00:08:11.417408"
         }
       ],
       "deleted": [],
@@ -212,8 +213,8 @@
           "html": false,
           "word": "kitten",
           "action": 6,
-          "created_at": "2026-10-14T23:35:54.100128",
-          "updated_at": "2026-10-14T23:35:54.124522",
+          "created_at": "2026-11-16T00:08:11.402204",
+          "updated_at": "2026-11-16T00:08:11.424066",
           "replacement": "howto,guide",
           "case_sensitive": false,
           "watched_word_group_id": 1
@@ -225,13 +226,13 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 74,
+    "user_histories": 68,
     "watched_word_groups": 1,
     "watched_words": 1
   },
   "recorded_from": {
     "case": "eac276a00cb22b1f2e56e45744e510432bc5c0639fefa752f69b2348b74f8421",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

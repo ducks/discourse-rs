@@ -55,5 +55,8 @@
   "ignore": [
     "/responses/1/headers/Location",
     "/changes/single_sign_on_records/inserted/*/last_payload"
+  ],
+  "unordered_responses": [
+    "/responses/3/body/current_user/available_notification_types"
   ]
 }

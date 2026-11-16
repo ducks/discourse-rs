@@ -66,8 +66,8 @@
       }
     }
   ],
-  "started_at": "2026-10-14T21:44:40.956558",
-  "transaction_started_at": "2026-10-14T21:44:35.689948",
+  "started_at": "2026-11-15T23:44:29.796288",
+  "transaction_started_at": "2026-11-15T23:44:28.940749",
   "responses": [
     {
       "status": 422,
@@ -116,8 +116,8 @@
           "id": 1,
           "name": "Bad modifier",
           "description": null,
-          "created_at": "2026-10-14T21:44:41.269Z",
-          "updated_at": "2026-10-14T21:44:41.269Z",
+          "created_at": "2026-11-15T23:44:29.885Z",
+          "updated_at": "2026-11-15T23:44:29.885Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -125,6 +125,7 @@
           "auto_update": false,
           "remote_theme_id": null,
           "settings": [],
+          "translations_locale": "en",
           "themeable_site_settings": [
             {
               "setting": "enable_welcome_banner",
@@ -201,9 +202,9 @@
           "branch": null,
           "authors": null,
           "about_url": null,
-          "created_at": "2026-10-14T21:44:41.261267",
+          "created_at": "2026-11-15T23:44:29.884649",
           "remote_url": "",
-          "updated_at": "2026-10-14T21:44:41.261267",
+          "updated_at": "2026-11-15T23:44:29.884649",
           "license_url": null,
           "private_key": null,
           "local_version": null,
@@ -224,7 +225,7 @@
     "theme_fields": {
       "inserted": [
         {
-          "id": 169,
+          "id": 163,
           "name": "about",
           "error": null,
           "value": "{\"name\": \"Bad modifier\", \"modifiers\": {\"serialize_topic_excerpts\": \"yes\"}}\n",
@@ -232,8 +233,8 @@
           "theme_id": 1,
           "target_id": 9,
           "upload_id": null,
-          "created_at": "2026-10-14T21:44:41.274085",
-          "updated_at": "2026-10-14T21:44:41.274085",
+          "created_at": "2026-11-15T23:44:29.886912",
+          "updated_at": "2026-11-15T23:44:29.886912",
           "value_baked": null,
           "compiler_version": "0"
         }
@@ -270,8 +271,8 @@
           "enabled": true,
           "user_id": 1,
           "component": false,
-          "created_at": "2026-10-14T21:44:41.269268",
-          "updated_at": "2026-10-14T21:44:41.269268",
+          "created_at": "2026-11-15T23:44:29.885922",
+          "updated_at": "2026-11-15T23:44:29.885922",
           "auto_update": false,
           "color_scheme_id": null,
           "remote_theme_id": null,
@@ -289,33 +290,33 @@
       "updated": [
         {
           "before": {
-            "id": 134,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "S1/5Oo6Vh/YokAieI5YAAOOumB8=",
-            "created_at": "2026-10-14T21:44:37.952778",
-            "rotated_at": "2026-10-14T21:44:37.944425",
-            "updated_at": "2026-10-14T21:44:37.952778",
+            "auth_token": "Fw8Y9ysCaw31VO4YOy72QLxuouk=",
+            "created_at": "2026-11-15T23:44:29.330451",
+            "rotated_at": "2026-11-15T23:44:29.32948",
+            "updated_at": "2026-11-15T23:44:29.330451",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "S1/5Oo6Vh/YokAieI5YAAOOumB8=",
+            "prev_auth_token": "Fw8Y9ysCaw31VO4YOy72QLxuouk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 134,
-            "seen_at": "2026-10-14T21:44:40.975649",
+            "id": 14,
+            "seen_at": "2026-11-15T23:44:29.80197",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "S1/5Oo6Vh/YokAieI5YAAOOumB8=",
-            "created_at": "2026-10-14T21:44:37.952778",
-            "rotated_at": "2026-10-14T21:44:37.944425",
-            "updated_at": "2026-10-14T21:44:37.952778",
+            "auth_token": "Fw8Y9ysCaw31VO4YOy72QLxuouk=",
+            "created_at": "2026-11-15T23:44:29.330451",
+            "rotated_at": "2026-11-15T23:44:29.32948",
+            "updated_at": "2026-11-15T23:44:29.330451",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "S1/5Oo6Vh/YokAieI5YAAOOumB8=",
+            "prev_auth_token": "Fw8Y9ysCaw31VO4YOy72QLxuouk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -326,7 +327,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 4,
           "context": null,
@@ -334,11 +335,12 @@
           "post_id": null,
           "subject": "Bad modifier",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Bad modifier\",\"description\":null,\"created_at\":\"2026-10-14T21:44:41.269Z\",\"updated_at\":\"2026-10-14T21:44:41.269Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\\"name\\\": \\\"Bad modifier\\\", \\\"modifiers\\\": {\\\"serialize_topic_excerpts\\\": \\\"yes\\\"}}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "new_value": "{\"id\":1,\"name\":\"Bad modifier\",\"description\":null,\"created_at\":\"2026-11-15T23:44:29.885Z\",\"updated_at\":\"2026-11-15T23:44:29.885Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\\"name\\\": \\\"Bad modifier\\\", \\\"modifiers\\\": {\\\"serialize_topic_excerpts\\\": \\\"yes\\\"}}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "admin_only": true,
-          "created_at": "2026-10-14T21:44:41.432095",
+          "created_at": "2026-11-15T23:44:29.936591",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-14T21:44:41.432095",
+          "updated_at": "2026-11-15T23:44:29.936591",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -354,14 +356,14 @@
   "jobs": [],
   "next_ids": {
     "remote_themes": 36,
-    "theme_fields": 169,
+    "theme_fields": 163,
     "theme_modifier_sets": 3,
     "themes": 1,
-    "user_histories": 74
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "c165aed4cb75bf69740529c9d7c60d8554973075650fc5bcfd3df3cc18cfbe0f",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

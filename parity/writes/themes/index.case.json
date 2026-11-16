@@ -1,15 +1,43 @@
 {
   "user": "admin",
+  "not_yet": "747aa636644 (Discourse): themes serialize translations_locale (object editor fields translated as site texts); not ported",
   "requests": [
-    {"method": "GET", "path": "/admin/themes.json"},
-    {"method": "GET", "path": "/admin/themes/-2.json"},
-    {"method": "GET", "path": "/admin/themes/-1.json"},
-    {"method": "GET", "path": "/admin/themes/999.json"},
-    {"method": "GET", "path": "/admin/config/customize/themes.json"},
-    {"method": "GET", "path": "/admin/config/customize/components.json"},
-    {"method": "GET", "path": "/admin/config/customize/theme-site-settings.json"},
-    {"method": "GET", "path": "/admin/config/colors.json"},
-    {"method": "GET", "path": "/admin/config/welcome-banner/themes-with-setting.json"}
+    {
+      "method": "GET",
+      "path": "/admin/themes.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/-2.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/-1.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/themes/999.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/customize/themes.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/customize/components.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/customize/theme-site-settings.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/colors.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/welcome-banner/themes-with-setting.json"
+    }
   ],
   "unordered_responses": [
     "/responses/0/body/themes/0/theme_fields",

@@ -1787,12 +1787,14 @@ async fn topic_tags_changed_unsupported(
         "SELECT EXISTS (SELECT 1 FROM discourse_automation_automations \
          WHERE enabled AND trigger = 'topic_tags_changed')",
     )
-    .fetch_one(conn)
+    .fetch_one(&mut *conn)
     .await?;
     if automations {
         return Err(Unsupported("automations on topic_tags_changed").into());
     }
-    if settings.get("boards_enabled").is_ok_and(|v| v.truthy()) {
+    if settings.get("boards_enabled").is_ok_and(|v| v.truthy())
+        && crate::plugins::boards_to_sync(&mut *conn).await?
+    {
         return Err(Unsupported("the boards plugin's topic sync").into());
     }
     Ok(())

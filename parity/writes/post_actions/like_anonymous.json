@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-10-03T08:12:16.435849",
-  "transaction_started_at": "2026-10-03T08:12:15.760326",
+  "started_at": "2026-11-15T23:08:45.595673",
+  "transaction_started_at": "2026-11-15T23:08:44.833583",
   "responses": [
     {
       "status": 403,
@@ -26,9 +26,10 @@
   ],
   "changes": {},
   "jobs": [],
+  "next_ids": {},
   "recorded_from": {
     "case": "5560fb796ab084cbfc145503fd9cf45c5f73378fdcbe36038cf10c97ddd8ee6f",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

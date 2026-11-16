@@ -85,6 +85,8 @@ pub fn markdown_additional_options(hashtag_configurations: Value) -> Value {
     json!({
         "limited_pretty_text_features": MARKDOWN_FEATURES,
         "limited_pretty_text_markdown_rules": MARKDOWN_IT_RULES,
+        // PrettyText::NO_ONEBOX_LIMIT (Discourse 1b7fe0235a7)
+        "onebox_limit": "none",
         "hashtag_configurations": hashtag_configurations,
     })
 }

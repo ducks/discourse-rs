@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-10-14T21:25:40.622046",
-  "transaction_started_at": "2026-10-14T21:25:39.47757",
+  "started_at": "2026-11-15T23:52:27.054715",
+  "transaction_started_at": "2026-11-15T23:52:26.191192",
   "responses": [
     {
       "status": 200,
@@ -47,8 +47,9 @@
           "number": 2,
           "post_id": 35,
           "user_id": 1,
-          "created_at": "2026-10-14T21:25:40.733318",
-          "updated_at": "2026-10-14T21:25:40.733318",
+          "unlisted": false,
+          "created_at": "2026-11-15T23:52:27.121721",
+          "updated_at": "2026-11-15T23:52:27.121721",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Parity fixture: replies and posters'\n- 'Parity fixture: renamed while a hook listens'\n"
         }
       ],
@@ -62,6 +63,24 @@
         {
           "before": {
             "locale": "en",
+            "post_id": 52,
+            "version": 5,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 0,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
             "post_id": 36,
             "version": 5,
             "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
@@ -110,24 +129,6 @@
             "version": 0,
             "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
             "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
-            "post_id": 52,
-            "version": 5,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 52,
-            "version": 0,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
             "private_message": false
           }
         },
@@ -167,20 +168,20 @@
             "locale": null,
             "user_id": 2,
             "version": 1,
-            "baked_at": "2026-09-30T07:28:28.901878",
+            "baked_at": "2026-11-15T19:19:53.957278",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-09-30T07:28:28.901913",
+            "created_at": "2026-11-15T19:19:53.957314",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-09-30T07:28:28.901913",
+            "updated_at": "2026-11-15T19:19:53.957314",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -200,7 +201,7 @@
             "last_editor_id": 2,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-09-30T07:28:28.917598",
+            "last_version_at": "2026-11-15T19:19:53.972352",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -222,20 +223,20 @@
             "locale": null,
             "user_id": 2,
             "version": 2,
-            "baked_at": "2026-09-30T07:28:28.901878",
+            "baked_at": "2026-11-15T19:19:53.957278",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-09-30T07:28:28.901913",
+            "created_at": "2026-11-15T19:19:53.957314",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-10-14T21:25:40.64632",
+            "updated_at": "2026-11-15T23:52:27.072439",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -255,7 +256,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-10-14T21:25:40.642498",
+            "last_version_at": "2026-11-15T23:52:27.069998",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -299,7 +300,7 @@
           "before": {
             "id": 35,
             "slug": "parity-fixture-replies-and-posters",
-            "score": 3.2,
+            "score": 3.1999999999999997,
             "title": "Parity fixture: replies and posters",
             "views": 0,
             "closed": false,
@@ -310,13 +311,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-10-01T15:39:51.834549",
+            "bumped_at": "2026-11-15T19:20:01.206739",
             "pinned_at": null,
-            "created_at": "2026-09-30T07:28:28.864868",
+            "created_at": "2026-11-15T19:19:53.917926",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-10-01T15:39:52.00791",
+            "updated_at": "2026-11-15T19:20:01.293353",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -329,7 +330,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "last_posted_at": "2026-11-15T19:20:01.206739",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -351,7 +352,7 @@
           "after": {
             "id": 35,
             "slug": "parity-fixture-renamed-while-a-hook-listens",
-            "score": 3.2,
+            "score": 3.1999999999999997,
             "title": "Parity fixture: renamed while a hook listens",
             "views": 0,
             "closed": false,
@@ -362,13 +363,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-10-01T15:39:51.834549",
+            "bumped_at": "2026-11-15T19:20:01.206739",
             "pinned_at": null,
-            "created_at": "2026-09-30T07:28:28.864868",
+            "created_at": "2026-11-15T19:19:53.917926",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-10-14T21:25:40.684951",
+            "updated_at": "2026-11-15T23:52:27.105081",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -381,7 +382,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-10-01T15:39:51.834549",
+            "last_posted_at": "2026-11-15T19:20:01.206739",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -409,33 +410,33 @@
       "updated": [
         {
           "before": {
-            "id": 82,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "5dBy3HUDBtWxbkH/+c3aX8l36LQ=",
-            "created_at": "2026-10-14T21:25:39.879135",
-            "rotated_at": "2026-10-14T21:25:39.877557",
-            "updated_at": "2026-10-14T21:25:39.879135",
+            "auth_token": "LAWoHgP/5w6w+qxIIgvE4oMzdoY=",
+            "created_at": "2026-11-15T23:52:26.574994",
+            "rotated_at": "2026-11-15T23:52:26.574098",
+            "updated_at": "2026-11-15T23:52:26.574994",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "5dBy3HUDBtWxbkH/+c3aX8l36LQ=",
+            "prev_auth_token": "LAWoHgP/5w6w+qxIIgvE4oMzdoY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 82,
-            "seen_at": "2026-10-14T21:25:40.628455",
+            "id": 14,
+            "seen_at": "2026-11-15T23:52:27.060268",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "5dBy3HUDBtWxbkH/+c3aX8l36LQ=",
-            "created_at": "2026-10-14T21:25:39.879135",
-            "rotated_at": "2026-10-14T21:25:39.877557",
-            "updated_at": "2026-10-14T21:25:39.879135",
+            "auth_token": "LAWoHgP/5w6w+qxIIgvE4oMzdoY=",
+            "created_at": "2026-11-15T23:52:26.574994",
+            "rotated_at": "2026-11-15T23:52:26.574098",
+            "updated_at": "2026-11-15T23:52:26.574994",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "5dBy3HUDBtWxbkH/+c3aX8l36LQ=",
+            "prev_auth_token": "LAWoHgP/5w6w+qxIIgvE4oMzdoY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -451,7 +452,7 @@
           "before": {
             "user_id": 1,
             "read_faq": null,
-            "new_since": "2026-07-25T05:59:15.188025",
+            "new_since": "2026-11-03T05:07:59.663488",
             "time_read": 0,
             "post_count": 1,
             "draft_count": 0,
@@ -463,21 +464,21 @@
             "flags_ignored": 0,
             "likes_received": 0,
             "topics_entered": 0,
-            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "first_unread_at": "2026-11-03T05:07:59.53259",
             "flags_disagreed": 0,
             "post_edits_count": null,
             "posts_read_count": 6,
-            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "first_unread_pm_at": "2026-11-03T05:07:59.53259",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
-            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "first_post_created_at": "2026-11-15T19:19:54.283624",
             "reset_bounce_score_after": null
           },
           "after": {
             "user_id": 1,
             "read_faq": null,
-            "new_since": "2026-07-25T05:59:15.188025",
+            "new_since": "2026-11-03T05:07:59.663488",
             "time_read": 0,
             "post_count": 1,
             "draft_count": 0,
@@ -489,15 +490,15 @@
             "flags_ignored": 0,
             "likes_received": 0,
             "topics_entered": 0,
-            "first_unread_at": "2026-10-01T15:39:52.00791",
+            "first_unread_at": "2026-11-03T05:07:59.53259",
             "flags_disagreed": 0,
             "post_edits_count": 1,
             "posts_read_count": 6,
-            "first_unread_pm_at": "2026-10-01T18:21:56.284939",
+            "first_unread_pm_at": "2026-11-03T05:07:59.53259",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
-            "first_post_created_at": "2026-09-30T07:28:29.25168",
+            "first_post_created_at": "2026-11-15T19:19:54.283624",
             "reset_bounce_score_after": null
           }
         }
@@ -533,7 +534,7 @@
         "tag_ids": [
           2
         ],
-        "payload": "{\"tags\":[{\"id\":2,\"name\":\"guide\",\"slug\":\"guide\"}],\"tags_descriptions\":{},\"fancy_title\":\"Parity fixture: renamed while a hook listens\",\"id\":35,\"title\":\"Parity fixture: renamed while a hook listens\",\"posts_count\":5,\"created_at\":\"2026-09-30T07:28:28.864Z\",\"views\":0,\"reply_count\":0,\"like_count\":1,\"last_posted_at\":\"2026-10-01T15:39:51.834Z\",\"visible\":true,\"closed\":false,\"archived\":false,\"archetype\":\"regular\",\"slug\":\"parity-fixture-renamed-while-a-hook-listens\",\"category_id\":4,\"word_count\":68,\"deleted_at\":null,\"user_id\":2,\"featured_link\":null,\"pinned_globally\":false,\"pinned_at\":null,\"pinned_until\":null,\"unpinned\":null,\"pinned\":false,\"highest_post_number\":5,\"deleted_by\":null,\"has_deleted\":false,\"bookmarked\":false,\"participant_count\":4,\"queued_posts_count\":0,\"thumbnails\":null,\"created_by\":{\"id\":2,\"username\":\"user0\",\"name\":\"User0\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png\"},\"last_poster\":{\"id\":2,\"username\":\"user0\",\"name\":\"User0\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png\"},\"valid_reactions\":[\"heart\",\"+1\",\"laughing\",\"open_mouth\",\"clap\",\"confetti_ball\",\"hugs\"],\"can_create_shared_issue\":false,\"shared_issue_visible\":false,\"can_vote\":false,\"vote_count\":0,\"user_voted\":false,\"discourse_zendesk_plugin_zendesk_id\":null,\"discourse_zendesk_plugin_zendesk_url\":\"https://your-url.zendesk.com/agent/tickets/\",\"pending_posts\":[]}",
+        "payload": "{\"tags\":[{\"id\":2,\"name\":\"guide\",\"slug\":\"guide\"}],\"tags_descriptions\":{},\"fancy_title\":\"Parity fixture: renamed while a hook listens\",\"id\":35,\"title\":\"Parity fixture: renamed while a hook listens\",\"posts_count\":5,\"created_at\":\"2026-11-15T19:19:53.917Z\",\"views\":0,\"reply_count\":0,\"like_count\":1,\"last_posted_at\":\"2026-11-15T19:20:01.206Z\",\"visible\":true,\"closed\":false,\"archived\":false,\"archetype\":\"regular\",\"slug\":\"parity-fixture-renamed-while-a-hook-listens\",\"category_id\":4,\"word_count\":68,\"deleted_at\":null,\"user_id\":2,\"featured_link\":null,\"pinned_globally\":false,\"pinned_at\":null,\"pinned_until\":null,\"unpinned\":null,\"pinned\":false,\"highest_post_number\":5,\"deleted_by\":null,\"has_deleted\":false,\"bookmarked\":false,\"participant_count\":4,\"queued_posts_count\":0,\"thumbnails\":null,\"board_memberships\":[],\"created_by\":{\"id\":2,\"username\":\"user0\",\"name\":\"User0\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png\"},\"last_poster\":{\"id\":2,\"username\":\"user0\",\"name\":\"User0\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png\"},\"valid_reactions\":[\"heart\",\"+1\",\"laughing\",\"open_mouth\",\"clap\",\"confetti_ball\",\"hugs\"],\"can_create_shared_issue\":false,\"shared_issue_visible\":false,\"can_vote\":false,\"vote_count\":0,\"user_voted\":false,\"pending_posts\":[]}",
         "web_hook_id": 9001,
         "event_name": "topic_edited",
         "event_type": "topic"
@@ -550,7 +551,8 @@
     [
       "post_alert",
       {
-        "post_id": 35
+        "post_id": 35,
+        "added_mentions": []
       }
     ]
   ],
@@ -564,7 +566,7 @@
   ],
   "recorded_from": {
     "case": "aea5165a7b69bfb10174f9b774555d9caf4b9f7fc76a5c5c86af83daa0b14902",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

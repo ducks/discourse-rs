@@ -32,7 +32,7 @@ pub async fn hcaptcha(
     create(&state, Provider::Hcaptcha, &headers, &uri, &body).await
 }
 
-/// POST /captcha/recaptcha/create(.json)
+/// POST /captcha/recaptcha/create(.json) and /captcha/recaptcha_v2/create(.json)
 pub async fn recaptcha(
     State(state): State<AppState>,
     headers: HeaderMap,

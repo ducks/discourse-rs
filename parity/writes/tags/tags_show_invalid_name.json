@@ -7,8 +7,8 @@
       "path": "/tag/%2ftest%2f.json"
     }
   ],
-  "started_at": "2026-10-07T07:36:49.796546",
-  "transaction_started_at": "2026-10-07T07:36:44.290041",
+  "started_at": "2026-11-15T23:42:23.704536",
+  "transaction_started_at": "2026-11-15T23:42:23.104952",
   "responses": [
     {
       "status": 404,
@@ -22,12 +22,13 @@
   ],
   "changes": {},
   "jobs": [],
+  "next_ids": {},
   "settings": {
     "tagging_enabled": true
   },
   "recorded_from": {
     "case": "fdccff8898c4c1e692c4bbf527deae4e0a8f70d0cc9d4f8a035d3f5e4b6f97b7",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

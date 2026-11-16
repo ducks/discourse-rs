@@ -1,5 +1,6 @@
 {
   "user": "admin",
+  "not_yet": "747aa636644 (Discourse): themes serialize translations_locale (object editor fields translated as site texts); not ported",
   "redis": {
     "ssh_key_ssh-rsa AAAAfancy": "-----BEGIN RSA PRIVATE KEY-----\nfancy\n-----END RSA PRIVATE KEY-----\n"
   },

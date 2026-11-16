@@ -31,8 +31,8 @@
       }
     }
   ],
-  "started_at": "2026-10-08T07:05:32.838124",
-  "transaction_started_at": "2026-10-08T07:05:30.092488",
+  "started_at": "2026-11-15T21:44:49.126149",
+  "transaction_started_at": "2026-11-15T21:44:48.17659",
   "responses": [
     {
       "status": 200,
@@ -44,7 +44,8 @@
             "context": null,
             "ip_address": null,
             "email": null,
-            "created_at": "2026-10-01T10:58:56.174Z",
+            "created_at": "2026-11-15T19:35:26.746Z",
+            "expires_at": null,
             "subject": null,
             "previous_value": null,
             "new_value": null,
@@ -53,7 +54,7 @@
             "category_id": null,
             "action": 34,
             "custom_type": null,
-            "id": 73,
+            "id": 66,
             "acting_user": {
               "id": -1,
               "username": "system",
@@ -68,157 +69,14 @@
             }
           },
           {
-            "action_name": "topic_archived",
-            "details": null,
-            "context": null,
-            "ip_address": null,
-            "email": null,
-            "created_at": "2026-09-30T07:28:30.481Z",
-            "subject": null,
-            "previous_value": null,
-            "new_value": null,
-            "topic_id": 41,
-            "post_id": null,
-            "category_id": null,
-            "action": 93,
-            "custom_type": null,
-            "id": 72,
-            "acting_user": {
-              "id": 1,
-              "username": "admin",
-              "name": "Admin",
-              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
-            },
-            "target_user": null
-          },
-          {
-            "action_name": "delete_topic",
-            "details": "id: 40\ncreated_at: 2026-09-30 07:28:29 UTC\nuser: user2 (User2)\ntitle: Parity fixture: deleted topic\nraw: This topic is deleted and must not appear anywhere.",
-            "context": null,
-            "ip_address": null,
-            "email": null,
-            "created_at": "2026-09-30T07:28:29.934Z",
-            "subject": null,
-            "previous_value": null,
-            "new_value": null,
-            "topic_id": 40,
-            "post_id": null,
-            "category_id": null,
-            "action": 18,
-            "custom_type": null,
-            "id": 71,
-            "acting_user": {
-              "id": 1,
-              "username": "admin",
-              "name": "Admin",
-              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
-            },
-            "target_user": null
-          },
-          {
-            "action_name": "topic_closed",
-            "details": null,
-            "context": null,
-            "ip_address": null,
-            "email": null,
-            "created_at": "2026-09-30T07:28:29.474Z",
-            "subject": null,
-            "previous_value": null,
-            "new_value": null,
-            "topic_id": 37,
-            "post_id": null,
-            "category_id": null,
-            "action": 91,
-            "custom_type": null,
-            "id": 70,
-            "acting_user": {
-              "id": 1,
-              "username": "admin",
-              "name": "Admin",
-              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
-            },
-            "target_user": null
-          },
-          {
-            "action_name": "change_site_setting",
-            "details": "Remote images download was disabled because there wasn't enough disk space available.",
-            "context": null,
-            "ip_address": null,
-            "email": null,
-            "created_at": "2026-09-30T07:28:29.148Z",
-            "subject": "download_remote_images_to_local",
-            "previous_value": "true",
-            "new_value": "false",
-            "topic_id": null,
-            "post_id": null,
-            "category_id": null,
-            "action": 3,
-            "custom_type": null,
-            "id": 69,
-            "acting_user": {
-              "id": -1,
-              "username": "system",
-              "name": "system",
-              "avatar_template": "/images/discourse-logo-sketch-small.png"
-            },
-            "target_user": null
-          },
-          {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:39.322Z",
-            "subject": "reporting_improvements",
-            "previous_value": "false",
-            "new_value": "true",
-            "topic_id": null,
-            "post_id": null,
-            "category_id": null,
-            "action": 122,
-            "custom_type": null,
-            "id": 67,
-            "acting_user": {
-              "id": -1,
-              "username": "system",
-              "name": "system",
-              "avatar_template": "/images/discourse-logo-sketch-small.png"
-            },
-            "target_user": null
-          },
-          {
-            "action_name": "upcoming_change_toggled",
-            "details": null,
-            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
-            "ip_address": null,
-            "email": null,
-            "created_at": "2026-09-30T06:20:39.250Z",
-            "subject": "rename_faq_to_guidelines",
-            "previous_value": "false",
-            "new_value": "true",
-            "topic_id": null,
-            "post_id": null,
-            "category_id": null,
-            "action": 122,
-            "custom_type": null,
-            "id": 66,
-            "acting_user": {
-              "id": -1,
-              "username": "system",
-              "name": "system",
-              "avatar_template": "/images/discourse-logo-sketch-small.png"
-            },
-            "target_user": null
-          },
-          {
-            "action_name": "upcoming_change_toggled",
-            "details": null,
-            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
-            "ip_address": null,
-            "email": null,
-            "created_at": "2026-09-30T06:20:39.134Z",
-            "subject": "remove_and_replace_uncategorized",
+            "created_at": "2026-11-15T19:20:04.275Z",
+            "expires_at": null,
+            "subject": "review_queue_consistent_answers",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -238,11 +96,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:39.077Z",
-            "subject": "modernize_foundation_theme",
+            "created_at": "2026-11-15T19:20:04.267Z",
+            "expires_at": null,
+            "subject": "reporting_improvements",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -260,19 +119,20 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_available",
-            "details": "Reporting improvements",
-            "context": null,
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:39.033Z",
-            "subject": "reporting_improvements",
-            "previous_value": null,
-            "new_value": null,
+            "created_at": "2026-11-15T19:20:04.259Z",
+            "expires_at": null,
+            "subject": "rename_faq_to_guidelines",
+            "previous_value": "false",
+            "new_value": "true",
             "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 124,
+            "action": 122,
             "custom_type": null,
             "id": 63,
             "acting_user": {
@@ -284,19 +144,20 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_available",
-            "details": "Rename FAQ to guidelines",
-            "context": null,
+            "action_name": "delete_category",
+            "details": "created_at: 2026-11-03 05:07:10 UTC\nname: Uncategorized\npermissions: {}",
+            "context": "/c/uncategorized/1",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:39.025Z",
-            "subject": "rename_faq_to_guidelines",
+            "created_at": "2026-11-15T19:20:03.921Z",
+            "expires_at": null,
+            "subject": null,
             "previous_value": null,
             "new_value": null,
             "topic_id": null,
             "post_id": null,
-            "category_id": null,
-            "action": 124,
+            "category_id": 1,
+            "action": 27,
             "custom_type": null,
             "id": 62,
             "acting_user": {
@@ -308,19 +169,20 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_available",
-            "details": "Remove and replace uncategorized",
-            "context": null,
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:39.017Z",
+            "created_at": "2026-11-15T19:20:03.880Z",
+            "expires_at": null,
             "subject": "remove_and_replace_uncategorized",
-            "previous_value": null,
-            "new_value": null,
+            "previous_value": "false",
+            "new_value": "true",
             "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 124,
+            "action": 122,
             "custom_type": null,
             "id": 61,
             "acting_user": {
@@ -332,19 +194,20 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_available",
-            "details": "Modernize Foundation theme",
-            "context": null,
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:39.010Z",
+            "created_at": "2026-11-15T19:20:03.873Z",
+            "expires_at": null,
             "subject": "modernize_foundation_theme",
-            "previous_value": null,
-            "new_value": null,
+            "previous_value": "false",
+            "new_value": "true",
             "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 124,
+            "action": 122,
             "custom_type": null,
             "id": 60,
             "acting_user": {
@@ -356,19 +219,20 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_available",
-            "details": "Granular anonymous and logged in groups permissions",
-            "context": null,
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:39.000Z",
+            "created_at": "2026-11-15T19:20:03.860Z",
+            "expires_at": null,
             "subject": "granular_anonymous_and_logged_in_groups_permissions",
-            "previous_value": null,
-            "new_value": null,
+            "previous_value": "false",
+            "new_value": "true",
             "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 124,
+            "action": 122,
             "custom_type": null,
             "id": 59,
             "acting_user": {
@@ -380,19 +244,20 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_available",
-            "details": "Floating dismiss topics on mobile",
-            "context": null,
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.992Z",
+            "created_at": "2026-11-15T19:20:03.855Z",
+            "expires_at": null,
             "subject": "floating_dismiss_topics_on_mobile",
-            "previous_value": null,
-            "new_value": null,
+            "previous_value": "false",
+            "new_value": "true",
             "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 124,
+            "action": 122,
             "custom_type": null,
             "id": 58,
             "acting_user": {
@@ -409,8 +274,9 @@
             "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.987Z",
-            "subject": "granular_anonymous_and_logged_in_groups_permissions",
+            "created_at": "2026-11-15T19:20:03.849Z",
+            "expires_at": null,
+            "subject": "enable_user_menu_mentions_tab",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -428,19 +294,20 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_available",
-            "details": "Enable composer redesign",
-            "context": null,
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.983Z",
-            "subject": "enable_composer_redesign",
-            "previous_value": null,
-            "new_value": null,
+            "created_at": "2026-11-15T19:20:03.845Z",
+            "expires_at": null,
+            "subject": "enable_unified_new",
+            "previous_value": "false",
+            "new_value": "true",
             "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 124,
+            "action": 122,
             "custom_type": null,
             "id": 56,
             "acting_user": {
@@ -452,19 +319,20 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_available",
-            "details": "Composer media optimization image convert enabled",
-            "context": null,
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.973Z",
-            "subject": "composer_media_optimization_image_convert_enabled",
-            "previous_value": null,
-            "new_value": null,
+            "created_at": "2026-11-15T19:20:03.839Z",
+            "expires_at": null,
+            "subject": "enable_support_category_type_setup",
+            "previous_value": "false",
+            "new_value": "true",
             "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 124,
+            "action": 122,
             "custom_type": null,
             "id": 55,
             "acting_user": {
@@ -476,19 +344,20 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_available",
-            "details": "Boards enabled",
-            "context": null,
+            "action_name": "upcoming_change_toggled",
+            "details": null,
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.966Z",
-            "subject": "boards_enabled",
-            "previous_value": null,
-            "new_value": null,
+            "created_at": "2026-11-15T19:20:03.834Z",
+            "expires_at": null,
+            "subject": "enable_simplified_category_creation",
+            "previous_value": "false",
+            "new_value": "true",
             "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 124,
+            "action": 122,
             "custom_type": null,
             "id": 54,
             "acting_user": {
@@ -505,8 +374,9 @@
             "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.861Z",
-            "subject": "floating_dismiss_topics_on_mobile",
+            "created_at": "2026-11-15T19:20:03.828Z",
+            "expires_at": null,
+            "subject": "enable_new_post_reply_count_position",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -526,11 +396,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.785Z",
-            "subject": "enable_unified_new",
+            "created_at": "2026-11-15T19:20:03.822Z",
+            "expires_at": null,
+            "subject": "enable_new_defaults_for_trust_level_3_requirements",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -553,8 +424,9 @@
             "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.733Z",
-            "subject": "enable_support_category_type_setup",
+            "created_at": "2026-11-15T19:20:03.816Z",
+            "expires_at": null,
+            "subject": "enable_new_checkbox_style",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -577,8 +449,9 @@
             "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.674Z",
-            "subject": "enable_solved_shared_issues",
+            "created_at": "2026-11-15T19:20:03.809Z",
+            "expires_at": null,
+            "subject": "enable_markdown_endpoints",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -598,11 +471,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.614Z",
-            "subject": "enable_simplified_category_creation",
+            "created_at": "2026-11-15T19:20:03.792Z",
+            "expires_at": null,
+            "subject": "enable_main_outlet_grid_layout_change",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -622,11 +496,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.551Z",
-            "subject": "enable_new_post_reply_count_position",
+            "created_at": "2026-11-15T19:20:03.787Z",
+            "expires_at": null,
+            "subject": "enable_local_logins_via_code",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -646,11 +521,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.490Z",
-            "subject": "enable_new_post_reactions_menu",
+            "created_at": "2026-11-15T19:20:03.783Z",
+            "expires_at": null,
+            "subject": "enable_invite_modal_with_roles",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -673,8 +549,9 @@
             "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.428Z",
-            "subject": "enable_new_defaults_for_trust_level_3_requirements",
+            "created_at": "2026-11-15T19:20:03.777Z",
+            "expires_at": null,
+            "subject": "enable_ideas_category_type_setup",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -694,11 +571,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.375Z",
-            "subject": "enable_new_checkbox_style",
+            "created_at": "2026-11-15T19:20:03.768Z",
+            "expires_at": null,
+            "subject": "enable_generated_llms_txt",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -721,8 +599,9 @@
             "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.307Z",
-            "subject": "enable_new_chat_reactions_popup",
+            "created_at": "2026-11-15T19:20:03.761Z",
+            "expires_at": null,
+            "subject": "enable_events_category_type_setup",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -745,8 +624,9 @@
             "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.245Z",
-            "subject": "enable_markdown_endpoints",
+            "created_at": "2026-11-15T19:20:03.752Z",
+            "expires_at": null,
+            "subject": "enable_discourse_workflows",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -766,11 +646,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.161Z",
-            "subject": "enable_local_logins_via_code",
+            "created_at": "2026-11-15T19:20:03.747Z",
+            "expires_at": null,
+            "subject": "enable_discourse_reactions_by_default",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -790,11 +671,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.105Z",
-            "subject": "enable_invite_modal_with_roles",
+            "created_at": "2026-11-15T19:20:03.742Z",
+            "expires_at": null,
+            "subject": "enable_composer_redesign",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -817,8 +699,9 @@
             "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:38.053Z",
-            "subject": "enable_ideas_category_type_setup",
+            "created_at": "2026-11-15T19:20:03.737Z",
+            "expires_at": null,
+            "subject": "dashboard_improvements",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -838,11 +721,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:37.993Z",
-            "subject": "enable_generated_llms_txt",
+            "created_at": "2026-11-15T19:20:03.731Z",
+            "expires_at": null,
+            "subject": "chat_pinned_messages",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -862,11 +746,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:37.900Z",
-            "subject": "enable_events_category_type_setup",
+            "created_at": "2026-11-15T19:20:03.722Z",
+            "expires_at": null,
+            "subject": "boards_enabled",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -884,91 +769,95 @@
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_toggled",
+            "action_name": "topic_archived",
             "details": null,
-            "context": "This upcoming change reached 'Beta' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": null,
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:37.761Z",
-            "subject": "enable_discourse_workflows",
-            "previous_value": "false",
-            "new_value": "true",
-            "topic_id": null,
+            "created_at": "2026-11-15T19:19:55.455Z",
+            "expires_at": null,
+            "subject": null,
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": 41,
             "post_id": null,
             "category_id": null,
-            "action": 122,
+            "action": 93,
             "custom_type": null,
             "id": 37,
             "acting_user": {
-              "id": -1,
-              "username": "system",
-              "name": "system",
-              "avatar_template": "/images/discourse-logo-sketch-small.png"
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
             },
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_toggled",
-            "details": null,
-            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "action_name": "delete_topic",
+            "details": "id: 40\ncreated_at: 2026-11-15 19:19:55 UTC\nuser: user2 (User2)\ntitle: Parity fixture: deleted topic\nraw: This topic is deleted and must not appear anywhere.",
+            "context": null,
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:37.679Z",
-            "subject": "enable_discourse_reactions_by_default",
-            "previous_value": "false",
-            "new_value": "true",
-            "topic_id": null,
+            "created_at": "2026-11-15T19:19:55.115Z",
+            "expires_at": null,
+            "subject": null,
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": 40,
             "post_id": null,
             "category_id": null,
-            "action": 122,
+            "action": 18,
             "custom_type": null,
             "id": 36,
             "acting_user": {
-              "id": -1,
-              "username": "system",
-              "name": "system",
-              "avatar_template": "/images/discourse-logo-sketch-small.png"
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
             },
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_toggled",
+            "action_name": "topic_closed",
             "details": null,
-            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": null,
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:37.608Z",
-            "subject": "dashboard_improvements",
-            "previous_value": "false",
-            "new_value": "true",
-            "topic_id": null,
+            "created_at": "2026-11-15T19:19:54.678Z",
+            "expires_at": null,
+            "subject": null,
+            "previous_value": null,
+            "new_value": null,
+            "topic_id": 37,
             "post_id": null,
             "category_id": null,
-            "action": 122,
+            "action": 91,
             "custom_type": null,
             "id": 35,
             "acting_user": {
-              "id": -1,
-              "username": "system",
-              "name": "system",
-              "avatar_template": "/images/discourse-logo-sketch-small.png"
+              "id": 1,
+              "username": "admin",
+              "name": "Admin",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
             },
             "target_user": null
           },
           {
-            "action_name": "upcoming_change_toggled",
-            "details": null,
-            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "action_name": "change_site_setting",
+            "details": "Remote images download was disabled because there wasn't enough disk space available.",
+            "context": null,
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:37.513Z",
-            "subject": "chat_pinned_messages",
-            "previous_value": "false",
-            "new_value": "true",
+            "created_at": "2026-11-15T19:19:54.227Z",
+            "expires_at": null,
+            "subject": "download_remote_images_to_local",
+            "previous_value": "true",
+            "new_value": "false",
             "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 122,
+            "action": 3,
             "custom_type": null,
             "id": 34,
             "acting_user": {
@@ -985,7 +874,8 @@
             "context": null,
             "ip_address": null,
             "email": null,
-            "created_at": "2026-07-25T05:58:20.816Z",
+            "created_at": "2026-11-03T05:07:17.392Z",
+            "expires_at": null,
             "subject": "Horizon: search_experience",
             "previous_value": null,
             "new_value": "search_field",
@@ -1009,7 +899,8 @@
             "context": null,
             "ip_address": null,
             "email": null,
-            "created_at": "2026-07-25T05:58:20.805Z",
+            "created_at": "2026-11-03T05:07:17.382Z",
+            "expires_at": null,
             "subject": "Horizon: enable_welcome_banner",
             "previous_value": null,
             "new_value": "t",
@@ -1028,13 +919,17 @@
             "target_user": null
           }
         ],
-        "total_rows_staff_action_logs": 41,
+        "total_rows_staff_action_logs": 35,
         "load_more_staff_action_logs": "/admin/logs/staff_action_logs?page=1&page_size=200",
         "extras": {
           "user_history_actions": [
             {
               "id": "activate_user",
               "action_id": 43
+            },
+            {
+              "id": "add_access_control_list_owner",
+              "action_id": 133
             },
             {
               "id": "add_email",
@@ -1071,6 +966,10 @@
             {
               "id": "approve_user",
               "action_id": 69
+            },
+            {
+              "id": "assume_access_control_ownership",
+              "action_id": 135
             },
             {
               "id": "backup_create",
@@ -1159,6 +1058,10 @@
             {
               "id": "create_badge",
               "action_id": 57
+            },
+            {
+              "id": "create_bot",
+              "action_id": 136
             },
             {
               "id": "create_category",
@@ -1371,6 +1274,10 @@
             {
               "id": "recover_topic",
               "action_id": 55
+            },
+            {
+              "id": "remove_access_control_list_owner",
+              "action_id": 134
             },
             {
               "id": "removed_avatar",
@@ -1561,45 +1468,47 @@
       "body": {
         "staff_action_logs": [
           {
-            "action_name": "topic_closed",
+            "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": null,
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T07:28:29.474Z",
-            "subject": null,
-            "previous_value": null,
-            "new_value": null,
-            "topic_id": 37,
+            "created_at": "2026-11-15T19:20:04.259Z",
+            "expires_at": null,
+            "subject": "rename_faq_to_guidelines",
+            "previous_value": "false",
+            "new_value": "true",
+            "topic_id": null,
             "post_id": null,
             "category_id": null,
-            "action": 91,
+            "action": 122,
             "custom_type": null,
-            "id": 70,
+            "id": 63,
             "acting_user": {
-              "id": 1,
-              "username": "admin",
-              "name": "Admin",
-              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png"
+              "id": -1,
+              "username": "system",
+              "name": "system",
+              "avatar_template": "/images/discourse-logo-sketch-small.png"
             },
             "target_user": null
           },
           {
-            "action_name": "change_site_setting",
-            "details": "Remote images download was disabled because there wasn't enough disk space available.",
-            "context": null,
+            "action_name": "delete_category",
+            "details": "created_at: 2026-11-03 05:07:10 UTC\nname: Uncategorized\npermissions: {}",
+            "context": "/c/uncategorized/1",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T07:28:29.148Z",
-            "subject": "download_remote_images_to_local",
-            "previous_value": "true",
-            "new_value": "false",
+            "created_at": "2026-11-15T19:20:03.921Z",
+            "expires_at": null,
+            "subject": null,
+            "previous_value": null,
+            "new_value": null,
             "topic_id": null,
             "post_id": null,
-            "category_id": null,
-            "action": 3,
+            "category_id": 1,
+            "action": 27,
             "custom_type": null,
-            "id": 69,
+            "id": 62,
             "acting_user": {
               "id": -1,
               "username": "system",
@@ -1611,11 +1520,12 @@
           {
             "action_name": "upcoming_change_toggled",
             "details": null,
-            "context": "This upcoming change reached 'Permanent' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
+            "context": "This upcoming change reached 'Stable' status, so it was automatically enabled on your site. See the <a href=\"/admin/config/upcoming-changes\">upcoming changes page</a> for more detail.\n",
             "ip_address": null,
             "email": null,
-            "created_at": "2026-09-30T06:20:39.322Z",
-            "subject": "reporting_improvements",
+            "created_at": "2026-11-15T19:20:03.880Z",
+            "expires_at": null,
+            "subject": "remove_and_replace_uncategorized",
             "previous_value": "false",
             "new_value": "true",
             "topic_id": null,
@@ -1623,7 +1533,7 @@
             "category_id": null,
             "action": 122,
             "custom_type": null,
-            "id": 67,
+            "id": 61,
             "acting_user": {
               "id": -1,
               "username": "system",
@@ -1633,13 +1543,17 @@
             "target_user": null
           }
         ],
-        "total_rows_staff_action_logs": 41,
+        "total_rows_staff_action_logs": 35,
         "load_more_staff_action_logs": "/admin/logs/staff_action_logs?page=2&page_size=3",
         "extras": {
           "user_history_actions": [
             {
               "id": "activate_user",
               "action_id": 43
+            },
+            {
+              "id": "add_access_control_list_owner",
+              "action_id": 133
             },
             {
               "id": "add_email",
@@ -1676,6 +1590,10 @@
             {
               "id": "approve_user",
               "action_id": 69
+            },
+            {
+              "id": "assume_access_control_ownership",
+              "action_id": 135
             },
             {
               "id": "backup_create",
@@ -1764,6 +1682,10 @@
             {
               "id": "create_badge",
               "action_id": 57
+            },
+            {
+              "id": "create_bot",
+              "action_id": 136
             },
             {
               "id": "create_category",
@@ -1976,6 +1898,10 @@
             {
               "id": "recover_topic",
               "action_id": 55
+            },
+            {
+              "id": "remove_access_control_list_owner",
+              "action_id": 134
             },
             {
               "id": "removed_avatar",
@@ -2174,6 +2100,10 @@
               "action_id": 43
             },
             {
+              "id": "add_access_control_list_owner",
+              "action_id": 133
+            },
+            {
               "id": "add_email",
               "action_id": 88
             },
@@ -2208,6 +2138,10 @@
             {
               "id": "approve_user",
               "action_id": 69
+            },
+            {
+              "id": "assume_access_control_ownership",
+              "action_id": 135
             },
             {
               "id": "backup_create",
@@ -2296,6 +2230,10 @@
             {
               "id": "create_badge",
               "action_id": 57
+            },
+            {
+              "id": "create_bot",
+              "action_id": 136
             },
             {
               "id": "create_category",
@@ -2508,6 +2446,10 @@
             {
               "id": "recover_topic",
               "action_id": 55
+            },
+            {
+              "id": "remove_access_control_list_owner",
+              "action_id": 134
             },
             {
               "id": "removed_avatar",
@@ -2706,6 +2648,10 @@
               "action_id": 43
             },
             {
+              "id": "add_access_control_list_owner",
+              "action_id": 133
+            },
+            {
               "id": "add_email",
               "action_id": 88
             },
@@ -2740,6 +2686,10 @@
             {
               "id": "approve_user",
               "action_id": 69
+            },
+            {
+              "id": "assume_access_control_ownership",
+              "action_id": 135
             },
             {
               "id": "backup_create",
@@ -2828,6 +2778,10 @@
             {
               "id": "create_badge",
               "action_id": 57
+            },
+            {
+              "id": "create_bot",
+              "action_id": 136
             },
             {
               "id": "create_category",
@@ -3042,6 +2996,10 @@
               "action_id": 55
             },
             {
+              "id": "remove_access_control_list_owner",
+              "action_id": 134
+            },
+            {
               "id": "removed_avatar",
               "action_id": 131
             },
@@ -3233,33 +3191,33 @@
       "updated": [
         {
           "before": {
-            "id": 135,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ki9p/lMyeFi9AQAAuPLmXaAm1QA=",
-            "created_at": "2026-10-08T07:05:31.328296",
-            "rotated_at": "2026-10-08T07:05:31.322725",
-            "updated_at": "2026-10-08T07:05:31.328296",
+            "auth_token": "iqirXk7Vm1Q1/YvEWTFE8bD9WNY=",
+            "created_at": "2026-11-15T21:44:48.485564",
+            "rotated_at": "2026-11-15T21:44:48.484655",
+            "updated_at": "2026-11-15T21:44:48.485564",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ki9p/lMyeFi9AQAAuPLmXaAm1QA=",
+            "prev_auth_token": "iqirXk7Vm1Q1/YvEWTFE8bD9WNY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 135,
-            "seen_at": "2026-10-08T07:05:32.850333",
+            "id": 14,
+            "seen_at": "2026-11-15T21:44:49.13336",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ki9p/lMyeFi9AQAAuPLmXaAm1QA=",
-            "created_at": "2026-10-08T07:05:31.328296",
-            "rotated_at": "2026-10-08T07:05:31.322725",
-            "updated_at": "2026-10-08T07:05:31.328296",
+            "auth_token": "iqirXk7Vm1Q1/YvEWTFE8bD9WNY=",
+            "created_at": "2026-11-15T21:44:48.485564",
+            "rotated_at": "2026-11-15T21:44:48.484655",
+            "updated_at": "2026-11-15T21:44:48.485564",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ki9p/lMyeFi9AQAAuPLmXaAm1QA=",
+            "prev_auth_token": "iqirXk7Vm1Q1/YvEWTFE8bD9WNY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -3269,9 +3227,10 @@
     }
   },
   "jobs": [],
+  "next_ids": {},
   "recorded_from": {
     "case": "9be36ee783de84ff7b411aeb6546b2039aedc5cd68dce9bb8d13812cbc6f0482",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }

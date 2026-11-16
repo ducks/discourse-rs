@@ -421,9 +421,12 @@ pub async fn new(
                     &state, &settings, &headers, fullpath,
                 )?));
             };
+            // The client's own name first (c30477c52c2).
             let application_name = a
-                .param("application_name")
-                .or_else(|| a.client.as_ref().map(|c| c.application_name.clone()));
+                .client
+                .as_ref()
+                .map(|c| c.application_name.clone())
+                .or_else(|| a.param("application_name"));
             let current_user = current_user_json(&state, &settings, user)?;
             if !meets_tl(&settings, &guardian)? {
                 json!({
@@ -520,20 +523,8 @@ pub(super) async fn create_key(
             .fetch_one(&mut *conn)
             .await?
         }
-        Some(c) => {
-            if let Some(name) = k.application_name
-                && name != c.application_name
-            {
-                sqlx::query(
-                    "UPDATE user_api_key_clients SET application_name = $2, updated_at = now() WHERE id = $1",
-                )
-                .bind(c.id)
-                .bind(name)
-                .execute(&mut *conn)
-                .await?;
-            }
-            c.id
-        }
+        // An existing client keeps its name (c30477c52c2).
+        Some(c) => c.id,
     };
     sqlx::query(
         "DELETE FROM user_api_key_scopes WHERE user_api_key_id IN \

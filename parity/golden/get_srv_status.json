@@ -1,6 +1,7 @@
 {
   "request": "GET /srv/status",
   "source": "http://127.0.0.1:3042",
+  "recorded_at": "2026-11-15T21:21:14.276179082+00:00",
   "status": 200,
   "content_type": "text/plain; charset=utf-8",
   "body": "ok"

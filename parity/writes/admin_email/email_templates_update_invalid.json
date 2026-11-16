@@ -57,8 +57,8 @@
       }
     }
   ],
-  "started_at": "2026-10-17T03:49:03.513828",
-  "transaction_started_at": "2026-10-17T03:49:01.975388",
+  "started_at": "2026-11-15T21:43:16.906931",
+  "transaction_started_at": "2026-11-15T21:43:16.122856",
   "responses": [
     {
       "status": 422,
@@ -159,6 +159,32 @@
             "interpolation_keys": [
               "backup_file_path",
               "email_prefix"
+            ]
+          },
+          {
+            "id": "dsa_notice_mailer",
+            "title": "Dsa Notice Mailer",
+            "subject": "[%{email_prefix}] Your report of potentially illegal content %{reference}",
+            "body": "%{site_title} has received your report.\n\nThe reviewing team will email you the outcome. This receipt does not mean that a decision has been made or that the content has been removed.\n\n%{summary}\n\n**Declaration:**\n\nI confirm that I have a bona fide belief that the information and allegations in this notice are accurate and complete.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "email_prefix",
+              "reference",
+              "site_title",
+              "summary"
+            ]
+          },
+          {
+            "id": "dsa_notice_verification",
+            "title": "Dsa Notice Verification",
+            "subject": "[%{email_prefix}] Your report verification code",
+            "body": "Use this code to verify your email for reporting illegal content on %{site_title}:\n\n## %{verification_code}\n\nThis code expires in %{expires_in_minutes} minutes. If you didn’t request it, you can safely ignore this email.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "email_prefix",
+              "expires_in_minutes",
+              "site_title",
+              "verification_code"
             ]
           },
           {
@@ -615,10 +641,35 @@
             ]
           },
           {
+            "id": "system_messages.email_reject_site_archived",
+            "title": "Email Reject Site Archived",
+            "subject": "[%{email_prefix}] Email issue -- Site Archived",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nThis site is archived and doesn't accept new posts.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
             "id": "system_messages.email_reject_strangers_not_allowed",
             "title": "Email Reject Strangers Not Allowed",
             "subject": "[%{email_prefix}] Email issue -- Invalid Access",
             "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nThe category you sent this email to only allows replies from users with valid accounts and known email addresses. If you believe this is an error, [contact a staff member](%{base_url}/about).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "destination",
+              "email_prefix",
+              "former_title"
+            ]
+          },
+          {
+            "id": "system_messages.email_reject_suspended_user",
+            "title": "Email Reject Suspended User",
+            "subject": "[%{email_prefix}] Email issue -- Suspended User",
+            "body": "We're sorry, but your email message to %{destination} (titled %{former_title}) didn't work.\n\nThe account associated with this email address is suspended. Suspended accounts can't create posts or send messages by email.\n\nIf you believe this is an error, [contact a staff member](%{base_url}/about).\n",
             "can_revert": false,
             "interpolation_keys": [
               "base_url",
@@ -1091,6 +1142,19 @@
             ]
           },
           {
+            "id": "user_notifications.account_associated",
+            "title": "New associated account",
+            "subject": "[%{email_prefix}] New associated account",
+            "body": "A %{provider_name} account was just linked to your account at %{site_name}. It can now be used to log in.\n\nIf this was you, there’s nothing else you need to do.\n\nIf this was not you, someone may have access to your account. [Review your associated accounts](%{base_url}/my/preferences/account), [review your existing sessions](%{base_url}/my/preferences/security), and consider changing your password.\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "email_prefix",
+              "provider_name",
+              "site_name"
+            ]
+          },
+          {
             "id": "user_notifications.account_created",
             "title": "Account Created",
             "subject": "[%{email_prefix}] Your new account",
@@ -1145,34 +1209,40 @@
             "id": "user_notifications.account_silenced",
             "title": "Account Silenced",
             "subject": "[%{email_prefix}] Your account has been silenced",
-            "body": "You have been silenced from the forum until %{silenced_till}.\n\nReason - %{reason}\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been silenced until %{silenced_till}.\n\nReason - %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
+              "base_url",
               "email_prefix",
               "reason",
-              "silenced_till"
+              "silenced_till",
+              "site_name"
             ]
           },
           {
             "id": "user_notifications.account_silenced_forever",
             "title": "Account Silenced",
             "subject": "[%{email_prefix}] Your account has been silenced",
-            "body": "You have been silenced from the forum.\n\nReason - %{reason}\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been silenced.\n\nReason - %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
+              "base_url",
               "email_prefix",
-              "reason"
+              "reason",
+              "site_name"
             ]
           },
           {
             "id": "user_notifications.account_suspended",
             "title": "Account Suspended",
             "subject": "[%{email_prefix}] Your account has been suspended",
-            "body": "You have been suspended from the forum until %{suspended_till}.\n\nReason - %{reason}\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been suspended until %{suspended_till}.\n\nReason - %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
+              "base_url",
               "email_prefix",
               "reason",
+              "site_name",
               "suspended_till"
             ]
           },
@@ -1180,11 +1250,13 @@
             "id": "user_notifications.account_suspended_forever",
             "title": "Account Suspended",
             "subject": "[%{email_prefix}] Your account has been suspended",
-            "body": "You have been suspended from the forum.\n\nReason - %{reason}\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been suspended.\n\nReason - %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
+              "base_url",
               "email_prefix",
-              "reason"
+              "reason",
+              "site_name"
             ]
           },
           {
@@ -1981,8 +2053,8 @@
           "value": "First",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-10-17T03:49:04.233432",
-          "updated_at": "2026-10-17T03:49:04.233432",
+          "created_at": "2026-11-15T21:43:17.257959",
+          "updated_at": "2026-11-15T21:43:17.257959",
           "translation_key": "test_mailer.subject_template",
           "original_translation": "[%{email_prefix}] Email Deliverability Test"
         },
@@ -1991,8 +2063,8 @@
           "value": "First body",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-10-17T03:49:04.376461",
-          "updated_at": "2026-10-17T03:49:05.140265",
+          "created_at": "2026-11-15T21:43:17.335905",
+          "updated_at": "2026-11-15T21:43:17.782343",
           "translation_key": "test_mailer.text_body_template",
           "original_translation": "This is a test email from\n\n[**%{base_url}**][0]\n\nWe hope you received this email deliverability test OK!\n\nHere is a [handy checklist for verifying email delivery configuration][1].\n\nGood luck,\n\nYour friends at [Discourse](https://www.discourse.org)\n\n[0]: %{base_url}\n[1]: https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\n"
         }
@@ -2006,33 +2078,33 @@
       "updated": [
         {
           "before": {
-            "id": 251,
+            "id": 14,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "pwpHqihuB/t60XPzP3rXO64gYj8=",
-            "created_at": "2026-10-17T03:49:02.582241",
-            "rotated_at": "2026-10-17T03:49:02.579584",
-            "updated_at": "2026-10-17T03:49:02.582241",
+            "auth_token": "6RE1i78l6gsCsLpUJ2N4+ro+5DA=",
+            "created_at": "2026-11-15T21:43:16.420222",
+            "rotated_at": "2026-11-15T21:43:16.419051",
+            "updated_at": "2026-11-15T21:43:16.420222",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "pwpHqihuB/t60XPzP3rXO64gYj8=",
+            "prev_auth_token": "6RE1i78l6gsCsLpUJ2N4+ro+5DA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 251,
-            "seen_at": "2026-10-17T03:49:03.522279",
+            "id": 14,
+            "seen_at": "2026-11-15T21:43:16.912569",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "pwpHqihuB/t60XPzP3rXO64gYj8=",
-            "created_at": "2026-10-17T03:49:02.582241",
-            "rotated_at": "2026-10-17T03:49:02.579584",
-            "updated_at": "2026-10-17T03:49:02.582241",
+            "auth_token": "6RE1i78l6gsCsLpUJ2N4+ro+5DA=",
+            "created_at": "2026-11-15T21:43:16.420222",
+            "rotated_at": "2026-11-15T21:43:16.419051",
+            "updated_at": "2026-11-15T21:43:16.420222",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "pwpHqihuB/t60XPzP3rXO64gYj8=",
+            "prev_auth_token": "6RE1i78l6gsCsLpUJ2N4+ro+5DA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -2043,7 +2115,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 75,
+          "id": 68,
           "email": null,
           "action": 29,
           "context": null,
@@ -2053,9 +2125,10 @@
           "topic_id": null,
           "new_value": "First",
           "admin_only": true,
-          "created_at": "2026-10-17T03:49:04.530573",
+          "created_at": "2026-11-15T21:43:17.428675",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T03:49:04.530573",
+          "updated_at": "2026-11-15T21:43:17.428675",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2064,7 +2137,7 @@
           "target_user_id": null
         },
         {
-          "id": 76,
+          "id": 69,
           "email": null,
           "action": 29,
           "context": null,
@@ -2074,9 +2147,10 @@
           "topic_id": null,
           "new_value": "First body",
           "admin_only": true,
-          "created_at": "2026-10-17T03:49:04.536576",
+          "created_at": "2026-11-15T21:43:17.435408",
+          "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-10-17T03:49:04.536576",
+          "updated_at": "2026-11-15T21:43:17.435408",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2092,11 +2166,11 @@
   "jobs": [],
   "next_ids": {
     "translation_overrides": 1,
-    "user_histories": 75
+    "user_histories": 68
   },
   "recorded_from": {
     "case": "b6d4b2c31c6c037045c604c8c280142b42a0784d8c1398a086cd35317fc50a8c",
-    "seed": "0a4e41b08e0bc4f29d19957ebc5d085883b80f538536b4e2e96d5ed5b02b7923",
-    "discourse": "bf55a44c2872738f7ae2664d6fec3d6d8779190f"
+    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
+    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
   }
 }
