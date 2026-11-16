@@ -6,7 +6,7 @@ README's "Deploying on NixOS"; this is the list to walk before and after.
 ## The host
 
 - One VPS, NixOS, x86_64 (the flake builds aarch64 too, untested). 2 GB
-  of memory is enough for a team: the server, PostgreSQL 16 and Caddy.
+  of memory is enough for a team: the server, PostgreSQL 18 and Caddy.
 - The host builds discourse-rs from source on `nixos-rebuild` (there is
   no binary cache for it): a release build with LTO takes a while and a
   few GB of disk. Building on a bigger machine and deploying the closure

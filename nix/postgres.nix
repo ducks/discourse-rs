@@ -1,9 +1,12 @@
-{ pkgs, port ? 5442 }:
+# `postgresPkgs`: the nixpkgs PostgreSQL comes from. Discourse requires
+# PostgreSQL 18, which shell.nix's <nixpkgs> may not carry, so shell.nix
+# passes the nixpkgs flake.lock pins.
+{ pkgs, postgresPkgs ? pkgs, port ? 5442 }:
 
 let
   # Discourse's structure.sql creates hstore, pg_trgm, unaccent (contrib) and
   # vector (pgvector, used by the bundled discourse-ai tables).
-  postgresql = pkgs.postgresql_16.withPackages (ps: [ ps.pgvector ]);
+  postgresql = postgresPkgs.postgresql_18.withPackages (ps: [ ps.pgvector ]);
 in
 {
   buildInputs = [ postgresql ];
@@ -33,6 +36,10 @@ in
       printf '%s\n' "max_connections = 300" "fsync = off" \
         "synchronous_commit = off" "full_page_writes = off" \
         >> "$PGDATA/postgresql.conf"
+    fi
+
+    if [ "$(cat "$PGDATA/PG_VERSION")" != "${postgresPkgs.lib.versions.major postgresql.version}" ]; then
+      echo "warning: $PGDATA is a PostgreSQL $(cat "$PGDATA/PG_VERSION") cluster and this shell runs ${postgresPkgs.lib.versions.major postgresql.version}; upgrade it with pg_upgrade (docs/demo-servers.md)" >&2
     fi
 
     db_start() {

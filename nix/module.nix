@@ -97,7 +97,7 @@ in
         type = types.bool;
         default = true;
         description = ''
-          Run PostgreSQL 16 with pgvector on this host and create the
+          Run PostgreSQL 18 with pgvector on this host and create the
           database, owned by the discourse-rs role, which the service
           reaches over the local socket with peer auth. Off: set
           `database.url`, or DATABASE_URL in `environmentFile` when the
@@ -337,7 +337,7 @@ in
     services.postgresql = mkIf cfg.database.createLocally {
       enable = true;
       # Over the module's stateVersion default, under a host's own choice.
-      package = lib.mkOverride 900 pkgs.postgresql_16;
+      package = lib.mkOverride 900 pkgs.postgresql_18;
       # structure.sql creates hstore, pg_trgm, unaccent (contrib) and
       # vector (pgvector, for the bundled discourse-ai tables).
       extensions = ps: [ ps.pgvector ];

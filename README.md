@@ -32,7 +32,7 @@ Ember running), desktop and mobile:
 
 ## Stack
 
-axum, tokio, sqlx (Postgres 16 + pgvector), clap, serde.
+axum, tokio, sqlx (Postgres 18 + pgvector), clap, serde.
 
 ## Source layout
 
@@ -526,7 +526,7 @@ up as [docs/demo-servers.md](docs/demo-servers.md) describes.
 
 ## Deploying
 
-One host, systemd, Postgres 16 with pgvector, Caddy in front. Every
+One host, systemd, Postgres 18 with pgvector, Caddy in front. Every
 release has a static x86_64 Linux binary attached, and its tarball carries
 `deploy/` and a versioned `frontend/` package, so the host needs no toolchain:
 
@@ -643,7 +643,7 @@ commit.
 The flake builds the server (`packages.<system>.default`), what a
 Discourse checkout supplied as `DISCOURSE_SRC` (`discourse-assets`: the
 stock images, fonts and emoji at the vendored commit) and a NixOS module,
-`services.discourse-rs`: the unit above with its hardening, PostgreSQL 16
+`services.discourse-rs`: the unit above with its hardening, PostgreSQL 18
 with pgvector on the host, the job worker in the process, and optionally
 Caddy in front. `nix build .#checks.x86_64-linux.vm -L` boots it in a VM,
 makes a fresh site and its admin, logs in, posts, serves the assets and
@@ -697,7 +697,7 @@ Options (all under `services.discourse-rs`):
 | `hostname` | | `DISCOURSE_HOSTNAME`, and Caddy's site |
 | `forceHttps` | `true` | `DISCOURSE_FORCE_HTTPS` |
 | `listenAddress`, `port` | `127.0.0.1`, `8080` | `BIND_ADDR`; keep it on loopback |
-| `database.createLocally` | `true` | PostgreSQL 16 + pgvector here, the database owned by the `discourse-rs` role, peer auth over the socket |
+| `database.createLocally` | `true` | PostgreSQL 18 + pgvector here, the database owned by the `discourse-rs` role, peer auth over the socket |
 | `database.name` | `discourse` | |
 | `database.url` | `null` | an external `DATABASE_URL` without a password (else put it in the env file) |
 | `database.loadSchema` | `true` | `discourse-rs setup` on an empty local database: a fresh site |
