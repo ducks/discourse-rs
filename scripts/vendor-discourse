@@ -116,6 +116,27 @@ dest="$root/vendor/discourse"
 commit="$(git -C "$src" rev-parse --verify "$ref^{commit}")"
 committed_at="$(git -C "$src" show -s --format=%cI "$commit")"
 
+# Emoji names/codes come from the discourse-emojis gem at the version in
+# Gemfile.lock, read from the checkout's bundle (not committed to Discourse),
+# or from DISCOURSE_EMOJIS_DIST, a copy of that version's dist/ (what
+# scripts/bump-discourse takes from the reference agent when the checkout's
+# bundle is behind).
+gem_version="$(git -C "$src" show "$commit:Gemfile.lock" | sed -n 's/^    discourse-emojis (\(.*\))$/\1/p' | head -1)"
+if [ -n "${DISCOURSE_EMOJIS_DIST:-}" ]; then
+  gem_dist="$DISCOURSE_EMOJIS_DIST"
+  if [ ! -f "$gem_dist/emojis.json" ]; then
+    echo "DISCOURSE_EMOJIS_DIST=$gem_dist has no emojis.json" >&2
+    exit 1
+  fi
+else
+  gem_dist="$(ls -d "$src"/.bundle/ruby/*/gems/discourse-emojis-"$gem_version"/dist 2>/dev/null | head -1)"
+fi
+if [ -z "$gem_dist" ]; then
+  echo "discourse-emojis $gem_version is not installed in $src/.bundle; run bundle install there" >&2
+  echo "or point DISCOURSE_EMOJIS_DIST at a copy of its dist/" >&2
+  exit 1
+fi
+
 for f in "${FILES[@]}"; do
   mkdir -p "$dest/$(dirname "$f")"
   git -C "$src" show "$commit:$f" > "$dest/$f"
@@ -241,14 +262,6 @@ echo "vendored $(wc -l < "$markers") email reply markers"
 
 echo "vendored ${#FILES[@]} files from $commit ($committed_at), $versions schema versions"
 
-# Emoji names/codes come from the discourse-emojis gem at the version in
-# Gemfile.lock, read from the checkout's bundle (not committed to Discourse).
-gem_version="$(git -C "$src" show "$commit:Gemfile.lock" | sed -n 's/^    discourse-emojis (\(.*\))$/\1/p' | head -1)"
-gem_dist="$(ls -d "$src"/.bundle/ruby/*/gems/discourse-emojis-"$gem_version"/dist 2>/dev/null | head -1)"
-if [ -z "$gem_dist" ]; then
-  echo "discourse-emojis $gem_version is not installed in $src/.bundle; run bundle install there" >&2
-  exit 1
-fi
 mkdir -p "$dest/../discourse-emojis/dist/locale_search_aliases"
 # The picker's groups and search terms; of the locales' terms, English's,
 # the one locale the port speaks.

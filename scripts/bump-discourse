@@ -1,0 +1,420 @@
+#!/usr/bin/env bash
+# The weekly vendor/discourse bump, the mechanical part: vendor a Discourse
+# commit, re-snapshot the seeds from the reference agent at that commit,
+# re-run every recorder, re-record every write case (one area per run) and
+# the goldens, then report what failed and what changed. Porting what the
+# new commit changed, and marking cases not_yet, stays by hand.
+#
+# Usage: scripts/bump-discourse [options] <agent-name>
+#
+#   --ref REF           Discourse ref to vendor (default origin/main)
+#   --discourse PATH    upstream checkout (default $DISCOURSE or
+#                       ~/discourse/discourse); never checked out or
+#                       changed: `git fetch origin main`, then read-only
+#                       git (show, ls-tree, rev-parse, describe, rev-list)
+#                       and its .bundle's emoji gem
+#   --no-fetch          resolve REF without fetching first
+#   --rails-url URL     the reference for goldens (default
+#                       http://127.0.0.1:<DISCOURSE_PORT of parity/environment>)
+#   --delay-ms N        pause between golden requests (default 1500; 600
+#                       trips Rails' search and login rate limits)
+#   --log-dir DIR       default tmp/bump-discourse/<commit>
+#   --resume            skip the steps and write areas a previous run with
+#                       the same log dir finished
+#   --dry-run           print the steps, run nothing (no fetch, no agent)
+#
+# Steps, each logged to <log-dir>/<step>.log with a .ok or .failed marker:
+#
+#   1. Resolve REF in the upstream checkout and check the agent's Rails is
+#      at that commit with an en_US.UTF-8 database. Stops if not: creating
+#      or upgrading the reference agent is by hand (below).
+#   2. scripts/vendor-discourse at the commit (the emoji gem's dist/ from
+#      the agent when the checkout's bundle lacks that version),
+#      scripts/build-icon-sprite, parity/environment's agent name.
+#   3. scripts/reference-env, scripts/snapshot-dv and --clean,
+#      scripts/reset-reference. A failure here stops the run: everything
+#      after records against that seed.
+#   4. Every recorder (RECORDERS below; a scripts/record-* missing from it
+#      is reported). A failure is logged and the run goes on.
+#   5. scripts/record-writes once per parity/writes area, so a case that
+#      raises on Rails loses only its area's run. The raising case is the
+#      first one the run selected and did not print; the area is retried
+#      without it, and the dropped cases are listed in the summary.
+#   6. scripts/reset-reference, then `parity record` for the goldens.
+#   7. Summary (also <log-dir>/summary.txt): steps failed, areas failed,
+#      cases that raised, files changed.
+#
+# Before running it, the reference agent (by hand; the last one was
+# rs-parity-20261115, see parity/environment):
+#
+#   1. Stop the previous reference agent: the recordings' DISCOURSE_PORT is
+#      host port 3042 and only one agent can hold it. Keep it until the
+#      bump is merged.
+#   2. `dv new rs-parity-YYYYMMDD` and check its host port is 3042 (`docker
+#      port rs-parity-YYYYMMDD`). If dv will not give it 3042 (a stopped
+#      agent still claims it), create the container with `docker run` from
+#      dv's image publishing 3042, as was done for rs-parity-20261115.
+#   3. In it, check out the commit to vendor detached (Discourse.git_branch
+#      is then "unknown", as recorded), `bundle install`, `pnpm install`,
+#      `bin/rails db:migrate`.
+#   4. Give discourse_development the en_US.UTF-8 collation (dv's
+#      PostgreSQL 18 images use the builtin C.UTF-8): pg_dump it, then
+#      `createdb --template=template0 --locale-provider=libc
+#      --locale=en_US.UTF-8 discourse_development` and restore.
+#   5. With Sidekiq running, run scripts/fixtures/topics.rb, messages.rb,
+#      bookmarks.rb and reference_state.rb in that order (`dv copy <f>
+#      <agent>:/tmp/f.rb`, `dv run --name <agent> -- bin/rails runner
+#      /tmp/f.rb`). This script applies parity/reference.env afterwards.
+#
+# Then run this with the agent's commit as --ref (the default origin/main
+# has usually moved on by then; the check says how far). Afterwards: `make
+# db-test`, run the suites, and for each new difference port the Rails
+# change or mark the case not_yet with its commit.
+set -uo pipefail
+
+RECORDERS=(
+  record-discourse-commits
+  record-setting-enums
+  record-enums
+  record-i18n-tree
+  record-admin-nav-map
+  record-admin-plugins
+  record-api-key-scopes
+  record-mcp-primitives
+  record-svg-sprite
+  record-autoprefixer-data
+  record-postcss
+  record-stylesheet-compiles
+  record-fancy-titles
+  record-html-to-markdown
+  record-incoming-mail
+  record-onebox-engines
+  record-chat-cooks
+  record-pretty-text
+  # Reads parity/pretty_text/corpus.json, so after record-pretty-text.
+  record-revision-fixtures
+)
+
+usage() {
+  sed -n '2,/^set -uo pipefail$/{/^set /d;s/^# \{0,1\}//;p}' "$0"
+}
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+src="${DISCOURSE:-$HOME/discourse/discourse}"
+ref=origin/main
+fetch=1
+rails_url=""
+delay_ms=1500
+log=""
+resume=0
+dry=0
+agent=""
+min_free_gb="${MIN_FREE_GB:-10}"
+max_retries="${MAX_AREA_RETRIES:-20}"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --ref) ref="${2:?--ref needs a value}"; shift 2 ;;
+    --discourse) src="${2:?--discourse needs a value}"; shift 2 ;;
+    --no-fetch) fetch=0; shift ;;
+    --rails-url) rails_url="${2:?--rails-url needs a value}"; shift 2 ;;
+    --delay-ms) delay_ms="${2:?--delay-ms needs a value}"; shift 2 ;;
+    --log-dir) log="${2:?--log-dir needs a value}"; shift 2 ;;
+    --resume) resume=1; shift ;;
+    --dry-run) dry=1; shift ;;
+    -h|--help) usage; exit 0 ;;
+    -*) echo "unknown option $1" >&2; usage >&2; exit 64 ;;
+    *)
+      [ -z "$agent" ] || { echo "one agent name only" >&2; exit 64; }
+      agent="$1"; shift ;;
+  esac
+done
+if [ -z "$agent" ]; then
+  usage >&2
+  exit 64
+fi
+cd "$root" || exit 1
+
+say() { echo "$(date -u +%H:%M:%S) $*"; }
+die() { echo "bump-discourse: $*" >&2; exit 1; }
+
+check_disk() {
+  local free
+  free="$(df -BG --output=avail "$root" | tail -1 | tr -dc 0-9)"
+  if [ "$free" -lt "$min_free_gb" ]; then
+    die "only ${free}G free on $(df --output=target "$root" | tail -1), under ${min_free_gb}G (MIN_FREE_GB); free space and rerun with --resume"
+  fi
+}
+
+# Cargo runs one at a time on this machine, at the lowest priority.
+cargo_run() {
+  local wrap=()
+  command -v flock > /dev/null && wrap+=(flock "${CARGO_LOCK:-/tmp/drs-cargo.lock}")
+  wrap+=(nice -n 19)
+  command -v ionice > /dev/null && wrap+=(ionice -c3)
+  "${wrap[@]}" cargo "$@"
+}
+
+# step NAME CMD...: runs CMD into <log>/NAME.log, leaving NAME.ok or
+# NAME.failed. With --resume a step with NAME.ok is skipped.
+step() {
+  local name="$1"
+  shift
+  if [ "$dry" -eq 1 ]; then
+    printf '  %-28s' "$name"
+    printf ' %q' "$@"
+    echo
+    return 0
+  fi
+  if [ "$resume" -eq 1 ] && [ -f "$log/$name.ok" ]; then
+    say "$name: done before, skipped"
+    return 0
+  fi
+  check_disk
+  say "$name"
+  rm -f "$log/$name.ok" "$log/$name.failed"
+  if "$@" > "$log/$name.log" 2>&1; then
+    touch "$log/$name.ok"
+    say "$name: ok $(tail -1 "$log/$name.log")"
+    return 0
+  fi
+  touch "$log/$name.failed"
+  say "$name: FAILED, see $log/$name.log"
+  return 1
+}
+
+# 1. The commit, and the agent at it.
+if [ "$dry" -eq 0 ] && [ "$fetch" -eq 1 ]; then
+  say "fetching origin main in $src"
+  git -C "$src" fetch --quiet origin main || die "git fetch in $src failed"
+fi
+if ! commit="$(git -C "$src" rev-parse --verify --quiet "$ref^{commit}")"; then
+  [ "$dry" -eq 1 ] || die "no commit $ref in $src"
+  commit="$ref"
+fi
+short="${commit:0:12}"
+log="${log:-$root/tmp/bump-discourse/$short}"
+if [ -z "$rails_url" ]; then
+  rails_url="http://127.0.0.1:$(sed -n 's/^DISCOURSE_PORT=//p' parity/environment)"
+fi
+current="$(sed -n 's/^commit=//p' vendor/discourse/DISCOURSE_REF)"
+
+if [ "$dry" -eq 1 ]; then
+  echo "dry run: Discourse $commit from $src (vendored now: ${current:0:12})"
+  echo "agent $agent, goldens from $rails_url, logs in $log"
+  echo
+  echo "check: agent $agent runs Discourse $short with discourse_development in en_US.UTF-8"
+fi
+
+if [ "$dry" -eq 0 ]; then
+  mkdir -p "$log/writes" || die "cannot create $log"
+  # What was vendored before the first run, for the summary of a resumed one.
+  [ -f "$log/from" ] || echo "$current" > "$log/from"
+  current="$(cat "$log/from")"
+  check_disk
+  if [ "$resume" -eq 0 ] && [ -n "$(git status --porcelain -- vendor seed parity static/vendor)" ]; then
+    echo "warning: vendor/, seed/, parity/ or static/vendor have uncommitted changes; the summary counts them too" >&2
+  fi
+
+  agent_commit="$(dv run --name "$agent" -- git -C /var/www/discourse rev-parse HEAD 2> "$log/agent-check.log")" \
+    || die "cannot reach agent $agent ($(tail -1 "$log/agent-check.log")); create it as $0 --help describes"
+  if [ "$agent_commit" != "$commit" ]; then
+    {
+      echo "agent $agent runs Discourse ${agent_commit:0:12}, not $short ($ref)."
+      if behind="$(git -C "$src" rev-list --count "$agent_commit..$commit" 2> /dev/null)"; then
+        echo "The agent is $behind commit(s) behind $ref. Either vendor what it runs:"
+        echo "  $0 --ref $agent_commit $agent"
+        echo "or move the agent to $short and redo its fixtures (see $0 --help)."
+      else
+        echo "$src does not have the agent's commit; fetch, or re-create the agent (see $0 --help)."
+      fi
+    } >&2
+    exit 1
+  fi
+  collation="$(dv run --name "$agent" -- psql -X -At -d postgres -c \
+    "SELECT datcollate FROM pg_database WHERE datname = 'discourse_development'")"
+  [ "$collation" = "en_US.UTF-8" ] \
+    || die "agent $agent's discourse_development collates as '$collation', not en_US.UTF-8 (see $0 --help)"
+  say "agent $agent runs Discourse $short; vendoring it over ${current:0:12}, logs in $log"
+fi
+
+# 2. Vendoring.
+echo
+[ "$dry" -eq 1 ] && echo "vendoring:"
+
+# The emoji gem's dist/: from the checkout's bundle when it has the
+# version, else copied out of the agent, which runs that Gemfile.lock.
+emoji_env=()
+gem_version="$(git -C "$src" show "$commit:Gemfile.lock" 2> /dev/null \
+  | sed -n 's/^    discourse-emojis (\(.*\))$/\1/p' | head -1)"
+if ! ls -d "$src"/.bundle/ruby/*/gems/discourse-emojis-"$gem_version"/dist > /dev/null 2>&1; then
+  dist="$log/discourse-emojis-dist"
+  if [ "$dry" -eq 1 ]; then
+    echo "  discourse-emojis $gem_version is not in $src/.bundle: copy its dist/ from $agent"
+  elif [ ! -f "$dist/emojis.json" ]; then
+    gem_path="$(dv run --name "$agent" -- bash -c 'cd /var/www/discourse && bundle info --path discourse-emojis')" \
+      || die "cannot find discourse-emojis in agent $agent"
+    rm -rf "$dist"
+    dv copy "$agent:$gem_path/dist" "$dist" > /dev/null || die "cannot copy $gem_path/dist from $agent"
+    [ -f "$dist/emojis.json" ] || die "$dist has no emojis.json"
+  fi
+  emoji_env=(env "DISCOURSE_EMOJIS_DIST=$dist")
+fi
+
+step vendor-discourse "${emoji_env[@]}" scripts/vendor-discourse "$src" "$commit" \
+  || die "vendoring failed; nothing after it can run"
+step build-icon-sprite scripts/build-icon-sprite
+# The comment naming the agent the goldens come from.
+step parity-environment sed -i -E \
+  "s/^# [A-Za-z0-9_.-]+, whose database is seed/# $agent, whose database is seed/" parity/environment
+
+# 3. The reference's environment and the seeds.
+echo
+[ "$dry" -eq 1 ] && echo "reference and seeds:"
+step reference-env scripts/reference-env "$agent" || die "reference-env failed"
+step snapshot-fresh scripts/snapshot-dv "$agent" || die "snapshot of seed/fresh_install.sql failed"
+step snapshot-clean scripts/snapshot-dv --clean "$agent" || die "snapshot of seed/clean_install.sql failed"
+# Not resumable: the recorders after it need the agent on the seed now.
+rm -f "$log/reset-before-recorders.ok"
+step reset-before-recorders scripts/reset-reference "$agent" || die "reset-reference failed"
+
+# 4. The recorders.
+echo
+[ "$dry" -eq 1 ] && echo "recorders:"
+for r in "${RECORDERS[@]}"; do
+  step "$r" "scripts/$r" "$agent"
+done
+
+# 5. The write cases, an area per run.
+echo
+[ "$dry" -eq 1 ] && echo "write cases, one scripts/record-writes run per area:"
+
+# Lines of the log printing `<area>/<name>: asked` (selected) give the
+# order; record_writes.rb prints `<name>: <statuses>...` after each case.
+first_unprinted() {
+  local area="$1" logf="$2" name
+  while IFS= read -r name; do
+    if ! awk -v p="$name: " 'index($0, p) == 1 { found = 1; exit } END { exit !found }' "$logf"; then
+      echo "$name"
+      return 0
+    fi
+  done < <(sed -n "s|^$area/\(.*\): asked$|\1|p" "$logf")
+  return 1
+}
+
+record_area() {
+  local area="$1" regex="^$1/" attempt=1 logf bad names
+  local raised="$log/writes/$area.raised"
+  if [ "$resume" -eq 1 ] && [ -f "$log/writes/$area.ok" ]; then
+    return 0
+  fi
+  check_disk
+  rm -f "$log/writes/$area.ok" "$log/writes/$area.failed" "$raised"
+  while :; do
+    logf="$log/writes/$area.$attempt.log"
+    if scripts/record-writes "$agent" "$regex" > "$logf" 2>&1; then
+      touch "$log/writes/$area.ok"
+      if [ -f "$raised" ]; then
+        say "writes $area: ok without $(paste -sd' ' "$raised"): $(tail -1 "$logf")"
+      else
+        say "writes $area: ok $(tail -1 "$logf")"
+      fi
+      return 0
+    fi
+    # Only an exception out of the recorder (its backtrace names it) is a
+    # raising case; anything else (dv, the copy back) fails the area.
+    if [ "$attempt" -ge "$max_retries" ] || ! grep -q 'record_writes\.rb:[0-9]' "$logf" \
+      || ! bad="$(first_unprinted "$area" "$logf")"; then
+      break
+    fi
+    echo "$area/$bad" >> "$raised"
+    say "writes $area: $bad raised on Rails, retrying the area without it"
+    # The rest of what this run selected; names are [a-z0-9_].
+    names="$(sed -n "s|^$area/\(.*\): asked$|\1|p" "$logf" | grep -vxF -- "$bad" | paste -sd'|')"
+    [ -n "$names" ] || break
+    regex="^$area/($names)\$"
+    attempt=$((attempt + 1))
+  done
+  touch "$log/writes/$area.failed"
+  say "writes $area: FAILED, see $logf"
+  return 1
+}
+
+areas=()
+for dir in parity/writes/*/; do
+  area="$(basename "$dir")"
+  compgen -G "$dir*.case.json" > /dev/null && areas+=("$area")
+done
+if [ "$dry" -eq 1 ]; then
+  for area in "${areas[@]}"; do
+    n="$(compgen -G "parity/writes/$area/*.case.json" | wc -l)"
+    printf '  %-28s scripts/record-writes %q %q   (%s cases)\n' "writes/$area" "$agent" "^$area/" "$n"
+  done
+  echo "  (${#areas[@]} areas; a case that raises on Rails is dropped and its area retried)"
+else
+  for area in "${areas[@]}"; do
+    record_area "$area"
+  done
+fi
+
+# 6. The goldens.
+echo
+[ "$dry" -eq 1 ] && echo "goldens:"
+rm -f "$log/reset-before-goldens.ok"
+if step reset-before-goldens scripts/reset-reference "$agent"; then
+  step goldens cargo_run run --quiet --bin parity -- record --rails "$rails_url" --delay-ms "$delay_ms"
+fi
+
+# 7. Summary.
+[ "$dry" -eq 1 ] && exit 0
+# From the markers, so a resumed run reports what earlier runs left too.
+failed_steps=()
+for f in "$log"/*.failed; do
+  [ -e "$f" ] && failed_steps+=("$(basename "$f" .failed)")
+done
+failed_areas=()
+for f in "$log"/writes/*.failed; do
+  [ -e "$f" ] && failed_areas+=("$(basename "$f" .failed)")
+done
+{
+  echo
+  echo "== bump-discourse: Discourse ${current:0:12} -> $short, agent $agent =="
+  echo
+  echo "steps failed: ${failed_steps[*]:-none}"
+  for s in "${failed_steps[@]}"; do
+    echo "  $s: $log/$s.log"
+  done
+  echo "write areas failed: ${failed_areas[*]:-none}"
+  for a in "${failed_areas[@]}"; do
+    echo "  $a: $(find "$log/writes" -name "$a.*.log" | sort -V | tail -1)"
+  done
+  if compgen -G "$log/writes/*.raised" > /dev/null; then
+    echo "cases that raised on Rails (not recorded; fix the case or mark it not_yet):"
+    cat "$log"/writes/*.raised | sed 's/^/  /'
+  fi
+  missing=()
+  for f in scripts/record-*; do
+    name="$(basename "$f")"
+    [ "$name" = record-writes ] && continue
+    [[ " ${RECORDERS[*]} " == *" $name "* ]] || missing+=("$name")
+  done
+  [ ${#missing[@]} -eq 0 ] || echo "recorders this script does not run (add them to RECORDERS): ${missing[*]}"
+  echo
+  echo "files changed (git status, by directory):"
+  git status --porcelain=v1 -uall \
+    | sed -E 's/^.. //; s/^"//; s/.* -> //' \
+    | awk -F/ '{
+        if ($1 == "parity" && NF > 2) d = $1 "/" $2
+        else if ($1 == "vendor" && NF > 2) d = $1 "/" $2 "/" $3
+        else if (NF > 1) d = $1
+        else d = "."
+        n[d]++
+      } END { for (d in n) printf "  %6d  %s\n", n[d], d }' \
+    | sort -k2
+  echo
+  echo "next: make db-test, run the suites (make test, make parity-test), then port"
+  echo "each new difference or mark it not_yet with the Rails commit, by hand."
+  echo "logs: $log"
+} | tee "$log/summary.txt"
+
+[ ${#failed_steps[@]} -eq 0 ] && [ ${#failed_areas[@]} -eq 0 ]
