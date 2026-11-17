@@ -145,6 +145,19 @@ site settings (`scripts/record-setting-enums <agent>`: enum values,
 choices, settings plugins register from Ruby) and reload the databases
 afterwards.
 
+Bump to upstream main weekly: the nix shell warns once the vendored
+commit is over seven days old. A seven-week gap (bf55a44 to 9daeae2a745)
+left 150 write cases not_yet across 21 causes, too many to review in one
+round. `scripts/bump-discourse <agent>` does the mechanical part in one
+command: after checking the reference agent runs the commit to vendor, it
+vendors it, re-snapshots both seeds, runs every recorder, re-records the
+write cases one area per run (a case that raises on Rails is dropped, its
+area retried and the case listed) and the goldens, and prints what failed
+and what changed. Each step logs to `tmp/bump-discourse/<commit>/`;
+`--resume` skips what a run already finished and `--dry-run` prints the
+steps. Creating the new reference agent stays by hand (`--help` lists the
+steps), as does porting what broke or marking it not_yet with its commit.
+
 ## Parity
 
 Writes are measured separately. Each case is
