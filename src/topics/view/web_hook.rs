@@ -573,6 +573,7 @@ impl TopicView<'_> {
                 json!(tu.last_posted_at.map(time_json)),
             );
         }
+        self.board_memberships(topic.id, &mut out).await?;
         let created_by = match topic.user_id {
             Some(id) => self.basic_user(id, logo_small_url.as_deref()).await?,
             None => Value::Null,
