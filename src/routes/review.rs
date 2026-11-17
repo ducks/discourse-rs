@@ -84,19 +84,44 @@ pub async fn perform(
     // ReviewableUser.additional_args
     let param = |name: &str| p.get(name).and_then(params::scalar);
     // ReviewableQueuedPost.additional_args: nothing without a revise_reason.
-    let posts = match param("revise_reason").filter(|r| !r.trim().is_empty()) {
+    // dsa_classification_args (Discourse 6f5643427d1): refused while
+    // classification is off; classifying from an action is not ported.
+    if p.contains_key("dsa_classification") {
+        if !review::dsa::classification_enabled(&settings)? {
+            return Ok(super::search::invalid_access(&state));
+        }
+        return Err(Unsupported("classifying DSA statements from a review action").into());
+    }
+    // ReviewableActionBuilder.penalty_args, which every type's
+    // additional_args now carries.
+    let penalty = review::PenaltyArgs {
+        reason: param("reason"),
+        message: param("message"),
+        suspend_until: param("suspend_until"),
+        silenced_till: param("silenced_till"),
+        post_action: param("post_action"),
+        post_edit: param("post_edit"),
+        other_user_ids: p.get("other_user_ids").cloned(),
+    };
+    let mut posts = match param("revise_reason").filter(|r| !r.trim().is_empty()) {
         Some(reason) => crate::review_posts::Args {
             revise_reason: Some(reason),
             revise_feedback: param("revise_feedback"),
             revise_custom_reason: param("revise_custom_reason"),
+            ..Default::default()
         },
         None => crate::review_posts::Args::default(),
     };
+    posts.penalty = penalty;
     let extra = review::ExtraArgs {
         reject_reason: param("reject_reason"),
         send_email: param("send_email").as_deref() != Some("false"),
         posts,
         mailer: &state.mailer,
+        // ReviewableFlaggedPost.additional_args: with agree_and_edit only.
+        post_version: (action_id == "agree_and_edit")
+            .then(|| param("post_version"))
+            .flatten(),
     };
     let outcome = review::perform(
         &mut tx,
@@ -117,6 +142,12 @@ pub async fn perform(
         Outcome::Forbidden => super::search::invalid_access(&state),
         Outcome::Conflict => json_error(&state, StatusCode::CONFLICT, "reviewables.conflict"),
         Outcome::ClaimError(key) => json_error(&state, StatusCode::UNPROCESSABLE_ENTITY, key),
+        Outcome::InvalidParameters(name) => super::search::invalid_parameters(&state, name),
+        Outcome::Errors(errors) => (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({ "errors": errors })),
+        )
+            .into_response(),
         Outcome::NotFoundMessage(key) => {
             let text = state.i18n.t(key).unwrap_or(key);
             (

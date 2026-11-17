@@ -16,8 +16,8 @@
 // (ReviseAndRejectPostReviewable, a DModal over a copy of the post).
 //
 // The client actions: silence and suspend open the penalty modal
-// (static/js/penalize-user.js, adminTools) for the author, performing
-// before the penalty; edit opens the flagged post in the composer and
+// (static/js/penalize-user.js, adminTools) for the author, the penalty
+// sent with the perform; edit opens the flagged post in the composer and
 // performs once it is saved. Editing a reviewable (a queued post's
 // title, category, tags and raw) draws its editable fields in place and
 // PUTs /review/:id; a queued post by email shows its raw email
@@ -364,6 +364,42 @@
     return (text || "").replace("%{username}", username);
   }
 
+  // ReviewableNoteForm: toasts.warning (duration "long") naming the
+  // mentioned users the note did not notify, announced politely.
+  function warnUnnotified(usernames) {
+    var strings = pageData().strings || {};
+    var message = String(strings.mentions_not_notified || "").replace(
+      "%{usernames}",
+      usernames
+        .map(function (u) {
+          return "@" + u;
+        })
+        .join(", ")
+    );
+    var section = document.querySelector("section.fk-d-toasts");
+    if (!section) {
+      section = document.createElement("section");
+      section.className = "fk-d-toasts";
+      document.body.appendChild(section);
+    }
+    var output = document.createElement("output");
+    output.className = "fk-d-toast";
+    output.setAttribute("role", "status");
+    output.innerHTML =
+      '<div class="fk-d-default-toast -warning"><div class="fk-d-default-toast__icon-container">' +
+      ui().icon("triangle-exclamation") +
+      '</div><div class="fk-d-default-toast__main-container"><div class="fk-d-default-toast__texts"><div class="fk-d-default-toast__message"></div></div></div><div class="fk-d-default-toast__close-container"><button class="btn no-text btn-icon btn-transparent" type="button">' +
+      ui().icon("xmark") +
+      '<span aria-hidden="true">&#8203;</span></button></div></div>';
+    output.querySelector(".fk-d-default-toast__message").textContent = message;
+    var close = function () {
+      output.remove();
+    };
+    output.querySelector("button").addEventListener("click", close);
+    section.appendChild(output);
+    setTimeout(close, 5000);
+  }
+
   // ReviewableItem#showCompletedToast: the completed message, or, while
   // the author stays silenced, a toast that stays with an Undo that lifts
   // the silence (#liftPenalty), one per author.
@@ -486,8 +522,8 @@
       }
       run = claimReviewable(item).then(function (claimed) {
         if (claimed) {
-          return handler(item, function () {
-            return performAction(item, action, additionalData);
+          return handler(item, function (actionData) {
+            return performAction(item, action, Object.assign({}, additionalData, actionData));
           });
         }
       });
@@ -506,8 +542,9 @@
   // ---- Client actions ---------------------------------------------------
 
   // ReviewableItem#_penalize: adminTools' silence or suspend modal for
-  // the author (AdminUser.find), on the post with its raw, performing the
-  // action before the penalty. Settles once the modal is gone.
+  // the author (AdminUser.find), on the post with its raw, the modal
+  // submitting the penalty through the action's perform. Settles once the
+  // modal is gone.
   function penalize(item, type, perform) {
     var data = reviewableData(item);
     if (!Discourse.penalizeUser || !data.target_created_by) {
@@ -522,7 +559,7 @@
             postId: data.post_id,
             postEdit: data.raw,
             reviewableId: Number(item.dataset.reviewableId),
-            before: perform,
+            perform: perform,
             onClose: resolve,
           })
           .catch(resolve);
@@ -561,8 +598,10 @@
             postId: post.id,
             postNumber: post.post_number,
             skipJumpOnSave: true,
-            onSaved: function () {
-              perform().catch(function (error) {
+            // The saved post's version, which agree_and_edit requires.
+            onSaved: function (result) {
+              var saved = (result && (result.post || result)) || {};
+              perform({ post_version: saved.version }).catch(function (error) {
                 ui().failed(error);
               });
             },
@@ -1392,6 +1431,32 @@
     });
   }
 
+  // The note form's mention autocomplete (ReviewableNoteForm
+  // #mentionAutocomplete): users, not groups, set up as the textarea is
+  // first focused, with enable_mentions.
+  document.addEventListener("focusin", function (event) {
+    var textarea = event.target.closest && event.target.closest(".reviewable-note-form__textarea");
+    var ac = Discourse.autocomplete;
+    if (!textarea || textarea.dataset.mentions || !ac || !pageData().enable_mentions) {
+      return;
+    }
+    textarea.dataset.mentions = "1";
+    ac.setup(textarea, {
+      key: "@",
+      render: ac.renderUsers,
+      dataSource: function (term) {
+        return ac.userSearch({ term: term, includeGroups: false });
+      },
+      transformComplete: function (user) {
+        ac.validateSearchResult(user);
+        return user.username;
+      },
+      afterComplete: function () {
+        textarea.focus({ preventScroll: true });
+      },
+    });
+  });
+
   // The note form: FormKit's counter as it is typed; a note (trimmed, not
   // blank) POSTed, then the reviewable drawn again with it.
   document.addEventListener("input", function (event) {
@@ -1422,7 +1487,12 @@
     submit.disabled = true;
     ui()
       .ajax("POST", "/review/" + item.dataset.reviewableId + "/notes", { reviewable_note: { content: content } })
-      .then(function () {
+      .then(function (note) {
+        // The mentioned users who can't see the reviewable: a warning.
+        var unnotified = (note && note.unnotified_usernames) || [];
+        if (unnotified.length) {
+          warnUnnotified(unnotified);
+        }
         // appEvents' reviewablenote:created, for the plugins listening.
         document.dispatchEvent(
           new CustomEvent("reviewablenote:created", {

@@ -16,8 +16,10 @@
 //! released at the transition are claims.rs's.
 
 pub mod claims;
+pub mod dsa;
 pub mod edit;
 pub mod list;
+pub mod mentions;
 pub mod posts;
 pub mod reviewables;
 pub mod user;
@@ -77,6 +79,10 @@ pub enum Outcome {
     NotFoundMessage(&'static str),
     /// `claim_error?`: render_json_error with the message's key (422).
     ClaimError(&'static str),
+    /// `Discourse::InvalidParameters` for the named param (400).
+    InvalidParameters(&'static str),
+    /// A failed result: render_json_error with its errors (422).
+    Errors(Vec<String>),
 }
 
 /// The type's `additional_args` from the request (ReviewableUser's and
@@ -87,6 +93,99 @@ pub struct ExtraArgs<'a> {
     pub send_email: bool,
     pub posts: crate::review_posts::Args,
     pub mailer: &'a crate::email::Mailer,
+    /// ReviewableFlaggedPost's `post_version`, sent with agree_and_edit.
+    pub post_version: Option<String>,
+}
+
+/// `ReviewableActionBuilder.penalty_args`: the penalty dialog's fields,
+/// sent with the action that suspends or silences (Discourse
+/// fe97c2951fd).
+#[derive(Debug, Clone, Default)]
+pub struct PenaltyArgs {
+    pub reason: Option<String>,
+    pub message: Option<String>,
+    pub suspend_until: Option<String>,
+    pub silenced_till: Option<String>,
+    pub post_action: Option<String>,
+    pub post_edit: Option<String>,
+    pub other_user_ids: Option<Value>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum PenaltyKind {
+    Suspend,
+    Silence,
+}
+
+/// `ReviewableActionBuilder#perform_penalty` (suspend_user, silence_user):
+/// User::Suspend or User::Silence on the reviewable's target user, its
+/// post the one the post action applies to. None when it succeeded and
+/// the action goes on; else how the request ends (the failed contract
+/// and the already-penalized policy are the result's errors, 422).
+///
+/// Rails runs the service inside the reviewable's transaction; the port's
+/// services run on their own connections, so the penalty commits even if
+/// the action after it fails.
+pub(crate) async fn penalize(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    reviewable_id: i64,
+    kind: PenaltyKind,
+    args: &PenaltyArgs,
+) -> Result<Option<Outcome>, AppError> {
+    use crate::user_penalties::{self, Outcome as Penalized, Penalty};
+    let (target_type, target_id, target_created_by_id): (Option<String>, Option<i32>, Option<i32>) =
+        sqlx::query_as(
+            "SELECT target_type, target_id, target_created_by_id FROM reviewables WHERE id = $1",
+        )
+        .bind(reviewable_id)
+        .fetch_one(&mut *conn)
+        .await?;
+    // target_user: the target for a user, else target_created_by.
+    let user_id = if target_type.as_deref() == Some("User") {
+        target_id
+    } else {
+        target_created_by_id
+    };
+    let Some(user_id) = user_id else {
+        return Err(Unsupported("a review penalty without a target user").into());
+    };
+    // post_id: the target when it is a post (target.try(:post_id) is nil
+    // for the other targets reviewables here have).
+    let post_id = (target_type.as_deref() == Some("Post"))
+        .then_some(target_id)
+        .flatten()
+        .map(i64::from);
+    let until = match kind {
+        PenaltyKind::Suspend => args.suspend_until.as_deref(),
+        PenaltyKind::Silence => args.silenced_till.as_deref(),
+    };
+    let penalty = Penalty {
+        reason: args.reason.as_deref(),
+        message: args.message.as_deref(),
+        until,
+        other_user_ids: user_penalties::cast_array(args.other_user_ids.as_ref())?,
+        post_id,
+        post_action: args.post_action.clone(),
+        post_edit: args.post_edit.clone(),
+        reviewable_id: Some(reviewable_id),
+    };
+    let outcome = match kind {
+        PenaltyKind::Suspend => {
+            user_penalties::suspend(&ctx.host.pool, ctx, guardian, user_id, &penalty).await?
+        }
+        PenaltyKind::Silence => {
+            user_penalties::silence(&ctx.host.pool, ctx, guardian, user_id, &penalty).await?
+        }
+    };
+    Ok(match outcome {
+        Penalized::Done(_) => None,
+        Penalized::Invalid(errors) => Some(Outcome::Errors(errors)),
+        Penalized::Conflict(reason) => Some(Outcome::Errors(vec![reason])),
+        Penalized::NotFound => Some(Outcome::NotFound),
+        Penalized::Forbidden => Some(Outcome::Forbidden),
+    })
 }
 
 /// The perform method an action id runs, given whether the post is
@@ -261,6 +360,7 @@ pub async fn perform(
         else {
             return Ok(match performed {
                 crate::review_posts::Performed::Conflict => Outcome::Conflict,
+                crate::review_posts::Performed::Failed(failed) => failed,
                 _ => Outcome::Forbidden,
             });
         };
@@ -358,6 +458,46 @@ pub async fn perform(
     let Some(action) = action else {
         return Ok(Outcome::Forbidden);
     };
+    // perform_agree_and_suspend / _silence / _edit do their part inside
+    // the transaction, after increment_version!: its conflict first.
+    let penalty = match action_id {
+        "agree_and_suspend" => Some(PenaltyKind::Suspend),
+        "agree_and_silence" => Some(PenaltyKind::Silence),
+        _ => None,
+    };
+    if penalty.is_some() || action_id == "agree_and_edit" {
+        let current: i32 = sqlx::query_scalar("SELECT version FROM reviewables WHERE id = $1")
+            .bind(reviewable.id)
+            .fetch_one(&mut *conn)
+            .await?;
+        if i64::from(current) != version {
+            return Ok(Outcome::Conflict);
+        }
+    }
+    if let Some(kind) = penalty
+        && let Some(failed) = penalize(
+            &mut *conn,
+            ctx,
+            guardian,
+            reviewable.id,
+            kind,
+            &extra.posts.penalty,
+        )
+        .await?
+    {
+        return Ok(failed);
+    }
+    if action_id == "agree_and_edit"
+        && !edit_saved(
+            &mut *conn,
+            &reviewable,
+            &post,
+            extra.post_version.as_deref(),
+        )
+        .await?
+    {
+        return Ok(Outcome::InvalidParameters("post_version"));
+    }
     let Some(version) = run(
         conn,
         ctx,
@@ -383,6 +523,55 @@ pub async fn perform(
             "unseen_reviewable_count": unseen,
         }
     })))
+}
+
+/// perform_agree_and_edit's evidence (Discourse e1f6bd5617c): the post
+/// version the composer saved is the post's current one (`version` for
+/// staff, the only performers here), and its revision was updated since
+/// the latest pending flag (or the reviewable's creation) and changed
+/// something.
+async fn edit_saved(
+    conn: &mut PgConnection,
+    reviewable: &Reviewable,
+    post: &FlaggedPost,
+    post_version: Option<&str>,
+) -> Result<bool, AppError> {
+    let current: i32 = sqlx::query_scalar("SELECT version FROM posts WHERE id = $1")
+        .bind(post.id)
+        .fetch_one(&mut *conn)
+        .await?;
+    // args[:post_version].to_s == post_version.to_s
+    if post_version.unwrap_or_default() != current.to_string() {
+        return Ok(false);
+    }
+    let revision: Option<(NaiveDateTime, Option<String>)> = sqlx::query_as(
+        "SELECT updated_at, modifications FROM post_revisions WHERE post_id = $1 AND number = $2 LIMIT 1",
+    )
+    .bind(post.id)
+    .bind(current)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((updated_at, modifications)) = revision else {
+        return Ok(false);
+    };
+    let latest_flag_at: NaiveDateTime = sqlx::query_scalar(
+        "SELECT COALESCE((SELECT MAX(created_at) FROM reviewable_scores \
+                          WHERE reviewable_id = $1 AND status = $2), created_at) \
+         FROM reviewables WHERE id = $1",
+    )
+    .bind(reviewable.id)
+    .bind(PENDING)
+    .fetch_one(&mut *conn)
+    .await?;
+    if updated_at < latest_flag_at {
+        return Ok(false);
+    }
+    // modifications.present?
+    let changed = match modifications.as_deref() {
+        None => false,
+        Some(yaml) => !crate::modifications::load(yaml)?.is_empty(),
+    };
+    Ok(changed)
 }
 
 /// `ReviewableUser#perform` from the review queue: deleting the user

@@ -1,9 +1,9 @@
 // The review queue's client actions and editing (review.js): silencing
 // a flagged post's author from the agree menu and suspending a queued
 // post's author from the reject menu, both in the penalty modal
-// (penalize-user.js) with the action performed first; agreeing with a
-// flag by editing the post in the composer, staying on /review; editing
-// a queued topic's title, category and raw, and its tags (the
+// (penalize-user.js), which submits the penalty with the action;
+// agreeing with a flag by editing the post in the composer, staying on
+// /review; editing a queued topic's title, category and raw, and its tags (the
 // composer's MiniTagChooser), in place (PUT /review/:id);
 // a queued post's raw email (RawEmailModal). Each test penalizes or
 // posts and flags as members of its own (helpers.js member()).
@@ -82,7 +82,7 @@ test("silencing a flagged post's author from the agree menu", async ({ page, con
   await page.locator(".select-kit.is-expanded .select-kit-row", { hasText: /Silence user/ }).click();
   await penalize(page, "silence", label("Silenced from the queue"));
 
-  // The flag agreed before the penalty, the silence logged for the review.
+  // The flag agreed with the penalty, the silence logged for the review.
   await expect
     .poll(() => sql("SELECT status FROM reviewables WHERE target_type = 'Post' AND target_id = :'p1'", postId))
     .toEqual([["1"]]);

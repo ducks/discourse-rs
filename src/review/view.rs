@@ -330,6 +330,12 @@ pub fn render(p: &Page) -> String {
             "viewer_id": p.viewer_id,
             "default_priority": p.default_priority,
             "filters": { "sort_order": p.doc["meta"]["sort_order"] },
+            // The note form's mention autocomplete (siteSettings.enable_mentions).
+            "enable_mentions": p
+                .acx
+                .settings
+                .get("enable_mentions")
+                .is_ok_and(|v| v.truthy()),
             "strings": strings(p),
         })
         .to_string()
@@ -450,6 +456,7 @@ fn strings(p: &Page) -> Value {
         "still_silenced": t(cx, "review.author_penalty.toast.still_silenced"),
         "undo_penalty": t(cx, "review.author_penalty.toast.undo"),
         "penalty_undone": t(cx, "review.author_penalty.toast.undone"),
+        "mentions_not_notified": t(cx, "review.notes.mentions_not_notified.other"),
         "editing_post": t(cx, "review.editing_post"),
         "category_choose": t(cx, "category.choose").replace("&hellip;", "…"),
         "raw_email_title": t(cx, "raw_email.title"),
@@ -1846,7 +1853,11 @@ fn timeline(
             key: "review.timeline.note_added_by",
             user,
             flag_reason: None,
-            description: Some(format!("<p>{}</p>", escape(s(&note["content"])))),
+            // note.cooked ?? <p>escaped content</p>
+            description: Some(match note["cooked"].as_str() {
+                Some(cooked) => cooked.to_string(),
+                None => format!("<p>{}</p>", escape(s(&note["content"]))),
+            }),
             note_id: (can_delete && user.is_some())
                 .then(|| note["id"].as_i64())
                 .flatten(),

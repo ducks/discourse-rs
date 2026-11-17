@@ -188,14 +188,31 @@ pub async fn index(
     let offset = text("offset").map(|v| crate::ruby::to_i(&v)).unwrap_or(0);
 
     // valid_filter_type?: a registered class's name, filtering on its
-    // sti_name.
+    // sti_name, or a plugin's Type option (custom_filter_type_options),
+    // applying its filter with :all.
+    use crate::plugins::workflows;
     let types = crate::reviewables::types(s)?;
-    let type_filter = match text("type") {
+    let workflows_on = workflows::enabled(s)?;
+    let mut type_filter = None;
+    let mut custom_clauses: Vec<workflows::Clause> = Vec::new();
+    match text("type") {
+        Some(t) if workflows_on && t == workflows::TYPE_FILTER_ID => {
+            custom_clauses.extend(workflows::clause(
+                workflows::Filter::WorkflowId,
+                workflows::FilterValue::All,
+            ));
+        }
         Some(t) => match types.iter().find(|(class, _)| *class == t) {
-            Some((_, sti)) => Some(*sti),
+            Some((_, sti)) => type_filter = Some(*sti),
             None => return Ok(Listed::InvalidParameter("type")),
         },
-        None => None,
+        None => {}
+    }
+    // custom_reason_filter_options: the plugins' Reason options.
+    let reason_options = if workflows_on {
+        workflows::reason_filter_options(&mut *conn).await?
+    } else {
+        Vec::new()
     };
     let status = p
         .get("status")
@@ -241,13 +258,38 @@ pub async fn index(
     if text("from_date").is_some() || text("to_date").is_some() {
         return Err(Unsupported("the review queue's date filters").into());
     }
-    if let Some(filters) = text("additional_filters")
-        && serde_json::from_str::<Value>(&filters)
+    // additional_filters: the JSON's custom filter keys (sliced in the
+    // order the filters registered), blank values dropped. Only
+    // discourse-workflows' filters are ported.
+    let mut additional = Map::new();
+    if let Some(filters) = text("additional_filters") {
+        let Some(sent) = serde_json::from_str::<Value>(&filters)
             .ok()
-            .and_then(|v| v.as_object().map(|m| !m.is_empty()))
-            .unwrap_or(true)
-    {
-        return Err(Unsupported("the review queue's additional filters").into());
+            .and_then(|v| v.as_object().cloned())
+        else {
+            return Err(Unsupported("additional_filters that aren't a JSON object").into());
+        };
+        if sent.keys().any(|k| {
+            matches!(
+                k.as_str(),
+                "ai_triage_automation_id" | "assigned_to" | "ai_spam_false_negative"
+            )
+        }) {
+            return Err(Unsupported("discourse-ai's and discourse-assign's review filters").into());
+        }
+        for key in workflows::FILTER_KEYS {
+            if let Some(v) = sent.get(key).filter(|v| !json_blank(v)) {
+                additional.insert(key.into(), v.clone());
+            }
+        }
+    }
+    for (key, value) in &additional {
+        if let Some(filter) = workflows::Filter::by_key(key) {
+            custom_clauses.extend(workflows::clause(
+                filter,
+                workflows::FilterValue::Sent(value),
+            ));
+        }
     }
     let topic_id = p
         .get("topic_id")
@@ -338,11 +380,37 @@ pub async fn index(
         }
     }
     if let Some(score_type) = text("score_type") {
-        let b = q.bind(Bind::Int(crate::ruby::to_i(&score_type)));
-        q.wheres.push(format!(
-            "EXISTS (SELECT 1 FROM reviewable_scores WHERE reviewable_scores.reviewable_id = reviewables.id \
-             AND reviewable_scores.reviewable_score_type = {b})"
-        ));
+        // A plugin's Reason option applies its filter with its value.
+        if let Some(option) = reason_options.iter().find(|o| o.id == score_type) {
+            custom_clauses.extend(workflows::clause(
+                option.filter,
+                workflows::FilterValue::Sent(&json!(option.value)),
+            ));
+        } else {
+            let b = q.bind(Bind::Int(crate::ruby::to_i(&score_type)));
+            q.wheres.push(format!(
+                "EXISTS (SELECT 1 FROM reviewable_scores WHERE reviewable_scores.reviewable_id = reviewables.id \
+                 AND reviewable_scores.reviewable_score_type = {b})"
+            ));
+        }
+    }
+    for clause in custom_clauses {
+        match clause {
+            workflows::Clause::ScoreContextLike(context) => {
+                let b = q.bind(Bind::Text(context));
+                q.wheres.push(format!(
+                    "EXISTS (SELECT 1 FROM reviewable_scores WHERE reviewable_scores.reviewable_id = reviewables.id \
+                     AND reviewable_scores.context LIKE {b})"
+                ));
+            }
+            workflows::Clause::ReviewAgent(agent_id) => {
+                let b = q.bind(Bind::Int(agent_id));
+                q.wheres.push(format!(
+                    "reviewables.id IN (SELECT reviewable_id FROM discourse_workflows_reviewable_agents \
+                     WHERE ai_agent_id = {b})"
+                ));
+            }
+        }
     }
     if let Some(name) = text("reviewed_by") {
         match user_id_by_username(&mut *conn, &name).await? {
@@ -410,7 +478,7 @@ pub async fn index(
     meta.insert("status".into(), json!(status));
     meta.insert("category_id".into(), json!(category_id));
     meta.insert("topic_id".into(), json!(topic_id));
-    meta.insert("additional_filters".into(), json!({}));
+    meta.insert("additional_filters".into(), Value::Object(additional));
     for key in ECHOED {
         meta.insert(key.into(), p.get(key).cloned().unwrap_or(Value::Null));
     }
@@ -427,7 +495,13 @@ pub async fn index(
     );
     meta.insert(
         "reviewable_types".into(),
-        json!(types.iter().map(|(class, _)| *class).collect::<Vec<_>>()),
+        json!(
+            types
+                .iter()
+                .map(|(class, _)| *class)
+                .chain(workflows_on.then_some(workflows::TYPE_FILTER_ID))
+                .collect::<Vec<_>>()
+        ),
     );
     // Reviewable.unknown_types_and_sources: the pending types and sources
     // no registered type accounts for, unknown sources last.
@@ -453,10 +527,17 @@ pub async fn index(
                 .collect(),
         ),
     );
-    meta.insert(
-        "score_types".into(),
-        meta_score_types(&mut *conn, ctx).await?,
-    );
+    meta.insert("score_types".into(), {
+        let mut score_types = meta_score_types(&mut *conn, ctx).await?;
+        if let Value::Array(list) = &mut score_types {
+            list.extend(
+                reason_options
+                    .iter()
+                    .map(|o| json!({ "id": o.id, "name": o.name })),
+            );
+        }
+        score_types
+    });
     let (count, unseen) = crate::reviewables::staff_counts(&mut *conn, s, guardian).await?;
     meta.insert("reviewable_count".into(), json!(count));
     meta.insert("unseen_reviewable_count".into(), json!(unseen));
@@ -491,18 +572,47 @@ pub async fn index(
         doc.insert("claimed_bies".into(), Value::Array(out.claims));
     }
     doc.insert("__rest_serializer".into(), json!("1"));
+    doc.insert(
+        "extras".into(),
+        json!({ "dsa_classification": crate::review::dsa::classification_options(ctx)? }),
+    );
     Ok(Listed::Page(Value::Object(doc)))
+}
+
+/// `blank?` for a parsed JSON value.
+fn json_blank(v: &Value) -> bool {
+    match v {
+        Value::Null | Value::Bool(false) => true,
+        Value::String(s) => crate::ruby::is_blank(s),
+        Value::Array(a) => a.is_empty(),
+        Value::Object(o) => o.is_empty(),
+        _ => false,
+    }
 }
 
 /// `review_path(filters.merge(offset:))`: the filters that hold a value,
 /// sorted as `to_query` sorts them.
 fn load_more_path(ctx: &Ctx<'_>, meta: &Map<String, Value>, offset: i64) -> String {
     let mut pairs: Vec<(String, String)> = vec![("offset".into(), offset.to_string())];
-    for key in ["ids", "status", "category_id", "topic_id"]
-        .into_iter()
-        .chain(ECHOED)
+    for key in [
+        "ids",
+        "status",
+        "category_id",
+        "topic_id",
+        "additional_filters",
+    ]
+    .into_iter()
+    .chain(ECHOED)
     {
         match meta.get(key) {
+            // A hash's: key[name]=value for each.
+            Some(Value::Object(values)) => {
+                for (name, v) in values {
+                    if let Some(v) = params::scalar(v) {
+                        pairs.push((format!("{key}[{name}]"), v));
+                    }
+                }
+            }
             // An array's `to_query`: key[]=value for each.
             Some(Value::Array(values)) => {
                 for v in values.iter().filter_map(params::scalar) {
@@ -880,6 +990,9 @@ async fn serialize(
         "approval_style".into(),
         json!(crate::reviewables::approval_style(&r.kind)),
     );
+    if let Some(dsa) = super::dsa::statement_ids(&mut *conn, s, guardian, r.id).await? {
+        d.insert("dsa_classification".into(), dsa);
+    }
     match kind {
         Kind::Flagged | Kind::Post => match &post {
             // target_attributes: each when present.
@@ -1107,13 +1220,25 @@ async fn serialize(
     .bind(r.id)
     .fetch_all(&mut *conn)
     .await?;
+    // ReviewableSerializer#initialize: the users the notes mention, read
+    // once for them all (with enable_mentions).
+    let unicode = s.get("unicode_usernames")?.truthy();
+    let known = if !web_hook && s.get("enable_mentions")?.truthy() {
+        let contents: Vec<&str> = notes.iter().map(|n| n.1.as_str()).collect();
+        Some(super::mentions::known_usernames(&mut *conn, &contents, unicode).await?)
+    } else {
+        None
+    };
+    let base_path = ctx.config.globals.relative_url_root();
     let mut note_ids = Vec::new();
     for (nid, content, created_at, updated_at, user_id) in notes {
         if !web_hook {
             let u = load_user(&mut *conn, ctx, user_id).await?;
+            let cooked = super::mentions::render(&content, known.as_ref(), unicode, base_path);
             out.notes.push(json!({
                 "id": nid,
                 "content": content,
+                "cooked": cooked,
                 "created_at": time_json(created_at),
                 "updated_at": time_json(updated_at),
                 "user": basic_user(ctx, &urls, &u)?,
@@ -2940,6 +3065,9 @@ async fn user_json(
     d.insert("created_from_flag".into(), json!(false));
     d.insert("status".into(), json!(r.status));
     d.insert("approval_style".into(), json!(true));
+    if let Some(dsa) = super::dsa::statement_ids(&mut *conn, ctx.settings, guardian, r.id).await? {
+        d.insert("dsa_classification".into(), dsa);
+    }
     d.insert(
         "link_admin".into(),
         json!(guardian.is_staff() && target.is_some()),

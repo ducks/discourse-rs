@@ -6,14 +6,16 @@
 // from a post (delete, delete with replies, edit, nothing; deleting every
 // post for users below trust level 2), AdminPenaltySimilarUsers (the
 // other users at the same IP, from similar-users.json) and the penalty
-// history. Submitting PUTs /admin/users/:id/silence or /suspend.
+// history. Submitting PUTs /admin/users/:id/silence or /suspend, or hands
+// the fields to `perform` when given one.
 //
 //   Discourse.penalizeUser.show({ penaltyType, user, postId, postEdit,
-//                                 reviewableId, before, successCallback,
-//                                 onClose })
+//                                 reviewableId, before, perform,
+//                                 successCallback, onClose })
 //       `user` is the admin user's JSON (AdminUser); `before` runs once
-//       before the penalty (the flag modal's flag, the review queue's
-//       perform); `successCallback` gets the response; `onClose` runs
+//       before the penalty (the flag modal's flag); `perform(data)` submits
+//       the penalty in place of the admin endpoint (the review queue's
+//       action, which applies it); `successCallback` gets the response; `onClose` runs
 //       once the modal is gone (the review queue releasing its claim).
 //   Discourse.penalizeUser.find(userId) -> Promise of the admin user JSON
 //       (AdminUser.find), for a caller that has only the user's id.
@@ -885,6 +887,9 @@
             data.suspend_until = state.penalizeUntil;
           } else {
             data.silenced_till = state.penalizeUntil;
+          }
+          if (model.perform) {
+            return model.perform(data);
           }
           return ajax("PUT", "/admin/users/" + user.id + "/" + (suspend ? "suspend" : "silence"), data);
         })
