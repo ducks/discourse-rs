@@ -69,7 +69,7 @@ pub fn with_mandatory(def: &Definition, value: &str) -> String {
     }
 }
 
-fn disallowed_groups(def: &Definition) -> Option<String> {
+pub(crate) fn disallowed_groups(def: &Definition) -> Option<String> {
     let v = def
         .options
         .as_ref()?

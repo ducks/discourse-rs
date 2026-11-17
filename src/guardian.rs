@@ -593,16 +593,17 @@ impl Guardian {
                     .await?
             }
         };
-        match groups {
-            Some(list) => {
-                let ids: Vec<i64> = list
-                    .split('|')
-                    .filter(|s| !s.is_empty())
-                    .map(crate::ruby::to_i)
-                    .collect();
-                Ok(self.in_any_groups(settings, &ids)?)
-            }
-            None => Ok(true),
+        let ids: Vec<i64> = groups
+            .unwrap_or_default()
+            .split('|')
+            .filter(|s| !s.is_empty())
+            .map(crate::ruby::to_i)
+            .collect();
+        match &self.user {
+            _ if ids.is_empty() => Ok(true),
+            // Anonymous users only when the anonymous users group is listed.
+            None => Ok(ids.contains(&auto_groups::ANONYMOUS_USERS)),
+            Some(_) => Ok(self.in_any_groups(settings, &ids)?),
         }
     }
 

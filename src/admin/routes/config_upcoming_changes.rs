@@ -34,6 +34,121 @@ fn success() -> Response {
     Json(json!({ "success": "OK" })).into_response()
 }
 
+/// A settings update (config_branding::update_settings), boxed.
+type BoxedUpdate<'a> = std::pin::Pin<
+    Box<dyn std::future::Future<Output = Result<Result<(), String>, AppError>> + Send + 'a>,
+>;
+
+/// A service's on_failure: failed_json, unprocessable.
+fn failed() -> Response {
+    (
+        StatusCode::UNPROCESSABLE_ENTITY,
+        Json(json!({ "failed": "FAILED" })),
+    )
+        .into_response()
+}
+
+/// The names of these group ids (`Group.where(id:).pluck(:name)`).
+async fn names_of(conn: &mut PgConnection, ids: &[i32]) -> Result<Vec<String>, sqlx::Error> {
+    sqlx::query_scalar("SELECT name FROM groups WHERE id = ANY($1)")
+        .bind(ids)
+        .fetch_all(conn)
+        .await
+}
+
+/// UpcomingChanges::Toggle#allowed_enabled_for_target: a linked group
+/// setting takes no groups here; otherwise the audience the change ends up
+/// with (the given groups, else its current ones) must fit
+/// `allow_enabled_for`.
+async fn toggle_target_allowed(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    def: &Definition,
+    enabled: bool,
+    names: Option<&[String]>,
+) -> Result<bool, AppError> {
+    if changes::group_setting_name(def).is_some() {
+        return Ok(names.is_none());
+    }
+    let names = match names {
+        Some(names) => names.to_vec(),
+        None if !enabled => return Ok(true),
+        None if changes::groups_target_allowed(def) => {
+            let rows = changes::site_setting_group_ids(&mut *conn).await?;
+            names_of(&mut *conn, &changes::group_ids_for(def, settings, &rows)).await?
+        }
+        None => Vec::new(),
+    };
+    if names.is_empty() && !enabled {
+        return Ok(!changes::staff_and_specific_groups(def));
+    }
+    let staff = changes::staff_group_name(&mut *conn).await?;
+    Ok(changes::group_scope_allowed(def, &names, &staff))
+}
+
+/// The change's site_setting_groups row set to these groups (removed when
+/// none): the previous and the new `|`-joined ids, for the log.
+async fn save_groups(
+    conn: &mut PgConnection,
+    name: &str,
+    mut ids: Vec<i32>,
+) -> Result<(Option<String>, String), sqlx::Error> {
+    let previous: Option<Option<String>> =
+        sqlx::query_scalar("SELECT group_ids FROM site_setting_groups WHERE name = $1")
+            .bind(name)
+            .fetch_optional(&mut *conn)
+            .await?;
+    ids.sort_unstable();
+    let value = ids.iter().map(i32::to_string).collect::<Vec<_>>().join("|");
+    if ids.is_empty() {
+        sqlx::query("DELETE FROM site_setting_groups WHERE name = $1")
+            .bind(name)
+            .execute(&mut *conn)
+            .await?;
+    } else {
+        sqlx::query(
+            "INSERT INTO site_setting_groups (name, group_ids, created_at, updated_at) \
+             VALUES ($1, $2, now(), now()) \
+             ON CONFLICT (name) DO UPDATE SET group_ids = EXCLUDED.group_ids, updated_at = now()",
+        )
+        .bind(name)
+        .bind(&value)
+        .execute(&mut *conn)
+        .await?;
+    }
+    Ok((previous.flatten(), value))
+}
+
+/// StaffActionLogger#log_site_setting_groups_change
+async fn log_groups_change(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    acting: i32,
+    name: &str,
+    previous: Option<String>,
+    new: &str,
+) -> Result<(), AppError> {
+    sqlx::query(
+        "INSERT INTO user_histories (action, acting_user_id, subject, previous_value, new_value, \
+         admin_only, created_at, updated_at) \
+         VALUES ($1, $2, $3, $4, $5, $6, clock_timestamp(), clock_timestamp())",
+    )
+    .bind(crate::staff_action_logs::action_id(
+        "change_site_setting_groups",
+    ))
+    .bind(acting)
+    .bind(name)
+    .bind(previous)
+    .bind(new)
+    .bind(crate::staff_action_logs::admin_only(
+        "change_site_setting_groups",
+        settings,
+    )?)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
 /// ActiveModel's boolean cast: blank is nil, then "false", "f", "0",
 /// "off" (any case) are false and everything else true.
 fn cast_bool(v: Option<&Value>) -> Option<bool> {
@@ -172,10 +287,8 @@ async fn set_change(
         return Ok(());
     }
     let name = def.name.as_str();
-    let has_groups = changes::site_setting_group_ids(&mut *conn)
-        .await?
-        .get(name)
-        .is_some_and(|ids| !ids.is_empty());
+    let rows = changes::site_setting_group_ids(&mut *conn).await?;
+    let has_groups = changes::has_groups(def, &changes::group_ids_for(def, settings, &rows));
     if def.client && !has_groups {
         let fresh =
             SiteSettings::load(&mut *conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -450,6 +563,15 @@ pub(crate) async fn toggle_change(
     let Some(enabled) = enabled.filter(|_| errors.is_empty()) else {
         return Ok(failed_contract(errors));
     };
+    let mut tx = state.pool.begin().await?;
+    // The contract's before_validation: given group names normalized.
+    let names = match p.get("group_names") {
+        None | Some(Value::Null) => None,
+        given => Some(
+            changes::normalize_group_names(&mut tx, change_def(&state, &name), group_names(given))
+                .await?,
+        ),
+    };
     if !guardian.is_admin() {
         return Ok(crate::routes::search::invalid_access(&state));
     }
@@ -459,27 +581,32 @@ pub(crate) async fn toggle_change(
     let acting = guardian
         .user_id()
         .ok_or(Unsupported("toggling a change without a user"))?;
-    let mut tx = state.pool.begin().await?;
-    // allowed_enabled_for_target: enabling without groups means everyone.
-    if enabled {
-        let has_groups: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM site_setting_groups WHERE name = $1)")
-                .bind(&name)
-                .fetch_one(&mut *tx)
-                .await?;
-        if !has_groups && !changes::target_allowed(def, "everyone") {
-            return Ok((
-                StatusCode::UNPROCESSABLE_ENTITY,
-                Json(json!({ "failed": "FAILED" })),
-            )
-                .into_response());
-        }
-    }
     let settings =
         SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    if !toggle_target_allowed(&mut tx, &settings, def, enabled, names.as_deref()).await? {
+        return Ok(failed());
+    }
+    // The group_ids model, every name a group.
+    let group_ids = match &names {
+        None => None,
+        Some(names) => {
+            let ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM groups WHERE name = ANY($1)")
+                .bind(names)
+                .fetch_all(&mut *tx)
+                .await?;
+            if ids.len() != names.len() {
+                return Ok(crate::routes::topics::not_found_response(&state));
+            }
+            Some(ids)
+        }
+    };
+    if let Some(ids) = group_ids {
+        let (previous, new) = save_groups(&mut tx, &name, ids).await?;
+        log_groups_change(&mut tx, &settings, acting, &name, previous, &new).await?;
+    }
     let previous = settings.get(&name)?.truthy();
     set_change(&mut tx, &state, &settings, def, enabled).await?;
-    if !changes::groups_target_allowed(def) {
+    if changes::group_setting_name(def).is_none() && !changes::groups_target_allowed(def) {
         sqlx::query("DELETE FROM site_setting_groups WHERE name = $1")
             .bind(&name)
             .execute(&mut *tx)
@@ -589,31 +716,56 @@ pub async fn groups(
         return Ok(crate::routes::topics::not_found_response(&state));
     }
     let setting = params::string(&p, "setting").unwrap_or_default();
+    if let Some(def) =
+        change_def(&state, &setting).filter(|d| changes::group_setting_name(d).is_some())
+    {
+        return update_linked_groups(&state, &guardian, &p, def).await;
+    }
+    // SiteSetting::UpsertGroups
     if crate::ruby::is_blank(&setting) {
         return Ok(failed_contract(vec!["Setting can't be blank".into()]));
     }
+    let mut tx = state.pool.begin().await?;
+    let names = changes::normalize_group_names(
+        &mut tx,
+        state.site_setting_defs.get(&setting),
+        group_names(p.get("group_names")),
+    )
+    .await?;
     if !guardian.is_admin() {
         return Ok(crate::routes::search::invalid_access(&state));
     }
-    let names = group_names(p.get("group_names"));
-    // allowed_enabled_for_target; a failure has no handler (no content).
-    if !names.is_empty() {
-        let target = if names == ["staff"] {
-            "staff"
+    let settings =
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // allowed_enabled_for_target
+    if let Some(def) = change_def(&state, &setting) {
+        let allowed = if changes::staff_and_specific_groups(def) && names.is_empty() {
+            false
+        } else if names.is_empty() && !settings.get(&setting)?.truthy() {
+            true
         } else {
-            "specific_groups"
+            let staff = changes::staff_group_name(&mut tx).await?;
+            changes::group_scope_allowed(def, &names, &staff)
         };
-        let allowed = state
-            .site_setting_defs
-            .get(&setting)
-            .is_none_or(|def| changes::target_allowed(def, target));
         if !allowed {
-            return Ok(StatusCode::NO_CONTENT.into_response());
+            return Ok(failed());
         }
     }
     let acting = guardian
         .user_id()
         .ok_or(Unsupported("changing groups without a user"))?;
+    let ids = if names.is_empty() {
+        Vec::new()
+    } else {
+        let ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM groups WHERE name = ANY($1)")
+            .bind(&names)
+            .fetch_all(&mut *tx)
+            .await?;
+        if ids.is_empty() {
+            return Ok(crate::routes::topics::not_found_response(&state));
+        }
+        ids
+    };
     // log_site_setting_groups_change raises for an unknown setting.
     if state.site_setting_defs.get(&setting).is_none() {
         return Ok(crate::routes::search::invalid_parameters(
@@ -621,62 +773,87 @@ pub async fn groups(
             "setting_name",
         ));
     }
-    let mut tx = state.pool.begin().await?;
-    let previous: Option<Option<String>> =
-        sqlx::query_scalar("SELECT group_ids FROM site_setting_groups WHERE name = $1")
-            .bind(&setting)
-            .fetch_optional(&mut *tx)
-            .await?;
-    let new_value = if names.is_empty() {
-        sqlx::query("DELETE FROM site_setting_groups WHERE name = $1")
-            .bind(&setting)
-            .execute(&mut *tx)
-            .await?;
-        String::new()
-    } else {
-        let mut ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM groups WHERE name = ANY($1)")
-            .bind(&names)
-            .fetch_all(&mut *tx)
-            .await?;
-        if ids.is_empty() {
-            return Ok(crate::routes::topics::not_found_response(&state));
-        }
-        ids.sort_unstable();
-        let value = ids.iter().map(i32::to_string).collect::<Vec<_>>().join("|");
-        sqlx::query(
-            "INSERT INTO site_setting_groups (name, group_ids, created_at, updated_at) \
-             VALUES ($1, $2, now(), now()) \
-             ON CONFLICT (name) DO UPDATE SET group_ids = EXCLUDED.group_ids, updated_at = now()",
-        )
-        .bind(&setting)
-        .bind(&value)
-        .execute(&mut *tx)
-        .await?;
-        value
-    };
-    let settings =
-        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
-    // StaffActionLogger#log_site_setting_groups_change
-    sqlx::query(
-        "INSERT INTO user_histories (action, acting_user_id, subject, previous_value, new_value, \
-         admin_only, created_at, updated_at) \
-         VALUES ($1, $2, $3, $4, $5, $6, clock_timestamp(), clock_timestamp())",
-    )
-    .bind(crate::staff_action_logs::action_id(
-        "change_site_setting_groups",
-    ))
-    .bind(acting)
-    .bind(&setting)
-    .bind(previous.flatten())
-    .bind(new_value)
-    .bind(crate::staff_action_logs::admin_only(
-        "change_site_setting_groups",
-        &settings,
-    )?)
-    .execute(&mut *tx)
-    .await?;
+    let (previous, new) = save_groups(&mut tx, &setting, ids).await?;
+    log_groups_change(&mut tx, &settings, acting, &setting, previous, &new).await?;
     tx.commit().await?;
     Ok(success())
+}
+
+/// UpcomingChanges::UpdateGroups: a change whose audience is a linked
+/// group_list setting has that setting updated (SiteSetting::Update, with
+/// its validation and logging), answering the saved groups.
+async fn update_linked_groups(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    p: &serde_json::Map<String, Value>,
+    def: &Definition,
+) -> Result<Response, AppError> {
+    let mut names: Vec<String> = Vec::new();
+    for name in group_names(p.get("group_names")) {
+        if !crate::ruby::is_blank(&name) && !names.contains(&name) {
+            names.push(name);
+        }
+    }
+    if names.is_empty() {
+        return Ok(failed_contract(vec!["Group names can't be blank".into()]));
+    }
+    if !guardian.is_admin() {
+        return Ok(crate::routes::search::invalid_access(state));
+    }
+    let defs = &state.site_setting_defs;
+    let mut conn = state.pool.acquire().await?;
+    let settings = SiteSettings::load(&mut conn, defs, &state.config.globals).await?;
+    let group_setting = changes::group_setting_data(defs, &settings, def);
+    let Some(linked) = group_setting["setting"].as_str() else {
+        return Ok(crate::routes::topics::not_found_response(state));
+    };
+    let ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM groups WHERE name = ANY($1)")
+        .bind(&names)
+        .fetch_all(&mut *conn)
+        .await?;
+    if ids.len() != names.len() {
+        return Ok(crate::routes::topics::not_found_response(state));
+    }
+    // groups_are_allowed: none of the linked setting's disallowed groups.
+    let disallowed: Vec<i32> = group_setting["disallowed_groups"]
+        .as_str()
+        .unwrap_or_default()
+        .split('|')
+        .map(|s| crate::ruby::to_i(s) as i32)
+        .collect();
+    if ids.iter().any(|id| disallowed.contains(id)) {
+        return Ok(failed());
+    }
+    let value = ids.iter().map(i32::to_string).collect::<Vec<_>>().join("|");
+    drop(conn);
+    // Boxed: the setting update's future is too deep to check for Send inline.
+    let update: BoxedUpdate<'_> = Box::pin(super::config_branding::update_settings(
+        state,
+        guardian,
+        vec![(linked.to_string(), value, false)],
+        &[],
+    ));
+    if let Err(message) = update.await? {
+        return Ok((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({ "failed": "FAILED", "errors": [message] })),
+        )
+            .into_response());
+    }
+    let mut conn = state.pool.acquire().await?;
+    let settings = SiteSettings::load(&mut conn, defs, &state.config.globals).await?;
+    let saved = changes::group_ids_for(def, &settings, &Default::default());
+    let groups: Vec<String> =
+        sqlx::query_scalar("SELECT name FROM groups WHERE id = ANY($1) ORDER BY id")
+            .bind(&saved)
+            .fetch_all(&mut *conn)
+            .await?;
+    Ok(Json(json!({
+        "success": "OK",
+        "groups": groups.join(","),
+        "group_setting": changes::group_setting_data(defs, &settings, def),
+    }))
+    .into_response())
 }
 
 pub(crate) fn routes(mut router: axum::Router<AppState>) -> axum::Router<AppState> {
