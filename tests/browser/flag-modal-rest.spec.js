@@ -112,7 +112,7 @@ async function restoreFromReview(page, item) {
   // A hidden post's No bundle: restore or delete, no keeping or ignoring.
   await expect(page.locator(".select-kit.is-expanded .select-kit-row", { hasText: /Keep post|Ignore/ })).toHaveCount(0);
   await row.first().click();
-  await expect(item.locator("*", { hasText: /^\s*Flag rejected\s*$/ }).first()).toBeVisible();
+  await expect(item.locator("*", { hasText: /^\s*No problem found\s*$/ }).first()).toBeVisible();
 }
 
 test("staff queue a reply for review and restore it from /review", async ({ page, context, session }) => {

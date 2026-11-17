@@ -1,6 +1,6 @@
 {
   "user": "admin",
-  "not_yet": "7d5cd72b95e (Discourse): reviewables share one yes/no direction (approval_style, bundled action order); not ported",
+  "not_yet": "dd1f1ab0dc1 (Discourse): the review queue lists discourse-workflows' workflow reviewables (meta reviewable_types); 6f5643427d1 (Discourse): the list's extras.dsa_classification (DsaClassificationSerializer); not ported",
   "setup": [
     "UPDATE users SET trust_level = 0, silenced_till = '3026-10-01 00:00:00' WHERE id = 2",
     "UPDATE user_stats SET post_count = 0, topic_count = 0, pending_posts_count = 1 WHERE user_id = 2",

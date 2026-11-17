@@ -1,6 +1,5 @@
 {
   "user": "user1",
-  "not_yet": "7d5cd72b95e (Discourse): reviewables share one yes/no direction (approval_style, bundled action order); not ported",
   "requests": [
     {
       "method": "POST",

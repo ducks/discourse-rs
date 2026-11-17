@@ -63,7 +63,7 @@ test("a flag from the post menu, then a note and agreeing with it in /review", a
 
   await item.locator("details summary", { hasText: /^\s*Yes/ }).first().click();
   await page.locator(".select-kit.is-expanded .select-kit-row", { hasText: /Agree with flag/i }).first().click();
-  await expect(item.locator("*", { hasText: /^\s*Flag approved\s*$/ }).first()).toBeVisible();
+  await expect(item.locator("*", { hasText: /^\s*Problem confirmed\s*$/ }).first()).toBeVisible();
   await expect
     .poll(() => sql("SELECT status FROM reviewables WHERE target_type = 'Post' AND target_id = :'p1'", flagged))
     .toEqual([["1"]]);
@@ -87,7 +87,7 @@ test("a post a watched word held is approved from /review", async ({ page, conte
   const item = page.locator(".review-item.reviewable-queued-post", { hasText: word });
   await expect(item).toBeVisible();
   await item.locator("button.approve-post").click();
-  await expect(item.locator(".review-item__status.--approved")).toBeVisible();
+  await expect(item.locator(".review-item__status.--no-problem-found")).toBeVisible();
   await expect
     .poll(() => sql("SELECT t.title, p.post_number FROM topics t JOIN posts p ON p.topic_id = t.id WHERE t.title = :'p1'", title))
     .toEqual([[title, "1"]]);
