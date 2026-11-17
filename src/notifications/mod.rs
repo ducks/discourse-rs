@@ -71,6 +71,7 @@ pub const TYPES: &[(&str, i32)] = &[
     ("live_invitation", 1000),
 ];
 
+const MENTIONED: i32 = 1;
 const GRANTED_BADGE: i32 = 12;
 /// `Notification.like_types`
 const LIKE_TYPES: &str = "5,19,25";
@@ -443,6 +444,69 @@ impl Notifications<'_> {
             .collect())
     }
 
+    /// `Notification.filter_inaccessible_reviewable_notifications`: the
+    /// review note mentions (b1a0af17849) of reviewables the viewer can't
+    /// see in the queue are left out.
+    async fn filter_inaccessible_reviewables(
+        &mut self,
+        rows: &mut Vec<Row>,
+    ) -> Result<(), NotificationsError> {
+        // reviewable_mention?: a mention whose data names a reviewable
+        // (data_hash[:reviewable_id].to_i).
+        let reviewable_id = |r: &Row| -> Option<i64> {
+            if r.notification_type != MENTIONED {
+                return None;
+            }
+            let data: Value = serde_json::from_str(&r.data).ok()?;
+            match data.get("reviewable_id")? {
+                Value::Number(n) => n.as_i64(),
+                Value::String(s) if !crate::ruby::is_blank(s) => Some(crate::ruby::to_i(s)),
+                _ => None,
+            }
+        };
+        let mut ids: Vec<i64> = Vec::new();
+        for r in rows.iter() {
+            if let Some(id) = reviewable_id(r)
+                && !ids.contains(&id)
+            {
+                ids.push(id);
+            }
+        }
+        if ids.is_empty() {
+            return Ok(());
+        }
+        // guardian.can_see_review_queue?
+        let accessible: Vec<i64> = if self.guardian.is_staff() {
+            let (joins, clause) = match crate::reviewables::viewable_by(
+                &mut *self.conn,
+                self.settings,
+                self.guardian,
+            )
+            .await?
+            {
+                Some(v) => (v.joins, v.clause),
+                None => ("", "TRUE".to_string()),
+            };
+            sqlx::query_scalar(&format!(
+                "SELECT reviewables.id FROM reviewables{joins} \
+                 WHERE reviewables.id = ANY($1) AND {clause}"
+            ))
+            .bind(&ids)
+            .fetch_all(&mut *self.conn)
+            .await?
+        } else if self
+            .settings
+            .get("enable_category_group_moderation")?
+            .truthy()
+        {
+            return Err(Unsupported("review note mentions for category group moderators").into());
+        } else {
+            Vec::new()
+        };
+        rows.retain(|r| reviewable_id(r).is_none_or(|id| accessible.contains(&id)));
+        Ok(())
+    }
+
     /// `filter_inaccessible_topic_notifications` then
     /// `filter_disabled_badge_notifications`.
     async fn post_filter(&mut self, rows: Vec<Row>) -> Result<Vec<Row>, NotificationsError> {
@@ -462,6 +526,7 @@ impl Notifications<'_> {
             .into_iter()
             .filter(|r| r.topic_id.is_none_or(|id| accessible.contains(&id)))
             .collect();
+        self.filter_inaccessible_reviewables(&mut rows).await?;
         if rows.is_empty() {
             return Ok(rows);
         }

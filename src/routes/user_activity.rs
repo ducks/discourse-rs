@@ -313,6 +313,10 @@ pub async fn destroy_reviewable(
             "a reviewable version conflict on delete (a server error in Rails)",
         )
         .into()),
+        // Only reject_and_silence and reject_and_suspend penalize.
+        crate::review_posts::Performed::Failed(_) => {
+            Err(Unsupported("a penalty failing a delete").into())
+        }
     }
 }
 

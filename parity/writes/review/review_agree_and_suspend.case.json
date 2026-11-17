@@ -1,5 +1,4 @@
 {
-  "not_yet": "fe97c2951fd (Discourse): review queue penalties applied inside the reviewable action (reason and until validated, 422 before resolving); not ported",
   "user": "admin",
   "setup": [
     "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 52, 3, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE)",

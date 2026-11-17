@@ -3176,7 +3176,7 @@
         var mode = s.mode;
         close();
         if (s.onSaved) {
-          s.onSaved();
+          s.onSaved(json);
         }
         var post = json.post || json;
         if (!post.topic_id) {

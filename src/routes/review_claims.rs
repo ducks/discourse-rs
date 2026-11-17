@@ -267,7 +267,9 @@ pub async fn create_note(
     let user_id = guardian
         .user_id()
         .ok_or(Unsupported("a note without its author"))?;
-    // validates :content, presence: true, length: 1..MAX_CONTENT_LENGTH
+    // validates :content, presence: true, length: 1..MAX_CONTENT_LENGTH.
+    // validate :mention_limit skips staff, the only authors who get here
+    // (category group moderators are refused by find_reviewable).
     let mut messages = Vec::new();
     let text = content.unwrap_or_default();
     if crate::ruby::is_blank(&text) {
@@ -317,17 +319,45 @@ pub async fn create_note(
         i18n: &state.i18n,
         bus: &state.bus,
     };
+    // after_create :notify_mentions
+    let username = guardian
+        .user()
+        .map(|u| u.username.clone())
+        .unwrap_or_default();
+    let unnotified = crate::review::mentions::notify_mentions(
+        &mut tx,
+        &ctx,
+        &crate::review::mentions::Author {
+            id: user_id,
+            username: &username,
+            staff: guardian.is_staff(),
+        },
+        id,
+        note.0,
+        &note.1,
+    )
+    .await?;
     let user = crate::user_penalties::basic_user(&mut tx, &ctx, user_id).await?;
+    let cooked = crate::review::mentions::cooked(
+        &mut tx,
+        &settings,
+        state.config.globals.relative_url_root(),
+        &note.1,
+    )
+    .await?;
     tx.commit().await?;
-    // ReviewableNoteSerializer, root: false
+    // ReviewableNoteSerializer, root: false, with the mentions that
+    // notified no one.
     Ok((
         StatusCode::OK,
         Json(json!({
             "id": note.0,
             "content": note.1,
+            "cooked": cooked,
             "created_at": crate::topic_list::time_json(note.2),
             "updated_at": crate::topic_list::time_json(note.3),
             "user": user,
+            "unnotified_usernames": unnotified,
         })),
     )
         .into_response())

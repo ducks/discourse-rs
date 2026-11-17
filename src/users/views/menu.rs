@@ -621,6 +621,17 @@ fn resolve_icon(name: &str) -> String {
     replaced.to_string()
 }
 
+/// JavaScript truthiness of a JSON value.
+fn js_truthy(v: &Value) -> bool {
+    match v {
+        Value::Null => false,
+        Value::Bool(b) => *b,
+        Value::Number(n) => n.as_f64().is_some_and(|f| f != 0.0),
+        Value::String(s) => !s.is_empty(),
+        Value::Array(_) | Value::Object(_) => true,
+    }
+}
+
 fn s(v: &Value) -> &str {
     v.as_str().unwrap_or_default()
 }
@@ -727,6 +738,19 @@ fn notification(cx: &MenuContext, n: &Value) -> Item {
     let user_path = |p: &str| format!("{}/u/{p}", cx.base_path);
     let count = data["count"].as_i64().unwrap_or(0);
     match name.as_str() {
+        // notification-types/mentioned (b1a0af17849): a review note's
+        // mention names the reviewable and links to it.
+        "mentioned" if js_truthy(&data["reviewable_id"]) => {
+            item.description = data["topic_title"].as_str().map(|t| Text::Plain(t.into()));
+            item.href = Some(format!(
+                "{}/review/{}",
+                cx.base_path,
+                match &data["reviewable_id"] {
+                    Value::String(id) => id.clone(),
+                    other => other.to_string(),
+                }
+            ));
+        }
         "admin_problems" => {
             item.label = None;
             item.description = Some(Text::Plain(cx.t("notifications.admin_problems")));

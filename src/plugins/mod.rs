@@ -47,6 +47,7 @@ pub mod styleguide;
 pub mod templates;
 pub mod topic_voting;
 pub mod user_notes;
+pub mod workflows;
 
 use std::collections::HashMap;
 

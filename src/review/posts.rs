@@ -50,6 +50,8 @@ pub struct Args {
     pub revise_reason: Option<String>,
     pub revise_feedback: Option<String>,
     pub revise_custom_reason: Option<String>,
+    /// The penalty dialog's fields (reject_and_silence, reject_and_suspend).
+    pub penalty: crate::review::PenaltyArgs,
 }
 
 /// How a perform ends when it isn't a server error.
@@ -69,6 +71,8 @@ pub enum Performed {
     InvalidAction,
     /// `Reviewable::UpdateConflict`
     Conflict,
+    /// The penalty an action applies first stopped it.
+    Failed(crate::review::Outcome),
 }
 
 /// The reviewable as the actions read it.
@@ -198,12 +202,32 @@ pub async fn perform(
         }
         "ReviewablePost" => {
             reviewed(
-                conn, ctx, guardian, &performer, &row, action_id, version, deferred,
+                conn, ctx, guardian, &performer, &row, action_id, version, args, deferred,
             )
             .await
         }
         _ => Err(Unsupported("reviewable types other than posts").into()),
     }
+}
+
+/// perform_reject_and_suspend / perform_reject_and_silence: the penalty
+/// before the rejection (Discourse fe97c2951fd); what ends the request
+/// when it failed.
+async fn penalty_first(
+    conn: &mut PgConnection,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    reviewable_id: i64,
+    action_id: &str,
+    args: &Args,
+) -> Result<Option<crate::review::Outcome>, AppError> {
+    use crate::review::PenaltyKind;
+    let kind = match action_id {
+        "reject_and_suspend" => PenaltyKind::Suspend,
+        "reject_and_silence" => PenaltyKind::Silence,
+        _ => return Ok(None),
+    };
+    crate::review::penalize(conn, ctx, guardian, reviewable_id, kind, &args.penalty).await
 }
 
 /// `increment_version!(version)`: the new version, None on a conflict.
@@ -483,6 +507,9 @@ async fn queued(
     let Some(new_version) = increment_version(&mut *conn, row.id, version).await? else {
         return Ok(Performed::Conflict);
     };
+    if let Some(failed) = penalty_first(&mut *conn, ctx, guardian, row.id, action_id, args).await? {
+        return Ok(Performed::Failed(failed));
+    }
     let mut remove = vec![row.id];
     let mut created = None;
     let transition = match method {
@@ -1138,6 +1165,7 @@ async fn reviewed(
     row: &Row,
     action_id: &str,
     version: Option<i64>,
+    args: &Args,
     deferred: Option<&Deferred>,
 ) -> Result<Performed, AppError> {
     let s = ctx.settings;
@@ -1216,6 +1244,9 @@ async fn reviewed(
     let Some(new_version) = increment_version(&mut *conn, row.id, version).await? else {
         return Ok(Performed::Conflict);
     };
+    if let Some(failed) = penalty_first(&mut *conn, ctx, guardian, row.id, action_id, args).await? {
+        return Ok(Performed::Failed(failed));
+    }
     // The jobs the post's after-commit callbacks enqueue, at this
     // perform's commit unless an enclosing transaction holds them.
     let own = Deferred::default();
@@ -1319,6 +1350,10 @@ pub async fn reject_for_spammer(
                 Performed::Done { .. } | Performed::InvalidAction => {}
                 Performed::Conflict => {
                     return Err(Unsupported("a version conflict without a version").into());
+                }
+                // Only the penalty actions fail, and none run here.
+                Performed::Failed(_) => {
+                    return Err(Unsupported("a penalty failing a cascaded review").into());
                 }
             }
         }
