@@ -407,6 +407,13 @@ impl RemoteTheme {
         }
         out.insert("last_error_text".into(), json!(self.last_error_text));
         out.insert("is_git".into(), json!(self.is_git()));
+        // `placeholder?`: a remote not yet imported.
+        let placeholder = !crate::ruby::is_blank(&self.remote_url)
+            && self
+                .local_version
+                .as_deref()
+                .is_none_or(crate::ruby::is_blank);
+        out.insert("placeholder".into(), json!(placeholder));
         let valid = |u: &Option<String>| u.clone().filter(|u| valid_url(u));
         out.insert("license_url".into(), json!(valid(&self.license_url)));
         out.insert("about_url".into(), json!(valid(&self.about_url)));
@@ -1254,6 +1261,9 @@ pub async fn serialize(
     out.insert("auto_update".into(), json!(t.auto_update));
     out.insert("remote_theme_id".into(), json!(t.remote_theme_id));
     out.insert("settings".into(), settings_json(conn, cx, t.id).await?);
+    // I18n.locale: the locale of `translations` below, which are English
+    // here (theme_translations reads only the `en` field).
+    out.insert("translations_locale".into(), json!("en"));
     if !t.component {
         out.insert(
             "themeable_site_settings".into(),
