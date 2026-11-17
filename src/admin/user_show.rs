@@ -888,17 +888,33 @@ async fn upcoming_changes_stats(
     user_id: i32,
 ) -> Result<Value, AppError> {
     use crate::site_settings::ChangeStatus;
-    let belonging: Vec<i32> =
+    use crate::upcoming_changes as changes;
+    const EVERYONE: i32 = 0;
+    const LOGGED_IN_USERS: i32 = 5;
+    // belonging_to_group_ids, plus the logged in users group.
+    let mut belonging: Vec<i32> =
         sqlx::query_scalar("SELECT group_id FROM group_users WHERE user_id = $1")
             .bind(user_id)
             .fetch_all(&mut *conn)
             .await?;
-    let visible = crate::groups::visible_groups_where(guardian, "g");
-    let visible_ids: Vec<i32> = sqlx::query_scalar(&format!(
-        "SELECT g.id FROM groups g WHERE g.id > 0 AND ({visible})"
-    ))
-    .fetch_all(&mut *conn)
-    .await?;
+    if !belonging.contains(&LOGGED_IN_USERS) {
+        belonging.push(LOGGED_IN_USERS);
+    }
+    let visible = crate::groups::visible_groups_scope(guardian, "g", false, true);
+    let visible_ids: Vec<i32> =
+        sqlx::query_scalar(&format!("SELECT g.id FROM groups g WHERE {visible}"))
+            .fetch_all(&mut *conn)
+            .await?;
+    // User#in_any_groups?: the everyone group (without granular
+    // pseudogroups) and logged in users match any user.
+    let granular = cx
+        .settings
+        .get("granular_anonymous_and_logged_in_groups_permissions")?
+        .truthy();
+    let in_any_groups = |ids: &[i32]| {
+        (ids.contains(&EVERYONE) && !granular) || ids.iter().any(|g| belonging.contains(g))
+    };
+    let rows = changes::site_setting_group_ids(&mut *conn).await?;
     let labels = crate::admin::site_settings::Context {
         defs: cx.defs,
         settings: cx.settings,
@@ -916,24 +932,11 @@ async fn upcoming_changes_stats(
             continue;
         }
         let name = def.name.as_str();
-        let group_ids: Vec<i32> = sqlx::query_scalar::<_, Option<String>>(
-            "SELECT group_ids FROM site_setting_groups WHERE name = $1",
-        )
-        .bind(name)
-        .fetch_optional(&mut *conn)
-        .await?
-        .flatten()
-        .map(|list| {
-            list.split('|')
-                .filter(|s| !s.is_empty())
-                .map(|s| crate::ruby::to_i(s) as i32)
-                .collect()
-        })
-        .unwrap_or_default();
+        let group_ids = changes::group_ids_for(def, cx.settings, &rows);
+        let has_groups = changes::has_groups(def, &group_ids);
         let on = cx.settings.get(name)?.truthy();
-        let enabled =
-            on && (group_ids.is_empty() || group_ids.iter().any(|g| belonging.contains(g)));
-        let (specific, reason) = if !group_ids.is_empty() {
+        let enabled = on && (!has_groups || in_any_groups(&group_ids));
+        let (specific, reason) = if has_groups {
             let ids: Vec<i32> = group_ids
                 .iter()
                 .copied()

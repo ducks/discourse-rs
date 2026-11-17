@@ -3,9 +3,7 @@
 # not_yet: the port lacks those Discourse commits; the golden replay expects
 # the case to differ and fails once it matches.
 # Known gaps marked not_yet: /site.json and /admin/site_settings.json lack
-# 0a264785d1d (a chat channel as the homepage: homepage_options); the
-# /admin/users/:id.json cases lack 899c68d783e (upcoming changes gated by a
-# group setting).
+# 0a264785d1d (a chat channel as the homepage: homepage_options).
 # Golden responses live in parity/golden/, written by `make parity-record`.
 
 # forums#status
@@ -390,11 +388,11 @@ GET /admin/users/list.json?filter=127.0.0.1 as=admin ignore=/*/last_seen_age,/*/
 
 # admin/users#show: AdminDetailedUserSerializer. The ages and next_penalty
 # count from the request's time.
-GET /admin/users/1.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
-GET /admin/users/2.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
-GET /admin/users/3.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
-GET /admin/users/4.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
-GET /admin/users/5.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty not_yet=899c68d783e
+GET /admin/users/1.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /admin/users/2.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /admin/users/3.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /admin/users/4.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
+GET /admin/users/5.json as=admin ignore=/last_seen_age,/last_emailed_age,/created_at_age,/next_penalty
 GET /t/35/posts.json?post_ids[]=36&post_ids[]=37
 GET /t/35/posts.json?post_ids[]=38&post_ids[]=52&include_suggested=true ignore=/suggested_topics
 GET /t/35/posts.json?post_ids[]=36&post_ids[]=52 as=user1 ignore=/post_stream/posts/*/reviewable_id,/post_stream/posts/*/reviewable_score_count,/post_stream/posts/*/reviewable_score_pending_count
