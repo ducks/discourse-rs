@@ -67,5 +67,16 @@ pkgs.mkShell {
     echo "  make db-load / make db-test      load vendored schema + seeds"
     echo "  make browser-test                the Playwright suite (tests/browser)"
     echo "  make parity RAILS_URL=...        diff against a running Discourse"
+
+    # Small, frequent bumps keep each round of new parity gaps reviewable.
+    vendored_at="$(sed -n 's/^committed_at=//p' vendor/discourse/DISCOURSE_REF 2>/dev/null)"
+    if [ -n "$vendored_at" ]; then
+      vendored_days=$(( ($(date +%s) - $(date -d "$vendored_at" +%s)) / 86400 ))
+      if [ "$vendored_days" -gt 7 ]; then
+        echo "warning: vendor/discourse is $vendored_days days old ($vendored_at); bump it to upstream main" >&2
+      fi
+      unset vendored_days
+    fi
+    unset vendored_at
   '';
 }
