@@ -1,4 +1,7 @@
 {
+  "unordered_responses": [
+    "/responses/0/body/current_user/available_notification_types"
+  ],
   "user": "user2",
   "setup": [
     "UPDATE users SET first_seen_at = now() - interval '23 hours', last_seen_at = now() - interval '23 hours' WHERE id = 4"

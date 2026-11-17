@@ -1,4 +1,7 @@
 {
+  "unordered_responses": [
+    "/responses/1/body/current_user/available_notification_types"
+  ],
   "user": "user2",
   "setup": [
     "INSERT INTO chat_messages (id, chat_channel_id, user_id, created_at, updated_at, message, cooked, cooked_version, last_editor_id) VALUES (1, 2, 2, now() - interval '50 minutes', now() - interval '50 minutes', 'Hello **world**', '<p>Hello <strong>world</strong></p>', 1, 2)",
