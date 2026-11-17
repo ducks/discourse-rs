@@ -1,4 +1,7 @@
 {
+  "unordered_responses": [
+    "/responses/0/body/current_user/available_notification_types"
+  ],
   "user": "user1",
   "setup": [
     "INSERT INTO chat_drafts (user_id, chat_channel_id, data, created_at, updated_at) VALUES (3, 2, '{\"message\":\"hello\"}', now(), now())"

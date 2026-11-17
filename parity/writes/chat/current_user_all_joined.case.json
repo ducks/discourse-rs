@@ -1,4 +1,7 @@
 {
+  "unordered_responses": [
+    "/responses/0/body/current_user/available_notification_types"
+  ],
   "user": "user1",
   "setup": [
     "UPDATE user_chat_channel_memberships SET following = TRUE WHERE user_id = 3",

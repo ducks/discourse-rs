@@ -1,4 +1,7 @@
 {
+  "unordered_responses": [
+    "/responses/0/body/current_user/available_notification_types"
+  ],
   "user": "user1",
   "settings": {
     "topic_voting_enable_vote_limits": "true",
