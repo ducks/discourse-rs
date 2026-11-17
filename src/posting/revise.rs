@@ -21,6 +21,7 @@ use super::search_index::{self, BaseUrls, PostIndex};
 use super::text::{normalize_whitespaces, word_count};
 use super::validate::{self, PostInput};
 use super::{BAKED_VERSION, Ctx, next_draft_sequence};
+use crate::db::Db;
 use crate::discourse_diff::diff_size;
 use crate::guardian::Guardian;
 use crate::modifications;
@@ -198,12 +199,28 @@ pub async fn revise(
     post_id: i32,
     changes: Changes,
 ) -> Result<Outcome, AppError> {
+    revise_with(Db::Pool(pool), ctx, editor, post_id, changes).await
+}
+
+/// `revise` on `db`: on a caller's connection (Reviewable#perform's, for
+/// a penalty's post edit) its transactions are savepoints and the rest of
+/// revise! runs inside the caller's, as when Rails revises in an outer
+/// transaction.
+pub async fn revise_with(
+    mut db: Db<'_>,
+    ctx: &Ctx<'_>,
+    editor: &Guardian,
+    post_id: i32,
+    changes: Changes,
+) -> Result<Outcome, AppError> {
     let s = ctx.settings;
     let editor_user = editor
         .user()
         .ok_or(Unsupported("editing anonymously"))?
         .clone();
-    let mut conn = pool.acquire().await?;
+    // The edit limiter's, on connections of its own.
+    let pool = db.pool_or(&ctx.host.pool).clone();
+    let mut conn = db.acquire().await?;
     let post: PostRow = sqlx::query_as(
         "SELECT id, user_id, topic_id, post_number, raw, cooked, edit_reason, last_editor_id, version, \
                 public_version, last_version_at, hidden, wiki, post_type, self_edits, reply_to_post_number, locale, \
@@ -294,7 +311,7 @@ pub async fn revise(
             ..Default::default()
         };
         return Ok(
-            match revise_topic::revise(pool, ctx, editor, post.topic_id, &changes.topic, opts)
+            match revise_topic::revise_with(db, ctx, editor, post.topic_id, &changes.topic, opts)
                 .await?
             {
                 revise_topic::Outcome::Revised => Outcome::Revised,
@@ -454,7 +471,7 @@ pub async fn revise(
                 .await?,
             )
         };
-        conn = pool.acquire().await?;
+        conn = db.acquire().await?;
         (cooked, old_cooked)
     } else {
         (post.cooked.clone(), None)
@@ -597,7 +614,7 @@ pub async fn revise(
     }
     drop(conn);
 
-    let mut tx = pool.begin().await?;
+    let mut tx = db.begin().await?;
     if let Some(expected) = &changes.expected_raw {
         let locked: String = sqlx::query_scalar("SELECT raw FROM posts WHERE id = $1 FOR UPDATE")
             .bind(post.id)
@@ -746,7 +763,7 @@ pub async fn revise(
                 // all the same.
                 if editor_user.id > 0 {
                     sqlx::query("SELECT nextval('draft_sequences_id_seq')")
-                        .execute(pool)
+                        .execute(&mut *db.acquire().await?)
                         .await?;
                 }
                 return Ok(Outcome::Invalid(errors));
@@ -856,7 +873,7 @@ pub async fn revise(
             },
             editor_user.trust_level,
         )?;
-        if let Err(refused) = limiter.performed(pool, true).await? {
+        if let Err(refused) = limiter.performed(&pool, true).await? {
             tx.rollback().await?;
             return Ok(Outcome::RateLimited(refused));
         }
@@ -1012,7 +1029,7 @@ pub async fn revise(
         && post_fields_changed
         && !changes.bypass_bump
     {
-        let mut tx = pool.begin().await?;
+        let mut tx = db.begin().await?;
         sqlx::query("UPDATE topics SET bumped_at = clock_timestamp() WHERE id = $1")
             .bind(post.topic_id)
             .execute(&mut *tx)
@@ -1024,7 +1041,7 @@ pub async fn revise(
         tx.commit().await?;
     }
 
-    let mut conn = pool.acquire().await?;
+    let mut conn = db.acquire().await?;
     if has_raw && s.get("staff_edit_locks_post")?.truthy() && !new_wiki && editor.is_staff() {
         return Err(Unsupported("staff_edit_locks_post").into());
     }

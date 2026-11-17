@@ -214,3 +214,40 @@ async fn a_silence_rolls_back_with_a_failed_queued_reject() {
     );
     assert_eq!(reviewable(&db, 9311).await, (2, 1));
 }
+
+/// The flagged post's raw and version.
+async fn post(db: &TestDb, id: i32) -> (String, i32) {
+    sqlx::query_as("SELECT raw, version FROM posts WHERE id = $1")
+        .bind(id)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap()
+}
+
+/// The penalty dialog's post action edit (TriggerPostAction#edit) runs
+/// PostRevisor in the same transaction: rolled back with a failed agree,
+/// applied with the suspension when it goes through.
+#[tokio::test(flavor = "multi_thread")]
+async fn a_penalty_post_edit_rolls_back_with_a_conflicting_agree() {
+    let (db, st) = setup().await;
+    flagged_post(&db).await;
+    version_taken(&db).await;
+    let original = post(&db, 52).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let path = "/review/9301/perform/agree_and_suspend";
+    let body = "version=0&reason=Off+topic&suspend_until=2099-01-01\
+                &post_action=edit&post_edit=Edited+by+the+moderator";
+
+    let (status, json) = admin.request("PUT", path, body).await;
+    assert_eq!(status, 409, "{json}");
+    assert_eq!(post(&db, 52).await, original);
+    assert_eq!(penalty_traces(&db, 2).await, (false, false, 0, 0, 0));
+    assert_eq!(reviewable(&db, 9301).await, (0, 0));
+
+    exec(&db, "DROP TRIGGER test_version_taken ON reviewables").await;
+    let (status, json) = admin.request("PUT", path, body).await;
+    assert_eq!(status, 200, "{json}");
+    assert_eq!(post(&db, 52).await.0, "Edited by the moderator");
+    assert_eq!(penalty_traces(&db, 2).await, (true, false, 1, 0, 0));
+    assert_eq!(reviewable(&db, 9301).await, (1, 1));
+}

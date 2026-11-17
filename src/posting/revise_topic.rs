@@ -17,6 +17,7 @@ use super::small_action;
 use super::text::{EmojiEscape, TitleOptions, clean_title, fancy_title, slug_for};
 use super::validate::{self, Persisted, TopicInput};
 use super::{Ctx, next_draft_sequence};
+use crate::db::Db;
 use crate::guardian::Guardian;
 use crate::onebox::uri::RubyUri;
 use crate::topic_guardian::TopicCtx;
@@ -115,16 +116,31 @@ pub async fn revise(
     fields: &TopicFields,
     opts: Opts,
 ) -> Result<Outcome, AppError> {
-    let mut conn = pool.acquire().await?;
+    revise_with(Db::Pool(pool), ctx, editor, topic_id, fields, opts).await
+}
+
+/// `revise` on `db`: on a caller's connection its transaction is a
+/// savepoint and the rest of revise! runs inside the caller's.
+pub async fn revise_with(
+    mut db: Db<'_>,
+    ctx: &Ctx<'_>,
+    editor: &Guardian,
+    topic_id: i32,
+    fields: &TopicFields,
+    opts: Opts,
+) -> Result<Outcome, AppError> {
+    // The edit limiter's, on connections of its own.
+    let pool = db.pool_or(&ctx.host.pool).clone();
+    let mut conn = db.acquire().await?;
     let Some(prepared) = prepare(&mut conn, ctx, editor, topic_id, fields).await? else {
         return Ok(Outcome::Invalid(Vec::new()));
     };
     drop(conn);
-    let mut tx = pool.begin().await?;
+    let mut tx = db.begin().await?;
     let mut deferred = Deferred::default();
     let revised = match apply(
         &mut tx,
-        pool,
+        &pool,
         ctx,
         editor,
         &prepared,
@@ -146,7 +162,7 @@ pub async fn revise(
             // all the same.
             if !opts.keep_existing_draft && prepared.editor_id > 0 {
                 sqlx::query("SELECT nextval('draft_sequences_id_seq')")
-                    .execute(pool)
+                    .execute(&mut *db.acquire().await?)
                     .await?;
             }
             return Ok(Outcome::Invalid(errors));
@@ -154,7 +170,7 @@ pub async fn revise(
     };
     deferred.enqueue(&mut tx, ctx).await?;
     tx.commit().await?;
-    let mut conn = pool.acquire().await?;
+    let mut conn = db.acquire().await?;
     finish(&mut conn, ctx, editor, &prepared, &revised, opts).await?;
     Ok(Outcome::Revised)
 }

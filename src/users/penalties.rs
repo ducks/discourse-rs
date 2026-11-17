@@ -516,12 +516,6 @@ async fn trigger_post_action(
     let Some((topic_id, post_number, topic_gone)) = post else {
         return Ok(());
     };
-    // PostDestroyer and PostRevisor run on the pool, each committing on
-    // its own: inside a caller's transaction (Reviewable#perform's) their
-    // writes would outlive its rollback.
-    let Some(pool) = pool else {
-        return Err(Unsupported("a penalty's post action inside a review's transaction").into());
-    };
     let reviewable_id = p.reviewable_id;
     match action {
         "delete" | "delete_replies" => {
@@ -538,6 +532,13 @@ async fn trigger_post_action(
                     .into());
                 }
             }
+            // PostDestroyer runs on the pool, committing on its own: on a
+            // caller's connection its writes would outlive the caller's
+            // rollback. Every caller there passes a reviewable, refused
+            // above.
+            let Some(pool) = pool else {
+                return Err(Unsupported("deleting a penalty's post inside a transaction").into());
+            };
             // reply_ids, read before the post goes.
             let replies = if action == "delete_replies" {
                 reply_ids(&mut conn, post_id, topic_id).await?
@@ -579,8 +580,6 @@ async fn trigger_post_action(
             Ok(())
         }
         "edit" => {
-            drop(conn);
-            let mut conn = pool.acquire().await?;
             let Some(access) =
                 crate::posting::revisions::find_post(&mut conn, ctx, guardian, post_id).await?
             else {
@@ -596,8 +595,8 @@ async fn trigger_post_action(
             )? {
                 return Ok(());
             }
-            let outcome = crate::posting::revise::revise(
-                pool,
+            let outcome = crate::posting::revise::revise_with(
+                db.reborrow(),
                 ctx,
                 guardian,
                 post_id,
