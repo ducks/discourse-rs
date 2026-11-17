@@ -161,9 +161,7 @@
     }
   }
 
-  document.addEventListener("toggle", function (event) {
-    var drop = event.target;
-    if (!drop.matches?.(breadcrumbSelector)) { return; }
+  function toggled(drop) {
     drop.classList.toggle("is-expanded", drop.open);
     if (drop.open) {
       document.querySelectorAll(breadcrumbSelector + "[open]").forEach(function (other) {
@@ -171,7 +169,16 @@
       });
       loadBreadcrumb(drop);
     }
+  }
+
+  document.addEventListener("toggle", function (event) {
+    if (event.target.matches?.(breadcrumbSelector)) {
+      toggled(event.target);
+    }
   }, true);
+  // A drop opened while this deferred script was still loading had its
+  // toggle event before the listener: it is loaded now.
+  document.querySelectorAll(breadcrumbSelector + "[open]").forEach(toggled);
   document.addEventListener("click", function (event) {
     document.querySelectorAll(breadcrumbSelector + "[open]").forEach(function (drop) {
       if (!drop.contains(event.target) || event.target.closest("a")) {

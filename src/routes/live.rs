@@ -481,6 +481,11 @@ async fn handle_batch(
             live.badge.all_unread = count("all_unread_notifications_count");
             live.badge.new_pms = count("new_personal_messages_notifications_count");
             push_badge(live, Some(id))?;
+            // Chat's mention count is its unread chat_mention notifications,
+            // which NotifyMentioned makes after /new-mentions was heard (the
+            // Ember client counts that event itself): counted again once
+            // the member's notifications change.
+            chat = chat || live.chat.is_some();
         } else if reviewable_counts.as_ref() == Some(&message.channel) {
             // onReviewableCounts: the unseen count for the badge, the
             // pending count for the sidebar's review link.

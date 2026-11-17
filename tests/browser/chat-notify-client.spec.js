@@ -154,7 +154,8 @@ async function shownWith(page, text) {
 }
 
 // The title counting the notifications and chat's urgent count the page
-// carries, the urgent count at least `min`.
+// carries, the urgent count at least `min`. A failure shows the counts
+// and the title the page had.
 async function counted(page, plain, min) {
   await expect
     .poll(() =>
@@ -162,12 +163,13 @@ async function counted(page, plain, min) {
         ([plain, min]) => {
           const unread = Number(document.querySelector("#toggle-current-user img.avatar").dataset.allUnread);
           const urgent = Number(document.getElementById("chat-tracking-state").dataset.urgentCount);
-          return urgent >= min && document.title === `(${unread + urgent}) ${plain}`;
+          const title = document.title;
+          return { counted: urgent >= min && title === `(${unread + urgent}) ${plain}`, unread, urgent, title };
         },
         [plain, min],
       ),
     )
-    .toBe(true);
+    .toMatchObject({ counted: true });
 }
 
 // The message's alert, once NotifyWatching has published it (the job
@@ -226,7 +228,9 @@ test("the contextual title leaves chat out, and the indicator preference decides
   const dm = await directMessages(session, m);
   await stub(context);
   await login(context, m.name);
-  await page.goto("/latest");
+  // A page with no contextual count of its own: the latest list would
+  // count the topics other specs create meanwhile.
+  await page.goto("/about");
   const plain = await page.title();
   await setHidden(page, true);
   const first = await dm.send("a direct message without a sound");
