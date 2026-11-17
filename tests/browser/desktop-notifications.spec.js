@@ -190,10 +190,14 @@ test("a refused prompt leaves the preference disabled, a denied permission says 
   await page.goto(`/u/${m.name}/preferences/notifications`);
   const group = page.locator(".control-group.desktop-notifications");
   const select = group.locator(".push-notification-select");
+  // The preference's saves only: a member without a timezone also PUTs
+  // the browser's guess on load (User.resolveCurrent), and that request
+  // can reach this listener after goto returns.
   const puts = [];
   page.on("request", (r) => {
-    if (r.method() === "PUT") {
-      puts.push(r.postData() || "");
+    const body = r.postData() || "";
+    if (r.method() === "PUT" && body.includes("push_notification_level")) {
+      puts.push(body);
     }
   });
   await choose(page, "all");
