@@ -413,3 +413,171 @@ async fn the_chat_api_key_scope_follows_the_plugin() {
     assert_eq!(status, 403);
     assert!(body.contains(credentials), "{body}");
 }
+
+/// default_homepage "chat" with General (channel 2) as the homepage
+/// channel.
+async fn chat_homepage(db: &TestDb) {
+    common::set_setting(&db.pool, "default_homepage", 7, "chat").await;
+    common::set_setting(&db.pool, "chat_homepage_channel", 7, "2").await;
+}
+
+fn homepage_option(site: &Value) -> Value {
+    site["homepage_options"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|o| o["id"] == "chat")
+        .cloned()
+        .unwrap()
+}
+
+#[tokio::test]
+async fn a_chat_channel_homepage_points_site_json_at_the_channel() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+
+    // Not the homepage: no path.
+    let site = user1.json("/site.json").await;
+    assert_eq!(
+        homepage_option(&site),
+        json!({"id": "chat", "path": null, "server_side": false})
+    );
+    assert!(
+        site["homepage_choices"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("chat"))
+    );
+
+    chat_homepage(&db).await;
+    let site = user1.json("/site.json").await;
+    assert_eq!(homepage_option(&site)["path"], "/chat/c/general/2");
+    // chat_allowed_groups holds anonymous_users by default.
+    let mut anon = Client::anonymous(st.clone()).await;
+    assert_eq!(
+        homepage_option(&anon.json("/site.json").await)["path"],
+        "/chat/c/general/2"
+    );
+
+    // Chat turned off in the member's preferences: no path for them.
+    sqlx::query("UPDATE user_options SET chat_enabled = false WHERE user_id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        homepage_option(&user1.json("/site.json").await)["path"],
+        Value::Null
+    );
+    sqlx::query("UPDATE user_options SET chat_enabled = true WHERE user_id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+
+    // An archived channel is no homepage.
+    sqlx::query("UPDATE chat_channels SET status = 3 WHERE id = 2")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        homepage_option(&user1.json("/site.json").await)["path"],
+        Value::Null
+    );
+
+    // Without public channels it is not offered.
+    common::set_setting(&db.pool, "enable_public_channels", 5, "f").await;
+    let site = user1.json("/site.json").await;
+    assert!(
+        !site["homepage_choices"]
+            .as_array()
+            .unwrap()
+            .contains(&json!("chat"))
+    );
+}
+
+#[tokio::test]
+async fn a_chat_channel_homepage_renders_the_channel_at_the_root() {
+    let db = TestDb::new().await;
+    chat_homepage(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut user1 = Client::logged_in(st.clone(), "user1").await;
+    user1.headers.push((
+        "user-agent",
+        "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0".into(),
+    ));
+    let (status, html) = user1.send("GET", "/", "").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(html.contains("has-full-page-chat"), "{html}");
+
+    // Crawlers get the top menu's homepage.
+    user1.headers = vec![("user-agent", "Googlebot/2.1".into())];
+    let (status, html) = user1.send("GET", "/", "").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(!html.contains("has-full-page-chat"));
+
+    // As do members who can't see the channel's category.
+    user1.headers = vec![(
+        "user-agent",
+        "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0".into(),
+    )];
+    sqlx::query("UPDATE categories SET read_restricted = true WHERE id = 4")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, html) = user1.send("GET", "/", "").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(!html.contains("has-full-page-chat"));
+}
+
+#[tokio::test]
+async fn the_homepage_channel_setting_takes_open_public_channels() {
+    let db = TestDb::new().await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let settings = admin
+        .json("/admin/site_settings.json?filter_names[]=chat_homepage_channel")
+        .await;
+    let setting = settings["site_settings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|s| s["setting"] == "chat_homepage_channel")
+        .cloned()
+        .unwrap();
+    assert_eq!(
+        setting["valid_values"],
+        json!([{"name": "Staff", "value": 1}, {"name": "General", "value": 2}])
+    );
+
+    let put = |value: &str| format!("chat_homepage_channel={value}");
+    let (status, body) = admin
+        .send(
+            "PUT",
+            "/admin/site_settings/chat_homepage_channel.json",
+            &put("99"),
+        )
+        .await;
+    assert_eq!(status, 422, "{body}");
+    let (status, body) = admin
+        .send(
+            "PUT",
+            "/admin/site_settings/chat_homepage_channel.json",
+            &put("2"),
+        )
+        .await;
+    assert!(status == 200 || status == 204, "{status} {body}");
+
+    // Archived channels leave the list.
+    sqlx::query("UPDATE chat_channels SET status = 3 WHERE id = 1")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, body) = admin
+        .send(
+            "PUT",
+            "/admin/site_settings/chat_homepage_channel.json",
+            &put("1"),
+        )
+        .await;
+    assert_eq!(status, 422, "{body}");
+}

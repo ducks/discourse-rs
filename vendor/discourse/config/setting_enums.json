@@ -1018,19 +1018,6 @@
       "closed"
     ]
   },
-  "chat_homepage_channel": {
-    "valid_values": [
-      {
-        "name": "Staff",
-        "value": 1
-      },
-      {
-        "name": "General",
-        "value": 2
-      }
-    ],
-    "translate_names": false
-  },
   "chat_preferred_index": {
     "valid_values": [
       {

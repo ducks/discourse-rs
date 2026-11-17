@@ -48,6 +48,50 @@ pub fn crawler(
     Ok(!matches(&list("crawler_check_bypass_agents")?, &lower))
 }
 
+/// `CrawlerDetection.crawler_layout_request?`: a request with a user agent,
+/// for HTML (no other media type, format neither json nor rss), that asks
+/// to print, escapes its fragment (enable_escaped_fragments), comes from a
+/// browser browser_update_user_agents names, or from a crawler.
+pub fn layout_request(
+    settings: &SiteSettings,
+    headers: &axum::http::HeaderMap,
+    query: Option<&str>,
+) -> Result<bool, SettingError> {
+    let header = |name: &str| headers.get(name).and_then(|v| v.to_str().ok());
+    let Some(ua) = header("user-agent").filter(|ua| !crate::ruby::is_blank(ua)) else {
+        return Ok(false);
+    };
+    if let Some(media_type) = header("content-type")
+        .and_then(|t| t.split(';').next())
+        .map(str::trim)
+        .filter(|t| !t.is_empty())
+        && !media_type.contains("html")
+    {
+        return Ok(false);
+    }
+    let params: Vec<(String, String)> = query
+        .map(|q| form_urlencoded::parse(q.as_bytes()).into_owned().collect())
+        .unwrap_or_default();
+    let param = |name: &str| {
+        params
+            .iter()
+            .find(|(k, _)| k == name)
+            .map(|(_, v)| v.as_str())
+    };
+    if matches!(param("format"), Some("json" | "rss")) {
+        return Ok(false);
+    }
+    let escaped_fragment =
+        settings.get("enable_escaped_fragments")?.truthy() && param("_escaped_fragment_").is_some();
+    let browser_update = settings.get("browser_update_user_agents")?.to_s();
+    let browser_update =
+        !crate::ruby::is_blank(&browser_update) && matches(&browser_update, &ua.to_lowercase());
+    Ok(escaped_fragment
+        || param("print").is_some()
+        || browser_update
+        || crawler(settings, Some(ua), header("via"))?)
+}
+
 #[cfg(test)]
 mod tests {
     use super::matches;

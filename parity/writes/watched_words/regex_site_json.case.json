@@ -1,6 +1,5 @@
 {
   "user": null,
-  "not_yet": "0a264785d1d (Discourse): a chat channel as the homepage (register_homepage, homepage_options); not ported",
   "settings": {
     "watched_words_regular_expressions": true
   },

@@ -342,7 +342,7 @@ impl Site<'_> {
             self.anonymous_list_filters(),
         );
         out.insert("homepage_choices".into(), self.homepage_choices()?);
-        out.insert("homepage_options".into(), self.homepage_options()?);
+        out.insert("homepage_options".into(), self.homepage_options().await?);
         out.insert("periods".into(), str_list(PERIODS));
         out.insert("top_menu_items".into(), self.top_menu_items());
         out.insert(
@@ -701,21 +701,25 @@ impl Site<'_> {
                 choices.push(f);
             }
         }
-        for (_, homepage) in crate::plugin_api::homepages(self.settings)? {
+        for (_, homepage) in crate::plugin_api::offered_homepages(self.settings)? {
             choices.push(homepage.id);
         }
         Ok(json!(choices))
     }
 
     /// `DiscoursePluginRegistry.homepage_options`, each with
-    /// `HomepageHelper.option_path` (a plain path, as a plugin gives it).
-    fn homepage_options(&self) -> Result<Value, SiteError> {
-        Ok(json!(
-            crate::plugin_api::homepages(self.settings)?
-                .iter()
-                .map(|(_, h)| json!({ "id": h.id, "path": h.path, "server_side": h.server_side }))
-                .collect::<Vec<_>>()
-        ))
+    /// `HomepageHelper.option_path`.
+    async fn homepage_options(&mut self) -> Result<Value, SiteError> {
+        let mut out = Vec::new();
+        for option in crate::plugin_api::homepages(self.settings)? {
+            let path =
+                crate::homepage::option_path(self.conn, self.settings, &self.guardian, &option)
+                    .await?;
+            out.push(
+                json!({ "id": option.1.id, "path": path, "server_side": option.1.server_side }),
+            );
+        }
+        Ok(json!(out))
     }
 
     /// `Discourse.top_menu_items`: core's filters + categories, memoized

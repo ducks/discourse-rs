@@ -314,7 +314,10 @@ async fn a_guests_homepage_answers_the_root_while_it_is_the_homepage() {
     let site = json_of(&st, "/site.json").await;
     assert_eq!(
         site["homepage_options"],
-        json!([{"id": "echo", "path": "/echo", "server_side": true}])
+        json!([
+            {"id": "chat", "path": null, "server_side": false},
+            {"id": "echo", "path": "/echo", "server_side": true},
+        ])
     );
     assert_eq!(
         send(&st, "/?year=2026", None).await,

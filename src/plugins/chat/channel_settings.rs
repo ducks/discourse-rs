@@ -153,6 +153,10 @@ impl Context<'_> {
             .bind(crate::clock::now_naive())
             .execute(&mut *self.conn)
             .await?;
+        if target != channel.status {
+            super::homepage::clear_anon_cache(bus, &mut *self.conn, self.settings, channel.id)
+                .await?;
+        }
         let status_name = |s: i32| super::channels::STATUSES[s as usize].to_string();
         crate::staff_action_logs::log_custom(
             &mut *self.conn,
@@ -198,7 +202,11 @@ impl Context<'_> {
     /// the slug is moved aside (`<time>-<slug>-deleted`, so a new
     /// channel may take it, its hashtags remapped), the channel trashed
     /// and logged, and Jobs::Chat::ChannelDelete clears what it held.
-    pub async fn trash_channel(&mut self, channel_id: Option<i64>) -> Result<Outcome, AppError> {
+    pub async fn trash_channel(
+        &mut self,
+        bus: &pg_bus::Bus,
+        channel_id: Option<i64>,
+    ) -> Result<Outcome, AppError> {
         let Some(channel_id) = channel_id else {
             return Ok(Outcome::Invalid(vec!["Channel can't be blank".into()]));
         };
@@ -270,6 +278,8 @@ impl Context<'_> {
             json!({ "chat_channel_id": channel.id }),
         )
         .await?;
+        // after_commit clear_homepage_anon_cache, for the slug moved aside.
+        super::homepage::clear_anon_cache(bus, &mut *self.conn, self.settings, channel.id).await?;
         Ok(Outcome::Done(json!({ "success": "OK" })))
     }
 

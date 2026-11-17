@@ -17,6 +17,7 @@ RUNTIME_CLASSES = %w[
   DiscourseAi::Configuration::EmbeddingDefsEnumerator
   ReactionForLikeSiteSettingEnum
   HomepageSiteSetting
+  Chat::HomepageChannelSiteSetting
 ]
 
 supervisor = SiteSetting.type_supervisor

@@ -587,6 +587,10 @@ impl Context<'_> {
                 )
                 .await?;
             }
+            if slug != channel.slug {
+                super::homepage::clear_anon_cache(bus, &mut *self.conn, self.settings, channel.id)
+                    .await?;
+            }
         }
         // mark_all_threads_as_read_if_needed
         if category && threading && !channel.threading_enabled {

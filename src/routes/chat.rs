@@ -2141,7 +2141,7 @@ pub async fn trash_channel(
             Err(refused) => return Ok(refused),
         };
     let outcome = context(&state, &mut tx, &settings, &guardian)
-        .trash_channel(contract_integer(&id))
+        .trash_channel(&state.bus, contract_integer(&id))
         .await?;
     finish_channel(&state, tx, outcome).await
 }

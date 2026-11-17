@@ -25,6 +25,7 @@ pub mod dm_create;
 pub mod dm_groups;
 pub mod drawer;
 pub mod flags;
+pub mod homepage;
 pub mod incoming_webhooks;
 pub mod info;
 pub mod interact;
