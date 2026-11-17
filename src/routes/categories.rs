@@ -361,6 +361,8 @@ pub async fn create(
         }
         crate::category_writes::Saved::Done(id) => id,
     };
+    // CategoryCreator logs inside its transaction, right after the save.
+    crate::category_writes::log_creation(&mut tx, &cx, user_id, id).await?;
     // move_to(position.to_i) if position
     if let Some(position) = position.filter(|p| !p.is_null()) {
         crate::category_writes::move_to(&mut tx, id, position_to_i(&position)).await?;
@@ -410,7 +412,6 @@ pub async fn create(
         !reloaded,
     )
     .await?;
-    crate::category_writes::log_creation(&mut tx, &cx, user_id, id).await?;
     tx.commit().await?;
     let mut conn = state.pool.acquire().await?;
     // The settings as the type configuration left them.
@@ -635,6 +636,19 @@ pub async fn update(
         }
         crate::category_writes::Saved::Done(_) => {}
     }
+    // CategoryUpdater logs inside the save's transaction, before its
+    // after_commit callbacks.
+    crate::category_writes::log_settings_change(
+        &mut tx,
+        &cx,
+        user_id,
+        c.id,
+        &old_params,
+        &record.saved_changes,
+        &old_permissions,
+        &old_custom_fields,
+    )
+    .await?;
     crate::category_writes::after_commit(
         &mut tx,
         &cx,
@@ -647,17 +661,6 @@ pub async fn update(
     record.run_deferred(&mut tx).await?;
     let mut pre = cs::preload_user_fields(&mut tx, &s, &state.i18n, &guardian, c.id).await?;
     pre.category_setting = true;
-    crate::category_writes::log_settings_change(
-        &mut tx,
-        &cx,
-        user_id,
-        c.id,
-        &old_params,
-        &record.saved_changes,
-        &old_permissions,
-        &old_custom_fields,
-    )
-    .await?;
     tx.commit().await?;
     let mut conn = state.pool.acquire().await?;
     // The settings as the type configuration left them.
@@ -781,9 +784,14 @@ pub async fn destroy(
         settings: &s,
     };
     let mut tx = state.pool.begin().await?;
-    let deleted = crate::category_writes::Deleted::read(&mut tx, &cx, c.id).await?;
+    // CategoryDestroyer: category.lock!, then the log while its
+    // permissions are still there, then destroy!.
+    sqlx::query("SELECT 1 FROM categories WHERE id = $1 FOR UPDATE")
+        .bind(c.id)
+        .execute(&mut *tx)
+        .await?;
+    crate::category_writes::log_deletion(&mut tx, &cx, user_id, c.id).await?;
     crate::category_writes::destroy(&mut tx, &cx, c.id).await?;
-    deleted.log(&mut tx, user_id, c.id).await?;
     tx.commit().await?;
     Ok(Json(json!({ "success": "OK" })).into_response())
 }

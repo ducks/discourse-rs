@@ -3045,6 +3045,17 @@ pub async fn destroy(conn: &mut PgConnection, cx: &Cx<'_>, id: i32) -> Result<()
         {
             return Err(Unsupported("the boards plugin's topic_trashed sync").into());
         }
+        // topic.first_post&.trash!
+        let first_post: Option<i32> = sqlx::query_scalar(
+            "SELECT id FROM posts WHERE topic_id = $1 AND post_number = 1 AND deleted_at IS NULL \
+             ORDER BY id LIMIT 1",
+        )
+        .bind(topic_id)
+        .fetch_optional(&mut *conn)
+        .await?;
+        if let Some(post_id) = first_post {
+            crate::posts::destroyer::trash_post(&mut *conn, post_id, None, None).await?;
+        }
         sqlx::query("UPDATE topics SET deleted_at = now(), deleted_by_id = NULL WHERE id = $1")
             .bind(topic_id)
             .execute(&mut *conn)
@@ -3055,6 +3066,7 @@ pub async fn destroy(conn: &mut PgConnection, cx: &Cx<'_>, id: i32) -> Result<()
             )
             .await?;
         }
+        crate::posts::destroyer::reset_highest(&mut *conn, topic_id).await?;
     }
     // clear_related_site_settings, then remove_site_settings.
     if cx.settings.get("general_category_id")?.to_i() == i64::from(id) {
@@ -3134,55 +3146,50 @@ async fn remove_site_settings(
     Ok(())
 }
 
-/// `StaffActionLogger#log_category_deletion` from what was read before
-/// the category went: its creation time, name, permissions (always
-/// empty, the groups destroyed with it), parent and url.
-pub struct Deleted {
-    pub details: String,
-    pub context: String,
-}
-
-impl Deleted {
-    pub async fn read(conn: &mut PgConnection, cx: &Cx<'_>, id: i32) -> Result<Deleted, AppError> {
-        let (name, parent): (String, Option<i32>) =
-            sqlx::query_as("SELECT name, parent_category_id FROM categories WHERE id = $1")
-                .bind(id)
-                .fetch_one(&mut *conn)
+/// `StaffActionLogger#log_category_deletion`, written before the category
+/// goes (CategoryDestroyer): its creation time, name, permissions (as
+/// `Hash#inspect`), parent and url.
+pub async fn log_deletion(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    acting_user_id: i32,
+    id: i32,
+) -> Result<(), AppError> {
+    let (name, parent): (String, Option<i32>) =
+        sqlx::query_as("SELECT name, parent_category_id FROM categories WHERE id = $1")
+            .bind(id)
+            .fetch_one(&mut *conn)
+            .await?;
+    let permissions = permissions_params(conn, id)
+        .await?
+        .iter()
+        .map(|(group, level)| format!("{} => {level}", crate::ruby::inspect_string(group)))
+        .collect::<Vec<_>>()
+        .join(", ");
+    let mut details = format!(
+        "created_at: {}\nname: {name}\npermissions: {{{permissions}}}",
+        created_at_to_s(conn, id).await?
+    );
+    if let Some(parent) = parent {
+        let parent_name: Option<String> =
+            sqlx::query_scalar("SELECT name FROM categories WHERE id = $1")
+                .bind(parent)
+                .fetch_optional(&mut *conn)
                 .await?;
-        let mut details = format!(
-            "created_at: {}\nname: {name}\npermissions: {{}}",
-            created_at_to_s(conn, id).await?
-        );
-        if let Some(parent) = parent {
-            let parent_name: Option<String> =
-                sqlx::query_scalar("SELECT name FROM categories WHERE id = $1")
-                    .bind(parent)
-                    .fetch_optional(&mut *conn)
-                    .await?;
-            if let Some(p) = parent_name {
-                details.push_str(&format!("\nparent_category: {p}"));
-            }
+        if let Some(p) = parent_name {
+            details.push_str(&format!("\nparent_category: {p}"));
         }
-        let context = url(conn, cx.host.config.globals.relative_url_root(), id).await?;
-        Ok(Deleted { details, context })
     }
-
-    pub async fn log(
-        &self,
-        conn: &mut PgConnection,
-        acting_user_id: i32,
-        id: i32,
-    ) -> Result<(), AppError> {
-        insert_history(
-            conn,
-            "delete_category",
-            acting_user_id,
-            id,
-            &self.details,
-            &self.context,
-        )
-        .await
-    }
+    let context = url(conn, cx.host.config.globals.relative_url_root(), id).await?;
+    insert_history(
+        conn,
+        "delete_category",
+        acting_user_id,
+        id,
+        &details,
+        &context,
+    )
+    .await
 }
 
 /// `category.custom_fields[k] = v` for each field, then
