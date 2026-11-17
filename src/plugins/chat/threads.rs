@@ -999,7 +999,7 @@ impl Context<'_> {
         let channel = self.thread_channel(&thread).await?;
         // policy :invalid_access, :threading_enabled_for_channel,
         // :original_message_not_deleted
-        if !self.can_join(&channel, None).await? {
+        if !self.can_view(&channel).await? {
             return Ok(Outcome::Forbidden);
         }
         if !shows(&channel, &thread) {

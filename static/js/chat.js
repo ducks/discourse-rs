@@ -5100,9 +5100,10 @@
   }
 
   // The chat footer's buttons and the empty channels list's are routes
-  // (DButton @route).
+  // (DButton @route); an anonymous visitor's preview card logs in or signs
+  // up (showLogin, showCreateAccount) on the login and signup pages.
   document.addEventListener("click", function (event) {
-    var button = event.target.closest(".c-footer__item[data-href], .--empty-channels-list .empty-state__cta .btn[data-href]");
+    var button = event.target.closest(".c-footer__item[data-href], .--empty-channels-list .empty-state__cta .btn[data-href], .chat-channel-preview-card.--anon .btn[data-href]");
     if (button) {
       window.location.assign(button.dataset.href);
     }

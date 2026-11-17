@@ -313,7 +313,7 @@ impl Context<'_> {
             d_icon("arrow-down", None)
         ));
         if !following && channel.chatable_type != "DirectMessage" {
-            out.push_str(&preview_card(&channel_json, &t));
+            out.push_str(&preview_card(&channel_json, &t, self.anonymous_base()));
         } else {
             out.push_str(
                 &self

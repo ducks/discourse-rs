@@ -635,7 +635,7 @@ impl Context<'_> {
         params: &ListParams,
     ) -> Result<Listed, AppError> {
         // model :channel, policy :can_view_channel
-        let channel = match self.find_joinable(&channel_id.to_string()).await? {
+        let channel = match self.find_viewable(&channel_id.to_string()).await? {
             Found::Channel(channel) => channel,
             Found::NotFound => return Ok(Listed::NotFound),
             Found::Forbidden => return Ok(Listed::Forbidden),
@@ -796,8 +796,7 @@ impl Context<'_> {
             return Ok(Listed::NotFound);
         };
         let channel = self.thread_channel(&thread).await?;
-        if self.guardian.user_id() != Some(SYSTEM_USER_ID) && !self.can_join(&channel, None).await?
-        {
+        if self.guardian.user_id() != Some(SYSTEM_USER_ID) && !self.can_view(&channel).await? {
             return Ok(Listed::Forbidden);
         }
         // policy :threading_enabled_for_channel, :original_message_not_deleted

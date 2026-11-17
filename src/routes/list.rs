@@ -792,16 +792,13 @@ pub async fn root(
         .parse()
         .map_err(|_| Unsupported("a plugin homepage path that is not a URI"))?;
     let routes = match owner {
-        // chat/chat#respond: the channel's full page chat, at `/`.
-        crate::plugin_api::HomepageOwner::Chat => {
-            if guardian.is_anonymous() {
-                return Err(Unsupported("an anonymous visitor's chat channel homepage").into());
-            }
-            axum::Router::new().route(
-                "/chat/c/{slug}/{id}",
-                axum::routing::get(super::chat_pages::channel),
-            )
-        }
+        // chat/chat#respond: the channel's full page chat, at `/`, for a
+        // member or an anonymous visitor alike (homepage::resolve only
+        // lands either here when they may open the channel).
+        crate::plugin_api::HomepageOwner::Chat => axum::Router::new().route(
+            "/chat/c/{slug}/{id}",
+            axum::routing::get(super::chat_pages::channel),
+        ),
         crate::plugin_api::HomepageOwner::Plugin(plugin) => plugin.routes(),
     };
     let request = axum::extract::Request::from_parts(parts, body);

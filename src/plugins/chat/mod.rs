@@ -66,6 +66,18 @@ pub fn enabled(settings: &SiteSettings) -> Result<bool, SettingError> {
     Ok(settings.get("chat_enabled")?.truthy())
 }
 
+/// `Chat.anonymous_public_channel_access_allowed?`: public channels on and
+/// anonymous users among chat_allowed_groups, which lets anonymous
+/// visitors read the public channels.
+pub fn anonymous_public_channel_access_allowed(
+    settings: &SiteSettings,
+) -> Result<bool, SettingError> {
+    Ok(settings.get("enable_public_channels")?.truthy()
+        && settings
+            .group_ids("chat_allowed_groups")?
+            .contains(&auto_groups::ANONYMOUS_USERS))
+}
+
 /// `Chat.message_bus_allowed_group_ids`: chat_allowed_groups without
 /// anonymous users, everyone and logged in users as trust level 0.
 pub fn message_bus_allowed_group_ids(settings: &SiteSettings) -> Result<Vec<i32>, SettingError> {
@@ -148,17 +160,13 @@ pub fn allowed_channel_ids_sql(
     guardian: &Guardian,
     exclude_dm_channels: bool,
 ) -> Result<String, AppError> {
-    let categories = if guardian.is_anonymous()
-        && settings.get("enable_public_channels")?.truthy()
-        && settings
-            .group_ids("chat_allowed_groups")?
-            .contains(&crate::guardian::auto_groups::ANONYMOUS_USERS)
-    {
-        "NOT categories.read_restricted".to_string()
-    } else {
-        // POST_CREATION_PERMISSIONS: full (1) and create_post (2).
-        categories_scoped_to(guardian, "1, 2")
-    };
+    let categories =
+        if guardian.is_anonymous() && anonymous_public_channel_access_allowed(settings)? {
+            "NOT categories.read_restricted".to_string()
+        } else {
+            // POST_CREATION_PERMISSIONS: full (1) and create_post (2).
+            categories_scoped_to(guardian, "1, 2")
+        };
     let mut sql = format!(
         "SELECT chat_channels.id FROM categories \
          INNER JOIN chat_channels ON chat_channels.chatable_id = categories.id \

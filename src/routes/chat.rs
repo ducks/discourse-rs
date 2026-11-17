@@ -17,16 +17,23 @@ use crate::{AppError, AppState};
 
 /// Chat::BaseController's before actions: requires_plugin (404),
 /// ensure_logged_in, ensure_can_chat. None when the request may go on.
+/// `anonymous`: the action's allow_anonymous_public_chat_access?, which
+/// skips both for an anonymous visitor while
+/// `Chat.anonymous_public_channel_access_allowed?`.
 async fn guard(
     state: &AppState,
     conn: &mut PgConnection,
     settings: &SiteSettings,
     guardian: &crate::guardian::Guardian,
+    anonymous: bool,
 ) -> Result<Option<Response>, AppError> {
     if !crate::plugins::chat::enabled(settings)? {
         return Ok(Some(super::topics::not_found_response(state)));
     }
     if guardian.is_anonymous() {
+        if anonymous && crate::plugins::chat::anonymous_public_channel_access_allowed(settings)? {
+            return Ok(None);
+        }
         return Ok(Some(super::login_required::not_logged_in(state)));
     }
     if !crate::plugins::chat::can_chat(conn, settings, guardian).await? {
@@ -41,12 +48,33 @@ async fn begin(
     conn: &mut PgConnection,
     guardian: &crate::guardian::Guardian,
 ) -> Result<Result<SiteSettings, Response>, AppError> {
+    begin_as(state, conn, guardian, false).await
+}
+
+/// [`begin`] for the actions anonymous visitors may read public channels
+/// through (allow_anonymous_public_chat_access?).
+async fn begin_anonymous(
+    state: &AppState,
+    conn: &mut PgConnection,
+    guardian: &crate::guardian::Guardian,
+) -> Result<Result<SiteSettings, Response>, AppError> {
+    begin_as(state, conn, guardian, true).await
+}
+
+async fn begin_as(
+    state: &AppState,
+    conn: &mut PgConnection,
+    guardian: &crate::guardian::Guardian,
+    anonymous: bool,
+) -> Result<Result<SiteSettings, Response>, AppError> {
     let settings =
         SiteSettings::load(&mut *conn, &state.site_setting_defs, &state.config.globals).await?;
-    Ok(match guard(state, conn, &settings, guardian).await? {
-        Some(refused) => Err(refused),
-        None => Ok(settings),
-    })
+    Ok(
+        match guard(state, conn, &settings, guardian, anonymous).await? {
+            Some(refused) => Err(refused),
+            None => Ok(settings),
+        },
+    )
 }
 
 fn context<'a>(
@@ -71,7 +99,7 @@ pub async fn me_channels(
     AuthGuardian(guardian): AuthGuardian,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
-    let settings = match begin(&state, &mut conn, &guardian).await? {
+    let settings = match begin_anonymous(&state, &mut conn, &guardian).await? {
         Ok(settings) => settings,
         Err(refused) => return Ok(refused),
     };
@@ -217,14 +245,23 @@ pub async fn show(
     Path(id): Path<String>,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
-    let settings = match begin(&state, &mut conn, &guardian).await? {
+    let settings = match begin_anonymous(&state, &mut conn, &guardian).await? {
         Ok(settings) => settings,
         Err(refused) => return Ok(refused),
     };
     let mut cx = context(&state, &mut conn, &settings, &guardian);
-    let channel = match channel(&state, &mut cx, &id).await? {
-        Ok(channel) => channel,
-        Err(refused) => return Ok(refused),
+    // channel_from_params: an anonymous visitor's channel is one they may
+    // preview, else not found.
+    let channel = if guardian.is_anonymous() {
+        match cx.find_live(strip_format(&id)).await? {
+            Some(channel) if cx.can_preview_anonymous(&channel).await? => channel,
+            _ => return Ok(super::topics::not_found_response(&state)),
+        }
+    } else {
+        match channel(&state, &mut cx, &id).await? {
+            Ok(channel) => channel,
+            Err(refused) => return Ok(refused),
+        }
     };
     Ok(Json(cx.show(&channel).await?).into_response())
 }
@@ -290,7 +327,7 @@ pub async fn messages(
     const MAX_PAGE_SIZE: i64 = 50;
 
     let mut tx = state.pool.begin().await?;
-    let settings = match begin(&state, &mut tx, &guardian).await? {
+    let settings = match begin_anonymous(&state, &mut tx, &guardian).await? {
         Ok(settings) => settings,
         Err(refused) => return Ok(refused),
     };
@@ -1259,7 +1296,7 @@ pub async fn show_thread(
     Path((id, thread_id)): Path<(String, String)>,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
-    let settings = match begin(&state, &mut conn, &guardian).await? {
+    let settings = match begin_anonymous(&state, &mut conn, &guardian).await? {
         Ok(settings) => settings,
         Err(refused) => return Ok(refused),
     };
@@ -1336,7 +1373,7 @@ pub async fn thread_messages(
     const MAX_PAGE_SIZE: i64 = 50;
 
     let mut conn = state.pool.acquire().await?;
-    let settings = match begin(&state, &mut conn, &guardian).await? {
+    let settings = match begin_anonymous(&state, &mut conn, &guardian).await? {
         Ok(settings) => settings,
         Err(refused) => return Ok(refused),
     };

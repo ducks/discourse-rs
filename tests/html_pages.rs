@@ -2150,7 +2150,9 @@ fn list_rows<'a>(html: &'a str, path: &str) -> &'a str {
 // Each discovery list's body classes, as rs-ref-b ends up with them:
 // Rails' layout's `category-<slug_path>` first on a category's list, then
 // the chrome's, WelcomeBanner's around Navigation's and
-// AddCategoryTagClasses'.
+// AddCategoryTagClasses'. chat-setup.js's chat-enabled is an anonymous
+// visitor's too while chat_allowed_groups holds anonymous_users (the
+// default since Discourse 00f21b36e14).
 #[tokio::test]
 async fn discovery_lists_carry_embers_body_classes() {
     let db = TestDb::new().await;
@@ -2175,7 +2177,11 @@ async fn discovery_lists_carry_embers_body_classes() {
     ] {
         let (status, _, html) = get(&db.pool, path).await;
         assert_eq!(status, StatusCode::OK, "{path}");
-        assert_eq!(body_classes(&html), format!("{uc} {classes}"), "{path}");
+        assert_eq!(
+            body_classes(&html),
+            format!("chat-enabled {uc} {classes}"),
+            "{path}"
+        );
     }
     for (path, slug) in [
         ("/c/general/4", "general"),
@@ -2188,7 +2194,9 @@ async fn discovery_lists_carry_embers_body_classes() {
         assert_eq!(status, StatusCode::OK, "{path}");
         assert_eq!(
             body_classes(&html),
-            format!("category-{slug} {uc} has-sidebar-page category navigation-category"),
+            format!(
+                "category-{slug} chat-enabled {uc} has-sidebar-page category navigation-category"
+            ),
             "{path}"
         );
     }
@@ -2197,13 +2205,13 @@ async fn discovery_lists_carry_embers_body_classes() {
     let html = mobile_page(&db.pool, "/latest").await;
     assert_eq!(
         body_classes(&html),
-        format!("{uc} welcome-banner--enabled navigation-topics")
+        format!("chat-enabled {uc} welcome-banner--enabled navigation-topics")
     );
     assert!(html.contains("/assets/welcome-banner.js"));
     let html = mobile_page(&db.pool, "/c/general/sub-general/34").await;
     assert_eq!(
         body_classes(&html),
-        format!("category-general-sub-general {uc} category navigation-category")
+        format!("category-general-sub-general chat-enabled {uc} category navigation-category")
     );
     // A staff member's: GlimmerSiteHeader's `staff`.
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
@@ -2246,7 +2254,7 @@ async fn discovery_lists_carry_embers_body_classes() {
     let (_, _, html) = get(&db.pool, "/latest").await;
     assert_eq!(
         body_classes(&html),
-        format!("{uc} has-sidebar-page navigation-topics")
+        format!("chat-enabled {uc} has-sidebar-page navigation-topics")
     );
     assert!(!html.contains("welcome-banner.js"));
 }
