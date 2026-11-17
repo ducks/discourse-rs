@@ -10,6 +10,7 @@
 use serde_json::Value;
 use sqlx::{PgConnection, PgPool};
 
+use crate::db::Db;
 use crate::guardian::Guardian;
 use crate::posting::Ctx;
 use crate::posting::create::{self, NewPost, Outcome};
@@ -130,8 +131,29 @@ pub async fn create(
     params: &[(String, String)],
     post_alert_options: Option<Value>,
 ) -> Result<i32, AppError> {
+    create_with(
+        Db::Pool(pool),
+        ctx,
+        recipient_id,
+        message_type,
+        params,
+        post_alert_options,
+    )
+    .await
+}
+
+/// `create` on `db`: on a caller's connection, inside the caller's
+/// transaction (its PostCreator a savepoint).
+pub async fn create_with(
+    db: Db<'_>,
+    ctx: &Ctx<'_>,
+    recipient_id: i32,
+    message_type: &str,
+    params: &[(String, String)],
+    post_alert_options: Option<Value>,
+) -> Result<i32, AppError> {
     create_as(
-        pool,
+        db,
         ctx,
         recipient_id,
         message_type,
@@ -151,11 +173,20 @@ pub async fn create_from_system_user(
     message_type: &str,
     params: &[(String, String)],
 ) -> Result<i32, AppError> {
-    create_as(pool, ctx, recipient_id, message_type, params, None, true).await
+    create_as(
+        Db::Pool(pool),
+        ctx,
+        recipient_id,
+        message_type,
+        params,
+        None,
+        true,
+    )
+    .await
 }
 
 async fn create_as(
-    pool: &PgPool,
+    mut db: Db<'_>,
     ctx: &Ctx<'_>,
     recipient_id: i32,
     message_type: &str,
@@ -173,7 +204,7 @@ async fn create_as(
     {
         return Err(Unsupported("system messages copied to a site contact group").into());
     }
-    let mut conn = pool.acquire().await?;
+    let mut conn = db.acquire().await?;
     let recipient: Recipient = sqlx::query_as("SELECT username, name FROM users WHERE id = $1")
         .bind(recipient_id)
         .fetch_one(&mut *conn)
@@ -203,8 +234,8 @@ async fn create_as(
     };
     let guardian = Guardian::for_user(&mut conn, &sender).await?;
     drop(conn);
-    let outcome = Box::pin(create::create(
-        pool,
+    let outcome = Box::pin(create::create_with(
+        db.reborrow(),
         ctx,
         &guardian,
         NewPost {
@@ -224,8 +255,13 @@ async fn create_as(
         _ => return Err(Unsupported("a system message PostCreator refused").into()),
     };
     // DiscourseEvent :system_message_sent, to discourse-narrative-bot.
-    crate::plugins::narrative_bot::system_message_sent(pool, ctx, message_type, recipient_id)
-        .await?;
+    crate::plugins::narrative_bot::system_message_sent(
+        db.pool_or(&ctx.host.pool),
+        ctx,
+        message_type,
+        recipient_id,
+    )
+    .await?;
     if from_system {
         return Ok(post_id);
     }
@@ -236,7 +272,7 @@ async fn create_as(
     )
     .bind(sender.id)
     .bind(post_id)
-    .execute(pool)
+    .execute(&mut *db.acquire().await?)
     .await?;
     Ok(post_id)
 }

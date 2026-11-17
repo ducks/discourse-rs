@@ -8,6 +8,7 @@ use chrono::{NaiveDate, NaiveDateTime};
 use serde_json::{Value, json};
 use sqlx::{PgConnection, PgPool};
 
+use crate::db::Db;
 use crate::guardian::Guardian;
 use crate::posting::Ctx;
 use crate::topic_list::time_json;
@@ -330,12 +331,12 @@ pub(crate) struct Suspension<'a> {
 
 /// `UserSuspender#suspend`: the user's history details and suspended_at.
 pub(crate) async fn suspend_user(
-    pool: &PgPool,
+    mut db: Db<'_>,
     payloads: &crate::web_hooks::Payloads<'_>,
     user_id: i32,
     s: &Suspension<'_>,
 ) -> Result<(String, NaiveDateTime), AppError> {
-    let mut tx = pool.begin().await?;
+    let mut tx = db.begin().await?;
     let suspended_at: NaiveDateTime = sqlx::query_scalar(
         "UPDATE users SET suspended_till = $2, suspended_at = clock_timestamp(), updated_at = clock_timestamp() \
          WHERE id = $1 RETURNING suspended_at",
@@ -361,7 +362,7 @@ pub(crate) async fn suspend_user(
     .fetch_one(&mut *tx)
     .await?;
     tx.commit().await?;
-    let mut conn = pool.acquire().await?;
+    let mut conn = db.acquire().await?;
     // log_out!: push subscriptions cleared (the rest is MessageBus).
     sqlx::query("DELETE FROM push_subscriptions WHERE user_id = $1")
         .bind(user_id)
@@ -400,7 +401,7 @@ pub(crate) async fn suspend_user(
 
 /// `User::Suspend.call`
 pub async fn suspend(
-    pool: &PgPool,
+    mut db: Db<'_>,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
     user_id: i32,
@@ -416,7 +417,7 @@ pub async fn suspend(
         return Ok(Outcome::Invalid(errors));
     }
     let (reason, until) = (p.reason.unwrap_or_default(), until.unwrap_or_default());
-    let mut conn = pool.acquire().await?;
+    let mut conn = db.acquire().await?;
     let Some(user) = target(&mut conn, user_id).await? else {
         return Ok(Outcome::NotFound);
     };
@@ -457,7 +458,7 @@ pub async fn suspend(
     let mut first = None;
     for u in &users {
         let done = suspend_user(
-            pool,
+            db.reborrow(),
             &crate::web_hooks::Payloads {
                 settings: ctx.settings,
                 i18n: ctx.i18n,
@@ -470,8 +471,8 @@ pub async fn suspend(
         first.get_or_insert(done);
     }
     let (full_reason, suspended_at) = first.unwrap_or_default();
-    trigger_post_action(pool, ctx, guardian, p).await?;
-    let mut conn = pool.acquire().await?;
+    trigger_post_action(db.reborrow(), ctx, guardian, p).await?;
+    let mut conn = db.acquire().await?;
     Ok(Outcome::Done(json!({
         "suspension": {
             "suspend_reason": reason,
@@ -486,7 +487,7 @@ pub async fn suspend(
 /// `User::Action::TriggerPostAction`: the post that prompted the
 /// penalty deleted (with its replies) or edited, as the moderator chose.
 async fn trigger_post_action(
-    pool: &PgPool,
+    mut db: Db<'_>,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
     p: &Penalty<'_>,
@@ -499,7 +500,11 @@ async fn trigger_post_action(
         Some(a) if !crate::ruby::is_blank(a) && a != "none" => a,
         _ => return Ok(()),
     };
-    let mut conn = pool.acquire().await?;
+    let pool = match &db {
+        Db::Pool(pool) => Some(*pool),
+        Db::Conn(_) => None,
+    };
+    let mut conn = db.acquire().await?;
     let post: Option<(i32, i32, bool)> = sqlx::query_as(
         "SELECT p.topic_id, p.post_number, t.id IS NULL OR t.deleted_at IS NOT NULL \
          FROM posts p LEFT JOIN topics t ON t.id = p.topic_id \
@@ -510,6 +515,12 @@ async fn trigger_post_action(
     .await?;
     let Some((topic_id, post_number, topic_gone)) = post else {
         return Ok(());
+    };
+    // PostDestroyer and PostRevisor run on the pool, each committing on
+    // its own: inside a caller's transaction (Reviewable#perform's) their
+    // writes would outlive its rollback.
+    let Some(pool) = pool else {
+        return Err(Unsupported("a penalty's post action inside a review's transaction").into());
     };
     let reviewable_id = p.reviewable_id;
     match action {
@@ -756,7 +767,7 @@ struct Silenced {
 /// who is not staff: nothing for a silence that has not ended
 /// (`silenced?` since fe97c2951fd).
 async fn silence_user(
-    pool: &PgPool,
+    mut db: Db<'_>,
     ctx: &Ctx<'_>,
     user: &Target,
     s: &Suspension<'_>,
@@ -764,7 +775,7 @@ async fn silence_user(
     if user.silenced {
         return Ok(None);
     }
-    let mut tx = pool.begin().await?;
+    let mut tx = db.begin().await?;
     sqlx::query(
         "UPDATE users SET silenced_till = $2, updated_at = clock_timestamp() WHERE id = $1",
     )
@@ -792,8 +803,8 @@ async fn silence_user(
     .fetch_one(&mut *tx)
     .await?;
     tx.commit().await?;
-    crate::system_message::create(
-        pool,
+    crate::system_message::create_with(
+        db.reborrow(),
         ctx,
         user.id,
         "silenced_by_staff",
@@ -811,7 +822,7 @@ async fn silence_user(
 /// `User::Silence.call`: UserSilencer#silence keeping the users' posts,
 /// the account_silenced email for each one silenced, then the post action.
 pub async fn silence(
-    pool: &PgPool,
+    mut db: Db<'_>,
     ctx: &Ctx<'_>,
     guardian: &Guardian,
     user_id: i32,
@@ -827,7 +838,7 @@ pub async fn silence(
         return Ok(Outcome::Invalid(errors));
     }
     let (reason, until) = (p.reason.unwrap_or_default(), until.unwrap_or_default());
-    let mut conn = pool.acquire().await?;
+    let mut conn = db.acquire().await?;
     let Some(user) = target(&mut conn, user_id).await? else {
         return Ok(Outcome::NotFound);
     };
@@ -867,9 +878,9 @@ pub async fn silence(
     };
     let mut first: Option<Option<Silenced>> = None;
     for u in &users {
-        let done = silence_user(pool, ctx, u, &silence).await?;
+        let done = silence_user(db.reborrow(), ctx, u, &silence).await?;
         if let Some(done) = &done {
-            let mut conn = pool.acquire().await?;
+            let mut conn = db.acquire().await?;
             crate::jobs::enqueue(
                 &mut conn,
                 "critical_user_email",
@@ -883,8 +894,8 @@ pub async fn silence(
     }
     let primary = first.flatten();
     let primary_till = users.first().and_then(|u| u.silenced_till);
-    trigger_post_action(pool, ctx, guardian, p).await?;
-    let mut conn = pool.acquire().await?;
+    trigger_post_action(db.reborrow(), ctx, guardian, p).await?;
+    let mut conn = db.acquire().await?;
     let silenced_by = basic_user(&mut conn, ctx, actor.id).await?;
     let body = match primary {
         Some(done) => {
@@ -995,30 +1006,12 @@ pub async fn lift_silence(
     by_user_id: i32,
     user_id: i32,
 ) -> Result<(), AppError> {
-    sqlx::query(
-        "UPDATE users SET silenced_till = NULL, updated_at = clock_timestamp() WHERE id = $1",
-    )
-    .bind(user_id)
-    .execute(pool)
-    .await?;
-    crate::system_message::create(pool, ctx, user_id, "unsilenced", &[], None).await?;
-    sqlx::query(
-        "INSERT INTO user_histories (action, acting_user_id, target_user_id, admin_only, created_at, updated_at) \
-         VALUES ($1, $2, $3, FALSE, clock_timestamp(), clock_timestamp())",
-    )
-    .bind(UNSILENCE_USER)
-    .bind(by_user_id)
-    .bind(user_id)
-    .execute(pool)
-    .await?;
-    Ok(())
+    unsilence_user(Db::Pool(pool), ctx, by_user_id, user_id, None).await
 }
 
 /// `UserSilencer.unsilence(user, by_user, reviewable_id:)` from a review
-/// perform: the silence lifted and the unsilenced system message as
-/// lift_silence does (their own transactions, committed before the
-/// perform's, which holds nothing they write), the staff action logged
-/// with the reviewable inside the perform's transaction.
+/// perform: lift_silence inside the perform's transaction, the staff
+/// action logged with the reviewable.
 pub async fn lift_silence_for_reviewable(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -1026,14 +1019,31 @@ pub async fn lift_silence_for_reviewable(
     user_id: i32,
     reviewable_id: i64,
 ) -> Result<(), AppError> {
-    let pool = &ctx.host.pool;
+    unsilence_user(
+        Db::Conn(conn),
+        ctx,
+        by_user_id,
+        user_id,
+        Some(reviewable_id),
+    )
+    .await
+}
+
+async fn unsilence_user(
+    mut db: Db<'_>,
+    ctx: &Ctx<'_>,
+    by_user_id: i32,
+    user_id: i32,
+    reviewable_id: Option<i64>,
+) -> Result<(), AppError> {
     sqlx::query(
         "UPDATE users SET silenced_till = NULL, updated_at = clock_timestamp() WHERE id = $1",
     )
     .bind(user_id)
-    .execute(pool)
+    .execute(&mut *db.acquire().await?)
     .await?;
-    crate::system_message::create(pool, ctx, user_id, "unsilenced", &[], None).await?;
+    crate::system_message::create_with(db.reborrow(), ctx, user_id, "unsilenced", &[], None)
+        .await?;
     sqlx::query(
         "INSERT INTO user_histories (action, acting_user_id, target_user_id, reviewable_id, admin_only, \
                                      created_at, updated_at) \
@@ -1043,7 +1053,7 @@ pub async fn lift_silence_for_reviewable(
     .bind(by_user_id)
     .bind(user_id)
     .bind(reviewable_id)
-    .execute(&mut *conn)
+    .execute(&mut *db.acquire().await?)
     .await?;
     Ok(())
 }

@@ -31,6 +31,7 @@ pub mod cose;
 pub mod current_user;
 pub mod custom_emoji;
 pub mod custom_emoji_import;
+pub mod db;
 pub mod design_wizard;
 pub mod directory;
 pub mod directory_view;

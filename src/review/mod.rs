@@ -30,6 +30,7 @@ use serde_json::{Value, json};
 use sqlx::PgConnection;
 
 use self::reviewables::PENDING;
+use crate::db::Db;
 use crate::guardian::Guardian;
 use crate::post_actions::ActionTypes;
 use crate::posting::Ctx;
@@ -123,9 +124,9 @@ pub enum PenaltyKind {
 /// the action goes on; else how the request ends (the failed contract
 /// and the already-penalized policy are the result's errors, 422).
 ///
-/// Rails runs the service inside the reviewable's transaction; the port's
-/// services run on their own connections, so the penalty commits even if
-/// the action after it fails.
+/// The service runs on `conn`, inside the reviewable's transaction as in
+/// Rails: when the action after it fails, the penalty, its staff log and
+/// the silenced_by_staff message roll back with it.
 pub(crate) async fn penalize(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
@@ -173,10 +174,10 @@ pub(crate) async fn penalize(
     };
     let outcome = match kind {
         PenaltyKind::Suspend => {
-            user_penalties::suspend(&ctx.host.pool, ctx, guardian, user_id, &penalty).await?
+            user_penalties::suspend(Db::Conn(conn), ctx, guardian, user_id, &penalty).await?
         }
         PenaltyKind::Silence => {
-            user_penalties::silence(&ctx.host.pool, ctx, guardian, user_id, &penalty).await?
+            user_penalties::silence(Db::Conn(conn), ctx, guardian, user_id, &penalty).await?
         }
     };
     Ok(match outcome {
