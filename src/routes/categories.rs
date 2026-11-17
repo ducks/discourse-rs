@@ -873,9 +873,19 @@ pub(super) async fn editor_page(
     .into_iter()
     .map(|(id, name)| (i64::from(id), name))
     .collect();
-    let groups: Vec<String> = sqlx::query_scalar("SELECT name FROM groups ORDER BY name")
-        .fetch_all(&mut *conn)
-        .await?;
+    // The security tab offers the serializer's permission_groups; a new
+    // category gets everyone first, then the rest, never anonymous_users.
+    let groups: Vec<String> = match category["permission_groups"].as_array() {
+        Some(groups) => groups
+            .iter()
+            .filter_map(|g| g["name"].as_str().map(str::to_string))
+            .collect(),
+        None => {
+            sqlx::query_scalar("SELECT name FROM groups WHERE id <> 4 ORDER BY id <> 0, name")
+                .fetch_all(&mut *conn)
+                .await?
+        }
+    };
     // Chat's tab: its condition is chat on and a saved category.
     let chat_tab = match own_id {
         Some(id) if crate::plugins::chat::enabled(&s)? => {

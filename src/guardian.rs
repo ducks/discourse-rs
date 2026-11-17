@@ -219,7 +219,8 @@ impl Guardian {
              INNER JOIN category_groups ON categories.id = category_groups.category_id \
              INNER JOIN groups ON category_groups.group_id = groups.id \
              INNER JOIN group_users ON groups.id = group_users.group_id \
-             WHERE group_users.user_id = $1 ORDER BY categories.id",
+             WHERE group_users.user_id = $1 \
+             UNION SELECT category_id FROM category_groups WHERE group_id = 5 ORDER BY 1",
             )
             .bind(u.user.id)
             .fetch_all(conn)
@@ -248,7 +249,8 @@ impl Guardian {
             "{public} UNION SELECT categories.id FROM categories \
              INNER JOIN category_groups ON categories.id = category_groups.category_id \
              INNER JOIN group_users ON category_groups.group_id = group_users.group_id \
-             WHERE group_users.user_id = {}",
+             WHERE group_users.user_id = {} \
+             UNION SELECT category_id FROM category_groups WHERE group_id = 5",
             u.user.id
         ))
     }
@@ -513,7 +515,7 @@ impl Guardian {
              WHERE (($2 AND LENGTH(COALESCE(email_in, '')) > 0 AND email_in_allow_strangers) \
                     OR categories.id NOT IN (SELECT category_id FROM category_groups) \
                     OR categories.id IN (SELECT category_id FROM category_groups WHERE permission_type IN (1) \
-                        AND (group_id = 0 OR group_id IN (SELECT group_id FROM group_users WHERE user_id = $1)))) \
+                        AND (group_id IN (0, 5) OR group_id IN (SELECT group_id FROM group_users WHERE user_id = $1)))) \
              AND (NOT $3 OR categories.id <> $4))",
         )
         .bind(u.user.id)
@@ -547,7 +549,7 @@ impl Guardian {
              WHERE (($2 AND LENGTH(COALESCE(email_in, '')) > 0 AND email_in_allow_strangers) \
                     OR categories.id NOT IN (SELECT category_id FROM category_groups) \
                     OR categories.id IN (SELECT category_id FROM category_groups WHERE permission_type IN (1) \
-                        AND (group_id = 0 OR group_id IN (SELECT group_id FROM group_users WHERE user_id = $1)))) \
+                        AND (group_id IN (0, 5) OR group_id IN (SELECT group_id FROM group_users WHERE user_id = $1)))) \
              AND (NOT $3 OR categories.id <> $4) ORDER BY id",
         )
         .bind(u.user.id)

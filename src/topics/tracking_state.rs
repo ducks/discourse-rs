@@ -16,6 +16,8 @@ use crate::topic_list::time_json;
 /// `Group::AUTO_GROUPS[:admins]`, `[:staff]`
 const ADMINS: i32 = 1;
 const STAFF: i32 = 3;
+/// `Group::AUTO_GROUPS[:logged_in_users]`
+const LOGGED_IN_USERS: i32 = 5;
 
 struct Topic {
     id: i32,
@@ -322,6 +324,12 @@ pub async fn publish_unread(
             .await?
     } else {
         Vec::new()
+    };
+    // A logged_in_users grant reaches every tracking user.
+    let groups = if groups.contains(&LOGGED_IN_USERS) {
+        Vec::new()
+    } else {
+        groups
     };
     // TopicUser.tracking(topic_id): COALESCE(level, regular) >= tracking.
     let users: Vec<i32> = sqlx::query_scalar(

@@ -1097,9 +1097,14 @@ async fn permission_conflict(
     if parent_groups.contains(&0) {
         return Ok(());
     }
-    let only_child: Vec<i32> = child
-        .iter()
-        .map(|(g, _)| *g)
+    let mut child_groups: Vec<i32> = child.iter().map(|(g, _)| *g).collect();
+    // A logged_in_users parent admits any group; only public children
+    // (everyone, anonymous_users) conflict with it.
+    if parent_groups.contains(&5) {
+        child_groups.retain(|g| *g == 0 || *g == 4);
+    }
+    let only_child: Vec<i32> = child_groups
+        .into_iter()
         .filter(|g| !parent_groups.contains(g))
         .collect();
     if only_child.is_empty() {
@@ -1320,6 +1325,12 @@ async fn validate(
                 permission_conflict(conn, cx, &mut errors, &perms, &child).await?;
             }
         }
+    }
+    // pseudogroup_permissions_validator
+    if let Some(perms) = &r.permissions
+        && perms.iter().any(|(g, _)| *g == 4)
+    {
+        errors.base(cx.t("category.errors.anonymous_permissions_not_supported"));
     }
     // posting_review_groups_validator
     let (topic_mode, reply_mode) = review_modes(conn, r).await?;

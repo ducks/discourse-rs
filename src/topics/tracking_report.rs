@@ -478,8 +478,9 @@ fn report_raw_sql(shape: &Shape, half: Half) -> String {
         "(NOT c.read_restricted OR u.admin OR c.id IN ( \
          SELECT c2.id FROM categories c2 \
          JOIN category_groups cg ON cg.category_id = c2.id \
-         JOIN group_users gu ON gu.user_id = $1 AND cg.group_id = gu.group_id \
-         WHERE c2.read_restricted )) AND"
+         WHERE c2.read_restricted AND ( \
+           cg.group_id IN (SELECT group_id FROM group_users WHERE user_id = $1) \
+           OR cg.group_id = 5))) AND"
             .to_string()
     };
     let visibility_filter = if shape.staff {

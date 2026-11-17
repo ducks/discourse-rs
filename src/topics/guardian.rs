@@ -105,7 +105,7 @@ impl TopicCtx {
                     "(($2 AND LENGTH(COALESCE(c.email_in, '')) > 0 AND c.email_in_allow_strangers) \
                      OR c.id NOT IN (SELECT category_id FROM category_groups) \
                      OR c.id IN (SELECT category_id FROM category_groups WHERE permission_type IN ({permissions}) \
-                         AND (group_id = 0 OR group_id IN (SELECT group_id FROM group_users WHERE user_id = $3))))"
+                         AND (group_id IN (0, 5) OR group_id IN (SELECT group_id FROM group_users WHERE user_id = $3))))"
                 )
             }
         };

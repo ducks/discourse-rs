@@ -605,8 +605,8 @@ async fn user_stat(
                AND topics.deleted_at IS NULL \
                AND (NOT c.read_restricted OR u.admin OR category_id IN ( \
                  SELECT c2.id FROM categories c2 JOIN category_groups cg ON cg.category_id = c2.id \
-                 JOIN group_users gu ON gu.user_id = u.id AND cg.group_id = gu.group_id \
-                 WHERE c2.read_restricted)) \
+                 WHERE c2.read_restricted AND (cg.group_id IN (SELECT group_id FROM group_users WHERE user_id = u.id) \
+                   OR cg.group_id = 5))) \
                AND NOT EXISTS (SELECT 1 FROM category_users cu WHERE last_read_post_number IS NULL \
                  AND cu.user_id = u.id AND cu.category_id = topics.category_id AND cu.notification_level = 0) \
              GROUP BY u.id, u.username) AS X ON X.user_id = u1.id \

@@ -128,7 +128,7 @@ pub(crate) fn categories_scoped_to(guardian: &Guardian, permissions: &str) -> St
               OR categories.id NOT IN (SELECT category_id FROM category_groups) \
               OR categories.id IN (SELECT category_id FROM category_groups \
                  WHERE permission_type IN ({permissions}) \
-                   AND (group_id = 0 OR group_id IN (SELECT group_id FROM group_users WHERE user_id = {id}))))",
+                   AND (group_id IN (0, 5) OR group_id IN (SELECT group_id FROM group_users WHERE user_id = {id}))))",
             staged = user.staged,
             id = user.id,
         ),

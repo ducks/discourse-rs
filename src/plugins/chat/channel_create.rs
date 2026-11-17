@@ -247,7 +247,7 @@ impl Context<'_> {
                 json!({ "allowed_groups": [format!("@{everyone}")], "private": false }),
             )));
         }
-        let visible = crate::groups::visible_groups_scope(self.guardian, "groups", true, false);
+        let visible = crate::groups::visible_groups_scope(self.guardian, "groups", true, true);
         let rows: Vec<(String, i64)> = sqlx::query_as(&format!(
             "SELECT groups.name, COUNT(group_users.user_id) FROM groups \
              JOIN category_groups ON category_groups.group_id = groups.id \
@@ -260,7 +260,19 @@ impl Context<'_> {
         .fetch_all(&mut *self.conn)
         .await?;
         let names: Vec<String> = rows.iter().map(|(n, _)| format!("@{n}")).collect();
-        let members: i64 = rows.iter().map(|(_, c)| c).sum();
+        let logged_in: Option<String> = sqlx::query_scalar("SELECT name FROM groups WHERE id = 5")
+            .fetch_optional(&mut *self.conn)
+            .await?;
+        let members: i64 = if logged_in.is_some_and(|n| names.contains(&format!("@{n}"))) {
+            sqlx::query_scalar(&format!(
+                "SELECT COUNT(*) FROM users WHERE {}",
+                crate::reports::real_users("users")
+            ))
+            .fetch_one(&mut *self.conn)
+            .await?
+        } else {
+            rows.iter().map(|(_, c)| c).sum()
+        };
         Ok(Some(Ok(json!({
             "allowed_groups": names,
             "members_count": members,

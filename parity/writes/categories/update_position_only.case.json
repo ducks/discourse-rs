@@ -1,6 +1,5 @@
 {
   "user": "admin",
-  "not_yet": "3b804903928 (Discourse): CategorySerializer#permission_groups and logged_in_users category permissions; not ported",
   "requests": [
     {
       "method": "PUT",
