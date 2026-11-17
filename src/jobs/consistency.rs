@@ -90,15 +90,25 @@ async fn preflight(
         }
         Ok(())
     };
-    // Category: a definition without its first post is destroyed.
+    // Category: a definition without its first post is destroyed; the
+    // dependents whose destroy has callbacks of its own are not ported.
     refuse(
-        sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM topics t JOIN categories c ON c.topic_id = t.id \
-             LEFT JOIN posts p ON p.topic_id = t.id AND p.post_number = 1 WHERE p.id IS NULL)",
-        )
+        sqlx::query_scalar(&format!(
+            "SELECT EXISTS (SELECT 1 FROM ({DEFINITIONS_WITHOUT_OP}) d WHERE \
+               EXISTS (SELECT 1 FROM topic_tags WHERE topic_id = d.id) \
+               OR EXISTS (SELECT 1 FROM topic_timers WHERE timerable_id = d.id AND deleted_at IS NULL) \
+               OR EXISTS (SELECT 1 FROM topic_embeds WHERE topic_id = d.id) \
+               OR EXISTS (SELECT 1 FROM assignments WHERE target_type = 'Topic' AND target_id = d.id) \
+               OR EXISTS (SELECT 1 FROM discourse_solved_solved_topics WHERE topic_id = d.id) \
+               OR EXISTS (SELECT 1 FROM topic_voting_votes WHERE topic_id = d.id) \
+               OR EXISTS (SELECT 1 FROM topic_voting_topic_vote_count WHERE topic_id = d.id) \
+               OR EXISTS (SELECT 1 FROM discourse_templates_usage_count WHERE topic_id = d.id) \
+               OR EXISTS (SELECT 1 FROM livestream_topic_chat_channels WHERE topic_id = d.id))"
+        ))
         .fetch_one(&mut *conn)
         .await?,
-        "destroying a category definition without its first post (Topic#destroy!)",
+        "destroying a category definition without its first post that has tags, timers, \
+         an embed or plugin rows (their destroy callbacks)",
     )?;
     // TopicThumbnail: the sizes themes add.
     refuse(
@@ -131,6 +141,46 @@ async fn preflight(
         .await?,
         "removing unused avatar thumbnails (OptimizedImage#destroy)",
     )?;
+    Ok(())
+}
+
+/// Category.ensure_consistency!'s definitions without a first post.
+const DEFINITIONS_WITHOUT_OP: &str = "SELECT t.id FROM topics t \
+     JOIN categories c ON c.topic_id = t.id \
+     LEFT JOIN posts p ON p.topic_id = t.id AND p.post_number = 1 \
+     WHERE p.id IS NULL";
+
+/// `Topic#destroy!` for a topic the preflight cleared: the `dependent:`
+/// associations whose rows go without callbacks, then the row. The posts,
+/// and the search data (`has_one :topic_search_data` redeclared without
+/// Searchable's dependent), stay. A topic already gone is find_by's nil,
+/// which raises in Rails and ends the step.
+async fn destroy_topic(conn: &mut PgConnection, id: i32) -> Result<(), AppError> {
+    for sql in [
+        // HasCustomFields, Localizable
+        "DELETE FROM topic_custom_fields WHERE topic_id = $1",
+        "DELETE FROM topic_localizations WHERE topic_id = $1",
+        "DELETE FROM group_archived_messages WHERE topic_id = $1",
+        "DELETE FROM user_archived_messages WHERE topic_id = $1",
+        "DELETE FROM topic_view_stats WHERE topic_id = $1",
+        "DELETE FROM moved_posts WHERE old_topic_id = $1",
+        "DELETE FROM moved_posts WHERE new_topic_id = $1",
+        "DELETE FROM shared_drafts WHERE topic_id = $1",
+        "DELETE FROM linked_topics WHERE topic_id = $1",
+        "DELETE FROM nested_topics WHERE topic_id = $1",
+        // discourse-solved's shared_issues (delete_all)
+        "DELETE FROM discourse_solved_shared_issues WHERE topic_id = $1",
+    ] {
+        sqlx::query(sql).bind(id).execute(&mut *conn).await?;
+    }
+    let deleted = sqlx::query("DELETE FROM topics WHERE id = $1")
+        .bind(id)
+        .execute(&mut *conn)
+        .await?
+        .rows_affected();
+    if deleted == 0 {
+        return Err(sqlx::Error::RowNotFound.into());
+    }
     Ok(())
 }
 
@@ -440,13 +490,21 @@ async fn user_email(conn: &mut PgConnection, s: &SiteSettings) -> Result<(), App
 /// `Category.ensure_consistency!`: categories whose definition topic is
 /// gone lose the link, then every category but uncategorized without one
 /// gets it created (create_category_definition, which skips those marked
-/// skip_category_definition). Destroying a definition without its first
-/// post is refused up front.
+/// skip_category_definition). First a definition without its first post,
+/// trashed or not, is destroyed (`Topic.with_deleted.find_by(id:).destroy!`).
 async fn category(
     conn: &mut PgConnection,
     state: &AppState,
     s: &SiteSettings,
 ) -> Result<(), AppError> {
+    let orphans: Vec<i32> = sqlx::query_scalar(DEFINITIONS_WITHOUT_OP)
+        .fetch_all(&mut *conn)
+        .await?;
+    for id in orphans {
+        let mut tx = sqlx::Connection::begin(&mut *conn).await?;
+        destroy_topic(&mut tx, id).await?;
+        tx.commit().await?;
+    }
     exec(
         &mut *conn,
         "UPDATE categories c SET topic_id = NULL WHERE c.id IN ( \

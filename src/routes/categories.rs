@@ -665,7 +665,32 @@ pub async fn update(
     let mut conn = state.pool.acquire().await?;
     // The settings as the type configuration left them.
     let s = SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    let json = cs::serialize(&mut conn, &cs::Cx::of(&state), &s, &guardian, c.id, &pre).await?;
+    let mut json = cs::serialize(&mut conn, &cs::Cx::of(&state), &s, &guardian, c.id, &pre).await?;
+    // The serialized @category keeps the description as assigned:
+    // revise_category_definition's update_column of the cooked paragraph
+    // goes through another instance.
+    let uncategorized = i64::from(c.id) == s.get("uncategorized_category_id")?.to_i();
+    if !uncategorized
+        && let Some((_, _, assigned)) = record
+            .saved_changes
+            .iter()
+            .find(|(k, _, _)| k == "description")
+        && let Some(out) = json.as_object_mut()
+    {
+        let assigned = assigned.as_str();
+        out.insert("description".into(), json!(assigned));
+        out.insert(
+            "description_text".into(),
+            json!(crate::categories::description_plain_text(assigned)?),
+        );
+        out.insert(
+            "description_excerpt".into(),
+            json!(crate::categories::description_excerpt(
+                assigned,
+                crate::excerpt::Plugins::from_settings(&s)?,
+            )?),
+        );
+    }
     Ok(Json(json!({ "success": "OK", "category": json })).into_response())
 }
 

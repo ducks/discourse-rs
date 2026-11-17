@@ -67,6 +67,9 @@ pub struct Changes {
     /// `revise!`'s block as PostMerger gives it: the posts merged in,
     /// destroyed in the revision's transaction once the post is revised.
     pub merged: Vec<crate::post_destroyer::Prepared>,
+    /// Category#revise_category_definition's revision of a definition's
+    /// first post, which ignores revisor.category_changed.
+    pub from_category: bool,
 }
 
 #[derive(Debug)]
@@ -335,7 +338,9 @@ pub async fn revise_with(
             .bind(post.topic_id)
             .fetch_one(&mut *conn)
             .await?;
-    if category_definition && post.post_number == 1 {
+    // The other callers would answer with revisor.category_changed
+    // (posts#update's BasicCategorySerializer), not ported.
+    if category_definition && post.post_number == 1 && !changes.from_category {
         return Err(Unsupported("editing category descriptions").into());
     }
     if !post_changed {
@@ -914,6 +919,22 @@ pub async fn revise_with(
             .bind(excerpt)
             .execute(&mut *tx)
             .await?;
+        // update_category_description: a definition without a paragraph
+        // is the post's error, and the revision rolls back.
+        if category_definition
+            && !revise_topic::sync_category_description(&mut tx, ctx, post.topic_id, &cooked)
+                .await?
+        {
+            tx.rollback().await?;
+            if editor_user.id > 0 {
+                sqlx::query("SELECT nextval('draft_sequences_id_seq')")
+                    .execute(&mut *db.acquire().await?)
+                    .await?;
+            }
+            return Ok(Outcome::Invalid(vec![
+                ctx.t("category.errors.description_incomplete"),
+            ]));
+        }
     }
     // advance_draft_sequence for the (new) last editor: who edited before
     // when the revision just went.

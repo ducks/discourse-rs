@@ -1,5 +1,4 @@
 {
-  "not_yet": "destroying a category definition without its first post (Topic#destroy!)",
   "user": null,
   "setup": [
     "UPDATE posts SET post_number = 99 WHERE id = 1"
