@@ -105,7 +105,7 @@ test("suspending a queued post's author from the reject menu", async ({ page, co
   await page.goto("/review");
   const item = page.locator(`.review-item[data-reviewable-id="${queued.id}"]`);
   await expect(item).toBeVisible();
-  await item.locator("details summary", { hasText: /^\s*No/ }).first().click();
+  await item.locator("details summary", { hasText: /^\s*Yes/ }).first().click();
   await page.locator(".select-kit.is-expanded .select-kit-row", { hasText: /Reject and suspend user/ }).click();
   await penalize(page, "suspend", label("Suspended from the queue"));
 
@@ -113,7 +113,7 @@ test("suspending a queued post's author from the reject menu", async ({ page, co
   await expect
     .poll(() => sql("SELECT suspended_till IS NOT NULL FROM users WHERE id = :'p1'", queued.author.id))
     .toEqual([["t"]]);
-  await expect(item.locator(".review-item__status.--rejected")).toBeVisible();
+  await expect(item.locator(".review-item__status.--problem-confirmed")).toBeVisible();
 });
 
 test("cancelling the penalty modal performs nothing", async ({ page, context, session }) => {

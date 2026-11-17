@@ -45,6 +45,41 @@ pub fn sti_names_sql(s: &SiteSettings) -> Result<String, AppError> {
         .join(","))
 }
 
+/// `Reviewable.approval_style?` by sti_name: the types that hold something
+/// back until a reviewer lets it through, so approving one means no
+/// problem was found.
+pub fn approval_style(sti_name: &str) -> bool {
+    matches!(
+        sti_name,
+        "ReviewableQueuedPost" | "ReviewableUser" | "ReviewablePost"
+    )
+}
+
+/// `Reviewable.approval_style_types` (registered ones) as a SQL list.
+pub fn approval_style_sql(s: &SiteSettings) -> Result<String, AppError> {
+    Ok(types(s)?
+        .iter()
+        .filter(|(_, t)| approval_style(t))
+        .map(|(_, t)| format!("'{t}'"))
+        .collect::<Vec<_>>()
+        .join(","))
+}
+
+/// `Reviewable.consistent_answers_for?(guardian)`: approval-style questions
+/// framed so "Yes" confirms a problem.
+pub async fn consistent_answers_for(
+    conn: &mut PgConnection,
+    s: &SiteSettings,
+    guardian: &Guardian,
+) -> Result<bool, AppError> {
+    if guardian.is_anonymous() {
+        return Ok(false);
+    }
+    Ok(guardian
+        .upcoming_change_enabled(conn, s, "review_queue_consistent_answers")
+        .await?)
+}
+
 /// `Reviewable.source_for(type)`: the registering plugin, else core.
 pub fn source_for(sti_name: &str) -> &'static str {
     if sti_name == CHAT_MESSAGE {

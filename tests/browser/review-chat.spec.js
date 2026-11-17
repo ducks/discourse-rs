@@ -102,8 +102,8 @@ test("a chat flag lists beside a post flag; agreeing deletes the message for mem
   // Yes > Delete Message.
   await item.locator("details summary", { hasText: /^\s*Yes/ }).first().click();
   await page.locator(".select-kit.is-expanded .select-kit-row[data-value='chat_message-agree_and_delete']").click();
-  await expect(item.locator(".review-item__status.--approved")).toBeVisible();
-  await expect(item.locator(".review-item__status")).toHaveText("Flag approved");
+  await expect(item.locator(".review-item__status.--problem-confirmed")).toBeVisible();
+  await expect(item.locator(".review-item__status")).toHaveText("Problem confirmed");
   await expect.poll(() => reviewableOf(messageId)).toEqual([["ReviewableChatMessage", "1"]]);
   expect(sql("SELECT deleted_at IS NOT NULL FROM chat_messages WHERE id = :'p1'", messageId)).toEqual([["t"]]);
   // The post flag is still waiting.
@@ -139,7 +139,7 @@ test("disagreeing with one chat flag and ignoring another", async ({ page, conte
   // No > Keep message.
   await keptItem.locator("details summary", { hasText: /^\s*No/ }).first().click();
   await page.locator(".select-kit.is-expanded .select-kit-row[data-value='chat_message-disagree']").click();
-  await expect(keptItem.locator(".review-item__status")).toHaveText("Flag rejected");
+  await expect(keptItem.locator(".review-item__status")).toHaveText("No problem found");
   await expect.poll(() => reviewableOf(keptId)).toEqual([["ReviewableChatMessage", "2"]]);
 
   // No > Ignore flag.

@@ -1,6 +1,6 @@
 {
   "user": "admin",
-  "not_yet": "7d5cd72b95e (Discourse): reviewables share one yes/no direction (approval_style, bundled action order); not ported",
+  "not_yet": "dd1f1ab0dc1 (Discourse): the review queue lists discourse-workflows' workflow reviewables (meta reviewable_types); 6f5643427d1 (Discourse): the list's extras.dsa_classification (DsaClassificationSerializer); not ported",
   "setup": [
     "INSERT INTO post_actions (id, post_id, user_id, post_action_type_id, created_at, updated_at, staff_took_action, targets_topic) VALUES (9301, 52, 3, 3, '2026-10-02 10:00:00', '2026-10-02 10:00:00', FALSE, FALSE)",
     "UPDATE posts SET off_topic_count = 1 WHERE id = 52",

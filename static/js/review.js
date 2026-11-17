@@ -182,7 +182,15 @@
     var currentOrder = (pageData().filters || {}).sort_order;
     var nextOrder = comboValue(secondary(".sort-order > details.combo-box"));
     var createdAtStatuses = ["reviewed", "all"];
-    var priorityStatuses = ["approved", "rejected", "deleted", "ignored", "pending"];
+    var priorityStatuses = [
+      "problem_confirmed",
+      "no_problem_found",
+      "approved",
+      "rejected",
+      "deleted",
+      "ignored",
+      "pending",
+    ];
     if (
       createdAtStatuses.indexOf(currentStatus) !== -1 &&
       currentOrder === "created_at" &&

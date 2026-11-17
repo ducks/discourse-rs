@@ -41,6 +41,8 @@ const STATUSES: [(&str, i32); 5] = [
     ("ignored", 3),
     ("deleted", 4),
 ];
+const APPROVED: i32 = 1;
+const REJECTED: i32 = 2;
 
 /// `ReviewableHistory.types[:transitioned]`
 const HISTORY_TRANSITIONED: i32 = 1;
@@ -48,9 +50,6 @@ const HISTORY_TRANSITIONED: i32 = 1;
 /// `UserHistory.actions`
 const SUSPEND_USER: i32 = 10;
 const SILENCE_USER: i32 = 30;
-
-/// `ReviewableQueuedPost.statuses[:rejected]`
-const REJECTED: i32 = 2;
 
 /// Staff user custom fields plugins on the reference allow
 /// (`allow_staff_user_custom_field`: discourse-events, discourse-user-notes),
@@ -202,9 +201,20 @@ pub async fn index(
         .get("status")
         .and_then(params::scalar)
         .unwrap_or_else(|| "pending".into());
+    // by_status; problem_confirmed / no_problem_found (by_outcome) read the
+    // status by type, since it means the opposite for approval-style ones.
+    let mut outcome: Option<(i32, i32)> = None;
     let status_ids: Option<Vec<i32>> = match status.as_str() {
         "all" => None,
         "reviewed" => Some(STATUSES[1..].iter().map(|(_, i)| *i).collect()),
+        "problem_confirmed" => {
+            outcome = Some((REJECTED, APPROVED));
+            None
+        }
+        "no_problem_found" => {
+            outcome = Some((APPROVED, REJECTED));
+            None
+        }
         other => match STATUSES.iter().find(|(n, _)| *n == other) {
             Some((_, i)) => Some(vec![*i]),
             None => return Ok(Listed::InvalidParameter("status")),
@@ -278,6 +288,19 @@ pub async fn index(
             .join(", ");
         q.wheres.push(format!("reviewables.status IN ({list})"));
     }
+    if let Some((approval_style_status, other_status)) = outcome {
+        // `type IN (:approval_style_types)` with an empty list is `IN (NULL)`.
+        let types = crate::reviewables::approval_style_sql(s)?;
+        let types = if types.is_empty() {
+            "NULL".into()
+        } else {
+            types
+        };
+        q.wheres.push(format!(
+            "((reviewables.status = {approval_style_status} AND reviewables.type IN ({types})) OR \
+             (reviewables.status = {other_status} AND reviewables.type NOT IN ({types})))"
+        ));
+    }
     if let Some(ids) = &ids_filter {
         if ids.is_empty() {
             q.wheres.push("FALSE".into());
@@ -346,13 +369,9 @@ pub async fn index(
     let min = min_score(&mut *conn, ctx, text("priority").as_deref()).await?;
     if min > 0.0 {
         let b = q.bind(Bind::Float(min));
-        if status == "pending" {
-            q.wheres.push(format!(
-                "(reviewables.score >= {b} OR reviewables.force_review)"
-            ));
-        } else {
-            q.wheres.push(format!("reviewables.score >= {b}"));
-        }
+        q.wheres.push(format!(
+            "(reviewables.score >= {b} OR reviewables.force_review)"
+        ));
     }
     if let Some(id) = username_id {
         q.wheres.push(format!(
@@ -857,6 +876,10 @@ async fn serialize(
         json!(matches!(kind, Kind::Flagged | Kind::ChatMessage)),
     );
     d.insert("status".into(), json!(r.status));
+    d.insert(
+        "approval_style".into(),
+        json!(crate::reviewables::approval_style(&r.kind)),
+    );
     match kind {
         Kind::Flagged | Kind::Post => match &post {
             // target_attributes: each when present.
@@ -1929,9 +1952,13 @@ async fn queued_actions(
     {
         return Ok(Vec::new());
     }
-    const APPROVED: i32 = 1;
-    let mut b = Actions::new(ctx, r);
-    if r.status != APPROVED {
+    let pending = r.status == crate::reviewables::PENDING;
+    let consistent =
+        crate::reviewables::consistent_answers_for(&mut *conn, ctx.settings, guardian).await?;
+    // build_approve_action: none once approved.
+    let mut approve = if r.status == APPROVED {
+        None
+    } else {
         // `topic`: the association leaves a deleted topic out.
         let closed = match topic.filter(|t| t.closed) {
             Some(t) => {
@@ -1942,17 +1969,40 @@ async fn queued_actions(
             }
             None => false,
         };
-        if closed {
-            b.add("approve_post_closed", "check", None, None, true, false);
+        let id = if closed {
+            Some("approve_post_closed")
         } else if author.is_some() {
-            b.add("approve_post", "check", None, None, false, false);
-        }
+            Some("approve_post")
+        } else {
+            None
+        };
+        id.map(|id| {
+            let mut spec = ActionSpec::core(id, "check", None, closed);
+            if consistent {
+                // Resolved items have no question to answer, so approval is
+                // named outright.
+                spec.label = if pending {
+                    "reviewables.actions.answer_no.title".into()
+                } else {
+                    "reviewables.actions.approve_post.action_title".into()
+                };
+            }
+            (id, spec)
+        })
+    };
+    let mut b = Actions::new(ctx, r);
+    if !consistent && let Some((id, spec)) = approve.take() {
+        b.push(id, spec, None, false);
     }
-    if r.status == crate::reviewables::PENDING {
+    if pending {
         let reject = b.add_bundle(
             "reject-post",
             None,
-            "reviewables.actions.reject_post_bundle.title",
+            if consistent {
+                "reviewables.actions.answer_yes.title"
+            } else {
+                "reviewables.actions.reject_post_bundle.title"
+            },
         );
         b.add("reject_post", "xmark", Some(reject), None, false, false);
         if author.is_some() {
@@ -1977,6 +2027,10 @@ async fn queued_actions(
         {
             b.delete_user(a, reject);
         }
+    }
+    // "Yes, there's a problem" comes first, so approval follows as "No".
+    if let Some((id, spec)) = approve {
+        b.push(id, spec, None, false);
     }
     // can_delete_reviewable_queued_post?: the author's own.
     if r.target_created_by_id.is_some() && r.target_created_by_id == guardian.user_id() {
@@ -2017,26 +2071,44 @@ async fn post_actions(
     {
         return Ok(Vec::new());
     }
+    let consistent = crate::reviewables::consistent_answers_for(&mut *conn, s, guardian).await?;
+    let (reject_label, keep_deleted_label, delete_label) = if consistent {
+        (
+            "reviewables.actions.answer_yes.title",
+            "reviewables.actions.answer_yes.keep_post_deleted_title",
+            "reviewables.actions.answer_yes.delete_post_title",
+        )
+    } else {
+        (
+            "reviewables.actions.reject_post_bundle.title",
+            "reviewables.actions.reject_and_keep_deleted_standalone.title",
+            "reviewables.actions.reject_and_delete_standalone.title",
+        )
+    };
     let mut b = Actions::new(ctx, r);
     let trashed = post.deleted_at.is_some();
-    // can_recover_post?: staff moderate every topic.
-    if trashed && guardian.is_staff() {
-        b.add("approve_and_restore", "check", None, None, false, false);
+    // build_approve_action; can_recover_post?: staff moderate every topic.
+    let approve_id = if trashed && guardian.is_staff() {
+        "approve_and_restore"
     } else if post.hidden {
-        b.add("approve_and_unhide", "check", None, None, false, false);
+        "approve_and_unhide"
     } else {
-        b.add("approve", "check", None, None, false, false);
+        "approve"
+    };
+    let mut approve = ActionSpec::core(approve_id, "check", None, false);
+    if consistent {
+        approve.label = "reviewables.actions.answer_no.title".into();
     }
-    let reject = b.add_bundle(
-        "reject-post",
-        Some("xmark"),
-        "reviewables.actions.reject_post_bundle.title",
-    );
+    let mut approve = Some(approve);
+    if !consistent && let Some(spec) = approve.take() {
+        b.push(approve_id, spec, None, false);
+    }
+    let reject = b.add_bundle("reject-post", Some("xmark"), reject_label);
     let can_penalize = author.is_some_and(|a| guardian.is_staff() && !a.admin && !a.moderator);
     // Without a penalty to offer, the reject reads on its own.
-    let standalone = |id: &str| ActionSpec {
+    let standalone = |label: &str| ActionSpec {
         icon: Some("trash-can"),
-        label: format!("reviewables.actions.{id}_standalone.title"),
+        label: label.to_string(),
         ..ActionSpec::default()
     };
     if trashed {
@@ -2052,7 +2124,7 @@ async fn post_actions(
         } else {
             b.push(
                 "reject_and_keep_deleted",
-                standalone("reject_and_keep_deleted"),
+                standalone(keep_deleted_label),
                 Some(reject),
                 false,
             );
@@ -2070,7 +2142,7 @@ async fn post_actions(
         } else {
             b.push(
                 "reject_and_delete",
-                standalone("reject_and_delete"),
+                standalone(delete_label),
                 Some(reject),
                 false,
             );
@@ -2083,6 +2155,10 @@ async fn post_actions(
         "reject_and_silence",
         "reject_and_suspend",
     );
+    // "Yes, there's a problem" comes first, so approval follows as "No".
+    if let Some(spec) = approve {
+        b.push(approve_id, spec, None, false);
+    }
     Ok(b.finish(out))
 }
 
@@ -2814,8 +2890,6 @@ async fn user_json(
         None => None,
     };
     let mut bundles: Vec<String> = Vec::new();
-    const APPROVED: i32 = 1;
-    const REJECTED_STATUS: i32 = 2;
     if r.status != APPROVED {
         let payload_username = r
             .payload
@@ -2824,7 +2898,7 @@ async fn user_json(
             .and_then(Value::as_str)
             .filter(|u| !u.trim().is_empty());
         if guardian.is_admin()
-            && r.status == REJECTED_STATUS
+            && r.status == REJECTED
             && let Some(username) = payload_username
             && target_row
                 .as_ref()
@@ -2833,13 +2907,21 @@ async fn user_json(
             bundles.push(format!("{}-user-scrub", r.id));
         }
         let pending = r.status == crate::reviewables::PENDING;
+        // With consistent answers the "Yes, there's a problem" bundle goes
+        // first.
+        let consistent = pending
+            && crate::reviewables::consistent_answers_for(&mut *conn, ctx.settings, guardian)
+                .await?;
+        if consistent {
+            bundles.push(format!("{}-reject_user", r.id));
+        }
         if pending && target_row.as_ref().is_some_and(|t| t.2.is_some()) {
             bundles.push(format!("{}-user-remove_avatar", r.id));
         }
         if pending && target_row.as_ref().is_some_and(|t| !t.1) && guardian.is_staff() {
             bundles.push(format!("{}-user-approve_user", r.id));
         }
-        if pending {
+        if pending && !consistent {
             bundles.push(format!("{}-reject_user", r.id));
         }
     }
@@ -2857,6 +2939,7 @@ async fn user_json(
     d.insert("target_created_by_trust_level".into(), Value::Null);
     d.insert("created_from_flag".into(), json!(false));
     d.insert("status".into(), json!(r.status));
+    d.insert("approval_style".into(), json!(true));
     d.insert(
         "link_admin".into(),
         json!(guardian.is_staff() && target.is_some()),

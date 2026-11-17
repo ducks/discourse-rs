@@ -491,6 +491,8 @@ pub async fn page(
                 .get("reviewable_revision_reasons")?
                 .to_s()
                 .to_string();
+            let consistent_answers =
+                crate::reviewables::consistent_answers_for(&mut tx, &settings, &guardian).await?;
             let main = crate::review_view::render(&crate::review_view::Page {
                 cx: &cx,
                 acx: &acx,
@@ -508,6 +510,7 @@ pub async fn page(
                 )?,
                 can_view_raw_email: guardian
                     .in_setting_groups(&settings, "view_raw_email_allowed_groups")?,
+                consistent_answers,
             });
             // The penalty modal the silence and suspend client actions open
             // (adminTools.showSilenceModal and showSuspendModal).

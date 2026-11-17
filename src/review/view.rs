@@ -55,6 +55,9 @@ pub struct Page<'a> {
     /// `currentUser.can_view_raw_email`: a queued post by email links to
     /// its raw email.
     pub can_view_raw_email: bool,
+    /// `siteSettings.review_queue_consistent_answers` for the viewer: every
+    /// question framed so "Yes" confirms a problem.
+    pub consistent_answers: bool,
 }
 
 fn s(v: &Value) -> &str {
@@ -423,6 +426,8 @@ fn strings(p: &Page) -> Value {
     let mut statuses = Map::new();
     for name in [
         "pending",
+        "problem_confirmed",
+        "no_problem_found",
         "approved_flag",
         "rejected_flag",
         "ignored",
@@ -503,8 +508,19 @@ fn filter(label: &str, extra_class: &str, control: &str) -> String {
 /// ReviewFilters, collapsed: status, type, refresh and the Options toggle.
 fn filters(p: &Page) -> String {
     let cx = p.cx;
+    let outcomes = if p.consistent_answers {
+        ["problem_confirmed", "no_problem_found"]
+    } else {
+        ["approved", "rejected"]
+    };
     let statuses: Vec<(String, String)> = [
-        "pending", "approved", "rejected", "deleted", "ignored", "reviewed", "all",
+        "pending",
+        outcomes[0],
+        outcomes[1],
+        "deleted",
+        "ignored",
+        "reviewed",
+        "all",
     ]
     .iter()
     .map(|id| {
@@ -860,7 +876,7 @@ fn item(p: &Page, store: &Store, r: &Value) -> String {
         escape(&t(cx, "review.copy_permalink_title")),
         icon("link", None)
     ));
-    out.push_str(&status_badge(cx, status, kind));
+    out.push_str(&status_badge(p, status, r));
     out.push_str("<span class=\"reviewable-created-date\">");
     if let Some(at) = time(&r["created_at"]) {
         out.push_str(&tiny_date(cx, at));
@@ -924,7 +940,7 @@ fn item(p: &Page, store: &Store, r: &Value) -> String {
         let question = if display_context_question {
             Some(context_question(cx, kind, &scores, &topic_id))
         } else {
-            user_context_question(cx, kind, status, &scores, &r["topic_id"], store)
+            user_context_question(p, r, status, &scores, store)
         };
         out.push_str(&format!(
             "<div class=\"review-item__moderator-actions\"><h3 class=\"review-item__aside-title\">{}</h3>",
@@ -1004,19 +1020,76 @@ fn flag_reason(title: &str, count: usize) -> String {
     )
 }
 
+/// How an approved or rejected reviewable is shown (`reviewableOutcome`).
+struct Outcome {
+    name: &'static str,
+    icon: &'static str,
+    class: &'static str,
+    timeline_key: &'static str,
+}
+
+/// `reviewableOutcome(status, type, approval_style, answersProblem)`: with
+/// consistent answers, whether a problem was confirmed; otherwise what was
+/// approved or rejected. None unless approved or rejected.
+fn outcome(p: &Page, status: i64, r: &Value) -> Option<Outcome> {
+    if status != APPROVED && status != REJECTED {
+        return None;
+    }
+    let kind = s(&r["type"]);
+    let approval_style = r["approval_style"] == true;
+    let approved = status == APPROVED;
+    let confirmed = approved != approval_style;
+    // answersProblem: core types, flags and approval queues.
+    let answers_problem =
+        r["type_source"] == "core" || r["created_from_flag"] == true || approval_style;
+    if !answers_problem || !p.consistent_answers {
+        let name = match (approved, kind) {
+            (true, "ReviewableUser") => "approved_user",
+            (false, "ReviewableUser") => "rejected_user",
+            (true, _) if approval_style => "approved_post",
+            (false, _) if approval_style => "rejected_post",
+            (true, _) => "approved_flag",
+            (false, _) => "rejected_flag",
+        };
+        return Some(Outcome {
+            name,
+            icon: if approved { "check" } else { "xmark" },
+            class: if approved { "approved" } else { "rejected" },
+            timeline_key: if approved {
+                "review.timeline.approved_by"
+            } else {
+                "review.timeline.rejected_by"
+            },
+        });
+    }
+    Some(if confirmed {
+        Outcome {
+            name: "problem_confirmed",
+            icon: "xmark",
+            class: "problem-confirmed",
+            timeline_key: "review.timeline.problem_confirmed_by",
+        }
+    } else {
+        Outcome {
+            name: "no_problem_found",
+            icon: "check",
+            class: "no-problem-found",
+            timeline_key: "review.timeline.no_problem_found_by",
+        }
+    })
+}
+
 /// newReviewableStatus
-fn status_badge(cx: &ListContext, status: i64, kind: &str) -> String {
-    let (name, class) = match (status, kind) {
-        (PENDING, _) => ("pending", "pending"),
-        (APPROVED, "ReviewableQueuedPost") => ("approved_post", "approved"),
-        (APPROVED, "ReviewableUser") => ("approved_user", "approved"),
-        (APPROVED, _) => ("approved_flag", "approved"),
-        (REJECTED, "ReviewableQueuedPost") => ("rejected_post", "rejected"),
-        (REJECTED, "ReviewableUser") => ("rejected_user", "rejected"),
-        (REJECTED, _) => ("rejected_flag", "rejected"),
-        (IGNORED, _) => ("ignored", "ignored"),
-        (DELETED, _) => ("deleted", "deleted"),
-        _ => return String::new(),
+fn status_badge(p: &Page, status: i64, r: &Value) -> String {
+    let cx = p.cx;
+    let (name, class) = match status {
+        PENDING => ("pending", "pending"),
+        IGNORED => ("ignored", "ignored"),
+        DELETED => ("deleted", "deleted"),
+        _ => match outcome(p, status, r) {
+            Some(o) => (o.name, o.class),
+            None => return String::new(),
+        },
     };
     format!(
         "<div class=\"review-item__status --{class}\">{}</div>",
@@ -1082,37 +1155,49 @@ fn context_question(cx: &ListContext, kind: &str, scores: &[Score], topic_id: &V
     )
 }
 
-/// `userReviewableContextQuestion`
+/// `userReviewableContextQuestion`: for core approval-style types alone.
+/// With consistent answers, framed so "Yes" means there's a problem, and
+/// none once resolved.
 fn user_context_question(
-    cx: &ListContext,
-    kind: &str,
+    p: &Page,
+    r: &Value,
     status: i64,
     scores: &[Score],
-    topic_id: &Value,
     store: &Store,
 ) -> Option<String> {
-    let key = match kind {
+    if r["approval_style"] != true || r["type_source"] != "core" {
+        return None;
+    }
+    let consistent = p.consistent_answers;
+    if consistent && status != PENDING {
+        return None;
+    }
+    let suspect = || {
+        scores
+            .iter()
+            .any(|sc| sc.row["reason_type"] == "suspect_user")
+    };
+    // resolvedType: a queued post without its topic makes one.
+    let queued_topic =
+        s(&r["type"]) == "ReviewableQueuedPost" && store.get("topics", &r["topic_id"]).is_none();
+    let key = match s(&r["type"]) {
         "ReviewableUser" => {
+            // Only "scrub record" remains once resolved, so no question.
             if status != PENDING {
                 return None;
             }
-            if scores
-                .iter()
-                .any(|sc| sc.row["reason_type"] == "suspect_user")
-            {
-                "review.context_question.suspect_user"
-            } else {
-                "review.context_question.approve_user"
+            match (suspect(), consistent) {
+                (true, _) => "review.context_question.suspect_user",
+                (false, true) => "review.context_question.something_wrong_with_account",
+                (false, false) => "review.context_question.approve_user",
             }
         }
-        // resolvedType: a queued post without its topic makes one.
-        "ReviewableQueuedPost" if store.get("topics", topic_id).is_none() => {
-            "review.context_question.approve_topic"
-        }
-        "ReviewableQueuedPost" | "ReviewablePost" => "review.context_question.approve_post",
-        _ => return None,
+        _ if queued_topic && consistent => "review.context_question.something_wrong_with_topic",
+        _ if queued_topic => "review.context_question.approve_topic",
+        _ if consistent => "review.context_question.something_wrong_with_post",
+        _ => "review.context_question.approve_post",
     };
-    Some(t(cx, key))
+    Some(t(p.cx, key))
 }
 
 /// ReviewableBundledAction: a button for one action, else the
@@ -1695,10 +1780,14 @@ fn timeline(
             let key = format!("{}-{}", by["id"], s(&sc.row["reviewed_at"]));
             if !reviewed.contains(&key) {
                 reviewed.push(key);
+                // Score statuses (agreed, disagreed, ignored) share their
+                // values with the reviewable statuses they resolve to.
                 let (icon_name, title_key) = match sc.row["status"].as_i64() {
-                    Some(1) => ("check", "review.timeline.approved_by"),
-                    Some(2) => ("xmark", "review.timeline.rejected_by"),
-                    Some(3) => ("far-eye-slash", "review.timeline.ignored_by"),
+                    Some(st @ (APPROVED | REJECTED)) => match outcome(p, st, r) {
+                        Some(o) => (o.icon, o.timeline_key),
+                        None => ("check", ""),
+                    },
+                    Some(IGNORED) => ("far-eye-slash", "review.timeline.ignored_by"),
                     // Ember's fallback leaves the title key unset.
                     _ => ("check", ""),
                 };

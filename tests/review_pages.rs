@@ -208,8 +208,10 @@ async fn a_performed_flag_redraws_in_the_topics_queue() {
         .await;
     assert_eq!(status, StatusCode::OK, "{html}");
     assert!(html.contains(&format!("data-reviewable-id=\"{id}\"")));
-    assert!(html.contains("<div class=\"review-item__status --approved\">Flag approved</div>"));
-    assert!(html.contains("Approved by <span>"));
+    assert!(html.contains(
+        "<div class=\"review-item__status --problem-confirmed\">Problem confirmed</div>"
+    ));
+    assert!(html.contains("Problem confirmed by <span>"));
     // Nothing left to do.
     assert!(!html.contains("review-item__moderator-actions"));
 }
@@ -434,8 +436,8 @@ async fn approve_a_queued_reply_as(username: &str) {
     let mut staff = Client::logged_in(st, username).await;
 
     // ReviewableQueuedPostSerializer: the payload, the raw cooked, the
-    // author side-loaded, the post_count reason, the approval and the
-    // reject bundle.
+    // author side-loaded, the post_count reason, the reject bundle ("Yes,
+    // there's a problem") and then the approval.
     let (status, body) = staff.send(Method::GET, "/review.json", "", true).await;
     assert_eq!(status, StatusCode::OK, "{body}");
     let json: serde_json::Value = serde_json::from_str(&body).unwrap();
@@ -457,8 +459,9 @@ async fn approve_a_queued_reply_as(username: &str) {
     assert_eq!(r["target_created_by_id"], 2);
     assert_eq!(
         r["bundled_action_ids"],
-        serde_json::json!([format!("{id}-approve_post"), format!("{id}-reject-post")])
+        serde_json::json!([format!("{id}-reject-post"), format!("{id}-approve_post")])
     );
+    assert_eq!(r["approval_style"], true);
     let actions: Vec<&str> = json["actions"]
         .as_array()
         .unwrap()
@@ -468,13 +471,13 @@ async fn approve_a_queued_reply_as(username: &str) {
     assert_eq!(
         actions,
         [
-            "approve_post",
             "reject_post",
             "revise_and_reject_post",
             "reject_and_silence",
             "reject_and_suspend",
             "delete_user",
-            "delete_user_block"
+            "delete_user_block",
+            "approve_post"
         ]
     );
     assert_eq!(json["reviewable_scores"][0]["reason_type"], "post_count");
@@ -510,16 +513,18 @@ async fn approve_a_queued_reply_as(username: &str) {
     assert!(html.contains(
         "<div class=\"review-item__post\"><div class=\"review-item__post-content\"><div class=\"post-body\"><p>A queued reply from a new member with <strong>bold</strong> text.</p></div><span></span></div></div>"
     ));
-    assert!(html.contains("<h3 class=\"review-item__aside-title\">Approve this post?</h3>"));
     assert!(html.contains(
-        "<button class=\"btn btn-text btn-default reviewable-action approve-post\" type=\"button\"><span class=\"d-button-label\">Yes</span></button>"
+        "<h3 class=\"review-item__aside-title\">Is there something wrong with this post?</h3>"
+    ));
+    assert!(html.contains(
+        "<button class=\"btn btn-text btn-default reviewable-action approve-post\" type=\"button\"><span class=\"d-button-label\">No</span></button>"
     ));
     assert!(html.contains("data-value=\"revise_and_reject_post\""));
     assert!(html.contains("data-value=\"delete_user\""));
     assert!(html.contains("<template id=\"review-revise-modal\">"));
     assert!(html.contains("\"server_action\":\"approve_post\""));
 
-    // Yes: the post is created as its author, the queue empties.
+    // No: the post is created as its author, the queue empties.
     let (status, body) = staff
         .send(
             Method::PUT,
@@ -554,7 +559,11 @@ async fn approve_a_queued_reply_as(username: &str) {
         .await;
     assert_eq!(status, StatusCode::OK, "{html}");
     assert!(html.contains(&format!("data-reviewable-id=\"{id}\"")));
-    assert!(html.contains("<div class=\"review-item__status --approved\">Post approved</div>"));
+    assert!(
+        html.contains(
+            "<div class=\"review-item__status --no-problem-found\">No problem found</div>"
+        )
+    );
     assert!(!html.contains("review-item__moderator-actions"));
 }
 
@@ -617,7 +626,9 @@ async fn a_queued_topic_draws_its_title_and_category() {
     assert!(html.contains(
         "<div class=\"reviewable-topic-link\"><div class=\"title-text\">A queued topic &amp; its &lt;b&gt;title&lt;/b&gt;</div><span class=\"badge-category__wrapper\""
     ));
-    assert!(html.contains("<h3 class=\"review-item__aside-title\">Approve this topic?</h3>"));
+    assert!(html.contains(
+        "<h3 class=\"review-item__aside-title\">Is there something wrong with this topic?</h3>"
+    ));
     assert!(html.contains(
         "<button class=\"btn btn-text reviewable-action btn-default edit\" type=\"button\">"
     ));
