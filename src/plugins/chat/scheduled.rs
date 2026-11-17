@@ -180,7 +180,9 @@ async fn auto_leave(
            JOIN chat_channels cc ON cc.id = uccm.chat_channel_id AND cc.chatable_type = 'Category' \
            JOIN categories c ON c.id = cc.chatable_id AND c.read_restricted = TRUE{} \
            LEFT JOIN valid_permissions vp ON vp.user_id = uccm.user_id AND vp.category_id = c.id \
-           WHERE vp.user_id IS NULL) \
+           WHERE vp.user_id IS NULL AND NOT EXISTS ( \
+             SELECT 1 FROM category_groups cg WHERE cg.category_id = c.id AND cg.group_id = 5 \
+               AND cg.permission_type IN (2, 1))) \
          RETURNING chat_channel_id, user_id",
         only("u.id"),
         category_id

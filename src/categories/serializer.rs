@@ -627,6 +627,10 @@ pub async fn serialize(
             .filter(|n| !taken.contains(&n.as_str()))
             .collect();
         out.insert("available_groups".into(), json!(available));
+        out.insert(
+            "permission_groups".into(),
+            permission_groups(conn, guardian).await?,
+        );
     }
     if can_edit_tags {
         let tags: Vec<(i32, String, String)> = sqlx::query_as(
@@ -899,15 +903,15 @@ pub async fn with_registry<T>(
 }
 
 /// `CategorySerializer#group_permissions`: the category's groups the
-/// viewer may see, by name, or everyone with full access for a public
-/// category without any.
+/// viewer may see (pseudo groups included), by name, or everyone with
+/// full access for a public category without any rows at all.
 async fn group_permissions(
     conn: &mut PgConnection,
     guardian: &Guardian,
     id: i32,
     read_restricted: bool,
 ) -> Result<Vec<Value>, AppError> {
-    let visible = crate::groups::visible_groups_scope(guardian, "g", true, false);
+    let visible = crate::groups::visible_groups_scope(guardian, "g", true, true);
     let rows: Vec<(i32, String, i32)> = sqlx::query_as(&format!(
         "SELECT cg.permission_type, g.name, cg.group_id FROM category_groups cg \
          JOIN groups g ON g.id = cg.group_id \
@@ -927,16 +931,45 @@ async fn group_permissions(
         })
         .collect();
     if perms.is_empty() && !read_restricted {
-        let name: Option<String> = sqlx::query_scalar("SELECT name FROM groups WHERE id = 0")
-            .fetch_optional(&mut *conn)
-            .await?;
-        perms.push(json!({
-            "permission_type": FULL,
-            "group_name": name.filter(|n| !n.is_empty()).unwrap_or_else(|| "everyone".into()),
-            "group_id": EVERYONE,
-        }));
+        let has_rows: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM category_groups WHERE category_id = $1)",
+        )
+        .bind(id)
+        .fetch_one(&mut *conn)
+        .await?;
+        if !has_rows {
+            let name: Option<String> = sqlx::query_scalar("SELECT name FROM groups WHERE id = 0")
+                .fetch_optional(&mut *conn)
+                .await?;
+            perms.push(json!({
+                "permission_type": FULL,
+                "group_name": name.filter(|n| !n.is_empty()).unwrap_or_else(|| "everyone".into()),
+                "group_id": EVERYONE,
+            }));
+        }
     }
     Ok(perms)
+}
+
+/// `CategorySerializer#permission_groups`: every group the viewer may see,
+/// pseudo groups included except anonymous_users, by name.
+async fn permission_groups(
+    conn: &mut PgConnection,
+    guardian: &Guardian,
+) -> Result<Value, AppError> {
+    let visible = crate::groups::visible_groups_scope(guardian, "g", true, true);
+    let rows: Vec<(i32, String)> = sqlx::query_as(&format!(
+        "SELECT g.id, g.name FROM groups g WHERE {visible} AND g.id <> {} \
+         ORDER BY g.name ASC",
+        crate::guardian::auto_groups::ANONYMOUS_USERS
+    ))
+    .fetch_all(&mut *conn)
+    .await?;
+    Ok(Value::Array(
+        rows.into_iter()
+            .map(|(id, name)| json!({"id": id, "name": name}))
+            .collect(),
+    ))
 }
 
 /// `CategorySerializer#category_type_settings`: each matching type's

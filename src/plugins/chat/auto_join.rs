@@ -99,10 +99,11 @@ pub async fn create_memberships(
            CROSS JOIN chat_users cu \
            JOIN categories c ON c.id = cc.chatable_id AND c.read_restricted = FALSE \
          ), private AS ( \
-           SELECT DISTINCT gu.user_id, cc.id AS chat_channel_id FROM valid_chat_channels cc \
+           SELECT DISTINCT cu.id AS user_id, cc.id AS chat_channel_id FROM valid_chat_channels cc \
            JOIN categories c ON c.id = cc.chatable_id AND c.read_restricted = TRUE \
            JOIN category_groups cg ON cg.category_id = c.id AND cg.permission_type IN (2, 1) \
-           JOIN group_users gu ON gu.group_id = cg.group_id AND gu.user_id IN (SELECT id FROM chat_users) \
+           JOIN chat_users cu ON cg.group_id = 5 OR EXISTS ( \
+             SELECT 1 FROM group_users gu WHERE gu.group_id = cg.group_id AND gu.user_id = cu.id) \
          ) \
          INSERT INTO user_chat_channel_memberships (user_id, chat_channel_id, following, join_mode, created_at, updated_at) \
          SELECT p.user_id, p.chat_channel_id, TRUE, 1, $1, $1 \

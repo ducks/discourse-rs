@@ -1,6 +1,6 @@
 {
   "user": "admin",
-  "not_yet": "3b804903928 (Discourse): CategorySerializer#permission_groups and logged_in_users category permissions; not ported",
+  "not_yet": "41e84f0e42e (Discourse): CategoryDestroyer logs delete_category before destroy! (permissions still listed) and trashes the definition topic post; not ported",
   "requests": [
     {
       "method": "POST",
