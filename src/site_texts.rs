@@ -575,9 +575,25 @@ pub struct ThemeEntry {
     pub key: String,
     pub default: String,
     pub overridden: Option<String>,
+    /// The override's `original_translation`: the default it was written
+    /// against.
+    pub original: Option<String>,
 }
 
 impl ThemeEntry {
+    /// `ThemeTranslationOverride#status`. English entries are their own
+    /// source, so `current_default` is the default; with no object
+    /// translations `interpolation_keys` is nil and the keys are never
+    /// invalid.
+    pub fn status(&self) -> Option<&'static str> {
+        self.overridden.as_ref()?;
+        Some(match &self.original {
+            None => "unknown",
+            Some(o) if *o == self.default => "up_to_date",
+            Some(_) => "outdated",
+        })
+    }
+
     pub fn id(&self) -> String {
         format!("js.theme_translations.{}.{}", self.theme_id, self.key)
     }
@@ -588,17 +604,17 @@ impl ThemeEntry {
 
     /// `ThemeTranslationManager#site_text`
     pub fn site_text(&self) -> Value {
-        let mut keys = interpolation_keys_in(&Value::String(self.default.clone()));
-        keys.sort();
         json!({
             "id": self.id(),
             "value": self.value(),
-            "status": "up_to_date",
-            "old_default": null,
+            "status": self.status().unwrap_or("up_to_date"),
+            "old_default": self.overridden.as_ref().and(self.original.as_ref()),
             "new_default": self.default,
+            "default_text": self.default,
+            "default_locale": "en",
             "overridden": self.overridden.is_some(),
             "can_revert": self.overridden.is_some(),
-            "interpolation_keys": keys,
+            "interpolation_keys": null,
         })
     }
 }
@@ -630,8 +646,8 @@ pub async fn theme_translations_of(
     let Some(src) = field.filter(|v| !crate::ruby::is_blank(v)) else {
         return Ok(Vec::new());
     };
-    let overrides: Vec<(String, String)> = sqlx::query_as(
-        "SELECT translation_key, value FROM theme_translation_overrides \
+    let overrides: Vec<(String, String, Option<String>)> = sqlx::query_as(
+        "SELECT translation_key, value, original_translation FROM theme_translation_overrides \
          WHERE theme_id = $1 AND locale = 'en'",
     )
     .bind(theme_id)
@@ -659,14 +675,15 @@ pub async fn theme_translations_of(
     Ok(flat
         .into_iter()
         .filter(|(k, _)| (k == "theme_metadata" || k.starts_with("theme_metadata.")) == internal)
-        .map(|(key, default)| ThemeEntry {
-            theme_id,
-            overridden: overrides
-                .iter()
-                .find(|(k, _)| *k == key)
-                .map(|(_, v)| v.clone()),
-            key,
-            default,
+        .map(|(key, default)| {
+            let row = overrides.iter().find(|(k, _, _)| *k == key);
+            ThemeEntry {
+                theme_id,
+                overridden: row.map(|(_, v, _)| v.clone()),
+                original: row.and_then(|(_, _, o)| o.clone()),
+                key,
+                default,
+            }
         })
         .collect())
 }

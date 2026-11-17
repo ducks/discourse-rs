@@ -1,6 +1,5 @@
 {
   "user": "admin",
-  "not_yet": "747aa636644 (Discourse): themes serialize translations_locale (object editor fields translated as site texts); not ported",
   "requests": [
     {
       "method": "POST",

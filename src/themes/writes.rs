@@ -1813,11 +1813,12 @@ pub async fn update_translation(
             Some((id, current)) => {
                 if current != value {
                     sqlx::query(
-                        "UPDATE theme_translation_overrides SET value = $2, updated_at = now() \
-                         WHERE id = $1",
+                        "UPDATE theme_translation_overrides SET value = $2, \
+                         original_translation = $3, updated_at = now() WHERE id = $1",
                     )
                     .bind(id)
                     .bind(value)
+                    .bind(&entry.default)
                     .execute(&mut *conn)
                     .await?;
                 }
@@ -1826,11 +1827,13 @@ pub async fn update_translation(
             None => {
                 sqlx::query(
                     "INSERT INTO theme_translation_overrides (theme_id, locale, translation_key, \
-                     value, created_at, updated_at) VALUES ($1, 'en', $2, $3, now(), now())",
+                     value, original_translation, created_at, updated_at) \
+                     VALUES ($1, 'en', $2, $3, $4, now(), now())",
                 )
                 .bind(theme_id)
                 .bind(key)
                 .bind(value)
+                .bind(&entry.default)
                 .execute(&mut *conn)
                 .await?;
                 true

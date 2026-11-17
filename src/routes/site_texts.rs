@@ -229,8 +229,9 @@ pub(crate) async fn index_json(state: AppState, uri: Uri) -> Result<Response, Ap
                 results.push(Hit::Core(r));
             }
         }
-        // ThemeTranslationManager.search_site_texts
-        if !outdated && !untranslated {
+        // ThemeTranslationManager.search_site_texts. Every entry here is an
+        // English default, so `untranslated` skips them all.
+        if !untranslated {
             let theme_ids: Vec<i32> = match theme {
                 Some(id) => vec![id],
                 // Theme.includes(...) without an order: the table's.
@@ -243,6 +244,9 @@ pub(crate) async fn index_json(state: AppState, uri: Uri) -> Result<Response, Ap
             for id in theme_ids {
                 for entry in site_texts::theme_translations(&mut conn, id).await? {
                     if overridden && entry.overridden.is_none() {
+                        continue;
+                    }
+                    if outdated && entry.status() != Some("outdated") {
                         continue;
                     }
                     if regexp.is_match(&entry.id()) || regexp.is_match(entry.value()) {
@@ -694,12 +698,14 @@ async fn update_theme_text(
             if current != value {
                 changed = true;
                 sqlx::query(
-                    "UPDATE theme_translation_overrides SET value = $3, updated_at = now() \
+                    "UPDATE theme_translation_overrides SET value = $3, \
+                     original_translation = $4, updated_at = now() \
                      WHERE theme_id = $1 AND locale = 'en' AND translation_key = $2",
                 )
                 .bind(theme_id)
                 .bind(&entry.key)
                 .bind(value)
+                .bind(&entry.default)
                 .execute(&mut *conn)
                 .await?;
             }
@@ -707,11 +713,13 @@ async fn update_theme_text(
             changed = true;
             sqlx::query(
                 "INSERT INTO theme_translation_overrides (theme_id, locale, translation_key, value, \
-                 created_at, updated_at) VALUES ($1, 'en', $2, $3, now(), now())",
+                 original_translation, created_at, updated_at) \
+                 VALUES ($1, 'en', $2, $3, $4, now(), now())",
             )
             .bind(theme_id)
             .bind(&entry.key)
             .bind(value)
+            .bind(&entry.default)
             .execute(&mut *conn)
             .await?;
         }
@@ -821,6 +829,39 @@ pub async fn dismiss_outdated(
         Err(r) => return Ok(r),
     };
     let mut conn = state.pool.acquire().await?;
+    if site_texts::theme_text_id(&id).is_some() {
+        let entry = site_texts::find_theme_text(&mut conn, &id).await?;
+        let Some(entry) = entry.filter(|e| e.overridden.is_some()) else {
+            return Ok(super::topics::not_found_response(&state));
+        };
+        // ThemeTranslationOverride#make_up_to_date!
+        if !matches!(entry.status(), Some("outdated" | "unknown")) {
+            return Ok((
+                StatusCode::UNPROCESSABLE_ENTITY,
+                Json(
+                    json!({"failed": "FAILED", "message": "Can only dismiss outdated translations"}),
+                ),
+            )
+                .into_response());
+        }
+        sqlx::query(
+            "UPDATE theme_translation_overrides SET original_translation = $3, updated_at = now() \
+             WHERE theme_id = $1 AND locale = 'en' AND translation_key = $2",
+        )
+        .bind(entry.theme_id)
+        .bind(&entry.key)
+        .bind(&entry.default)
+        .execute(&mut *conn)
+        .await?;
+        // The override's after_commit.
+        sqlx::query(
+            "UPDATE theme_fields SET value_baked = NULL WHERE theme_id = $1 AND target_id = 4",
+        )
+        .bind(entry.theme_id)
+        .execute(&mut *conn)
+        .await?;
+        return Ok(Json(json!({"success": "OK"})).into_response());
+    }
     let Some(row) = site_texts::find_override(&mut conn, &locale, &id).await? else {
         return Ok(super::topics::not_found_response(&state));
     };
