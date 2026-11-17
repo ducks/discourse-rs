@@ -265,13 +265,14 @@ pub async fn update(
                 .await?;
             }
             None => {
-                sqlx::query(
-                    "DELETE FROM user_associated_accounts WHERE provider_name = $1 AND user_id = $2",
+                let gone: Vec<i64> = sqlx::query_scalar(
+                    "DELETE FROM user_associated_accounts WHERE provider_name = $1 AND user_id = $2 RETURNING id"
                 )
                 .bind(&provider)
                 .bind(target.id)
-                .execute(&mut *tx)
+                .fetch_all(&mut *tx)
                 .await?;
+                crate::user_avatar::associated_accounts_destroyed(&mut tx, &gone).await?;
             }
         }
     }

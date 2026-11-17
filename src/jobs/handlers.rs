@@ -221,6 +221,9 @@ fn handler<'a>(
             Box::pin(async move { create_avatar_thumbnails(state, &job.args).await })
         }
         "update_gravatar" => Box::pin(async move { update_gravatar(state, &job.args).await }),
+        "download_avatar_from_url" => {
+            Box::pin(async move { download_avatar_from_url(state, &job.args).await })
+        }
         name if crate::plugins::gamification::jobs::REGULAR.contains(&name) => {
             Box::pin(async move {
                 crate::plugins::gamification::jobs::run(state, name, &job.args).await
@@ -342,6 +345,15 @@ async fn update_gravatar(state: &AppState, args: &Value) -> Result<(), AppError>
     let mut conn = state.pool.acquire().await?;
     let s = settings(state, &mut conn).await?;
     crate::user_avatar::update_gravatar_job(state, &mut conn, &s, user_id, avatar_id).await
+}
+
+/// `Jobs::DownloadAvatarFromUrl`
+async fn download_avatar_from_url(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut tx = state.pool.begin().await?;
+    let s = settings(state, &mut tx).await?;
+    crate::user_avatar::download_avatar_from_url_job(state, &mut tx, &s, args).await?;
+    tx.commit().await?;
+    Ok(())
 }
 
 /// Jobs::AutomaticGroupMembership (group_manager).

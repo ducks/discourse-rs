@@ -389,7 +389,6 @@ pub async fn make_anonymous(
         "DELETE FROM user_avatars WHERE user_id = $1",
         "DELETE FROM single_sign_on_records WHERE user_id = $1",
         "DELETE FROM oauth2_user_infos WHERE user_id = $1",
-        "DELETE FROM user_associated_accounts WHERE user_id = $1",
         "DELETE FROM api_keys WHERE user_id = $1",
         "DELETE FROM user_api_key_scopes WHERE user_api_key_id IN \
            (SELECT id FROM user_api_keys WHERE user_id = $1)",
@@ -397,6 +396,13 @@ pub async fn make_anonymous(
     ] {
         sqlx::query(sql).bind(user_id).execute(&mut *conn).await?;
     }
+    // user_associated_accounts.destroy_all, after oauth2_user_infos.
+    let gone: Vec<i64> =
+        sqlx::query_scalar("DELETE FROM user_associated_accounts WHERE user_id = $1 RETURNING id")
+            .bind(user_id)
+            .fetch_all(&mut *conn)
+            .await?;
+    crate::user_avatar::associated_accounts_destroyed(&mut *conn, &gone).await?;
     expire_auth_tokens(&mut *conn, s, user_id).await?;
     for sql in [
         "DELETE FROM user_second_factors WHERE user_id = $1",

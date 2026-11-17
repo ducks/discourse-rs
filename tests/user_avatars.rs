@@ -350,15 +350,18 @@ async fn a_downloaded_gravatar_becomes_the_avatar_it_replaces() {
         .await
         .unwrap()
         .unwrap();
+    let upload = discourse_rs::user_avatar::gravatar_upload(
+        &app, &mut conn, &settings, &user, url, &bytes, ".png",
+    )
+    .await
+    .unwrap();
     discourse_rs::user_avatar::save_gravatar(
         &app,
         &mut conn,
         &settings,
         &user,
-        Some(34),
-        url,
-        &bytes,
-        ".png",
+        Some(upload),
+        false,
     )
     .await
     .unwrap();
@@ -379,6 +382,260 @@ async fn a_downloaded_gravatar_becomes_the_avatar_it_replaces() {
     .await
     .unwrap();
     assert_eq!((avatar, gravatar), (Some(id), Some(id)));
+    std::fs::remove_dir_all(&dir).unwrap();
+}
+
+/// Serves parity's small.png at /pic.png on http://fixtures.localhost:<port>
+/// (loopback, both families), which FinalDestination reaches as an
+/// allowed internal host on the S3 endpoint's port. Its base url.
+async fn image_host(app_state: &discourse_rs::AppState) -> String {
+    let png = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/parity/writes/files/small.png"
+    ))
+    .unwrap();
+    let app = Router::new().route(
+        "/pic.png",
+        get(move || {
+            let png = png.clone();
+            async move { ([(header::CONTENT_TYPE, "image/png")], png) }
+        }),
+    );
+    let (v4, v6) = loop {
+        let v4 = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+        let port = v4.local_addr().unwrap().port();
+        if let Ok(v6) = tokio::net::TcpListener::bind(("::1", port)).await {
+            break (v4, v6);
+        }
+    };
+    let base = format!(
+        "http://fixtures.localhost:{}",
+        v4.local_addr().unwrap().port()
+    );
+    for listener in [v4, v6] {
+        let app = app.clone();
+        tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    }
+    for (name, value) in [
+        ("allowed_internal_hosts", "fixtures.localhost"),
+        ("s3_endpoint", base.as_str()),
+        ("enable_google_oauth2_logins", "t"),
+        ("google_oauth2_client_id", "gclient"),
+        ("google_oauth2_client_secret", "gsecret"),
+    ] {
+        let data_type = app_state.site_setting_defs.get(name).unwrap().data_type as i32;
+        set_setting(&app_state.pool, name, data_type, value).await;
+    }
+    base
+}
+
+/// user3 (id 5) with a google account showing `image`, its id.
+async fn google_account(db: &TestDb, image: &str) -> i64 {
+    sqlx::query_scalar(
+        "INSERT INTO user_associated_accounts (provider_name, provider_uid, user_id, last_used, info, \
+                                               credentials, extra, created_at, updated_at) \
+         VALUES ('google_oauth2', 'g-5', 5, now(), jsonb_build_object('image', $1::text), '{}', '{}', now(), now()) \
+         RETURNING id",
+    )
+    .bind(image)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap()
+}
+
+async fn run_download(db: &TestDb, app: &discourse_rs::AppState, args: serde_json::Value) {
+    let mut conn = db.pool.acquire().await.unwrap();
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut conn,
+        &app.site_setting_defs,
+        &app.config.globals,
+    )
+    .await
+    .unwrap();
+    discourse_rs::user_avatar::download_avatar_from_url_job(app, &mut conn, &settings, &args)
+        .await
+        .unwrap();
+}
+
+/// UserAvatar.import_associated_account_avatar (Discourse 2b6dd368623):
+/// the connected account keeps the downloaded image, referenced, and the
+/// user shows it while the account is the selected avatar. A download for
+/// an image the account no longer has is dropped.
+#[tokio::test]
+async fn a_connected_accounts_avatar_is_kept_on_the_account() {
+    let db = TestDb::new().await;
+    let dir = scratch("associated");
+    let app = state(db.pool.clone(), proxy_config("http://127.0.0.1:1", &dir)).await;
+    let host = image_host(&app).await;
+    let url = format!("{host}/pic.png");
+    let account = google_account(&db, &url).await;
+    sqlx::query(
+        "UPDATE user_avatars SET selected_user_associated_account_id = $1 WHERE user_id = 5",
+    )
+    .bind(account)
+    .execute(&db.pool)
+    .await
+    .unwrap();
+
+    // A stale url: the account shows another image now.
+    run_download(
+        &db,
+        &app,
+        serde_json::json!({"url": format!("{host}/old.png"), "user_id": 5, "associated_account_id": account}),
+    )
+    .await;
+    let kept: Option<i32> =
+        sqlx::query_scalar("SELECT avatar_upload_id FROM user_associated_accounts WHERE id = $1")
+            .bind(account)
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(kept, None);
+
+    run_download(
+        &db,
+        &app,
+        serde_json::json!({"url": url, "user_id": 5, "associated_account_id": account}),
+    )
+    .await;
+    let (kept, name, origin): (Option<i32>, String, Option<String>) = sqlx::query_as(
+        "SELECT a.avatar_upload_id, up.original_filename, up.origin FROM user_associated_accounts a \
+         JOIN uploads up ON up.id = a.avatar_upload_id WHERE a.id = $1",
+    )
+    .bind(account)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(name, "external-avatar.png");
+    assert_eq!(origin.as_deref(), Some(url.as_str()));
+    let shown: Option<i32> =
+        sqlx::query_scalar("SELECT uploaded_avatar_id FROM users WHERE id = 5")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_eq!(shown, kept);
+    let referenced: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM upload_references WHERE target_type = 'UserAssociatedAccount' \
+         AND target_id = $1 AND upload_id = $2)",
+    )
+    .bind(account)
+    .bind(kept)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(referenced);
+    // The custom avatar is untouched: the image belongs to the account.
+    let custom: Option<i32> =
+        sqlx::query_scalar("SELECT custom_upload_id FROM user_avatars WHERE user_id = 5")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    assert_ne!(custom, kept);
+    std::fs::remove_dir_all(&dir).unwrap();
+}
+
+/// An account that is not the selected avatar keeps its image without
+/// the user's avatar changing; picking it later shows it, and a gravatar
+/// download leaves the selection alone.
+#[tokio::test]
+async fn a_kept_account_avatar_is_picked_later() {
+    let db = TestDb::new().await;
+    let dir = scratch("associated-pick");
+    let app = state(db.pool.clone(), proxy_config("http://127.0.0.1:1", &dir)).await;
+    let host = image_host(&app).await;
+    let url = format!("{host}/pic.png");
+    let account = google_account(&db, &url).await;
+    let before: Option<i32> =
+        sqlx::query_scalar("SELECT uploaded_avatar_id FROM users WHERE id = 5")
+            .fetch_one(&db.pool)
+            .await
+            .unwrap();
+    run_download(
+        &db,
+        &app,
+        serde_json::json!({"url": url, "user_id": 5, "associated_account_id": account}),
+    )
+    .await;
+    let (kept, shown): (Option<i32>, Option<i32>) = sqlx::query_as(
+        "SELECT a.avatar_upload_id, u.uploaded_avatar_id FROM user_associated_accounts a \
+         JOIN users u ON u.id = a.user_id WHERE a.id = $1",
+    )
+    .bind(account)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(kept.is_some());
+    assert_eq!(shown, before);
+
+    let mut conn = db.pool.acquire().await.unwrap();
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut conn,
+        &app.site_setting_defs,
+        &app.config.globals,
+    )
+    .await
+    .unwrap();
+    let user = discourse_rs::user_avatar::load_target(&mut conn, 5)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(
+        !discourse_rs::user_avatar::pick_associated_account(&mut conn, &app, &settings, &user, 0)
+            .await
+            .unwrap()
+    );
+    assert!(
+        discourse_rs::user_avatar::pick_associated_account(
+            &mut conn, &app, &settings, &user, account
+        )
+        .await
+        .unwrap()
+    );
+    let (selected, shown): (Option<i64>, Option<i32>) = sqlx::query_as(
+        "SELECT a.selected_user_associated_account_id, u.uploaded_avatar_id FROM user_avatars a \
+         JOIN users u ON u.id = a.user_id WHERE u.id = 5",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!((selected, shown), (Some(account), kept));
+
+    // A new gravatar is kept, but the account stays the avatar.
+    let bytes = std::fs::read(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/parity/writes/files/photo.png"
+    ))
+    .unwrap();
+    let gravatar = discourse_rs::user_avatar::gravatar_upload(
+        &app,
+        &mut conn,
+        &settings,
+        &user,
+        "https://www.gravatar.com/avatar/abc.png?s=288&d=404&reset_cache=y",
+        &bytes,
+        ".png",
+    )
+    .await
+    .unwrap();
+    discourse_rs::user_avatar::save_gravatar(
+        &app,
+        &mut conn,
+        &settings,
+        &user,
+        Some(gravatar),
+        true,
+    )
+    .await
+    .unwrap();
+    let (stored, shown): (Option<i32>, Option<i32>) = sqlx::query_as(
+        "SELECT a.gravatar_upload_id, u.uploaded_avatar_id FROM user_avatars a \
+         JOIN users u ON u.id = a.user_id WHERE u.id = 5",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_ne!(gravatar, kept);
+    assert_eq!((stored, shown), (gravatar, kept));
     std::fs::remove_dir_all(&dir).unwrap();
 }
 

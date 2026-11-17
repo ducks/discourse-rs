@@ -789,8 +789,14 @@ async fn destroy_user_row(
     )
     .execute(&mut *conn)
     .await?;
+    // has_many :user_associated_accounts, dependent: :destroy
+    let gone: Vec<i64> =
+        sqlx::query_scalar("DELETE FROM user_associated_accounts WHERE user_id = $1 RETURNING id")
+            .bind(user_id)
+            .fetch_all(&mut *conn)
+            .await?;
+    crate::user_avatar::associated_accounts_destroyed(&mut *conn, &gone).await?;
     for sql in [
-        "DELETE FROM user_associated_accounts WHERE user_id = $1",
         "DELETE FROM oauth2_user_infos WHERE user_id = $1",
         "DELETE FROM user_second_factors WHERE user_id = $1",
     ] {

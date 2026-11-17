@@ -1,6 +1,5 @@
 {
   "user": null,
-  "not_yet": "2b6dd368623 (Discourse): connected accounts keep their avatars (UserAvatar.retrieve_for_associated_account); not ported",
   "settings": {
     "auth_require_interaction": false,
     "twitter_consumer_key": "tw-key",

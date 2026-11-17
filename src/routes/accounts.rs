@@ -754,10 +754,13 @@ pub async fn password_reset_update(
         .get("delete_associated_accounts_on_password_reset")?
         .truthy()
     {
-        sqlx::query("DELETE FROM user_associated_accounts WHERE user_id = $1")
-            .bind(user_id)
-            .execute(&mut *tx)
-            .await?;
+        let gone: Vec<i64> = sqlx::query_scalar(
+            "DELETE FROM user_associated_accounts WHERE user_id = $1 RETURNING id",
+        )
+        .bind(user_id)
+        .fetch_all(&mut *tx)
+        .await?;
+        crate::user_avatar::associated_accounts_destroyed(&mut tx, &gone).await?;
     }
     // UserHistory.actions[:change_password]
     sqlx::query(

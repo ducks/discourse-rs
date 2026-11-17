@@ -14,12 +14,12 @@ use crate::guardian::Guardian;
 use crate::params;
 use crate::site_settings::SiteSettings;
 use crate::url::Urls;
-use crate::user_avatar::{ensure_user_avatar, save_uploaded_avatar, save_user_avatar};
+use crate::user_avatar::ensure_user_avatar;
 use crate::user_updater::{self, Target};
-use crate::{AppError, AppState, Unsupported};
+use crate::{AppError, AppState};
 
 /// `AVATAR_TYPES_WITH_UPLOAD`
-const AVATAR_TYPES_WITH_UPLOAD: [&str; 3] = ["uploaded", "custom", "gravatar"];
+const AVATAR_TYPES_WITH_UPLOAD: [&str; 4] = ["uploaded", "custom", "gravatar", "current"];
 
 fn form_pairs(map: &Map<String, Value>) -> Vec<(String, String)> {
     map.iter()
@@ -158,44 +158,48 @@ pub async fn pick(
     };
     let settings =
         SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
-    if settings.get("discourse_connect_overrides_avatar")?.truthy()
-        || settings.get("auth_overrides_avatar")?.truthy()
-    {
+    let kind = params::string(&p, "type")
+        .filter(|t| !crate::ruby::is_blank(t))
+        .unwrap_or_else(|| "system".into());
+    if !can_pick_avatar_source(&mut tx, &settings, &user, &kind).await? {
         return Ok(failed());
     }
-    let kind = params::string(&p, "type").filter(|t| !crate::ruby::is_blank(t));
-    if kind.as_deref() == Some("gravatar") && !settings.get("gravatar_enabled")?.truthy() {
-        return Ok(failed());
-    }
-    if let Some(k) = kind.as_deref()
-        && !AVATAR_TYPES_WITH_UPLOAD.contains(&k)
-        && k != "system"
-    {
-        return Ok(failed());
-    }
-    let is_system = user.id == crate::avatar::SYSTEM_USER_ID;
-    let upload_id = match kind.as_deref() {
-        None | Some("system") => {
+    match kind.as_str() {
+        "associated_account" => {
+            // user.user_avatar&.pick_associated_account(params[:associated_account_id])
             let has_avatar: bool =
                 sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM user_avatars WHERE user_id = $1)")
                     .bind(user.id)
                     .fetch_one(&mut *tx)
                     .await?;
-            if !has_avatar {
-                return Err(Unsupported(
-                    "picking the system avatar for a user without a user_avatars row (NoMethodError in Rails)",
+            let raw = params::string(&p, "associated_account_id").unwrap_or_default();
+            let account_id = crate::ruby::to_i(&raw);
+            if !has_avatar
+                || !crate::user_avatar::pick_associated_account(
+                    &mut tx, &state, &settings, &user, account_id,
                 )
-                .into());
-            }
-            None
-        }
-        Some(k) => {
-            let allowed = settings.group_ids("uploaded_avatars_allowed_groups")?;
-            if !is_system && !user_in_any_groups(&mut tx, &settings, user.id, &allowed).await? {
+                .await?
+            {
                 return Ok(failed());
             }
+        }
+        "system" => {
+            crate::user_avatar::pick_for_user(&mut tx, &state, &settings, &user, None, "current")
+                .await?
+        }
+        k => {
             let raw = params::string(&p, "upload_id").unwrap_or_default();
             let id = i32::try_from(crate::ruby::to_i(&raw)).unwrap_or(0);
+            if k == "current" {
+                let current: Option<i32> =
+                    sqlx::query_scalar("SELECT uploaded_avatar_id FROM users WHERE id = $1")
+                        .bind(user.id)
+                        .fetch_one(&mut *tx)
+                        .await?;
+                if current != Some(id) {
+                    return Ok(failed());
+                }
+            }
             let upload: Option<Option<i32>> =
                 sqlx::query_scalar("SELECT user_id FROM uploads WHERE id = $1")
                     .bind(id)
@@ -209,31 +213,67 @@ pub async fn pick(
                 )
                     .into_response());
             };
-            ensure_user_avatar(&mut tx, user.id).await?;
             if !can_pick_avatar(&mut tx, &guardian, user.id, id, upload_owner).await? {
                 return Ok(super::search::invalid_access(&state));
             }
-            Some((k == "gravatar", id))
+            crate::user_avatar::pick_for_user(&mut tx, &state, &settings, &user, Some(id), k)
+                .await?;
         }
-    };
-    if is_system {
-        stop_logo_as_system_avatar(&mut tx, &state, &settings).await?;
     }
-    save_uploaded_avatar(
-        &mut tx,
-        &state,
-        &settings,
-        &user,
-        upload_id.map(|(_, id)| id),
-    )
-    .await?;
-    match upload_id {
-        Some((true, id)) => save_user_avatar(&mut tx, user.id, None, Some(Some(id))).await?,
-        Some((false, id)) => save_user_avatar(&mut tx, user.id, Some(Some(id)), None).await?,
-        None => {}
+    if user.id == crate::avatar::SYSTEM_USER_ID {
+        stop_logo_as_system_avatar(&mut tx, &state, &settings).await?;
     }
     tx.commit().await?;
     Ok(success())
+}
+
+/// `guardian.can_pick_avatar_source?(user, type)` (Discourse
+/// 2b6dd368623), past `can_edit?`: none while a login provider owns
+/// avatars; the system avatar always; an upload (a gravatar only when
+/// gravatars are on) for the system user or uploaded_avatars_allowed_groups;
+/// a connected account's for those groups as selectable_avatars_mode lets.
+async fn can_pick_avatar_source(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    user: &Target,
+    kind: &str,
+) -> Result<bool, AppError> {
+    if settings.get("auth_overrides_avatar")?.truthy()
+        || settings.get("discourse_connect_overrides_avatar")?.truthy()
+    {
+        return Ok(false);
+    }
+    let allowed = settings.group_ids("uploaded_avatars_allowed_groups")?;
+    match kind {
+        "system" => return Ok(true),
+        k if AVATAR_TYPES_WITH_UPLOAD.contains(&k) => {
+            if k == "gravatar" && !settings.get("gravatar_enabled")?.truthy() {
+                return Ok(false);
+            }
+            if user.id == crate::avatar::SYSTEM_USER_ID {
+                return Ok(true);
+            }
+            return user_in_any_groups(conn, settings, user.id, &allowed).await;
+        }
+        "associated_account" => {
+            if !user_in_any_groups(conn, settings, user.id, &allowed).await? {
+                return Ok(false);
+            }
+        }
+        _ => return Ok(false),
+    }
+    let staff = user.admin || user.moderator;
+    let mode = settings.get("selectable_avatars_mode")?.to_s();
+    Ok(match mode.as_str() {
+        "no_one" => false,
+        "staff" => staff,
+        m => match m.strip_prefix("tl").and_then(|n| n.parse::<i32>().ok()) {
+            Some(level) if m.len() == 3 && (1..=4).contains(&level) => {
+                staff || user.trust_level >= level
+            }
+            _ => true,
+        },
+    })
 }
 
 /// `guardian.can_pick_avatar?(user_avatar, upload)`
@@ -297,6 +337,12 @@ pub async fn select(
     };
     let settings =
         SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    // guardian.can_edit_avatar?(user) (Discourse 2b6dd368623)
+    if settings.get("auth_overrides_avatar")?.truthy()
+        || settings.get("discourse_connect_overrides_avatar")?.truthy()
+    {
+        return Ok(failed());
+    }
     let Some(url) = params::string(&p, "url").filter(|u| !crate::ruby::is_blank(u)) else {
         return Ok(failed());
     };
@@ -324,9 +370,17 @@ pub async fn select(
     if is_system {
         stop_logo_as_system_avatar(&mut tx, &state, &settings).await?;
     }
-    save_uploaded_avatar(&mut tx, &state, &settings, &user, Some(upload_id)).await?;
-    ensure_user_avatar(&mut tx, user.id).await?;
-    save_user_avatar(&mut tx, user.id, Some(Some(upload_id)), None).await?;
+    // user.pick_avatar!(upload.id): the avatar row keeps no custom upload
+    // of it (Discourse 2b6dd368623).
+    crate::user_avatar::pick_for_user(
+        &mut tx,
+        &state,
+        &settings,
+        &user,
+        Some(upload_id),
+        "current",
+    )
+    .await?;
     // user.avatar_template, read after the setting changed.
     let settings =
         SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
@@ -337,10 +391,24 @@ pub async fn select(
     let template = crate::avatar::template_for(&mut tx, &urls, user.id)
         .await?
         .unwrap_or_default();
+    // user.custom_avatar_template: the avatar row's custom upload's.
+    let custom: Option<i32> =
+        sqlx::query_scalar("SELECT custom_upload_id FROM user_avatars WHERE user_id = $1")
+            .bind(user.id)
+            .fetch_optional(&mut *tx)
+            .await?
+            .flatten();
+    let custom_template = match custom {
+        Some(id) => Some(
+            crate::avatar::class_avatar_template(&urls, &user.username, Some(id))
+                .map_err(crate::avatar::AvatarError::into_app)?,
+        ),
+        None => None,
+    };
     tx.commit().await?;
     Ok(Json(json!({
         "avatar_template": template,
-        "custom_avatar_template": template,
+        "custom_avatar_template": custom_template,
         "uploaded_avatar_id": upload_id,
     }))
     .into_response())
@@ -427,20 +495,26 @@ pub async fn refresh_gravatar(
             .bind(username.to_lowercase())
             .fetch_optional(&mut *conn)
             .await?;
-    // guardian.ensure_can_edit!(user), before the user is known to exist.
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    // guardian.ensure_can_edit_avatar!(user) (Discourse 2b6dd368623),
+    // before the user is known to exist.
     let Some((user_id, username)) =
         user.filter(|(id, _)| guardian.is_me(*id) || guardian.is_staff())
     else {
         return Ok(super::search::invalid_access(&state));
     };
-    let settings =
-        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if settings.get("auth_overrides_avatar")?.truthy()
+        || settings.get("discourse_connect_overrides_avatar")?.truthy()
+    {
+        return Ok(super::search::invalid_access(&state));
+    }
     ensure_user_avatar(&mut conn, user_id).await?;
     let avatar_id: i32 = sqlx::query_scalar("SELECT id FROM user_avatars WHERE user_id = $1")
         .bind(user_id)
         .fetch_one(&mut *conn)
         .await?;
-    crate::user_avatar::update_gravatar(&state, &mut conn, &settings, avatar_id).await?;
+    crate::user_avatar::update_gravatar(&state, &mut conn, &settings, avatar_id, false).await?;
     let gravatar: Option<i32> =
         sqlx::query_scalar("SELECT gravatar_upload_id FROM user_avatars WHERE id = $1")
             .bind(avatar_id)

@@ -111,18 +111,7 @@ fn destroy_in<'a>(
             .bind(upload_id)
             .execute(&mut *tx)
             .await?;
-        for (table, column) in [
-            ("users", "uploaded_avatar_id"),
-            ("user_avatars", "gravatar_upload_id"),
-            ("user_avatars", "custom_upload_id"),
-        ] {
-            sqlx::query(&format!(
-                "UPDATE {table} SET {column} = NULL WHERE {column} = $1"
-            ))
-            .bind(upload_id)
-            .execute(&mut *tx)
-            .await?;
-        }
+        crate::user_avatar::remove_upload(&mut *tx, upload_id).await?;
         Ok(())
     })
 }

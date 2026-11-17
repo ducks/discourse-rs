@@ -2203,13 +2203,14 @@ pub async fn connect(
         && (authenticator.can_revoke)(&settings)?
     {
         // authenticator.revoke(current_user)
-        sqlx::query(
-            "DELETE FROM user_associated_accounts WHERE provider_name = $1 AND user_id = $2",
+        let gone: Vec<i64> = sqlx::query_scalar(
+            "DELETE FROM user_associated_accounts WHERE provider_name = $1 AND user_id = $2 RETURNING id"
         )
         .bind(&auth.provider)
         .bind(user_id)
-        .execute(&mut *tx)
+        .fetch_all(&mut *tx)
         .await?;
+        crate::user_avatar::associated_accounts_destroyed(&mut tx, &gone).await?;
     }
     let (result, _) = after_authenticate(&state, &mut tx, &settings, auth, Some(user_id)).await?;
     crate::session::server::delete(&mut tx, &session_id, &format!("omniauth_reconnect_{token}"))
@@ -2284,14 +2285,15 @@ pub(super) async fn revoke_account(
         }
     }
     // ManagedAuthenticator#revoke
-    let removed = sqlx::query(
-        "DELETE FROM user_associated_accounts WHERE provider_name = $1 AND user_id = $2",
+    let gone: Vec<i64> = sqlx::query_scalar(
+        "DELETE FROM user_associated_accounts WHERE provider_name = $1 AND user_id = $2 RETURNING id"
     )
     .bind(&provider_name)
     .bind(target.id)
-    .execute(&mut *tx)
+    .fetch_all(&mut *tx)
     .await?;
-    if removed.rows_affected() == 0 {
+    crate::user_avatar::associated_accounts_destroyed(&mut tx, &gone).await?;
+    if gone.is_empty() {
         return Ok(super::topics::not_found_response(state));
     }
     tx.commit().await?;
