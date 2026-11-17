@@ -672,7 +672,11 @@ pub async fn apply(
         .bind(excerpt)
         .execute(&mut *conn)
         .await?;
-    sync_category_description(&mut *conn, ctx, topic_id, &post.cooked).await?;
+    if !sync_category_description(&mut *conn, ctx, topic_id, &post.cooked).await? {
+        return Ok(Applied::Invalid(vec![
+            ctx.t("category.errors.description_incomplete"),
+        ]));
+    }
     if !opts.keep_existing_draft {
         next_draft_sequence(&mut *conn, p.editor_id, &format!("topic_{topic_id}")).await?;
     }
@@ -1772,13 +1776,14 @@ pub async fn revision_recipients(
 
 /// `Post#sync_category_description` from revise_topic: a category
 /// definition's description follows its first paragraph, and a change is
-/// published on /categories.
+/// published on /categories. False for a definition without a paragraph
+/// (Rails' nil, which update_category_description makes the post's error).
 pub(crate) async fn sync_category_description(
     conn: &mut PgConnection,
     ctx: &Ctx<'_>,
     topic_id: i32,
     cooked: &str,
-) -> Result<(), AppError> {
+) -> Result<bool, AppError> {
     let category: Option<(i32, Option<String>)> = sqlx::query_as(
         "SELECT id, description FROM categories WHERE topic_id = $1 ORDER BY id LIMIT 1",
     )
@@ -1786,10 +1791,10 @@ pub(crate) async fn sync_category_description(
     .fetch_optional(&mut *conn)
     .await?;
     let Some((category_id, description)) = category else {
-        return Ok(());
+        return Ok(true);
     };
     let Some(html) = crate::username_changer::first_paragraph_description(cooked) else {
-        return Ok(());
+        return Ok(false);
     };
     let template = ctx
         .i18n
@@ -1804,7 +1809,7 @@ pub(crate) async fn sync_category_description(
     let prefix: String = template.chars().take(51).collect();
     let new_description = (!html.starts_with(&prefix)).then_some(html);
     if description == new_description {
-        return Ok(());
+        return Ok(true);
     }
     // update_column (no updated_at), then publish_category.
     sqlx::query("UPDATE categories SET description = $2 WHERE id = $1")
@@ -1825,7 +1830,8 @@ pub(crate) async fn sync_category_description(
         category_id,
         &Default::default(),
     )
-    .await
+    .await?;
+    Ok(true)
 }
 
 /// `topic.save!` on a topic as it is (TopicConverter after adding allowed

@@ -1512,15 +1512,6 @@ pub async fn save(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Record) -> Resul
         }
     }
     let changes = r.changes();
-    if !is_new
-        && changes.iter().any(|(k, _, _)| k == "description")
-        && definition_has_first_post(conn, r.id.unwrap_or_default()).await?
-    {
-        return Err(Unsupported(
-            "revising a category's definition post when its description changes",
-        )
-        .into());
-    }
     let id = if is_new {
         let cols: Vec<String> = r.values.keys().cloned().collect();
         let list = cols.join(", ");
@@ -2465,16 +2456,56 @@ pub fn blank_param(v: &Value) -> bool {
     }
 }
 
-/// `revise_category_definition`'s guard: a live definition topic with a
-/// first post.
-async fn definition_has_first_post(conn: &mut PgConnection, id: i32) -> Result<bool, AppError> {
-    Ok(sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM categories c JOIN topics t ON t.id = c.topic_id AND t.deleted_at IS NULL \
-         JOIN posts p ON p.topic_id = t.id AND p.post_number = 1 AND p.deleted_at IS NULL WHERE c.id = $1)",
+/// `revise_category_definition`: a live definition topic's first post
+/// takes the description as its raw, revised by the category's user
+/// without validations on the caller's transaction. PostRevisor's
+/// update_category_description then puts the cooked first paragraph back
+/// in the description. A refused revision leaves the post as it was, as
+/// Rails ignores revise's result.
+async fn revise_category_definition(
+    conn: &mut PgConnection,
+    cx: &Cx<'_>,
+    id: i32,
+) -> Result<(), AppError> {
+    let found: Option<(i32, Option<String>, i32)> = sqlx::query_as(
+        "SELECT p.id, c.description, c.user_id FROM categories c \
+         JOIN topics t ON t.id = c.topic_id AND t.deleted_at IS NULL \
+         JOIN posts p ON p.topic_id = t.id AND p.post_number = 1 AND p.deleted_at IS NULL \
+         WHERE c.id = $1 ORDER BY p.id LIMIT 1",
     )
     .bind(id)
-    .fetch_one(&mut *conn)
-    .await?)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((post_id, description, user_id)) = found else {
+        return Ok(());
+    };
+    let user = crate::session::current::SessionUser::load(&mut *conn, user_id)
+        .await?
+        .ok_or(Unsupported(
+            "revising a definition whose category user is gone",
+        ))?;
+    let guardian = crate::guardian::Guardian::for_user(&mut *conn, &user).await?;
+    let ctx = crate::posting::Ctx {
+        host: cx.host,
+        settings: cx.settings,
+        config: &cx.host.config,
+        i18n: &cx.host.i18n,
+        bus: cx.bus,
+    };
+    crate::posting::revise::revise_with(
+        crate::db::Db::Conn(conn),
+        &ctx,
+        &guardian,
+        post_id,
+        crate::posting::revise::Changes {
+            raw: Some(description.unwrap_or_default()),
+            skip_validations: true,
+            from_category: true,
+            ..Default::default()
+        },
+    )
+    .await?;
+    Ok(())
 }
 
 fn change<'a>(changes: &'a [(String, Value, Value)], key: &str) -> Option<(&'a Value, &'a Value)> {
@@ -2485,8 +2516,8 @@ fn change<'a>(changes: &'a [(String, Value, Value)], key: &str) -> Option<(&'a V
 }
 
 /// The after_update callbacks: the definition's title follows a rename,
-/// an old slug keeps a permalink, and a slug or parent change remaps
-/// hashtags.
+/// an old slug keeps a permalink, its first post follows a new
+/// description, and a slug or parent change remaps hashtags.
 async fn after_update(
     conn: &mut PgConnection,
     cx: &Cx<'_>,
@@ -2506,6 +2537,9 @@ async fn after_update(
     }
     if let Some((old, _)) = change(changes, "slug") {
         create_category_permalink(conn, id, old.as_str().unwrap_or("")).await?;
+    }
+    if change(changes, "description").is_some() {
+        revise_category_definition(conn, cx, id).await?;
     }
     let slug_change = change(changes, "slug");
     let parent_change = change(changes, "parent_category_id");
