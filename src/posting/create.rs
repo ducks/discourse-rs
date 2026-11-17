@@ -17,6 +17,7 @@ use super::{
     next_draft_sequence, notification_levels, notification_reasons, post_types, record_timing,
     user_actions,
 };
+use crate::db::Db;
 use crate::guardian::Guardian;
 use crate::pretty_text::{self, MarkdownOptions};
 use crate::topic_guardian::TopicCtx;
@@ -256,6 +257,18 @@ pub async fn create(
     guardian: &Guardian,
     args: NewPost,
 ) -> Result<Outcome, AppError> {
+    create_with(Db::Pool(pool), ctx, guardian, args).await
+}
+
+/// `create` on `db`: on a caller's connection, PostCreator's transaction
+/// is a savepoint in the caller's and the work after it runs inside the
+/// caller's too, as when Rails runs PostCreator in an outer transaction.
+pub async fn create_with(
+    mut db: Db<'_>,
+    ctx: &Ctx<'_>,
+    guardian: &Guardian,
+    args: NewPost,
+) -> Result<Outcome, AppError> {
     let s = ctx.settings;
     let user = guardian
         .user()
@@ -281,7 +294,7 @@ pub async fn create(
     } else {
         Vec::new()
     };
-    let mut conn = pool.acquire().await?;
+    let mut conn = db.acquire().await?;
     let new_topic = args.topic_id.is_none();
     // A new private message: no category (find_category drops it), and no
     // can_create?(Topic) check (the recipients are checked instead).
@@ -419,7 +432,7 @@ pub async fn create(
                     slow_mode_seconds: t.slow_mode_seconds,
                 });
                 return super::enqueue::enqueue(
-                    pool,
+                    db.pool_or(&ctx.host.pool),
                     ctx,
                     guardian,
                     &args,
@@ -650,7 +663,7 @@ pub async fn create(
         },
         &base_path,
     )?;
-    let mut conn = pool.acquire().await?;
+    let mut conn = db.acquire().await?;
     // has_host_spam?, ahead of PostValidator: refused, and the moderators
     // told (handle_spam) unless the post was approved from the queue.
     if !args.skip_validations {
@@ -688,7 +701,13 @@ pub async fn create(
             drop(conn);
             if !args.reviewed_queued_post {
                 // Boxed: the message is posted through create.
-                Box::pin(spam_post_blocked(pool, ctx, &user.username, &hosts)).await?;
+                Box::pin(spam_post_blocked(
+                    db.pool_or(&ctx.host.pool),
+                    ctx,
+                    &user.username,
+                    &hosts,
+                ))
+                .await?;
             }
             return Ok(Outcome::Invalid(vec![ctx.t("spamming_host")]));
         }
@@ -937,9 +956,12 @@ pub async fn create(
 
     // The limits after_create performs (disable_rate_limits! with
     // skip_validations), rolled back when the create fails.
-    let mut performed = Performed::new(pool, ctx.config.rate_limits && !args.skip_validations);
+    let mut performed = Performed::new(
+        db.pool_or(&ctx.host.pool),
+        ctx.config.rate_limits && !args.skip_validations,
+    );
     // PostCreator#create's transaction.
-    let mut tx = pool.begin().await?;
+    let mut tx = db.begin().await?;
     let urls = Urls {
         config: ctx.config,
         settings: s,
@@ -1525,7 +1547,7 @@ pub async fn create(
 
     // After the transaction: store_unique_post_key, track_latest_on_category,
     // auto_close, then the deferred search index.
-    let mut conn = pool.acquire().await?;
+    let mut conn = db.acquire().await?;
     if !args.import_mode {
         super::validate::store_unique_post_key(
             &mut conn,

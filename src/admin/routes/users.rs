@@ -97,7 +97,14 @@ async fn handle(
     };
     let outcome = match action {
         Action::Suspend => {
-            user_penalties::suspend(&state.pool, &ctx, &guardian, user_id, &penalty).await?
+            user_penalties::suspend(
+                crate::db::Db::Pool(&state.pool),
+                &ctx,
+                &guardian,
+                user_id,
+                &penalty,
+            )
+            .await?
         }
         Action::Unsuspend => {
             let mut tx = state.pool.begin().await?;
@@ -118,7 +125,14 @@ async fn handle(
             outcome
         }
         Action::Silence => {
-            user_penalties::silence(&state.pool, &ctx, &guardian, user_id, &penalty).await?
+            user_penalties::silence(
+                crate::db::Db::Pool(&state.pool),
+                &ctx,
+                &guardian,
+                user_id,
+                &penalty,
+            )
+            .await?
         }
         Action::Unsilence => {
             user_penalties::unsilence(&state.pool, &ctx, &guardian, user_id).await?
@@ -1852,7 +1866,7 @@ pub async fn suspend_bulk(
     for (position, (id, username, ..)) in users.iter().enumerate() {
         // User::Action::SuspendAndPublish
         user_penalties::suspend_user(
-            &state.pool,
+            crate::db::Db::Pool(&state.pool),
             &crate::web_hooks::Payloads {
                 settings: &settings,
                 i18n: &state.i18n,

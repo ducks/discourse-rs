@@ -107,6 +107,7 @@ mod request_tracker;
 mod request_tracking;
 mod review_hidden_posts;
 mod review_pages;
+mod review_penalties;
 mod schema;
 mod search;
 mod sessions;
