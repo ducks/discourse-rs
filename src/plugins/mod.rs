@@ -457,9 +457,8 @@ pub fn problem_check(
 
 /// DiscourseEvent `:site_setting_changed`, after a setting's new value is
 /// saved: the handlers of the plugins the port implements, each while
-/// its plugin is enabled (`plugin.on`). Of these, only chat's retention
-/// reminders handle a type the settings update takes (integers); its
-/// chat_allowed_groups job and discourse-reactions' like sync are on
+/// its plugin is enabled (`plugin.on`). Chat's chat_allowed_groups job
+/// and the like sync on discourse_reactions_excluded_from_like are on
 /// list settings, which the update refuses.
 pub async fn site_setting_changed(
     conn: &mut sqlx::PgConnection,
@@ -485,6 +484,39 @@ pub async fn site_setting_changed(
                 "UPDATE user_options SET {field} = FALSE WHERE {field} = TRUE"
             ))
             .execute(&mut *conn)
+            .await?;
+        }
+    }
+    // discourse-reactions: the like sync debounced to five minutes from
+    // now, while it is enabled.
+    if matches!(
+        name,
+        "discourse_reactions_excluded_from_like" | "discourse_reactions_like_sync_enabled"
+    ) && reactions::enabled(settings)?
+    {
+        let sync_enabled = if name == "discourse_reactions_like_sync_enabled" {
+            new.truthy()
+        } else {
+            settings
+                .get("discourse_reactions_like_sync_enabled")?
+                .truthy()
+        };
+        if sync_enabled {
+            // Jobs.cancel_scheduled_job: the delayed ones.
+            sqlx::query(
+                "DELETE FROM discourse_rs.jobs WHERE name = $1 AND failed_at IS NULL \
+                 AND locked_until IS NULL AND (delayed OR at_time)",
+            )
+            .bind(reactions::like_sync::JOB)
+            .execute(&mut *conn)
+            .await?;
+            let at = crate::clock::now().naive_utc() + chrono::Duration::minutes(5);
+            crate::jobs::enqueue_at(
+                &mut *conn,
+                at,
+                reactions::like_sync::JOB,
+                serde_json::json!({}),
+            )
             .await?;
         }
     }

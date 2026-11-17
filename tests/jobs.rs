@@ -410,3 +410,127 @@ async fn process_post_swaps_in_an_optimized_video() {
     .unwrap();
     assert_eq!(failed, None);
 }
+
+/// ReactionLikeSynchronizer: a reaction that counts as a like gets one
+/// (with its user actions and counts), an excluded one's like is trashed
+/// once and not again, a reaction back to a like recovers the same row,
+/// and a self-reaction gets none.
+#[tokio::test]
+async fn like_sync_creates_trashes_and_recovers_likes() {
+    use discourse_rs::plugins::reactions::like_sync;
+
+    let db = TestDb::new().await;
+    let app = state(db.pool.clone(), recorded_config()).await;
+    let exec = |sql: String| {
+        let pool = db.pool.clone();
+        async move { sqlx::query(&sql).execute(&pool).await.unwrap() }
+    };
+    let sync = || async {
+        let mut conn = db.pool.acquire().await.unwrap();
+        jobs::enqueue(&mut conn, like_sync::JOB, json!({}))
+            .await
+            .unwrap();
+        drop(conn);
+        assert_eq!(jobs::drain(&app).await.unwrap(), 1);
+        let left: Vec<(String, Option<String>)> =
+            sqlx::query_as("SELECT name, last_error FROM discourse_rs.jobs")
+                .fetch_all(&db.pool)
+                .await
+                .unwrap();
+        assert!(left.is_empty(), "the sync ran through: {left:?}");
+    };
+    // A live post and a liker who is not its author and has no like on it.
+    let (post_id, author_id, liker_id): (i32, i32, i32) = sqlx::query_as(
+        "SELECT p.id, p.user_id, u.id FROM posts p \
+         JOIN topics t ON t.id = p.topic_id AND t.deleted_at IS NULL \
+         CROSS JOIN users u \
+         WHERE p.deleted_at IS NULL AND p.user_id > 0 AND u.id > 0 AND u.id <> p.user_id \
+           AND NOT EXISTS (SELECT 1 FROM post_actions pa WHERE pa.post_id = p.id AND pa.user_id = u.id) \
+         ORDER BY p.id, u.id LIMIT 1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    exec(format!(
+        "INSERT INTO discourse_reactions_reactions (id, post_id, reaction_type, reaction_value, \
+           reaction_users_count, created_at, updated_at) \
+         VALUES (9900, {post_id}, 0, 'clap', 1, now(), now()), (9901, {post_id}, 0, 'heart_eyes', 1, now(), now())"
+    ))
+    .await;
+    exec(format!(
+        "INSERT INTO discourse_reactions_reaction_users (reaction_id, user_id, post_id, created_at, updated_at) \
+         VALUES (9900, {liker_id}, {post_id}, now(), now()), (9901, {author_id}, {post_id}, now(), now())"
+    ))
+    .await;
+    let likes = || async {
+        sqlx::query_as::<_, (i32, Option<chrono::NaiveDateTime>)>(&format!(
+            "SELECT id, deleted_at FROM post_actions \
+             WHERE post_id = {post_id} AND user_id IN ({liker_id}, {author_id}) AND post_action_type_id = 2 \
+             ORDER BY id"
+        ))
+        .fetch_all(&db.pool)
+        .await
+        .unwrap()
+    };
+    let user_actions = || async {
+        sqlx::query_scalar::<_, i64>(&format!(
+            "SELECT COUNT(*) FROM user_actions WHERE target_post_id = {post_id} \
+             AND acting_user_id = {liker_id} AND action_type IN (1, 2)"
+        ))
+        .fetch_one(&db.pool)
+        .await
+        .unwrap()
+    };
+    let like_count = || async {
+        sqlx::query_as::<_, (i32, i64)>(&format!(
+            "SELECT like_count, (SELECT COUNT(*) FROM post_actions WHERE post_id = {post_id} \
+               AND post_action_type_id = 2 AND deleted_at IS NULL) FROM posts WHERE id = {post_id}"
+        ))
+        .fetch_one(&db.pool)
+        .await
+        .unwrap()
+    };
+
+    sync().await;
+    let created = likes().await;
+    assert_eq!(created.len(), 1, "one like, none for the self-reaction");
+    assert_eq!(created[0].1, None);
+    assert_eq!(user_actions().await, 2);
+    let (count, live) = like_count().await;
+    assert_eq!(i64::from(count), live);
+    sync().await;
+    assert_eq!(likes().await, created, "nothing changes on a second run");
+
+    exec("UPDATE discourse_reactions_reactions SET reaction_value = 'poop' WHERE id = 9900".into())
+        .await;
+    sync().await;
+    let trashed = likes().await;
+    assert_eq!(trashed[0].0, created[0].0);
+    assert!(
+        trashed[0].1.is_some(),
+        "an excluded reaction's like is trashed"
+    );
+    assert_eq!(user_actions().await, 0);
+    let (count, live) = like_count().await;
+    assert_eq!(i64::from(count), live);
+    sync().await;
+    assert_eq!(
+        likes().await,
+        trashed,
+        "a trashed like is not trashed again"
+    );
+
+    exec("UPDATE discourse_reactions_reactions SET reaction_value = 'clap' WHERE id = 9900".into())
+        .await;
+    sync().await;
+    let recovered = likes().await;
+    assert_eq!(recovered.len(), 1);
+    assert_eq!(
+        recovered[0],
+        (created[0].0, None),
+        "the trashed like is recovered"
+    );
+    assert_eq!(user_actions().await, 2, "with its user actions rebuilt");
+    let (count, live) = like_count().await;
+    assert_eq!(i64::from(count), live);
+}

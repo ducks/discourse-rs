@@ -12,7 +12,7 @@ use sqlx::{PgConnection, PgPool};
 use crate::guardian::Guardian;
 use crate::post_actions::{self, ActOpts, ActionTypes, LIKE};
 use crate::posting::revisions::find_post;
-use crate::posting::{Ctx, post_types, user_actions};
+use crate::posting::{Ctx, user_actions};
 use crate::{AppError, Unsupported};
 
 /// How a like or unlike ends when it isn't a server error.
@@ -65,21 +65,7 @@ pub(crate) async fn update_counters(
     user_id: i32,
     topic_id: i32,
 ) -> Result<(), AppError> {
-    let staff_weight = ctx.settings.get("staff_like_weight")?.to_i();
-    sqlx::query(
-        "UPDATE posts SET \
-           like_count = (SELECT COUNT(*) FROM post_actions WHERE post_id = $1 AND post_action_type_id = $2 \
-                           AND deleted_at IS NULL), \
-           like_score = (SELECT COALESCE(SUM(CASE WHEN u.moderator OR u.admin THEN $3 ELSE 1 END), 0) \
-                         FROM post_actions pa JOIN users u ON u.id = pa.user_id \
-                         WHERE pa.post_id = $1 AND pa.deleted_at IS NULL) \
-         WHERE id = $1",
-    )
-    .bind(post_id)
-    .bind(LIKE as i32)
-    .bind(staff_weight)
-    .execute(&mut *conn)
-    .await?;
+    crate::like_counters::posts(&mut *conn, ctx.settings, &[post_id]).await?;
     // TopicUser.update_post_action_cache(user_id:, topic_id:)
     sqlx::query(
         "UPDATE topic_users tu SET liked = x.state FROM ( \
@@ -96,16 +82,7 @@ pub(crate) async fn update_counters(
     .bind(LIKE as i32)
     .execute(&mut *conn)
     .await?;
-    // Topic#update_action_counts
-    sqlx::query(
-        "UPDATE topics SET like_count = (SELECT COALESCE(SUM(like_count), 0) FROM posts \
-                                         WHERE topic_id = $1 AND post_type <> $2) \
-         WHERE id = $1",
-    )
-    .bind(topic_id)
-    .bind(post_types::WHISPER)
-    .execute(&mut *conn)
-    .await?;
+    crate::like_counters::topics(&mut *conn, ctx.settings, &[topic_id]).await?;
     Ok(())
 }
 

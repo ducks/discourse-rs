@@ -1690,15 +1690,7 @@ async fn staff_recover_topic_in(
     // update_action_counts.
     reset_highest(&mut *conn, topic.id).await?;
     crate::jobs::choose_featured_users(&mut *conn, topic.id).await?;
-    sqlx::query(
-        "UPDATE topics SET like_count = (SELECT COALESCE(SUM(like_count), 0) FROM posts \
-                                         WHERE topic_id = $1 AND post_type <> $2 AND deleted_at IS NULL) \
-         WHERE id = $1",
-    )
-    .bind(topic.id)
-    .bind(post_types::WHISPER)
-    .execute(&mut *conn)
-    .await?;
+    crate::like_counters::topics(&mut *conn, ctx.settings, &[topic.id]).await?;
     crate::bus::publish_topic_stats(ctx, &mut *conn, topic.id, "recovered").await?;
 
     // DiscourseEvent :post_recovered: its web hooks and listeners.
@@ -1954,15 +1946,7 @@ pub async fn staff_recover_in(
     // update_action_counts.
     reset_highest(&mut *conn, topic.id).await?;
     crate::jobs::choose_featured_users(&mut *conn, topic.id).await?;
-    sqlx::query(
-        "UPDATE topics SET like_count = (SELECT COALESCE(SUM(like_count), 0) FROM posts \
-                                         WHERE topic_id = $1 AND post_type <> $2 AND deleted_at IS NULL) \
-         WHERE id = $1",
-    )
-    .bind(topic.id)
-    .bind(post_types::WHISPER)
-    .execute(&mut *conn)
-    .await?;
+    crate::like_counters::topics(&mut *conn, ctx.settings, &[topic.id]).await?;
     // reset_bumped_at(post) for the last reply: the post's own date.
     let highest: i32 = sqlx::query_scalar("SELECT highest_post_number FROM topics WHERE id = $1")
         .bind(topic.id)

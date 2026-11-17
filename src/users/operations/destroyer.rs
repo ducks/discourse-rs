@@ -40,8 +40,6 @@ const SCORE_DISAGREED: i32 = 2;
 const SCORE_IGNORED: i32 = 3;
 /// `PostActionType.types[:like]`
 const LIKE: i32 = 2;
-/// `Post.types[:whisper]`
-const WHISPER: i32 = 4;
 
 /// `UserDestroyer#destroy`'s options.
 #[derive(Debug, Default, Clone)]
@@ -608,7 +606,6 @@ async fn remove_post_actions(
         return Ok(());
     }
     let types = crate::post_actions::ActionTypes::load(&mut *conn).await?;
-    let staff_weight = ctx.settings.get("staff_like_weight")?.to_i();
     for (id, post_id, type_id) in actions {
         sqlx::query(
             "UPDATE post_actions SET deleted_at = clock_timestamp(), deleted_by_id = $2, \
@@ -618,23 +615,10 @@ async fn remove_post_actions(
         .bind(SYSTEM_USER_ID)
         .execute(&mut *conn)
         .await?;
-        // update_counters: Post.where (live posts) and Topic.find_by (a
-        // live topic).
+        // update_counters: a like's counts by the shared rule (deleted
+        // posts and topics too), other types' on live posts.
         if type_id == LIKE {
-            sqlx::query(
-                "UPDATE posts SET \
-                   like_count = (SELECT COUNT(*) FROM post_actions WHERE post_id = $1 \
-                                 AND post_action_type_id = $2 AND deleted_at IS NULL), \
-                   like_score = (SELECT COALESCE(SUM(CASE WHEN u.moderator OR u.admin THEN $3 ELSE 1 END), 0) \
-                                 FROM post_actions pa JOIN users u ON u.id = pa.user_id \
-                                 WHERE pa.post_id = $1 AND pa.deleted_at IS NULL) \
-                 WHERE id = $1 AND deleted_at IS NULL",
-            )
-            .bind(post_id)
-            .bind(LIKE)
-            .bind(staff_weight)
-            .execute(&mut *conn)
-            .await?;
+            crate::like_counters::posts(&mut *conn, ctx.settings, &[post_id]).await?;
         } else {
             let name = types
                 .types
@@ -690,16 +674,7 @@ async fn remove_post_actions(
         .bind(LIKE)
         .execute(&mut *conn)
         .await?;
-        // Topic#update_action_counts
-        sqlx::query(
-            "UPDATE topics SET like_count = (SELECT COALESCE(SUM(like_count), 0) FROM posts \
-                                             WHERE topic_id = $1 AND post_type <> $2 AND deleted_at IS NULL) \
-             WHERE id = $1 AND deleted_at IS NULL",
-        )
-        .bind(topic_id)
-        .bind(WHISPER)
-        .execute(&mut *conn)
-        .await?;
+        crate::like_counters::topics(&mut *conn, ctx.settings, &[topic_id]).await?;
     }
     Ok(())
 }

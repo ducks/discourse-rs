@@ -305,8 +305,8 @@ const SCHEDULED: &[(&str, Duration)] = &[
         Duration::from_secs(24 * 3600),
     ),
     (
-        crate::plugins::reactions::like_sync::JOB,
-        Duration::from_secs(3600),
+        crate::plugins::reactions::like_sync::SCHEDULED_JOB,
+        Duration::from_secs(24 * 3600),
     ),
     (
         crate::plugins::gamification::jobs::UPDATE_SCORES_FOR_TODAY,
@@ -668,8 +668,10 @@ fn scheduled_job<'a>(state: &'a AppState, name: &'a str) -> JobFuture<'a, AppErr
                 async move { crate::plugins::chat::scheduled::delete_old_messages(state).await },
             )
         }
-        crate::plugins::reactions::like_sync::JOB => {
-            Box::pin(async move { crate::plugins::reactions::like_sync::run(state).await })
+        crate::plugins::reactions::like_sync::SCHEDULED_JOB => {
+            Box::pin(
+                async move { crate::plugins::reactions::like_sync::run_scheduled(state).await },
+            )
         }
         crate::plugins::assign::jobs::ENQUEUE_REMINDERS => {
             Box::pin(async move { crate::plugins::assign::jobs::enqueue_reminders(state).await })

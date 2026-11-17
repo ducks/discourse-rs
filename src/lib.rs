@@ -77,6 +77,7 @@ pub mod invites;
 pub use invites::{bulk as bulk_invite, mailer as invite_mailer, view as invite_page_view};
 pub mod jobs;
 pub mod letter_avatar;
+pub mod like_counters;
 pub mod likes;
 pub mod login_page_view;
 pub mod mcp;

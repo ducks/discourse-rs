@@ -68,6 +68,9 @@ fn handler<'a>(
         crate::custom_emoji::REBAKE_JOB => {
             Box::pin(async move { crate::custom_emoji::rebake_posts(state, &job.args).await })
         }
+        crate::plugins::reactions::like_sync::JOB => {
+            Box::pin(async move { crate::plugins::reactions::like_sync::run(state).await })
+        }
         crate::plugins::assign::jobs::ASSIGN_NOTIFICATION => Box::pin(async move {
             crate::plugins::assign::jobs::assign_notification(state, &job.args).await
         }),
