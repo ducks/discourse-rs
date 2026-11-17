@@ -885,6 +885,29 @@ async fn remove_user_action(
     Ok(())
 }
 
+/// `Post#trash!`: its links destroyed, the notice goes, then the row is
+/// trashed.
+pub(crate) async fn trash_post(
+    conn: &mut PgConnection,
+    post_id: i32,
+    deleted_by_id: Option<i32>,
+    deferred: Option<&Deferred>,
+) -> Result<(), sqlx::Error> {
+    destroy_topic_links(&mut *conn, "post_id", post_id, deferred).await?;
+    sqlx::query("DELETE FROM post_custom_fields WHERE post_id = $1 AND name = 'notice'")
+        .bind(post_id)
+        .execute(&mut *conn)
+        .await?;
+    sqlx::query(
+        "UPDATE posts SET deleted_at = clock_timestamp(), deleted_by_id = $2 WHERE id = $1",
+    )
+    .bind(post_id)
+    .bind(deleted_by_id)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
 /// `PostDestroyer#perform_delete`, not permanent.
 async fn perform_delete(
     conn: &mut PgConnection,
@@ -894,20 +917,7 @@ async fn perform_delete(
     topic: &Topic,
     req: &Request<'_>,
 ) -> Result<(), AppError> {
-    // Post#trash!: its links destroyed, the notice goes, then the row is
-    // trashed.
-    destroy_topic_links(&mut *conn, "post_id", post.id, req.deferred).await?;
-    sqlx::query("DELETE FROM post_custom_fields WHERE post_id = $1 AND name = 'notice'")
-        .bind(post.id)
-        .execute(&mut *conn)
-        .await?;
-    sqlx::query(
-        "UPDATE posts SET deleted_at = clock_timestamp(), deleted_by_id = $2 WHERE id = $1",
-    )
-    .bind(post.id)
-    .bind(acting_user_id)
-    .execute(&mut *conn)
-    .await?;
+    trash_post(&mut *conn, post.id, Some(acting_user_id), req.deferred).await?;
 
     // make_previous_post_the_last_one: saved without validation, so only
     // when something changed.

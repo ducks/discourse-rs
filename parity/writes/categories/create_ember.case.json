@@ -1,6 +1,5 @@
 {
   "user": "admin",
-  "not_yet": "41e84f0e42e (Discourse): staff action logs are now written inside the save transaction, so the recorded context is Category @@url_cache left stale by an earlier case with the same id (cleared only after commit); a recording artifact, not reproducible here",
   "requests": [
     {
       "method": "POST",
@@ -60,5 +59,8 @@
         ]
       }
     }
+  ],
+  "ignore": [
+    "/changes/user_histories/inserted/0/context"
   ]
 }
