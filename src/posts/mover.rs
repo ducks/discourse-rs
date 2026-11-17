@@ -573,8 +573,8 @@ impl Mover<'_, '_> {
         self.create_moderator_post(conn, dest, &posts, first_post_number_moved)
             .await?;
         // update_statistics
-        update_statistics(conn, dest.id).await?;
-        update_statistics(conn, self.original_id).await?;
+        update_statistics(conn, self.ctx.settings, dest.id).await?;
+        update_statistics(conn, self.ctx.settings, self.original_id).await?;
         update_post_action_cache(conn, &[self.original_id, dest.id], &self.post_ids).await?;
         // update_user_actions
         synchronize_target_topic_ids(conn, &moving).await?;
@@ -933,24 +933,14 @@ async fn max_post_number(conn: &mut PgConnection, topic_id: i32) -> Result<i32, 
 
 /// `Topic#update_statistics!`: reset_highest, the featured users, the
 /// like count.
-async fn update_statistics(conn: &mut PgConnection, topic_id: i32) -> Result<(), AppError> {
+async fn update_statistics(
+    conn: &mut PgConnection,
+    settings: &crate::site_settings::SiteSettings,
+    topic_id: i32,
+) -> Result<(), AppError> {
     crate::post_destroyer::reset_highest(&mut *conn, topic_id).await?;
     crate::jobs::handlers::choose_featured_users(&mut *conn, topic_id).await?;
-    let og: Option<i64> = sqlx::query_scalar("SELECT og_image_upload_id FROM topics WHERE id = $1")
-        .bind(topic_id)
-        .fetch_one(&mut *conn)
-        .await?;
-    if og.is_some() {
-        return Err(Unsupported("og image regeneration after a move's like count").into());
-    }
-    sqlx::query(
-        "UPDATE topics SET like_count = (SELECT COALESCE(SUM(like_count), 0) FROM posts \
-           WHERE topic_id = $1 AND deleted_at IS NULL AND post_type <> $2) WHERE id = $1",
-    )
-    .bind(topic_id)
-    .bind(post_types::WHISPER)
-    .execute(&mut *conn)
-    .await?;
+    crate::like_counters::topics(&mut *conn, settings, &[topic_id]).await?;
     Ok(())
 }
 

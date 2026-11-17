@@ -358,24 +358,7 @@ async fn update_statistics(
 ) -> Result<(), AppError> {
     crate::post_destroyer::reset_highest(&mut *conn, topic_id).await?;
     crate::jobs::choose_featured_users(&mut *conn, topic_id).await?;
-    let (old, new, og_image): (i32, i64, bool) = sqlx::query_as(
-        "SELECT like_count, (SELECT COALESCE(SUM(like_count), 0) FROM posts \
-           WHERE topic_id = $1 AND post_type <> $2 AND deleted_at IS NULL), \
-           og_image_upload_id IS NOT NULL \
-         FROM topics WHERE id = $1",
-    )
-    .bind(topic_id)
-    .bind(post_types::WHISPER)
-    .fetch_one(&mut *conn)
-    .await?;
-    if og_image && i64::from(old) != new && s.get("generate_topic_og_image")?.truthy() {
-        return Err(Unsupported("the topic og image regenerated on a like count change").into());
-    }
-    sqlx::query("UPDATE topics SET like_count = $2 WHERE id = $1")
-        .bind(topic_id)
-        .bind(new)
-        .execute(&mut *conn)
-        .await?;
+    crate::like_counters::topics(&mut *conn, s, &[topic_id]).await?;
     Ok(())
 }
 

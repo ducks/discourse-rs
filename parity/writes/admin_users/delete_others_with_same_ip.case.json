@@ -1,5 +1,4 @@
 {
-  "not_yet": "5ac46a970dc (Discourse): like counters recalculated by one shared rule (Topic.recalculate_like_counts! when a destroyed user's likes go); not ported",
   "user": "admin",
   "setup": [
     "DELETE FROM user_badges WHERE user_id = 2 AND badge_id = 40"

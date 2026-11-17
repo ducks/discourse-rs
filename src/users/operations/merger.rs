@@ -243,23 +243,7 @@ pub async fn merge(
 
     // merge_given_daily_likes
     progress(&mut *conn, ctx, acting, "merging_given_daily_likes").await?;
-    sqlx::query(
-        "INSERT INTO given_daily_likes AS g (user_id, likes_given, given_date, limit_reached) \
-           SELECT $2 AS user_id, COUNT(1) AS likes_given, a.created_at::DATE AS given_date, \
-                  COUNT(1) >= $3 AS limit_reached \
-           FROM post_actions AS a \
-           WHERE a.user_id = $2 AND a.deleted_at IS NULL \
-             AND EXISTS(SELECT 1 FROM given_daily_likes AS g \
-                        WHERE g.user_id = $1 AND a.created_at::DATE = g.given_date) \
-           GROUP BY given_date \
-         ON CONFLICT (user_id, given_date) DO UPDATE \
-           SET likes_given = EXCLUDED.likes_given, limit_reached = EXCLUDED.limit_reached",
-    )
-    .bind(source)
-    .bind(target)
-    .bind(s.get("max_likes_per_day")?.to_i())
-    .execute(&mut *conn)
-    .await?;
+    crate::like_counters::given_daily_likes(&mut *conn, s, &[target]).await?;
 
     // merge_post_timings
     progress(&mut *conn, ctx, acting, "merging_post_timings").await?;
@@ -395,15 +379,20 @@ pub async fn merge(
            WHERE pt.user_id = :target_user_id AND EXISTS(SELECT 1 FROM topics AS t \
              WHERE t.archetype = 'regular' AND t.deleted_at IS NULL)) \
          WHERE user_id = :target_user_id",
-        "UPDATE user_stats AS t SET likes_given = t.likes_given + s.likes_given, \
-           likes_received = t.likes_received + s.likes_received, \
-           new_since = LEAST(t.new_since, s.new_since), \
-           read_faq = LEAST(t.read_faq, s.read_faq), \
-           first_post_created_at = LEAST(t.first_post_created_at, s.first_post_created_at) \
-         FROM user_stats AS s WHERE t.user_id = :target_user_id AND s.user_id = :source_user_id",
     ] {
         exec(&mut *conn, sql, source, target).await?;
     }
+    crate::like_counters::user_stats(&mut *conn, &[target]).await?;
+    exec(
+        &mut *conn,
+        "UPDATE user_stats AS t SET new_since = LEAST(t.new_since, s.new_since), \
+           read_faq = LEAST(t.read_faq, s.read_faq), \
+           first_post_created_at = LEAST(t.first_post_created_at, s.first_post_created_at) \
+         FROM user_stats AS s WHERE t.user_id = :target_user_id AND s.user_id = :source_user_id",
+        source,
+        target,
+    )
+    .await?;
 
     // delete_source_user
     progress(&mut *conn, ctx, acting, "deleting_source_user").await?;

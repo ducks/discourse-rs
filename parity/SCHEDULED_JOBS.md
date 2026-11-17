@@ -35,7 +35,7 @@ Classes:
 | Chat::PeriodicalUpdates | 15m | scheduled/chat_periodical_updates* |
 | Chat::AutoJoinUsers | 1h | scheduled/chat_auto_* |
 | Chat::DeleteOldMessages | daily (from the worker's start; Rails: midnight) | scheduled/chat_delete_old_messages* |
-| DiscourseReactions::ScheduledLikeSynchronizer | 1h | scheduled/like_sync_* |
+| DiscourseReactions::ScheduledLikeSynchronizer | 1d (enqueues DiscourseReactions::LikeSynchronizer) | scheduled/like_sync_* |
 | tl3_promotions | 1d (from the worker's start; Rails: 4am) | scheduled/tl3_* |
 | reviewable_priorities | 1d | scheduled/reviewable_priorities* |
 | auto_queue_handler | 1d (flagged posts and users; queued posts refused) | scheduled/auto_queue_* |
