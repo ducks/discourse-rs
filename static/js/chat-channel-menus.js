@@ -907,13 +907,29 @@
   // ChatOnLongPress on a ChatChannelRow: the row shows pressed after
   // 125ms and the menu opens at 400ms, unless the touch moves or ends
   // first; the release then clicks nothing (not the row's link, nor the
-  // mobile menu's backdrop now under the finger).
+  // mobile menu's backdrop now under the finger): its touchend is
+  // canceled, so the browser makes no click of it. Clicks after it, on
+  // the menu, go through whenever they come. The row hears the release
+  // itself, as it is the touch's target even if drawn again meanwhile.
   var LONG_PRESS_MS = 400;
   var press = null;
+  // The row whose release is to click nothing, until a touch ends there.
+  var held = null;
 
   function suppress(event) {
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  function noClick(event) {
+    event.preventDefault();
+  }
+
+  function dropHeld() {
+    if (held) {
+      held.removeEventListener("touchend", noClick);
+      held = null;
+    }
   }
 
   function cancelPress() {
@@ -925,11 +941,6 @@
     clearTimeout(press.timeout);
     row.classList.remove("is-long-pressed");
     row.removeEventListener("contextmenu", suppress);
-    if (press.fired) {
-      setTimeout(function () {
-        document.removeEventListener("click", suppress, true);
-      }, 200);
-    }
     press = null;
   }
 
@@ -1048,20 +1059,20 @@
       swipe = null;
       swipeStart(row, event.changedTouches[0]);
       cancelPress();
+      dropHeld();
       if (event.touches.length > 1) {
         return;
       }
-      press = { row: row, fired: false };
+      press = { row: row };
       row.addEventListener("contextmenu", suppress);
       press.activation = setTimeout(function () {
         row.classList.add("is-long-pressed");
       }, 125);
       press.timeout = setTimeout(function () {
-        var current = press;
-        clearTimeout(current.activation);
-        current.fired = true;
+        clearTimeout(press.activation);
         row.classList.remove("is-long-pressed");
-        document.addEventListener("click", suppress, true);
+        held = row;
+        row.addEventListener("touchend", noClick, { once: true, passive: false });
         if (document.activeElement) {
           document.activeElement.blur();
         }
@@ -1083,6 +1094,7 @@
   ["touchend", "touchcancel"].forEach(function (type) {
     document.addEventListener(type, function () {
       cancelPress();
+      dropHeld();
       if (swipe) {
         swipeEnd();
       }
