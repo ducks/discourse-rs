@@ -500,36 +500,44 @@ pub async fn create(
         let Some((provider, uid)) = a.extra_data.clone() else {
             return Err(Unsupported("an external signup without its account").into());
         };
-        let info: Option<Value> = sqlx::query_scalar(
-            "UPDATE user_associated_accounts SET user_id = $3, updated_at = clock_timestamp() \
-             WHERE provider_name = $1 AND provider_uid = $2 RETURNING info",
+        let updated: Option<(i64, Value, Option<i32>)> = sqlx::query_as(
+            "UPDATE user_associated_accounts a SET user_id = $3, updated_at = clock_timestamp() \
+             FROM (SELECT id, user_id FROM user_associated_accounts \
+                   WHERE provider_name = $1 AND provider_uid = $2) old \
+             WHERE a.id = old.id RETURNING a.id, a.info, old.user_id",
         )
         .bind(&provider)
         .bind(&uid)
         .bind(user_id)
         .fetch_optional(&mut *conn)
         .await?;
-        let info = match info {
-            Some(info) => info,
+        let (account_id, info, before) = match updated {
+            Some(found) => found,
             None => {
-                sqlx::query(
+                let id: i64 = sqlx::query_scalar(
                     "INSERT INTO user_associated_accounts (provider_name, provider_uid, user_id, last_used, \
                                                            info, credentials, extra, created_at, updated_at) \
-                     VALUES ($1, $2, $3, now(), '{}', '{}', '{}', now(), now())",
+                     VALUES ($1, $2, $3, now(), '{}', '{}', '{}', now(), now()) RETURNING id",
                 )
                 .bind(&provider)
                 .bind(&uid)
                 .bind(user_id)
-                .execute(&mut *conn)
+                .fetch_one(&mut *conn)
                 .await?;
-                json!({})
+                (id, json!({}), None)
             }
         };
-        let image = match &info["image"] {
-            Value::String(s) => Some(s.clone()),
-            _ => None,
-        };
-        crate::auth::managed::retrieve_avatar(&mut *conn, settings, user_id, image.as_deref())
+        // after_save: the account, now this user's, is nobody else's
+        // selected avatar.
+        if before != Some(user_id) {
+            crate::user_avatar::associated_account_user_changed(
+                &mut *conn,
+                account_id,
+                Some(user_id),
+            )
+            .await?;
+        }
+        crate::user_avatar::retrieve_for_associated_account(&mut *conn, settings, account_id, true)
             .await?;
         if let Value::Object(info) = &info {
             crate::auth::managed::retrieve_profile(

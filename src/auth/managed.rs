@@ -473,13 +473,15 @@ pub async fn after_authenticate(
         };
         if let Some(user) = by_email {
             // Destroy existing associations for the new user.
-            sqlx::query(
-                "DELETE FROM user_associated_accounts WHERE user_id = $1 AND provider_name = $2",
+            let gone: Vec<i64> = sqlx::query_scalar(
+                "DELETE FROM user_associated_accounts WHERE user_id = $1 AND provider_name = $2 \
+                 RETURNING id",
             )
             .bind(user)
             .bind(&auth.provider)
-            .execute(&mut *conn)
+            .fetch_all(&mut *conn)
             .await?;
+            crate::user_avatar::associated_accounts_destroyed(&mut *conn, &gone).await?;
             user_id = Some(user);
         }
     }
@@ -500,7 +502,7 @@ pub async fn after_authenticate(
         }
         None => false,
     };
-    if let (Some(a), true) = (&found, still_there) {
+    let account_id: i64 = if let (Some(a), true) = (&found, still_there) {
         sqlx::query(
             "UPDATE user_associated_accounts SET user_id = $2, info = $3, credentials = $4, extra = $5, \
                     last_used = now(), updated_at = now() WHERE id = $1",
@@ -512,11 +514,17 @@ pub async fn after_authenticate(
         .bind(&extra)
         .execute(&mut *conn)
         .await?;
+        // after_save: an account moved to another user stops being
+        // anyone else's selected avatar.
+        if a.user_id != user_id {
+            crate::user_avatar::associated_account_user_changed(&mut *conn, a.id, user_id).await?;
+        }
+        a.id
     } else {
-        sqlx::query(
+        let id: i64 = sqlx::query_scalar(
             "INSERT INTO user_associated_accounts (provider_name, provider_uid, user_id, last_used, info, \
                                                    credentials, extra, created_at, updated_at) \
-             VALUES ($1, $2, $3, now(), $4, $5, $6, now(), now())",
+             VALUES ($1, $2, $3, now(), $4, $5, $6, now(), now()) RETURNING id",
         )
         .bind(&auth.provider)
         .bind(&auth.uid)
@@ -524,11 +532,15 @@ pub async fn after_authenticate(
         .bind(&info)
         .bind(&credentials)
         .bind(&extra)
-        .execute(&mut *conn)
+        .fetch_one(&mut *conn)
         .await?;
-    }
+        if user_id.is_some() {
+            crate::user_avatar::associated_account_user_changed(&mut *conn, id, user_id).await?;
+        }
+        id
+    };
+    crate::user_avatar::retrieve_for_associated_account(&mut *conn, s, account_id, false).await?;
     if let Some(user) = user_id {
-        retrieve_avatar(conn, s, user, auth.info_str("image").as_deref()).await?;
         retrieve_profile(conn, s, host, user, &auth.info).await?;
     }
     let mut result = AuthResult::default();
@@ -557,34 +569,6 @@ pub async fn after_authenticate(
     result.extra_data = Some((auth.provider.clone(), auth.uid.clone()));
     result.user_id = user_id;
     Ok(result)
-}
-
-/// `retrieve_avatar(user, url)`
-pub async fn retrieve_avatar(
-    conn: &mut PgConnection,
-    s: &SiteSettings,
-    user_id: i32,
-    url: Option<&str>,
-) -> Result<(), AppError> {
-    let Some(url) = url.filter(|u| !u.trim().is_empty()) else {
-        return Ok(());
-    };
-    let custom: bool = sqlx::query_scalar(
-        "SELECT EXISTS (SELECT 1 FROM user_avatars WHERE user_id = $1 AND custom_upload_id IS NOT NULL)",
-    )
-    .bind(user_id)
-    .fetch_one(&mut *conn)
-    .await?;
-    if custom && !s.get("auth_overrides_avatar")?.truthy() {
-        return Ok(());
-    }
-    crate::jobs::enqueue(
-        &mut *conn,
-        "download_avatar_from_url",
-        json!({"url": url, "user_id": user_id, "override_gravatar": false}),
-    )
-    .await?;
-    Ok(())
 }
 
 /// `retrieve_profile(user, info)`: the provider's description and

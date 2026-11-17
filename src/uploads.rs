@@ -338,9 +338,11 @@ pub struct NewUpload<'a> {
     pub for_theme: bool,
     /// UploadCreator's `skip_validations`: saved without UploadValidator.
     pub skip_validations: bool,
-    /// `for_gravatar` with its `origin` (the gravatar's url): a png, jpeg
-    /// or gif is checked for its size only.
-    pub gravatar_origin: Option<&'a str>,
+    /// UploadCreator's `origin`: the url the file was downloaded from.
+    pub origin: Option<&'a str>,
+    /// UploadCreator's `for_gravatar`: a png, jpeg or gif is checked for
+    /// its size only.
+    pub for_gravatar: bool,
 }
 
 /// How an upload ends: the serialized upload or its errors.
@@ -561,7 +563,7 @@ pub async fn create_with(
     .bind(thumb.map(|t| t.0 as i32))
     .bind(thumb.map(|t| t.1 as i32))
     .bind(animated)
-    .bind(up.gravatar_origin.map(|o| o.chars().take(2000).collect::<String>()))
+    .bind(up.origin.map(|o| o.chars().take(2000).collect::<String>()))
     .fetch_one(&mut *conn)
     .await?;
 
@@ -656,8 +658,7 @@ fn validate(
         .unwrap_or_default();
     // for_gravatar and FileHelper.supported_gravatar_extensions: the
     // image size only.
-    if up.gravatar_origin.is_some() && matches!(extension.as_str(), "jpg" | "jpeg" | "png" | "gif")
-    {
+    if up.for_gravatar && matches!(extension.as_str(), "jpg" | "jpeg" | "png" | "gif") {
         let max_bytes = s.get("max_image_size_kb")?.to_i() * 1024;
         if filesize as i64 > max_bytes {
             return Ok(vec![

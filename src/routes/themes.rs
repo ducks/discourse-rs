@@ -1962,7 +1962,8 @@ pub async fn upload_asset(
             for_private_message: false,
             for_export: false,
             for_theme: true,
-            gravatar_origin: None,
+            origin: None,
+            for_gravatar: false,
             skip_validations: false,
         },
     )

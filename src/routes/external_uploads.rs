@@ -1133,7 +1133,8 @@ async fn transform(
                 for_private_message,
                 for_export: false,
                 for_theme: false,
-                gravatar_origin: None,
+                origin: None,
+                for_gravatar: false,
                 skip_validations: false,
             };
             crate::uploads::create_with(

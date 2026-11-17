@@ -885,10 +885,12 @@ pub async fn delete_associated_accounts(
     )?)
     .execute(&mut *tx)
     .await?;
-    sqlx::query("DELETE FROM user_associated_accounts WHERE user_id = $1")
-        .bind(user_id)
-        .execute(&mut *tx)
-        .await?;
+    let gone: Vec<i64> =
+        sqlx::query_scalar("DELETE FROM user_associated_accounts WHERE user_id = $1 RETURNING id")
+            .bind(user_id)
+            .fetch_all(&mut *tx)
+            .await?;
+    crate::user_avatar::associated_accounts_destroyed(&mut tx, &gone).await?;
     tx.commit().await?;
     Ok(axum::Json(json!({ "success": "OK" })).into_response())
 }
