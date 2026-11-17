@@ -426,6 +426,7 @@ pub async fn channel_archive_job(state: &AppState, args: &Value) -> Result<(), A
         .bind(ARCHIVED)
         .execute(&mut *conn)
         .await?;
+        super::homepage::clear_anon_cache(&state.bus, &mut conn, &settings, channel.id).await?;
         super::publisher::publish_archive_status(
             &mut conn,
             &state.bus,

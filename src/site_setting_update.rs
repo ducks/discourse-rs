@@ -454,12 +454,19 @@ pub async fn update(
     // An enum class's valid_value? (recorded values), whose refusal is
     // its own message.
     if def.data_type == DataType::Enum && opt(def, "enum").is_some() {
-        let choices = choice_values(def);
-        if choices.is_empty() {
-            return Err(Unsupported("enum settings with an enum class not recorded").into());
-        }
         let wanted = new_value.to_s();
-        if !choices.contains(&wanted) {
+        let valid = if opt(def, "enum").and_then(Yaml::as_str)
+            == Some("Chat::HomepageChannelSiteSetting")
+        {
+            crate::plugins::chat::homepage::valid_setting_value(&mut *conn, &wanted).await?
+        } else {
+            let choices = choice_values(def);
+            if choices.is_empty() {
+                return Err(Unsupported("enum settings with an enum class not recorded").into());
+            }
+            choices.contains(&wanted)
+        };
+        if !valid {
             return Ok(Outcome::Invalid(format!(
                 "Invalid value `{wanted}` for `{name}`"
             )));

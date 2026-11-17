@@ -1,6 +1,6 @@
 {
   "user": "user1",
-  "not_yet": "0a264785d1d (Discourse): a chat channel as the homepage (register_homepage, homepage_options); not ported",
+  "not_yet": "189478b45ba (Discourse): letter avatars drawn with libvips, their version 6_<vips digest> instead of 5_<ImageMagick digest> (LetterAvatar::VIPS_VERSION); not ported",
   "settings": {
     "external_system_avatars_url": "",
     "show_user_menu_avatars": true

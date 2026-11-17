@@ -574,7 +574,10 @@ async fn a_plugins_homepage_answers_the_root_while_it_is_the_homepage() {
     let site = site_json(&st).await;
     assert_eq!(
         site["homepage_options"],
-        json!([{"id": "echo", "path": "/echo", "server_side": true}])
+        json!([
+            {"id": "chat", "path": null, "server_side": false},
+            {"id": "echo", "path": "/echo", "server_side": true},
+        ])
     );
     assert!(
         site["homepage_choices"]
@@ -615,7 +618,11 @@ async fn an_unavailable_or_disabled_plugin_homepage_falls_back_to_the_top_menu()
     assert_eq!(status, StatusCode::OK);
     assert!(!body.contains("echo home"));
     let site = site_json(&st).await;
-    assert_eq!(site["homepage_options"], json!([]));
+    // Chat's stays (a bundled plugin); echo's left with its plugin.
+    assert_eq!(
+        site["homepage_options"],
+        json!([{"id": "chat", "path": null, "server_side": false}])
+    );
     assert!(
         !site["homepage_choices"]
             .as_array()

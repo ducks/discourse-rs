@@ -747,7 +747,7 @@ pub async fn root(
             &mut parts, &state,
         )
         .await?;
-    let plugin = {
+    let resolved = {
         let mut conn = state.pool.acquire().await?;
         let settings =
             SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -758,11 +758,24 @@ pub async fn root(
         if !named || settings.get("has_login_hint")?.truthy() {
             None
         } else {
-            let homepage = crate::homepage::current(&mut conn, &settings, &guardian).await?;
-            crate::homepage::plugin_homepage(&settings, &homepage)?
+            let crawler = crate::crawler_detection::layout_request(
+                &settings,
+                &parts.headers,
+                parts.uri.query(),
+            )?;
+            let homepage =
+                crate::homepage::resolve(&mut conn, &settings, &guardian, crawler).await?;
+            match crate::homepage::plugin_homepage(&settings, &homepage)? {
+                Some(option) => {
+                    let path =
+                        crate::plugin_api::homepage_path(&mut conn, &settings, &option).await?;
+                    Some((option.0, path))
+                }
+                None => None,
+            }
         }
     };
-    let Some((plugin, option)) = plugin else {
+    let Some((owner, path)) = resolved else {
         return front_page(
             State(state),
             AuthGuardian(guardian),
@@ -772,15 +785,28 @@ pub async fn root(
         .await;
     };
     let target = match parts.uri.query() {
-        Some(query) => format!("{}?{query}", option.path),
-        None => option.path.to_string(),
+        Some(query) => format!("{path}?{query}"),
+        None => path,
     };
     parts.uri = target
         .parse()
         .map_err(|_| Unsupported("a plugin homepage path that is not a URI"))?;
+    let routes = match owner {
+        // chat/chat#respond: the channel's full page chat, at `/`.
+        crate::plugin_api::HomepageOwner::Chat => {
+            if guardian.is_anonymous() {
+                return Err(Unsupported("an anonymous visitor's chat channel homepage").into());
+            }
+            axum::Router::new().route(
+                "/chat/c/{slug}/{id}",
+                axum::routing::get(super::chat_pages::channel),
+            )
+        }
+        crate::plugin_api::HomepageOwner::Plugin(plugin) => plugin.routes(),
+    };
     let request = axum::extract::Request::from_parts(parts, body);
     Ok(
-        tower::ServiceExt::oneshot(plugin.routes().with_state(state), request)
+        tower::ServiceExt::oneshot(routes.with_state(state), request)
             .await
             .into_response(),
     )
@@ -805,7 +831,8 @@ pub async fn front_page(
             }
             return super::finish_installation::index_page(&state, &guardian, &uri).await;
         }
-        crate::homepage::current(&mut conn, &settings, &guardian).await?
+        let crawler = crate::crawler_detection::layout_request(&settings, &headers, uri.query())?;
+        crate::homepage::resolve(&mut conn, &settings, &guardian, crawler).await?
     };
     // Another format is Rails' 406 page, or markdown, neither ported.
     if uri

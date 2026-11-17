@@ -36,6 +36,17 @@ pub async fn current(
     settings: &SiteSettings,
     guardian: &Guardian,
 ) -> Result<String, AppError> {
+    resolve(conn, settings, guardian, false).await
+}
+
+/// [`current`] for a request: `crawler` is
+/// CrawlerDetection.crawler_layout_request? ([`crawler_layout_request`]).
+pub async fn resolve(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+    crawler: bool,
+) -> Result<String, AppError> {
     let user_id = guardian.user_id();
     if let Some(user_id) = user_id {
         let homepage_id: Option<i32> =
@@ -75,7 +86,7 @@ pub async fn current(
     } else {
         anonymous_homepage(settings)?
     };
-    if plugin_api::homepage_available(conn, settings, guardian, &homepage).await? {
+    if plugin_api::homepage_available(conn, settings, guardian, &homepage, crawler).await? {
         return Ok(homepage);
     }
     // top_menu_homepage
@@ -106,6 +117,40 @@ fn anonymous_homepage(settings: &SiteSettings) -> Result<String, AppError> {
         .into_iter()
         .find(|n| ANONYMOUS_MENU_ITEMS.contains(&n.as_str()))
         .unwrap_or_default())
+}
+
+/// `HomepageHelper.option_path`: a plugin's path as given; chat's, which
+/// follows its channel, only for visitors whose homepage setting it is
+/// (or for a server side homepage) and who may have it. A failing path
+/// is logged and left out.
+pub async fn option_path(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    guardian: &Guardian,
+    option: &plugin_api::HomepageOption,
+) -> Result<Option<String>, AppError> {
+    let (owner, homepage) = option;
+    if let plugin_api::HomepageOwner::Plugin(_) = owner {
+        return Ok(Some(homepage.path.to_string()));
+    }
+    let effective = if guardian.is_anonymous() {
+        anonymous_homepage(settings)?
+    } else {
+        self::homepage(settings)?
+    };
+    if !homepage.server_side && homepage.id != effective {
+        return Ok(None);
+    }
+    if !plugin_api::homepage_available(conn, settings, guardian, homepage.id, false).await? {
+        return Ok(None);
+    }
+    match plugin_api::homepage_path(conn, settings, option).await {
+        Ok(path) => Ok(Some(path)),
+        Err(e) => {
+            tracing::warn!("Homepage path failed for '{}': {e}", homepage.id);
+            Ok(None)
+        }
+    }
 }
 
 /// The plugin homepage this visitor's homepage is, if any.
@@ -150,7 +195,11 @@ fn homepage_choices(settings: &SiteSettings) -> Result<Vec<&'static str>, AppErr
     if !settings.get("enable_unified_new")?.truthy() {
         choices.push("unread");
     }
-    choices.extend(plugin_api::homepages(settings)?.iter().map(|(_, h)| h.id));
+    choices.extend(
+        plugin_api::offered_homepages(settings)?
+            .iter()
+            .map(|(_, h)| h.id),
+    );
     Ok(choices)
 }
 

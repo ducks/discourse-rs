@@ -115,6 +115,14 @@ pub async fn runtime(
             for choice in homepage_choices(cx)? {
                 values.push(json!({ "name": format!("filters.{choice}.title"), "value": choice }));
             }
+            // In load order: chat, discourse-ai, then the plugins on the API.
+            let offered = crate::plugin_api::offered_homepages(cx.settings)?;
+            let (chat, others): (Vec<_>, Vec<_>) = offered
+                .into_iter()
+                .partition(|(owner, _)| matches!(owner, crate::plugin_api::HomepageOwner::Chat));
+            for (_, homepage) in chat {
+                values.push(json!({ "name": homepage.name, "value": homepage.id }));
+            }
             if cx.defs.plugin_enabled("discourse-ai", cx.settings)
                 && cx.settings.get("ai_bot_enabled")?.truthy()
             {
@@ -123,11 +131,15 @@ pub async fn runtime(
                     "value": "ai-conversations",
                 }));
             }
-            for (_, homepage) in crate::plugin_api::homepages(cx.settings)? {
+            for (_, homepage) in others {
                 values.push(json!({ "name": homepage.name, "value": homepage.id }));
             }
             (json!(values), true)
         }
+        "Chat::HomepageChannelSiteSetting" => (
+            crate::plugins::chat::homepage::setting_values(conn).await?,
+            false,
+        ),
         _ => return Err(Unsupported("site setting values of an unported enum class").into()),
     })
 }

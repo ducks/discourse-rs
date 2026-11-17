@@ -364,30 +364,85 @@ pub fn enabled(settings: &SiteSettings) -> Result<Vec<&'static Arc<dyn Plugin>>,
     Ok(on)
 }
 
-/// A plugin's homepage option, with the plugin that registered it.
-pub type HomepageOption = (&'static Arc<dyn Plugin>, Homepage);
+/// Who registered a homepage option: the bundled chat plugin
+/// (crate::plugins::chat::homepage) or a plugin on this API.
+#[derive(Clone, Copy)]
+pub enum HomepageOwner {
+    Chat,
+    Plugin(&'static Arc<dyn Plugin>),
+}
 
-/// `DiscoursePluginRegistry.homepage_options`: the enabled plugins'.
+/// A homepage option, with who registered it.
+pub type HomepageOption = (HomepageOwner, Homepage);
+
+/// `DiscoursePluginRegistry.homepage_options`: the enabled plugins', chat's
+/// first as the bundled plugins load first.
 pub fn homepages(settings: &SiteSettings) -> Result<Vec<HomepageOption>, AppError> {
-    Ok(enabled(settings)?
-        .into_iter()
-        .filter_map(|plugin| plugin.homepage().map(|h| (plugin, h)))
-        .collect())
+    let mut out = Vec::new();
+    if crate::plugins::chat::enabled(settings)? {
+        out.push((
+            HomepageOwner::Chat,
+            crate::plugins::chat::homepage::HOMEPAGE,
+        ));
+    }
+    out.extend(enabled(settings)?.into_iter().filter_map(|plugin| {
+        plugin
+            .homepage()
+            .map(|h| (HomepageOwner::Plugin(plugin), h))
+    }));
+    Ok(out)
+}
+
+/// `HomepageSiteSetting.values`' options: those whose `enabled` condition
+/// holds. A plugin on this API is offered while it is enabled.
+pub fn offered_homepages(settings: &SiteSettings) -> Result<Vec<HomepageOption>, AppError> {
+    let mut out = Vec::new();
+    for option in homepages(settings)? {
+        let offered = match option.0 {
+            HomepageOwner::Chat => crate::plugins::chat::homepage::offered(settings)?,
+            HomepageOwner::Plugin(_) => true,
+        };
+        if offered {
+            out.push(option);
+        }
+    }
+    Ok(out)
+}
+
+/// The option's `path`: a plugin's as it gives it, chat's from its
+/// channel.
+pub async fn homepage_path(
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+    option: &HomepageOption,
+) -> Result<String, AppError> {
+    match option.0 {
+        HomepageOwner::Chat => crate::plugins::chat::homepage::path(conn, settings).await,
+        HomepageOwner::Plugin(_) => Ok(option.1.path.to_string()),
+    }
 }
 
 /// `HomepageHelper.option_available?`: true for a homepage no plugin
-/// registered. A failing check is logged and counts as unavailable, so
-/// it cannot take the front page down.
+/// registered. `crawler` is CrawlerDetection.crawler_layout_request? of
+/// the request, false without one. A failing check is logged and counts
+/// as unavailable, so it cannot take the front page down.
 pub async fn homepage_available(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     guardian: &Guardian,
     id: &str,
+    crawler: bool,
 ) -> Result<bool, AppError> {
-    let Some((plugin, _)) = homepages(settings)?.into_iter().find(|(_, h)| h.id == id) else {
+    let Some((owner, _)) = homepages(settings)?.into_iter().find(|(_, h)| h.id == id) else {
         return Ok(true);
     };
-    match plugin.homepage_available(conn, settings, guardian).await {
+    let checked = match owner {
+        HomepageOwner::Chat => {
+            crate::plugins::chat::homepage::available(conn, settings, guardian, crawler).await
+        }
+        HomepageOwner::Plugin(plugin) => plugin.homepage_available(conn, settings, guardian).await,
+    };
+    match checked {
         Ok(available) => Ok(available),
         Err(e) => {
             tracing::warn!("Homepage availability check failed for '{id}': {e}");
