@@ -35,6 +35,21 @@ fn redirect(to: String) -> Response {
     (StatusCode::FOUND, [(header::LOCATION, to)]).into_response()
 }
 
+/// The member-only chat routes' beforeModel (browse, direct messages, new
+/// message, search, starred channels, threads): an anonymous visitor goes
+/// to the channels list.
+fn anonymous_to_channels(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+) -> Option<Response> {
+    guardian.is_anonymous().then(|| {
+        redirect(format!(
+            "{}/chat/channels",
+            state.config.globals.relative_url_root()
+        ))
+    })
+}
+
 /// `discoveryHomepageRoute` for a member: the first top menu item.
 fn homepage(settings: &SiteSettings, base_path: &str) -> Result<String, AppError> {
     let top_menu = settings.get("top_menu")?.to_s().to_string();
@@ -60,6 +75,12 @@ async fn gate(
     let base_path = state.config.globals.relative_url_root();
     if !crate::plugins::chat::enabled(&settings)? {
         return Ok(Err(super::topics::not_found_response(state)));
+    }
+    // anonymousUserCanViewPublicChat
+    if guardian.is_anonymous()
+        && crate::plugins::chat::anonymous_public_channel_access_allowed(&settings)?
+    {
+        return Ok(Ok(settings));
     }
     let can_chat = crate::plugins::chat::can_chat(&mut *conn, &settings, guardian).await?;
     let chat_enabled = match guardian.user_id() {
@@ -220,13 +241,16 @@ pub async fn index(
         if dms && (preferred == "direct_messages" || !public) {
             return Ok(redirect(format!("{base_path}/chat/direct-messages")));
         }
-        if !channels {
+        // An anonymous visitor (public channels on, or the gate would have
+        // sent them home) goes to the channels list.
+        if !channels && !guardian.is_anonymous() {
             return Ok(redirect(format!("{base_path}/chat/browse/open")));
         }
     } else if !public {
         return Err(crate::Unsupported("chat's channels list without public channels").into());
     }
-    if crate::mobile::mobile_view() {
+    // ChatChannelsRoute sends only a desktop member on.
+    if crate::mobile::mobile_view() || guardian.is_anonymous() {
         // ChatIndexRoute replaces /chat with chat.channels.
         if !uri.path().ends_with("/chat/channels") {
             return Ok(redirect(format!("{base_path}/chat/channels")));
@@ -295,6 +319,9 @@ pub async fn browse_index(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    if let Some(response) = anonymous_to_channels(&state, &guardian) {
+        return Ok(response);
+    }
     let base_path = state.config.globals.relative_url_root();
     if !settings.get("enable_public_channels")?.truthy() {
         return Ok(redirect(homepage(&settings, base_path)?));
@@ -326,6 +353,9 @@ pub async fn browse(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    if let Some(response) = anonymous_to_channels(&state, &guardian) {
+        return Ok(response);
+    }
     let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     if !settings.get("enable_public_channels")?.truthy() {
@@ -373,6 +403,9 @@ pub async fn browse_more(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    if let Some(response) = anonymous_to_channels(&state, &guardian) {
+        return Ok(response);
+    }
     let Some(tab) = browse_tab(&settings, &tab)? else {
         return Ok(super::topics::not_found_response(&state));
     };
@@ -460,6 +493,9 @@ pub async fn new_message(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    if let Some(response) = anonymous_to_channels(&state, &guardian) {
+        return Ok(response);
+    }
     let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     let query: std::collections::HashMap<String, String> =
@@ -540,7 +576,7 @@ pub async fn channel(
     let id = get("id").unwrap_or_default();
     let message_id = get("message_id");
     let mut cx = context(&state, &mut conn, &settings, &guardian);
-    let channel = match cx.find_joinable(&id).await? {
+    let channel = match cx.find_for_page(&id).await? {
         Found::Channel(channel) => channel,
         Found::NotFound | Found::Forbidden => return Ok(redirect(format!("{base_path}/chat"))),
     };
@@ -622,7 +658,7 @@ pub async fn channel_thread(
     let message_id = get("message_id");
     let channel_message_id = get("channel_message_id");
     let mut cx = context(&state, &mut conn, &settings, &guardian);
-    let channel = match cx.find_joinable(&id).await? {
+    let channel = match cx.find_for_page(&id).await? {
         Found::Channel(channel) => channel,
         Found::NotFound | Found::Forbidden => return Ok(redirect(format!("{base_path}/chat"))),
     };
@@ -739,6 +775,9 @@ pub async fn direct_messages(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    if let Some(response) = anonymous_to_channels(&state, &guardian) {
+        return Ok(response);
+    }
     let bus_position = crate::bus::page_position(&state.bus).await?;
     let content = context(&state, &mut conn, &settings, &guardian)
         .direct_messages_route(None)
@@ -774,6 +813,9 @@ pub async fn starred_channels(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    if let Some(response) = anonymous_to_channels(&state, &guardian) {
+        return Ok(response);
+    }
     let bus_position = crate::bus::page_position(&state.bus).await?;
     let base_path = state.config.globals.relative_url_root();
     if !crate::mobile::mobile_view() {
@@ -813,6 +855,9 @@ pub async fn threads(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    if let Some(response) = anonymous_to_channels(&state, &guardian) {
+        return Ok(response);
+    }
     let bus_position = crate::bus::page_position(&state.bus).await?;
     let content = context(&state, &mut conn, &settings, &guardian)
         .threads_route()
@@ -846,6 +891,9 @@ pub async fn search(
         Ok(settings) => settings,
         Err(response) => return Ok(response),
     };
+    if let Some(response) = anonymous_to_channels(&state, &guardian) {
+        return Ok(response);
+    }
     let bus_position = crate::bus::page_position(&state.bus).await?;
     if !settings.get("chat_search_enabled")?.truthy() {
         return Ok(redirect(format!(
@@ -925,7 +973,10 @@ pub async fn drawer(
     AuthGuardian(guardian): AuthGuardian,
     axum::extract::Query(params): axum::extract::Query<DrawerParams>,
 ) -> Result<Response, AppError> {
-    if crate::mobile::mobile_view() {
+    // The anonymous visitor's drawer (chat-drawer.gjs opens for
+    // anonymousUserCanViewPublicChat) isn't drawn: their pages carry no
+    // drawer script, so their chat links open full-page chat.
+    if crate::mobile::mobile_view() || guardian.is_anonymous() {
         return Ok(StatusCode::NOT_FOUND.into_response());
     }
     let mut conn = state.pool.acquire().await?;

@@ -116,6 +116,12 @@ pub struct Context<'a> {
 }
 
 impl Context<'_> {
+    /// The base path when the viewer is anonymous, for what draws
+    /// differently for them (the preview card's log in and sign up).
+    pub(crate) fn anonymous_base(&self) -> Option<&str> {
+        self.guardian.is_anonymous().then_some(self.base_path)
+    }
+
     /// `ChannelFetcher.secured_public_channels`, through
     /// secured_public_channel_search with filter_on_category_name: the
     /// category channels the viewer may see, filtered, by name.
@@ -363,7 +369,7 @@ impl Context<'_> {
     /// Chat::ChannelIndexSerializer.
     pub async fn me_channels(&mut self) -> Result<Value, AppError> {
         let Some(user_id) = self.guardian.user_id() else {
-            return Err(Unsupported("anonymous access to chat channels").into());
+            return self.anonymous_me_channels().await;
         };
         // ChannelFetcher.structured
         let memberships = self.memberships().await?;
@@ -433,6 +439,37 @@ impl Context<'_> {
         Ok(Value::Object(out))
     }
 
+    /// me_channels for an anonymous visitor (the controller lets them in
+    /// while anonymous public channel access is allowed): every open
+    /// public channel they may see, as following means nothing without a
+    /// user, each joinable (the client sends them to log in), and nothing
+    /// tracked, unread or subscribed beyond the channels' own buses.
+    async fn anonymous_me_channels(&mut self) -> Result<Value, AppError> {
+        let public = self
+            .public_channels(&Search {
+                status: Some(OPEN),
+                ..Search::default()
+            })
+            .await?;
+        let category_ids: Vec<i64> = public.iter().map(|c| c.chatable_id).collect();
+        let post_allowed = self.post_allowed_category_ids(&category_ids).await?;
+        let mut public_json = Vec::new();
+        for channel in &public {
+            public_json.push(
+                self.channel(channel, None, Some(true), Some(&post_allowed))
+                    .await?,
+            );
+        }
+        Ok(json!({
+            "public_channels": public_json,
+            "direct_message_channels": [],
+            "tracking": {"channel_tracking": {}, "thread_tracking": {}},
+            "meta": {"message_bus_last_ids": {}},
+            "unread_thread_overview": {},
+            "has_threads": false,
+        }))
+    }
+
     /// GET /chat/api/channels: Chat::Api::ChannelsController#index, the
     /// channels serialized with the viewer's memberships.
     pub async fn index(&mut self, search: &Search) -> Result<Vec<Value>, AppError> {
@@ -450,6 +487,44 @@ impl Context<'_> {
     /// `ensure_can_join_chat_channel!`, as the channel actions find
     /// theirs.
     pub async fn find_joinable(&mut self, id: &str) -> Result<Found, AppError> {
+        let Some(channel) = self.find_live(id).await? else {
+            return Ok(Found::NotFound);
+        };
+        if !self.can_join(&channel, None).await? {
+            return Ok(Found::Forbidden);
+        }
+        Ok(Found::Channel(channel))
+    }
+
+    /// `Chat::Channel.find` and the services' can_view_channel policy
+    /// ([`Self::can_view`]), as the actions open to anonymous visitors
+    /// find theirs.
+    pub async fn find_viewable(&mut self, id: &str) -> Result<Found, AppError> {
+        let Some(channel) = self.find_live(id).await? else {
+            return Ok(Found::NotFound);
+        };
+        if !self.can_view(&channel).await? {
+            return Ok(Found::Forbidden);
+        }
+        Ok(Found::Channel(channel))
+    }
+
+    /// The channel a chat page opens (chatChannelsManager.find, through
+    /// GET /chat/api/channels/:id): one a member may join, or one an
+    /// anonymous visitor may preview (`channel_from_params`, which
+    /// answers not found otherwise).
+    pub async fn find_for_page(&mut self, id: &str) -> Result<Found, AppError> {
+        if !self.guardian.is_anonymous() {
+            return self.find_joinable(id).await;
+        }
+        Ok(match self.find_live(id).await? {
+            Some(channel) if self.can_preview_anonymous(&channel).await? => Found::Channel(channel),
+            _ => Found::NotFound,
+        })
+    }
+
+    /// `Chat::Channel.find`: a live channel by its id.
+    pub(crate) async fn find_live(&mut self, id: &str) -> Result<Option<ChannelRow>, AppError> {
         // An id casts as ActiveModel's integer type casts: digits first,
         // else no id at all.
         let numeric = id
@@ -457,7 +532,7 @@ impl Context<'_> {
             .trim_start_matches(['+', '-'])
             .starts_with(|c: char| c.is_ascii_digit());
         if !numeric {
-            return Ok(Found::NotFound);
+            return Ok(None);
         }
         let sql = format!(
             "SELECT {CHANNEL_COLUMNS} FROM chat_channels WHERE id = $1 AND deleted_at IS NULL"
@@ -467,15 +542,12 @@ impl Context<'_> {
             .fetch_optional(&mut *self.conn)
             .await?;
         let Some(channel) = channel else {
-            return Ok(Found::NotFound);
+            return Ok(None);
         };
         if channel.chatable_type != "Category" && channel.chatable_type != "DirectMessage" {
             return Err(Unsupported("chat channels of other chatables").into());
         }
-        if !self.can_join(&channel, None).await? {
-            return Ok(Found::Forbidden);
-        }
-        Ok(Found::Channel(channel))
+        Ok(Some(channel))
     }
 
     /// GET /chat/api/channels/:id: the channel with the viewer's
@@ -878,6 +950,30 @@ impl Context<'_> {
                 .user_can_access(self.guardian)),
             _ => Ok(true),
         }
+    }
+
+    /// `can_preview_anonymous_public_chat_channel?`: while anonymous
+    /// visitors may read public channels, a category channel an anonymous
+    /// guardian could preview (its category exists and isn't read
+    /// restricted), whoever the viewer is.
+    pub async fn can_preview_anonymous(&mut self, channel: &ChannelRow) -> Result<bool, AppError> {
+        if !super::anonymous_public_channel_access_allowed(self.settings)?
+            || channel.chatable_type != "Category"
+        {
+            return Ok(false);
+        }
+        let read_restricted: Option<bool> =
+            sqlx::query_scalar("SELECT read_restricted FROM categories WHERE id = $1")
+                .bind(self::category_id(channel.chatable_id))
+                .fetch_optional(&mut *self.conn)
+                .await?;
+        Ok(read_restricted == Some(false))
+    }
+
+    /// The services' can_view_channel policy: `can_join_chat_channel?` or
+    /// `can_preview_anonymous_public_chat_channel?`.
+    pub async fn can_view(&mut self, channel: &ChannelRow) -> Result<bool, AppError> {
+        Ok(self.can_join(channel, None).await? || self.can_preview_anonymous(channel).await?)
     }
 
     /// `can_join_chat_channel?`: a member who can chat, preview the

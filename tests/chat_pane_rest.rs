@@ -295,9 +295,11 @@ async fn the_channels_list_draws_without_a_member_or_chat_options() {
     let db = TestDb::new().await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
 
-    // No member: chatChannelsManager holds no channels, and the empty
-    // state offers no browser (canBrowseChannels), nor does the drawer's
-    // divider show (displayPublicChannels).
+    // No member, and anonymous users not among chat_allowed_groups:
+    // chatChannelsManager holds no channels, and the empty state offers no
+    // browser (canBrowseChannels), nor does the drawer's divider show
+    // (displayPublicChannels).
+    common::set_setting(&db.pool, "chat_allowed_groups", 20, "1|2|10").await;
     let anonymous = discourse_rs::guardian::Guardian::anonymous();
     let (mobile, drawer) = channels_lists(&st, &anonymous).await;
     for html in [&mobile, &drawer] {
@@ -306,6 +308,26 @@ async fn the_channels_list_draws_without_a_member_or_chat_options() {
         assert!(!html.contains("chat-channel-row"), "{html}");
     }
     assert!(!drawer.contains("public-channels-section"), "{drawer}");
+
+    // With them (the default): the public channels they may read, under
+    // the divider but without its actions, which are a member's.
+    sqlx::query("DELETE FROM site_settings WHERE name = 'chat_allowed_groups'")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (desktop, drawer) = channels_lists(&st, &anonymous).await;
+    for html in [&desktop, &drawer] {
+        assert!(
+            html.contains("chat-channel-row") && html.contains("General"),
+            "{html}"
+        );
+        assert!(html.contains("public-channels-section"), "{html}");
+        assert!(!html.contains("chat-channel-divider__actions"), "{html}");
+    }
+    assert!(
+        desktop.contains("c-navbar__open-drawer-button"),
+        "{desktop}"
+    );
 
     // A member without chat options: their channels by the columns'
     // defaults (all, alphabetical).

@@ -19,6 +19,8 @@ struct Client {
     cookies: Vec<(String, String)>,
     csrf: Option<String>,
     headers: Vec<(&'static str, String)>,
+    /// The last response's Location header.
+    location: Option<String>,
 }
 
 impl Client {
@@ -50,6 +52,10 @@ impl Client {
             .await
             .unwrap();
         let status = response.status().as_u16();
+        self.location = response
+            .headers()
+            .get(header::LOCATION)
+            .map(|v| v.to_str().unwrap().to_string());
         for v in response.headers().get_all(header::SET_COOKIE) {
             let pair = v.to_str().unwrap().split(';').next().unwrap();
             let (name, value) = pair.split_once('=').unwrap();
@@ -68,6 +74,7 @@ impl Client {
             cookies: Vec::new(),
             csrf: None,
             headers: Vec::new(),
+            location: None,
         };
         let (_, csrf) = client.send("GET", "/session/csrf.json", "").await;
         let csrf: Value = serde_json::from_str(&csrf).unwrap();
@@ -398,6 +405,7 @@ async fn the_chat_api_key_scope_follows_the_plugin() {
             ("api-key", "chat-scope-key".into()),
             ("api-username", "admin".into()),
         ],
+        location: None,
     };
     let credentials = "The API username or key is invalid.";
     let (_, body) = api.send("POST", "/chat/2", "message=hello").await;
@@ -580,4 +588,98 @@ async fn the_homepage_channel_setting_takes_open_public_channels() {
         )
         .await;
     assert_eq!(status, 422, "{body}");
+}
+
+/// Discourse 00f21b36e14: chat_allowed_groups holds anonymous_users by
+/// default, so anonymous visitors read the public channels: the chat
+/// routes let them in (the member-only ones send them to the channels
+/// list), a channel shows with the log in and sign up card in the
+/// composer's place, the sidebar lists the channels, and a chat channel
+/// homepage renders at the root. Without anonymous_users they go home.
+#[tokio::test]
+async fn anonymous_visitors_read_public_chat_channels() {
+    let db = TestDb::new().await;
+    chat_homepage(&db).await;
+    let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
+    let mut anon = Client::anonymous(st.clone()).await;
+    anon.headers.push((
+        "user-agent",
+        "Mozilla/5.0 (X11; Linux x86_64; rv:140.0) Gecko/20100101 Firefox/140.0".into(),
+    ));
+
+    let (status, html) = anon.send("GET", "/", "").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(html.contains("has-full-page-chat"), "{html}");
+    assert!(html.contains("chat-channel-preview-card --anon"), "{html}");
+    assert!(html.contains("data-href=\"/signup\""), "{html}");
+    assert!(!html.contains("chat-composer__input"), "{html}");
+    assert!(
+        html.contains("data-section-name=\"chat-channels\""),
+        "{html}"
+    );
+    assert!(!html.contains("chat-header-icon"), "{html}");
+
+    let (status, html) = anon.send("GET", "/chat/c/general/2", "").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(html.contains("chat-channel-preview-card --anon"), "{html}");
+
+    for path in [
+        "/chat",
+        "/chat/browse/open",
+        "/chat/direct-messages",
+        "/chat/threads",
+        "/chat/starred-channels",
+        "/chat/new-message",
+    ] {
+        let (status, _) = anon.send("GET", path, "").await;
+        assert_eq!(status, 302, "{path}");
+        assert_eq!(anon.location.as_deref(), Some("/chat/channels"), "{path}");
+    }
+    let (status, html) = anon.send("GET", "/chat/channels", "").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(html.contains("chat-channel-row"), "{html}");
+
+    let (status, html) = anon.send("GET", "/latest", "").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(html.contains("chat-enabled"), "{html}");
+    assert!(
+        html.contains("data-section-name=\"chat-channels\""),
+        "{html}"
+    );
+
+    // A read restricted channel is no channel to them: its page goes to
+    // /chat, its API answers not found.
+    sqlx::query("UPDATE categories SET read_restricted = true WHERE id = 4")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, _) = anon.send("GET", "/chat/c/general/2", "").await;
+    assert_eq!(status, 302);
+    assert_eq!(anon.location.as_deref(), Some("/chat"));
+    let (status, _) = anon.send("GET", "/chat/api/channels/2.json", "").await;
+    assert_eq!(status, 404);
+    let (status, _) = anon
+        .send("GET", "/chat/api/channels/2/messages.json", "")
+        .await;
+    assert_eq!(status, 403);
+    sqlx::query("UPDATE categories SET read_restricted = false WHERE id = 4")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+
+    // Without anonymous_users they go to the homepage, and the root is
+    // the top menu's.
+    common::set_setting(&db.pool, "chat_allowed_groups", 20, "1|2|10").await;
+    let (status, _) = anon.send("GET", "/chat/c/general/2", "").await;
+    assert_eq!(status, 302);
+    assert_eq!(anon.location.as_deref(), Some("/latest"));
+    let (status, html) = anon.send("GET", "/", "").await;
+    assert_eq!(status, 200, "{html}");
+    assert!(!html.contains("has-full-page-chat"), "{html}");
+    assert!(
+        !html.contains("data-section-name=\"chat-channels\""),
+        "{html}"
+    );
+    let (status, _) = anon.send("GET", "/chat/api/me/channels.json", "").await;
+    assert_eq!(status, 403);
 }

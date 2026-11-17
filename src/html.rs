@@ -1350,7 +1350,11 @@ impl Site {
             // Sidebar.gjs's bodyClass
             classes.push("has-sidebar-page".into());
         }
-        if let Some(chat) = chat {
+        if chat.is_some() && guardian.is_anonymous() {
+            // chat-setup.js: an anonymous visitor who may read public
+            // channels gets the class (and the sidebar's channels) only.
+            classes.insert(0, "chat-enabled".into());
+        } else if let Some(chat) = chat {
             classes.insert(0, "chat-enabled".into());
             // Kept current over the live stream.
             self.chrome.live_param("chat", &active.key());

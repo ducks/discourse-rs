@@ -456,7 +456,7 @@ pub async fn draw(
         };
         // The channel routes' model: chatChannelsManager.find, which
         // ignores the slug.
-        let channel = match cx.find_joinable(&id).await? {
+        let channel = match cx.find_for_page(&id).await? {
             Found::Channel(channel) => channel,
             Found::NotFound | Found::Forbidden => {
                 return Err(Unsupported("the chat drawer for a channel it can't open").into());

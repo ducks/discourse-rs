@@ -7,7 +7,7 @@ use serde_json::{Value, json};
 use sqlx::PgConnection;
 
 use crate::AppError;
-use crate::guardian::{Guardian, auto_groups};
+use crate::guardian::Guardian;
 use crate::plugin_api::Homepage;
 use crate::site_settings::SiteSettings;
 
@@ -100,11 +100,7 @@ pub async fn available(
     };
     let Some(user_id) = guardian.user_id() else {
         // can_preview_anonymous_public_chat_channel?
-        let allowed = settings.get("enable_public_channels")?.truthy()
-            && settings
-                .group_ids("chat_allowed_groups")?
-                .contains(&auto_groups::ANONYMOUS_USERS);
-        return Ok(allowed && !read_restricted);
+        return Ok(super::anonymous_public_channel_access_allowed(settings)? && !read_restricted);
     };
     if !super::can_chat(&mut *conn, settings, guardian).await? {
         return Ok(false);

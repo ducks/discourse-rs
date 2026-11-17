@@ -1,5 +1,4 @@
 {
-  "not_yet": "00f21b36e14 (Discourse): chat_allowed_groups includes anonymous_users by default; anonymous read-only chat (me/channels, channel messages) not ported",
   "requests": [
     {
       "method": "GET",

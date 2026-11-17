@@ -390,7 +390,7 @@ impl Context<'_> {
         // The preview card is a category channel's; a DM always has the
         // composer (chat.js follows it on opening).
         if !following && channel.chatable_type != "DirectMessage" {
-            out.push_str(&preview_card(&channel_json, &t));
+            out.push_str(&preview_card(&channel_json, &t, self.anonymous_base()));
         } else {
             out.push_str(&self.composer(channel, &channel_json).await?);
         }
@@ -672,7 +672,7 @@ impl Context<'_> {
         newest: bool,
         target_date: Option<&str>,
     ) -> Result<Option<MessagesPage>, AppError> {
-        let channel = match self.find_joinable(&channel_id.to_string()).await? {
+        let channel = match self.find_viewable(&channel_id.to_string()).await? {
             Found::Channel(channel) => channel,
             Found::NotFound | Found::Forbidden => return Ok(None),
         };
@@ -1652,9 +1652,28 @@ fn archive_status(c: &Value, t: &dyn Fn(&str) -> String, base_path: &str) -> Str
     }
 }
 
-/// ChatChannelPreviewCard for a member who doesn't follow the channel.
-pub(super) fn preview_card(c: &Value, t: &dyn Fn(&str) -> String) -> String {
+/// ChatChannelPreviewCard for a member who doesn't follow the channel, or
+/// for an anonymous visitor (`anonymous`, the base path): theirs offers
+/// logging in and signing up.
+pub(super) fn preview_card(
+    c: &Value,
+    t: &dyn Fn(&str) -> String,
+    anonymous: Option<&str>,
+) -> String {
     let channel_name = format!("#{}", s(&c["title"]));
+    if let Some(base_path) = anonymous {
+        return format!(
+            "<div class=\"chat-channel-preview-card --anon\"><div class=\"chat-channel-preview-card__icon\">{}</div><div class=\"chat-channel-preview-card__title\">{}</div><div class=\"chat-channel-preview-card__body\">{}</div><div class=\"chat-channel-preview-card__actions\"><button class=\"btn btn-text btn-transparent --primary\" type=\"button\" data-href=\"{base_path}/login\"><span class=\"d-button-label\">{}</span></button><button class=\"btn btn-text btn-primary\" type=\"button\" data-href=\"{base_path}/signup\"><span class=\"d-button-label\">{}</span></button></div></div>",
+            d_icon("lock", None),
+            escape(
+                &t("chat.channel.preview_card.guest_title")
+                    .replace("%{channelName}", &channel_name)
+            ),
+            escape(&t("chat.channel.preview_card.guest_body")),
+            escape(&t("chat.channel.preview_card.log_in")),
+            escape(&t("chat.channel.preview_card.sign_up"))
+        );
+    }
     if c["status"] == "open" && c["meta"]["can_join_chat_channel"] == true {
         format!(
             "<div class=\"chat-channel-preview-card --logged-in\"><div class=\"chat-channel-preview-card__icon\">{}</div><div class=\"chat-channel-preview-card__title\">{}</div><div class=\"chat-channel-preview-card__body\">{}</div><div class=\"chat-channel-preview-card__actions\"><button class=\"btn btn-text toggle-channel-membership-button -join btn-primary\" title=\"{}\" type=\"button\"><span class=\"d-button-label\">{}</span></button></div></div>",

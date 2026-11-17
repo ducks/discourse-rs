@@ -2348,9 +2348,12 @@ async fn chat_new_message_goes_where_the_route_goes() {
         cookies: Vec::new(),
         csrf: None,
     };
+    // A visitor reads public channels (anonymous_users is among
+    // chat_allowed_groups by default): ChatNewMessageRoute sends them to
+    // the channels list.
     assert_eq!(
         visitor.head("/chat/new-message?recipients=user0").await,
-        (302, Some("/latest".into()))
+        (302, Some("/chat/channels".into()))
     );
 }
 

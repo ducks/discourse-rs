@@ -336,7 +336,7 @@ impl Context<'_> {
         let settings = self.settings;
         let g = self.guardian;
         let Some(user_id) = g.user_id() else {
-            return Ok(None);
+            return self.anonymous_chrome(active, sidebar).await;
         };
         if !super::enabled(settings)? || !super::can_chat(&mut *self.conn, settings, g).await? {
             return Ok(None);
@@ -419,6 +419,68 @@ impl Context<'_> {
         }))
     }
 
+    /// Chat's chrome for an anonymous visitor while they may read public
+    /// channels (anonymousUserCanViewPublicChat): no header icon
+    /// (chat-setup.js leaves it to those who can chat) and, as chat-sidebar
+    /// adds its sections to the combined sidebar for them, only the
+    /// channels section: every public channel they may read, by the
+    /// default list preferences, without the section's actions or the
+    /// links' channel menu.
+    async fn anonymous_chrome(
+        &mut self,
+        active: &Active,
+        sidebar: Option<&crate::sidebar::Context<'_>>,
+    ) -> Result<Option<ChatChrome>, AppError> {
+        let settings = self.settings;
+        if !super::enabled(settings)? || !super::anonymous_public_channel_access_allowed(settings)?
+        {
+            return Ok(None);
+        }
+        let sidebar_sections = match sidebar {
+            Some(cx) => {
+                let me = self.me_channels().await?;
+                let channels = me["public_channels"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .map(|c| {
+                        SidebarChannel::from_json(
+                            c,
+                            &me["tracking"]["channel_tracking"],
+                            &me["unread_thread_overview"],
+                        )
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                if channels.is_empty() {
+                    String::new()
+                } else {
+                    let active_id = active_channel(active);
+                    let links = filter_and_sort(
+                        channels.iter().collect(),
+                        prefs("channels", 0, 0),
+                        active_id,
+                    );
+                    crate::sidebar::section_html_with(
+                        "chat-channels",
+                        Some(&self.t("chat.chat_channels")),
+                        "",
+                        &self.channel_links(&links, active_id, &[], cx),
+                        cx,
+                    )
+                }
+            }
+            None => String::new(),
+        };
+        Ok(Some(ChatChrome {
+            header_icon: String::new(),
+            sidebar_sections,
+            back_indicator: String::new(),
+            starred: false,
+            tracking_state: String::new(),
+            notify_attrs: String::new(),
+        }))
+    }
+
     /// Who a channels list draws for: whether there is a member
     /// (ChannelsListPublic's canBrowseChannels), their channel list
     /// preferences, and their channels (/chat/api/me/channels). Without a
@@ -427,7 +489,9 @@ impl Context<'_> {
     /// row has them.
     async fn channels_list_viewer(&mut self) -> Result<(bool, ListPrefs, Value), AppError> {
         let Some(user_id) = self.guardian.user_id() else {
-            return Ok((false, prefs("channels", 0, 0), Value::Null));
+            // An anonymous visitor's are the public channels they may read
+            // (none while anonymous public channel access isn't allowed).
+            return Ok((false, prefs("channels", 0, 0), self.me_channels().await?));
         };
         let channel_prefs = match super::options(&mut *self.conn, user_id).await? {
             Some(o) => prefs(
@@ -440,10 +504,14 @@ impl Context<'_> {
         Ok((true, channel_prefs, self.me_channels().await?))
     }
 
-    /// The mobile view's channels route (ChatChannelsRoute with
-    /// ChannelsListPublic): the navbar, every followed public channel by
-    /// the member's channel list preferences, and the chat footer.
+    /// The channels route (ChatChannelsRoute with ChannelsListPublic):
+    /// the navbar, every followed public channel by the member's channel
+    /// list preferences, and in the mobile view the chat footer. On desktop
+    /// only an anonymous visitor stays on it (a member goes on to a
+    /// channel or the browser): the navbar's open drawer button and the
+    /// list's divider instead of the options and footer.
     pub async fn channels_route(&mut self) -> Result<String, AppError> {
+        let mobile = crate::mobile::mobile_view();
         let settings = self.settings;
         let (member, channel_prefs, me) = self.channels_list_viewer().await?;
         let tracking = &me["tracking"]["channel_tracking"];
@@ -460,10 +528,45 @@ impl Context<'_> {
         let list = filter_and_sort(channels.iter().collect(), channel_prefs, None);
         let filtered_empty = list.is_empty();
 
-        let title = escape(&self.t("chat.chat_channels"));
-        let mut out = format!(
-            "<div class=\"c-routes --channels\"><div class=\"c-navbar-container\"><nav class=\"c-navbar\"><div class=\"c-navbar__title\" title=\"{title}\"><span class=\"c-navbar__title-text\">{title}</span></div><nav class=\"c-navbar__actions\">{}</nav></nav></div><div class=\"channels-list-container public-channels\" id=\"public-channels\">",
+        let title = self.t("chat.chat_channels");
+        let actions = if mobile {
             self.list_option_buttons(channel_prefs)
+        } else {
+            self.open_drawer_button()
+        };
+        let mut out = format!(
+            "<div class=\"c-routes --channels\">{}",
+            self.route_navbar(&title, &actions)
+        );
+        // The divider (displayPublicChannels, on desktop), its actions only
+        // for a member (canBrowseChannels).
+        if !mobile
+            && settings.get("enable_public_channels")?.truthy()
+            && (!channels.is_empty()
+                || (member
+                    && (self.guardian.is_staff()
+                        || super::has_joinable_public_channels(
+                            &mut *self.conn,
+                            settings,
+                            self.guardian,
+                        )
+                        .await?)))
+        {
+            let actions = if member {
+                format!(
+                    "<div class=\"chat-channel-divider__actions\">{}</div>",
+                    self.list_option_buttons(channel_prefs)
+                )
+            } else {
+                String::new()
+            };
+            out.push_str(&format!(
+                "<div class=\"chat-channel-divider public-channels-section\"><span class=\"channel-title\">{}</span>{actions}</div>",
+                escape(&title)
+            ));
+        }
+        out.push_str(
+            "<div class=\"channels-list-container public-channels\" id=\"public-channels\">",
         );
         if channels.is_empty() {
             // publicMessageChannelsEmpty: DEmptyState, its button to the
@@ -507,7 +610,9 @@ impl Context<'_> {
         }
         out.push_str("</div></div>");
 
-        out.push_str(&self.footer("channels", &channels, &dms).await?);
+        if mobile {
+            out.push_str(&self.footer("channels", &channels, &dms).await?);
+        }
         Ok(out)
     }
 
@@ -878,20 +983,32 @@ impl Context<'_> {
             .collect::<Result<Vec<_>, _>>()?;
         // chatChannelsManager.displayPublicChannels (has_joinable_public_
         // channels is the current user's: none without one)
-        let display_public = member
-            && settings.get("enable_public_channels")?.truthy()
+        let display_public = settings.get("enable_public_channels")?.truthy()
             && (!channels.is_empty()
-                || self.guardian.is_staff()
-                || super::has_joinable_public_channels(&mut *self.conn, settings, self.guardian)
-                    .await?);
+                || (member
+                    && (self.guardian.is_staff()
+                        || super::has_joinable_public_channels(
+                            &mut *self.conn,
+                            settings,
+                            self.guardian,
+                        )
+                        .await?)));
         let mut out = format!(
             "<div class=\"c-drawer-routes --channels\">{navbar}<div class=\"chat-drawer-content\">"
         );
         if display_public {
+            // The divider's actions only for a member (canBrowseChannels).
+            let actions = if member {
+                format!(
+                    "<div class=\"chat-channel-divider__actions\">{}</div>",
+                    self.list_option_buttons(channel_prefs)
+                )
+            } else {
+                String::new()
+            };
             out.push_str(&format!(
-                "<div class=\"chat-channel-divider public-channels-section\"><span class=\"channel-title\">{}</span><div class=\"chat-channel-divider__actions\">{}</div></div>",
-                escape(&self.t("chat.chat_channels")),
-                self.list_option_buttons(channel_prefs)
+                "<div class=\"chat-channel-divider public-channels-section\"><span class=\"channel-title\">{}</span>{actions}</div>",
+                escape(&self.t("chat.chat_channels"))
             ));
         }
         out.push_str(
@@ -1653,7 +1770,11 @@ impl Context<'_> {
             let extra = LinkExtra {
                 classes: classes.join(" "),
                 suffix_html,
-                hover: Some(("ellipsis-vertical", self.t("chat.open_channel_menu"))),
+                // hoverValue: the channel menu, for a member only.
+                hover: self
+                    .guardian
+                    .is_authenticated()
+                    .then(|| ("ellipsis-vertical", self.t("chat.open_channel_menu"))),
             };
             links.push_str(&crate::sidebar::link_html_with(&link, &extra, cx));
         }
