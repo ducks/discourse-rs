@@ -1,4 +1,7 @@
 {
+  "unordered_responses": [
+    "/responses/0/body/current_user/available_notification_types"
+  ],
   "user": null,
   "settings": {
     "discourse_connect_url": "https://idp.example.com/sso",
