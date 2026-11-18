@@ -160,6 +160,13 @@ steps), as does porting what broke or marking it not_yet with its commit.
 
 ## Parity
 
+How far from parity the port is, by area, is in `parity/GAP.md`: refusals
+(`Unsupported`), write and golden case markers, and the request-spec
+inventory (`parity/SPEC_COVERAGE.md`) against Rails' request specs.
+Regenerate it with `scripts/parity-gap` (no server or database; reads the
+Rails specs from a Discourse clone at `$DISCOURSE_GIT`, default
+`~/discourse/discourse`) and commit the diff.
+
 Writes are measured separately. Each case is
 `parity/writes/<area>/<name>.case.json`: the user, the requests, optional
 settings, setup rows and jobs to run. `scripts/record-writes <agent>` runs

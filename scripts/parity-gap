@@ -1,0 +1,260 @@
+#!/usr/bin/env bash
+# How far the port is from Rails parity, counted from the tree: no server,
+# no database, no build. Writes parity/GAP.md (committed, so its diff shows
+# progress) and prints it.
+#
+# Usage: scripts/parity-gap [--check]
+#   --check: exit 1 if parity/GAP.md is not what this run produces.
+#   DISCOURSE_GIT: a Discourse clone holding the vendored commit
+#   (default ~/discourse/discourse). Only read with git cat-file, ls-tree and
+#   show; never checked out. Without it the Rails spec sections are skipped.
+#
+# Counting rules:
+#
+# Refusals. A refusal is `Unsupported("...")`: the struct (crates/markdown,
+# re-exported as crate::Unsupported) takes a &'static str and renders as
+# "not ported yet: ...". Counted: every `Unsupported(` whose first argument
+# is a string literal (possibly on the next line, `\` continuations
+# joined), in src/ and crates/*/src. Not counted: `#[cfg(test)] mod {...}`
+# blocks, tests.rs and tests/ files, // comment lines, the type in imports
+# and signatures, enum variants wrapping an existing Unsupported
+# (`Error::Unsupported(e)`), and re-wraps (`Unsupported(Unsupported(..))`
+# counts once, by its literal). `Unsupported(what)` and other computed
+# messages are counted separately as "computed" sites: their literal lives
+# in a caller and is not attributed. A site is one literal at one place; a
+# message is its distinct text (the same text at two sites is one message).
+# Area: src/<module> for the top-level module or file, src/plugins/<name>
+# for bundled plugins, crates/<name> for workspace crates.
+#
+# Write cases: parity/writes/<area>/*.case.json. not_yet: a "not_yet" key
+# (the case differs from Rails on purpose, for now). ignore: an "ignore"
+# key (JSON pointers left out of the comparison). unordered: an "unordered"
+# or "unordered_responses" key (orders left to chance, not gaps by
+# themselves).
+#
+# Golden cases: the request lines of parity/cases; not_yet= and ignore=
+# options counted the same way.
+#
+# Request specs: parity/SPEC_COVERAGE.md, counted from its detail rows (an
+# `it` marked (xN) counts N; "(no spec it)" rows are not counted). Rails'
+# side: `it`, `xit` and `include_examples`/`it_behaves_like` lines in
+# spec/requests/**/*_spec.rb and plugins/*/spec/requests/**/*_spec.rb at
+# the vendored commit. Loops and shared examples make that an approximation
+# of the scenarios RSpec runs, in both directions.
+set -euo pipefail
+
+root="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$root"
+out=parity/GAP.md
+check=0
+[ "${1:-}" = --check ] && check=1
+
+work="$(mktemp -d)"
+trap 'rm -rf "$work"' EXIT
+
+ref="$(sed -n 's/^commit=//p' vendor/discourse/DISCOURSE_REF)"
+discourse_git="${DISCOURSE_GIT:-$HOME/discourse/discourse}"
+
+# --- Refusals -------------------------------------------------------------
+
+strip_awk='
+skip != "" { if ($0 == skip "}") skip = ""; print ""; next }
+/^[ \t]*#\[cfg\(test\)\][ \t]*$/ { cfg = FNR; print ""; next }
+cfg == FNR - 1 && /^[ \t]*(pub(\([a-z]+\))? )?mod [A-Za-z0-9_]+ \{[ \t]*$/ {
+  match($0, /^[ \t]*/); skip = substr($0, 1, RLENGTH); print ""; next
+}
+/^[ \t]*\/\// { print ""; next }
+{ print }'
+find src crates -name '*.rs' ! -name tests.rs ! -path '*/tests/*' | sort |
+  while read -r f; do
+    mkdir -p "$work/src/$(dirname "$f")"
+    awk "$strip_awk" "$f" > "$work/src/$f"
+  done
+(cd "$work/src" && rg -U --json 'Unsupported\(\s*"(?:[^"\\]|\\.)*"' . || true) |
+  jq -r 'select(.type == "match") | .data as $d | $d.submatches[] |
+    [$d.path.text, $d.line_number,
+     (.match.text | sub("^Unsupported\\(\\s*\""; "") | sub("\"$"; "")
+       | gsub("\\\\\\n\\s*"; "") | gsub("\\s+"; " "))] | @tsv' |
+  sed 's#^\./##' |
+  awk -F'\t' -v OFS='\t' '{
+    n = split($1, p, "/")
+    if (p[1] == "crates") a = "crates/" p[2]
+    else if (p[2] == "plugins" && n > 3) a = "src/plugins/" p[3]
+    else if (p[2] == "plugins") { a = p[3]; sub(/\.rs$/, "", a); a = (a == "mod") ? "src/plugins" : "src/plugins/" a }
+    else { a = p[2]; sub(/\.rs$/, "", a); a = "src/" a }
+    print a, $1, $2, $3
+  }' | sort > "$work/refusals"
+# Computed messages: Unsupported(<expr>) whose expr is not a literal, a
+# pass-through binding or another Unsupported.
+(cd "$work/src" && rg -U -o --no-filename 'Unsupported\(\s*[^"\s)][^,)]*' . || true) |
+  grep -vE '^Unsupported\(\s*(e|u|err|_|Unsupported|crate::Unsupported|pub &)' |
+  wc -l > "$work/computed"
+
+sites=$(wc -l < "$work/refusals")
+messages=$(cut -f4 "$work/refusals" | sort -u | wc -l)
+computed=$(cat "$work/computed")
+
+# --- Write and golden cases -----------------------------------------------
+
+for f in parity/writes/*/*.case.json; do
+  area="${f#parity/writes/}"
+  area="${area%%/*}"
+  jq -r --arg a "$area" '[$a, (has("not_yet") | tostring), (has("ignore") | tostring),
+    ((has("unordered") or has("unordered_responses")) | tostring)] | @tsv' "$f"
+done > "$work/writes"
+read -r w_total w_not_yet w_ignore w_unordered < <(awk -F'\t' '
+  { t++; if ($2 == "true") n++; if ($3 == "true") i++; if ($4 == "true") u++ }
+  END { print t+0, n+0, i+0, u+0 }' "$work/writes")
+read -r g_total g_not_yet g_ignore < <(awk '
+  /^(GET|POST|PUT|DELETE|PATCH|HEAD) / { t++; if (/ not_yet=/) n++; if (/ ignore=/) i++ }
+  END { print t+0, n+0, i+0 }' parity/cases)
+
+# --- SPEC_COVERAGE.md -----------------------------------------------------
+
+# One line per detail row: section, spec file, class, scenarios.
+awk -F'|' -v OFS='\t' '
+/^## / { sec = substr($0, 4); spec = ""; next }
+/^`spec\/[^`]*`/ && spec == "" { match($0, /`spec\/[^`]*`/); spec = substr($0, RSTART + 1, RLENGTH - 2); next }
+/^\| *(Line|Spec|Action|---)/ { next }
+sec != "" && sec != "Summary" && /^\| / {
+  if (NF == 7) { sp = $2; gsub(/ /, "", sp); sp = "spec/" sp; ln = $3; sc = $4; cl = $5 }
+  else { sp = spec; ln = $2; sc = $3; cl = $4 }
+  gsub(/^ +| +$/, "", cl); gsub(/^ +| +$/, "", ln)
+  if (sc ~ /^ *\(no spec it\)/) next
+  if (ln ~ /^backups /) sp = "spec/requests/admin/backups_controller_spec.rb"
+  m = 1; if (match(sc, /\(x[0-9]+/)) m = substr(sc, RSTART + 2, RLENGTH - 2) + 0
+  print sec, sp, cl, m
+}' parity/SPEC_COVERAGE.md > "$work/spec_rows"
+read -r s_cov s_rec s_har s_unp s_sections < <(awk -F'\t' '
+  { c[$3] += $4; s[$1] = 1 }
+  END { n = 0; for (k in s) n++; print c["covered"]+0, c["recordable"]+0, c["needs-harness"]+0, c["unported"]+0, n }' "$work/spec_rows")
+s_total=$((s_cov + s_rec + s_har + s_unp))
+# The headline counts request specs only (the inventory also has model specs).
+read -r r_cov r_inv < <(awk -F'\t' '$2 ~ /^(spec\/requests|plugins\/[^\/]+\/spec\/requests)\// { i += $4; if ($3 == "covered") c += $4 }
+  END { print c+0, i+0 }' "$work/spec_rows")
+# The Summary table, to flag it when it drifts from the rows.
+summary_drift=$(awk -F'|' '
+  /^## Summary/ { f = 1; next } /^## / { f = 0 }
+  f && /\*\*All/ { gsub(/[ *]/, "", $3); gsub(/[ *]/, "", $4); gsub(/[ *]/, "", $5); gsub(/[ *]/, "", $6); print $3, $4, $5, $6 }' parity/SPEC_COVERAGE.md)
+
+# --- Rails request specs ----------------------------------------------------
+
+have_rails=0
+if [ -n "$ref" ] && git -C "$discourse_git" cat-file -e "$ref^{commit}" 2>/dev/null; then
+  have_rails=1
+  git -C "$discourse_git" ls-tree -r --name-only "$ref" -- spec/requests plugins |
+    grep -E '^(spec/requests/|plugins/[^/]+/spec/requests/).*_spec\.rb$' > "$work/spec_files"
+  # Blob contents in one pass: "<path>\t<its>".
+  sed "s#^#$ref:#" "$work/spec_files" |
+    git -C "$discourse_git" cat-file --batch |
+    awk -v files="$work/spec_files" -v OFS='\t' '
+      BEGIN { while ((getline f < files) > 0) path[++n] = f }
+      /^[0-9a-f]{40} blob [0-9]+$/ { if (i) print path[i], c; i++; c = 0; next }
+      /^[ \t]*(it|xit)[ (]/ || /^[ \t]*(it_behaves_like|include_examples)[ (]/ { c++ }
+      END { if (i) print path[i], c }' > "$work/spec_its"
+fi
+
+# --- Report -----------------------------------------------------------------
+
+pct() { awk -v a="$1" -v b="$2" 'BEGIN { if (b == 0) print "-"; else printf "%.1f%%", 100 * a / b }'; }
+
+{
+  echo "# Parity gap"
+  echo
+  echo "Generated by \`scripts/parity-gap\` from the tree at Discourse \`${ref:0:12}\`"
+  echo "(vendor/discourse/DISCOURSE_REF). Regenerate after a change that ports or"
+  echo "refuses something, adds cases or bumps the vendor commit; the counting rules"
+  echo "are in the script's header."
+  echo
+  echo "## Headline"
+  echo
+  if [ "$have_rails" = 1 ]; then
+    r_its=$(awk -F'\t' '{ s += $2 } END { print s+0 }' "$work/spec_its")
+    r_files=$(wc -l < "$work/spec_its")
+    echo "- **Rails request-spec scenarios covered by a parity case: $r_cov of ~$r_its ($(pct "$r_cov" "$r_its"))**"
+    echo "  ($r_files request-spec files in core and bundled plugins; $r_inv request-spec scenarios inventoried in"
+    echo "  parity/SPEC_COVERAGE.md, the rest not looked at yet)"
+  fi
+  echo "- **Refusals: $messages distinct \`Unsupported\` messages** at $sites sites"
+  echo "  (plus $computed sites with a computed message)"
+  echo "- Write cases: $w_total, $w_not_yet not_yet, $w_ignore with ignored fields"
+  echo "- Golden cases: $g_total, $g_not_yet not_yet, $g_ignore with ignored fields"
+  echo "- Inventoried request-spec scenarios: $s_cov covered, $s_rec recordable,"
+  echo "  $s_har needs-harness, $s_unp unported ($s_total in $s_sections sections)"
+  echo
+  echo "## Refusals by area"
+  echo
+  echo "| Area | Sites | Messages |"
+  echo "|---|---|---|"
+  awk -F'\t' '{ n[$1]++; if (!seen[$1 SUBSEP $4]++) d[$1]++ }
+    END { for (a in n) printf "%d\t%d\t%s\n", n[a], d[a], a }' "$work/refusals" |
+    sort -t$'\t' -k1,1nr -k3,3 | awk -F'\t' '{ printf "| %s | %d | %d |\n", $3, $1, $2 }'
+  echo "| **All** | **$sites** | **$messages** |"
+  echo
+  echo "Messages are distinct within an area; the total counts each text once."
+  echo
+  echo "### src/routes by handler file (top 25)"
+  echo
+  echo "| File | Sites |"
+  echo "|---|---|"
+  awk -F'\t' '$1 == "src/routes" { n[$2]++ } END { for (f in n) printf "%d\t%s\n", n[f], f }' "$work/refusals" |
+    sort -t$'\t' -k1,1nr -k2,2 | head -25 | awk -F'\t' '{ printf "| %s | %d |\n", $2, $1 }'
+  echo
+  echo "## Write cases by area"
+  echo
+  echo "| Area | Cases | not_yet | ignore | unordered |"
+  echo "|---|---|---|---|---|"
+  awk -F'\t' '{ t[$1]++; if ($2 == "true") n[$1]++; if ($3 == "true") i[$1]++; if ($4 == "true") u[$1]++ }
+    END { for (a in t) printf "| %s | %d | %d | %d | %d |\n", a, t[a], n[a], i[a], u[a] }' "$work/writes" | sort
+  echo "| **All** | **$w_total** | **$w_not_yet** | **$w_ignore** | **$w_unordered** |"
+  echo
+  echo "## Request-spec inventory (parity/SPEC_COVERAGE.md)"
+  echo
+  echo "| Class | Scenarios |"
+  echo "|---|---|"
+  echo "| covered | $s_cov |"
+  echo "| recordable | $s_rec |"
+  echo "| needs-harness | $s_har |"
+  echo "| unported | $s_unp |"
+  echo "| **All** | **$s_total** |"
+  echo
+  if [ "$summary_drift" != "$s_cov $s_rec $s_har $s_unp" ]; then
+    echo "SPEC_COVERAGE.md's Summary total ($summary_drift) differs from its rows; refresh the table."
+    echo
+  fi
+  if [ "$have_rails" = 1 ]; then
+    # Inventoried scenarios per spec file.
+    awk -F'\t' '{ s[$2] += $4; if ($3 == "covered") c[$2] += $4 }
+      END { for (f in s) printf "%s\t%d\t%d\n", f, s[f], c[f] }' "$work/spec_rows" | sort > "$work/inv"
+    sort "$work/spec_its" > "$work/its_sorted"
+    join -t$'\t' -a1 -e0 -o 0,1.2,2.2,2.3 "$work/its_sorted" "$work/inv" > "$work/joined"
+    echo "## Request specs by inventory"
+    echo
+    echo "Spec files partly inventoried (Rails \`it\`s at \`${ref:0:12}\` against the"
+    echo "inventory's scenarios; the inventory covers chosen actions, not whole files):"
+    echo
+    echo "| Spec | Rails its | Inventoried | Covered |"
+    echo "|---|---|---|---|"
+    awk -F'\t' '$3 > 0 { printf "| %s | %d | %d | %d |\n", $1, $2, $3, $4 }' "$work/joined"
+    echo
+    un_files=$(awk -F'\t' '$3 == 0' "$work/joined" | wc -l)
+    un_its=$(awk -F'\t' '$3 == 0 { s += $2 } END { print s+0 }' "$work/joined")
+    echo "Not inventoried at all: $un_files spec files, $un_its \`it\`s, by size:"
+    echo
+    echo "| Spec | Rails its |"
+    echo "|---|---|"
+    awk -F'\t' '$3 == 0 && $2 > 0 { printf "%d\t%s\n", $2, $1 }' "$work/joined" |
+      sort -t$'\t' -k1,1nr -k2,2 | awk -F'\t' '{ printf "| %s | %d |\n", $2, $1 }'
+  else
+    echo "## Request specs by inventory"
+    echo
+    echo "Skipped: no Discourse clone with \`$ref\` at \$DISCOURSE_GIT ($discourse_git)."
+  fi
+} > "$work/GAP.md"
+
+if [ "$check" = 1 ]; then
+  diff -u "$out" "$work/GAP.md"
+  exit
+fi
+cp "$work/GAP.md" "$out"
+cat "$out"
