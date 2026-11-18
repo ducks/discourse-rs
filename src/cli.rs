@@ -1,4 +1,4 @@
-//! The command line (`discourse-rs`, `serve`, `setup`, `admin create`,
+//! The command line (`discourse-rs`, `serve`, `setup`, `admin create`, `routes`,
 //! `microsoft-auth`), in the library so a binary built with plugins runs
 //! the same one.
 
@@ -51,6 +51,11 @@ enum Command {
         #[command(subcommand)]
         command: AdminCommand,
     },
+    /// Print every route the server registers, one `METHODS path` per line
+    /// (`*` for a mounted service), as `rake routes` does: read from the
+    /// router built for the site at DATABASE_URL, plugins included
+    /// (scripts/tally-refusals crawls them).
+    Routes,
     /// discourse-microsoft-auth's rake tasks.
     MicrosoftAuth {
         #[command(subcommand)]
@@ -133,6 +138,7 @@ pub async fn run(mut plugins: Vec<Arc<dyn crate::plugin_api::Plugin>>) -> ExitCo
             .await
         }
         Some(Command::MicrosoftAuth { command }) => microsoft_auth(command).await,
+        Some(Command::Routes) => routes().await,
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -259,6 +265,23 @@ async fn admin_create(
         crate::admin::create::Outcome::Updated { username } => {
             println!("Account {username} updated successfully; it is an admin.")
         }
+    }
+    Ok(())
+}
+
+async fn routes() -> Result<(), Box<dyn Error>> {
+    let config = Config::from_env()?;
+    let shared = Shared {
+        site_setting_defs: Arc::new(Definitions::vendored()?),
+        i18n: Arc::new(I18n::vendored()?),
+        keys: Arc::new(crate::session::current::Keys::ephemeral()),
+        mailer: crate::email::Mailer::from_globals(&config.globals)?,
+        global_rate_limits: Default::default(),
+    };
+    let state = multisite::connect_task(&shared, config).await?;
+    let mut out = std::io::stdout().lock();
+    for route in crate::routes::listing::listing(&crate::routes::router(&state))? {
+        writeln!(out, "{} {}", route.methods, route.path)?;
     }
     Ok(())
 }
