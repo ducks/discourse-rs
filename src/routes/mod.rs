@@ -31,6 +31,7 @@ pub(crate) mod groups;
 mod hashtags;
 mod highlight_js;
 mod list;
+pub mod listing;
 mod live;
 pub(crate) mod login_required;
 mod messages;

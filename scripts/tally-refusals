@@ -1,16 +1,42 @@
 #!/usr/bin/env bash
-# Rank what the port still refuses on a real site: crawl every page of a
-# restored backup (lists, categories, tags, topics with their pages, users,
-# a few searches; HTML and JSON; anonymously and as an admin) and count the
-# "not ported yet" reasons the server logs, by how many URLs hit each.
+# Rank what the port still refuses on a real site: crawl every GET route
+# the server registers, plus every page of a restored backup and the JSON
+# the Ember client loads beside a page, as three identities (anonymous, a
+# regular member, an admin), and count the "not ported yet" reasons the
+# server logs, by URL and by route. Read-only: GET requests only.
 #
-# Works on a throwaway copy of the database, where one admin gets the
-# password "password" (the seed's hash and salt), so the crawl can log in.
-# The copy is dropped at the end.
+# The routes come from the router itself (`discourse-rs routes`, plugins
+# included). Their path parameters are filled with real rows of the
+# database (a topic, post, category, tag, the member's username, a group,
+# badge, chat channel, reviewable, invite...); a route with a parameter the
+# database has no sample for is reported, not skipped silently. The fill
+# rules, the client's JSON and the report are in scripts/tally-refusals.py.
+#
+# Works on a throwaway copy of the database, where the first admin and the
+# most active member (trust level 1+, not staff) get the password
+# "password" (the seed's hash and salt), so the crawl can log in. The copy
+# is dropped at the end.
+#
+# The database must be at main's schema. A corpus restored for an older
+# vendor commit (discourse_rs_meta_public, say) is migrated by Rails in the
+# reference container first, on a copy, never the container's own database:
+#   pg_dump -Fc -f meta.dump <corpus-url>
+#   dv copy meta.dump <container>:/tmp/meta.dump
+#   dv run --name <container> -- bash -c 'createdb tally_meta &&
+#     pg_restore -O -d tally_meta /tmp/meta.dump && cd /var/www/discourse &&
+#     DISCOURSE_DEV_DB=tally_meta DISCOURSE_REDIS_DB=7 LOAD_PLUGINS=1 bin/rails db:migrate &&
+#     pg_dump -Fc -f /tmp/meta-migrated.dump tally_meta'
+#   dv copy <container>:/tmp/meta-migrated.dump meta-migrated.dump
+#   dv run --name <container> -- bash -c 'dropdb tally_meta; rm -f /tmp/meta*.dump'
+#   createdb tally_src && pg_restore -O -x -d tally_src meta-migrated.dump
+# then `scripts/tally-refusals tally_src` (and drop tally_src after).
 #
 # Usage: scripts/tally-refusals <dbname> [public-dir]
 #   e.g. scripts/tally-refusals rs_backup backups/rs_backup
-# Runs inside shell.nix (psql, the local Postgres); builds target/debug.
+#   TALLY_OUT=<dir>: keep the run's files (urls, results, server.log,
+#   report.json) there instead of a temporary directory.
+# Runs inside shell.nix (psql, python3, the local Postgres); builds
+# target/debug.
 set -euo pipefail
 
 if [ $# -lt 1 ]; then
@@ -28,7 +54,14 @@ copy="tally_$$"
 copy_url="postgresql://localhost:5442/$copy?$host"
 port=8097
 base="http://127.0.0.1:$port"
-work="$(mktemp -d)"
+if [ -n "${TALLY_OUT:-}" ]; then
+  mkdir -p "$TALLY_OUT"
+  work="$(cd "$TALLY_OUT" && pwd)"
+  : > "$work/server.log"
+  : > "$work/results"
+else
+  work="$(mktemp -d)"
+fi
 server_pid=""
 
 cleanup() {
@@ -37,89 +70,76 @@ cleanup() {
     wait "$server_pid" 2>/dev/null || true
   fi
   psql -q "$admin_url" -c "DROP DATABASE IF EXISTS \"$copy\" WITH (FORCE)" || true
-  rm -rf "$work"
+  [ -n "${TALLY_OUT:-}" ] || rm -rf "$work"
 }
 trap cleanup EXIT
 
+q() { psql -At "$copy_url" -c "$1"; }
+
 psql -q "$admin_url" -c "CREATE DATABASE \"$copy\" TEMPLATE \"$source_db\""
 # The seed's user1 has the password "password": its hash and salt, on the
-# copy's first admin.
+# copy's first admin and its most active regular member.
 read -r hash salt algorithm < <(psql -At -F ' ' \
   "postgresql://localhost:5442/discourse_rs_test?$host" \
   -c "SELECT password_hash, password_salt, password_algorithm FROM user_passwords p
       JOIN users u ON u.id = p.user_id WHERE u.username = 'user1'")
-admin="$(psql -At "$copy_url" -c "SELECT username FROM users WHERE admin AND id > 0 ORDER BY id LIMIT 1")"
+admin_id="$(q "SELECT id FROM users WHERE admin AND active AND id > 0 ORDER BY id LIMIT 1")"
+member_id="$(q "SELECT u.id FROM users u LEFT JOIN user_stats s ON s.user_id = u.id
+  WHERE u.id > 0 AND u.active AND NOT u.admin AND NOT u.moderator AND NOT u.staged
+    AND u.trust_level >= 1 AND u.suspended_till IS NULL AND u.silenced_till IS NULL
+  ORDER BY s.post_count DESC NULLS LAST, u.id LIMIT 1")"
+if [ -z "$admin_id" ] || [ -z "$member_id" ]; then
+  echo "need an active admin and a trust level 1+ member (admin: '$admin_id', member: '$member_id')" >&2
+  exit 1
+fi
+admin="$(q "SELECT username FROM users WHERE id = $admin_id")"
+member="$(q "SELECT username FROM users WHERE id = $member_id")"
 psql -q "$copy_url" <<SQL
-DELETE FROM user_passwords WHERE user_id = (SELECT id FROM users WHERE username = '$admin');
+DELETE FROM user_passwords WHERE user_id IN ($admin_id, $member_id);
 INSERT INTO user_passwords (user_id, password_hash, password_salt, password_algorithm, created_at, updated_at)
-SELECT id, '$hash', '$salt', '$algorithm', now(), now() FROM users WHERE username = '$admin';
+SELECT id, '$hash', '$salt', '$algorithm', now(), now() FROM users WHERE id IN ($admin_id, $member_id);
 SQL
 
 cargo build -q
-env RAILS_ENV=development UNICORN_PORT=3000 DISCOURSE_RS_JOBS=off BIND_ADDR="127.0.0.1:$port" \
-  PUBLIC_DIR="$public_dir" DATABASE_URL="$copy_url" RUST_LOG=warn \
-  target/debug/discourse-rs >> "$work/server.log" 2>&1 &
+export RAILS_ENV=development UNICORN_PORT=3000 DISCOURSE_RS_JOBS=off PUBLIC_DIR="$public_dir" \
+  DATABASE_URL="$copy_url" DISCOURSE_MAX_REQS_PER_IP_MODE=none
+# Every route, from the router built for this database.
+target/debug/discourse-rs routes > "$work/routes"
+python3 scripts/tally-refusals.py fill "$copy_url" "$work/routes" "$work" "$member_id" "$admin_id"
+
+BIND_ADDR="127.0.0.1:$port" RUST_LOG=warn target/debug/discourse-rs >> "$work/server.log" 2>&1 &
 # Appended to by the server and by the crawl's markers alike (both in append
 # mode, or one would write over the other).
 server_pid=$!
-for _ in $(seq 50); do
+for _ in $(seq 100); do
   curl -sf -o /dev/null "$base/srv/status" && break
   sleep 0.2
 done
 
-# Every page there is, from the database.
-q() { psql -At "$copy_url" -c "$1"; }
-{
-  echo / ; echo /latest ; echo /top ; echo /hot ; echo /categories ; echo /tags
-  q "SELECT '/latest?page=' || g FROM generate_series(1, (SELECT count(*) FROM topics) / 30 + 1) g"
-  q "SELECT '/c/' || slug || '/' || id FROM categories"
-  q "SELECT '/tag/' || name FROM tags"
-  q "SELECT '/t/' || slug || '/' || id FROM topics WHERE archetype = 'regular'"
-  q "SELECT '/t/' || slug || '/' || id || '?page=' || g FROM topics, generate_series(2, (posts_count - 1) / 20 + 1) g
-     WHERE archetype = 'regular' AND posts_count > 20"
-  q "SELECT '/u/' || username FROM users WHERE id > 0"
-  q "SELECT '/u/' || username || '/summary' FROM users WHERE id > 0"
-  q "SELECT '/u/' || username || '/activity' FROM users WHERE id > 0"
-  for term in the a test discourse; do echo "/search?q=$term"; done
-} > "$work/pages"
-# The JSON of each, as the Ember client asks for it.
-sed -e 's#^/$#/latest#' -e 's#^\(/[^?]*\)\(?.*\)\{0,1\}$#\1.json\2#' "$work/pages" > "$work/json"
-cat "$work/pages" "$work/json" | sort -u > "$work/urls"
-
 crawl() { # <label> <curl cookie args...>
   local label="$1"; shift
-  while read -r path; do
+  while IFS=$'\t' read -r path _; do
     echo "== $label $path" >> "$work/server.log"
-    code=$(curl -s -o /dev/null -w '%{http_code}' "$@" "$base$path")
-    echo "$label $code $path" >> "$work/results"
+    code=$(curl -s -o /dev/null -m 30 -w '%{http_code}' "$@" "$base$path" || true)
+    echo "$label ${code:-000} $path" >> "$work/results"
   done < "$work/urls"
 }
 
+login() { # <jar> <username>: a session cookie from a login, checked
+  local jar="$1" username="$2" csrf
+  csrf=$(curl -s -c "$jar" -b "$jar" "$base/session/csrf.json" | sed 's/.*"csrf":"\([^"]*\)".*/\1/')
+  curl -s -o /dev/null -c "$jar" -b "$jar" -X POST -H "X-CSRF-Token: $csrf" \
+    -H "X-Requested-With: XMLHttpRequest" --data "login=$username&password=password" "$base/session"
+  if ! curl -s -b "$jar" "$base/session/current.json" | grep -q "\"username\":\"$username\""; then
+    echo "logging in as $username failed" >&2
+    exit 1
+  fi
+}
+
 crawl anonymous
-# As the admin: the session cookie from a login.
-jar="$work/jar"
-csrf=$(curl -s -c "$jar" -b "$jar" "$base/session/csrf.json" | sed 's/.*"csrf":"\([^"]*\)".*/\1/')
-curl -s -o /dev/null -c "$jar" -b "$jar" -X POST -H "X-CSRF-Token: $csrf" \
-  -H "X-Requested-With: XMLHttpRequest" --data "login=$admin&password=password" "$base/session"
-crawl "$admin" -b "$jar"
+login "$work/member.jar" "$member"
+crawl "member:$member" -b "$work/member.jar" -c "$work/member.jar"
+login "$work/admin.jar" "$admin"
+crawl "admin:$admin" -b "$work/admin.jar" -c "$work/admin.jar"
 
-# Each refusal under the URL that caused it (the log marks every request).
-awk '/^== / { url = $2 " " $3; next }
-     /not ported yet: / { sub(/.*not ported yet: /, ""); sub(/[[:space:]]*$/, ""); print $0 "\t" url }' \
-  <(sed 's/\x1b\[[0-9;]*m//g' "$work/server.log") | sort -u > "$work/refusals"
-
-total=$(wc -l < "$work/results")
-failed=$(awk '$2 >= 500' "$work/results" | wc -l)
-echo "requests: $total, 5xx: $failed ($(cut -f2 "$work/refusals" | sort -u | wc -l) refused as not ported)"
-# The status mix, so a crawl that mostly 404s or redirects is not taken
-# for a clean one.
-echo "statuses: $(cut -d" " -f2 "$work/results" | sort | uniq -c | sort -rn | awk '{printf "%s %s, ", $2, $1}' | sed 's/, $//')"
-awk '$2 >= 400 && $2 < 500' "$work/results" | head -30
-echo
-echo "URLs  reason"
-cut -f1 "$work/refusals" | sort | uniq -c | sort -rn
-echo
-echo "5xx without a not-ported reason (bugs):"
-awk '$2 >= 500 { print $1 " " $3 }' "$work/results" | sort -u > "$work/failed"
-cut -f2 "$work/refusals" | sort -u > "$work/refused_urls"
-comm -23 "$work/failed" "$work/refused_urls" | head -20
+python3 scripts/tally-refusals.py report "$work" "${TALLY_TOP:-40}"
