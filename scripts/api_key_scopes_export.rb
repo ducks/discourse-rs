@@ -35,8 +35,17 @@ scopes =
     ]
   end
 
+# A route's requirement as a regex source. Journey matches an Array (as in
+# `constraints: { format: %w[json html] }`) as Regexp.union of its values.
 def requirement(value)
-  value.is_a?(Regexp) ? value.source : value.to_s
+  case value
+  when Regexp
+    value.source
+  when Array
+    Regexp.union(value).source
+  else
+    value.to_s
+  end
 end
 
 def routes_of(set, prefix, out)
