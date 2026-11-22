@@ -164,6 +164,19 @@ pub async fn create_with(
     .await
 }
 
+/// `SystemMessage.create(recipient, type, params.merge(from_system:
+/// true))` on `db`: as create_from_system_user, inside the caller's
+/// transaction.
+pub async fn create_from_system_user_with(
+    db: Db<'_>,
+    ctx: &Ctx<'_>,
+    recipient_id: i32,
+    message_type: &str,
+    params: &[(String, String)],
+) -> Result<i32, AppError> {
+    create_as(db, ctx, recipient_id, message_type, params, None, true).await
+}
+
 /// `SystemMessage.create_from_system_user`: from the system user, not
 /// archived for it, no site contact group.
 pub async fn create_from_system_user(

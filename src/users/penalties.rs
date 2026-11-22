@@ -753,10 +753,9 @@ fn staff_reason_html(text: &str) -> Result<String, Unsupported> {
     Ok(text.replace('\n', "<br>"))
 }
 
-/// What UserSilencer#silence did for one user: the history row's id,
+/// What UserSilencer#silence did for one user: the history row's
 /// details and creation time.
 struct Silenced {
-    history_id: i32,
     details: String,
     at: NaiveDateTime,
 }
@@ -784,17 +783,17 @@ async fn silence_user(
     .await?;
     let details = staff_message(s.reason, s.message);
     // log_params[:post_id] = post_id.to_i
-    let (history_id, at): (i32, NaiveDateTime) = sqlx::query_as(
+    let at: NaiveDateTime = sqlx::query_scalar(
         // expires_at: the silence's end as scheduled (Discourse 6b70ebfe046).
         "INSERT INTO user_histories (action, acting_user_id, target_user_id, context, details, post_id, \
                                      reviewable_id, admin_only, expires_at, created_at, updated_at) \
          VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE, $8, clock_timestamp(), clock_timestamp()) \
-         RETURNING id, created_at",
+         RETURNING created_at",
     )
     .bind(SILENCE_USER)
     .bind(s.actor_id)
     .bind(user.id)
-    .bind(format!("silenced_by_staff: {}", s.reason))
+    .bind(format!("moderator_silence: {}", s.reason))
     .bind(&details)
     .bind(s.post_id)
     .bind(s.reviewable_id)
@@ -802,24 +801,51 @@ async fn silence_user(
     .fetch_one(&mut *tx)
     .await?;
     tx.commit().await?;
-    crate::system_message::create_with(
+    // UserSilencer#notice_options for moderator_silence (ea0efdc105e):
+    // one message from the system user, emailed as any message, naming
+    // the reason and the end in the user's timezone or that it has none.
+    let timezone: Option<String> =
+        sqlx::query_scalar("SELECT timezone FROM user_options WHERE user_id = $1")
+            .bind(user.id)
+            .fetch_optional(&mut *db.acquire().await?)
+            .await?
+            .flatten();
+    let site_name = ctx.settings.get("title")?.to_s();
+    let forever = s.until > crate::clock::now_naive() + chrono::Duration::days(365 * 100);
+    let decision = if forever {
+        ctx.i18n.t_with(
+            "system_messages.moderator_silence.indefinite",
+            &[("site_name", &site_name)],
+        )
+    } else {
+        let till = crate::email::account::penalty_end(
+            ctx.i18n,
+            "system_messages.moderator_silence.date_with_timezone",
+            s.until,
+            timezone.as_deref(),
+        );
+        ctx.i18n.t_with(
+            "system_messages.moderator_silence.timed",
+            &[("site_name", &site_name), ("silenced_till", &till)],
+        )
+    }
+    .ok_or(Unsupported("system messages without a translation"))?;
+    crate::system_message::create_from_system_user_with(
         db.reborrow(),
         ctx,
         user.id,
-        "silenced_by_staff",
-        &[],
-        Some(json!({ "skip_send_email": true })),
+        "moderator_silence",
+        &[
+            ("decision".to_string(), decision),
+            ("reason".to_string(), details.clone()),
+        ],
     )
     .await?;
-    Ok(Some(Silenced {
-        history_id,
-        details,
-        at,
-    }))
+    Ok(Some(Silenced { details, at }))
 }
 
 /// `User::Silence.call`: UserSilencer#silence keeping the users' posts,
-/// the account_silenced email for each one silenced, then the post action.
+/// one moderator_silence message each (ea0efdc105e), then the post action.
 pub async fn silence(
     mut db: Db<'_>,
     ctx: &Ctx<'_>,
@@ -878,15 +904,6 @@ pub async fn silence(
     let mut first: Option<Option<Silenced>> = None;
     for u in &users {
         let done = silence_user(db.reborrow(), ctx, u, &silence).await?;
-        if let Some(done) = &done {
-            let mut conn = db.acquire().await?;
-            crate::jobs::enqueue(
-                &mut conn,
-                "critical_user_email",
-                json!({ "type": "account_silenced", "user_id": u.id, "user_history_id": done.history_id }),
-            )
-            .await?;
-        }
         if first.is_none() {
             first = Some(done);
         }

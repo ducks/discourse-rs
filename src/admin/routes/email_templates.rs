@@ -21,7 +21,7 @@ use crate::{AppError, AppState, Unsupported};
 
 /// `Admin::EmailTemplatesController.email_keys` (no restricted key is in
 /// the list, and no plugin on the reference adds any).
-pub const EMAIL_KEYS: [&str; 124] = [
+pub const EMAIL_KEYS: [&str; 123] = [
     "admin_confirmation_mailer",
     "custom_invite_forum_mailer",
     "custom_invite_mailer",
@@ -77,6 +77,7 @@ pub const EMAIL_KEYS: [&str; 124] = [
     "system_messages.flags_agreed_and_post_deleted_for_responders",
     "system_messages.flags_disagreed",
     "system_messages.ignored_users_summary",
+    "system_messages.moderator_silence",
     "system_messages.new_user_of_the_month",
     "system_messages.pending_users_reminder",
     "system_messages.post_hidden",
@@ -110,8 +111,6 @@ pub const EMAIL_KEYS: [&str; 124] = [
     "user_notifications.account_deleted",
     "user_notifications.account_exists",
     "user_notifications.account_second_factor_disabled",
-    "user_notifications.account_silenced",
-    "user_notifications.account_silenced_forever",
     "user_notifications.account_suspended",
     "user_notifications.account_suspended_forever",
     "user_notifications.activation_reminder",
