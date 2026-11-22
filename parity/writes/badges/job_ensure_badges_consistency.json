@@ -2,8 +2,8 @@
   "name": "job_ensure_badges_consistency",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T04:37:13.834847",
-  "transaction_started_at": "2026-11-22T04:37:13.079078",
+  "started_at": "2026-11-22T08:29:05.349508",
+  "transaction_started_at": "2026-11-22T08:29:04.769249",
   "responses": [],
   "changes": {
     "user_badges": {
@@ -938,7 +938,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "8b3a1d17922c9e380a94a829c45c45d1fbdc1dde56d10bf8c71326e30cdbada3",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

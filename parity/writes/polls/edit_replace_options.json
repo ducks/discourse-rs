@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:15:23.821901",
-  "transaction_started_at": "2026-11-22T05:15:23.052217",
+  "started_at": "2026-11-22T09:06:57.097447",
+  "transaction_started_at": "2026-11-22T09:06:56.308499",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T05:15:23.931Z",
+          "updated_at": "2026-11-22T09:06:57.207Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -164,8 +164,8 @@
           "html": "Yes",
           "digest": "277962ea3b8227e06ed3eb378fbdba0d",
           "poll_id": 9001,
-          "created_at": "2026-11-22T05:15:23.904451",
-          "updated_at": "2026-11-22T05:15:23.904451",
+          "created_at": "2026-11-22T09:06:57.181908",
+          "updated_at": "2026-11-22T09:06:57.181908",
           "anonymous_votes": null
         },
         {
@@ -173,8 +173,8 @@
           "html": "No",
           "digest": "720aa6324194f0ccd395b3cd0ed76f0e",
           "poll_id": 9001,
-          "created_at": "2026-11-22T05:15:23.905822",
-          "updated_at": "2026-11-22T05:15:23.905822",
+          "created_at": "2026-11-22T09:06:57.183553",
+          "updated_at": "2026-11-22T09:06:57.183553",
           "anonymous_votes": null
         }
       ],
@@ -244,7 +244,7 @@
             "closed_at": null,
             "chart_type": 0,
             "created_at": "2026-10-05T10:00:00",
-            "updated_at": "2026-11-22T05:15:23.897014",
+            "updated_at": "2026-11-22T09:06:57.174926",
             "visibility": 0,
             "closed_by_id": null,
             "anonymous_voters": null
@@ -259,8 +259,8 @@
           "name": "has_polls",
           "value": "t",
           "post_id": 36,
-          "created_at": "2026-11-22T05:15:23.91073",
-          "updated_at": "2026-11-22T05:15:23.91073"
+          "created_at": "2026-11-22T09:06:57.188733",
+          "updated_at": "2026-11-22T09:06:57.188733"
         }
       ],
       "deleted": [],
@@ -275,8 +275,8 @@
           "post_id": 36,
           "user_id": 3,
           "unlisted": false,
-          "created_at": "2026-11-22T05:15:23.938887",
-          "updated_at": "2026-11-22T05:15:23.938887",
+          "created_at": "2026-11-22T09:06:57.216071",
+          "updated_at": "2026-11-22T09:06:57.216071",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- |-\n  Edited with a poll in it.\n\n  [poll results=on_vote]\n  * Yes\n  * No\n  [/poll]\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- |-\n  <p>Edited with a poll in it.</p>\n  <div class=\"poll\" data-poll-name=\"poll\" data-poll-results=\"on_vote\" data-poll-status=\"open\">\n  <div class=\"poll-container\">\n  <ul>\n  <li data-poll-option-id=\"277962ea3b8227e06ed3eb378fbdba0d\">Yes</li>\n  <li data-poll-option-id=\"720aa6324194f0ccd395b3cd0ed76f0e\">No</li>\n  </ul>\n  </div>\n  <div class=\"poll-info\">\n  <div class=\"poll-info_counts\">\n  <div class=\"poll-info_counts-count\">\n  <span class=\"info-number\">0</span>\n  <span class=\"info-label\">voters</span>\n  </div>\n  </div>\n  </div>\n  </div>\n"
         }
       ],
@@ -378,7 +378,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-11-22T05:15:23.931524",
+            "baked_at": "2026-11-22T09:06:57.207144",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -391,7 +391,7 @@
             "self_edits": 1,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-11-22T05:15:23.931697",
+            "updated_at": "2026-11-22T09:06:57.207319",
             "word_count": 12,
             "action_code": null,
             "cook_method": 1,
@@ -411,7 +411,7 @@
             "last_editor_id": 3,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T05:15:23.84169",
+            "last_version_at": "2026-11-22T09:06:57.117768",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -454,7 +454,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -506,7 +506,7 @@
             "word_count": 67,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -543,33 +543,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "nXQI9mMnhe42pzam4F2uWREs08g=",
-            "created_at": "2026-11-22T05:15:23.356984",
-            "rotated_at": "2026-11-22T05:15:23.355551",
-            "updated_at": "2026-11-22T05:15:23.356984",
+            "auth_token": "Yq/jRzVVHJeeeSDf5wRDAAk0L7o=",
+            "created_at": "2026-11-22T09:06:56.638028",
+            "rotated_at": "2026-11-22T09:06:56.637248",
+            "updated_at": "2026-11-22T09:06:56.638028",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "nXQI9mMnhe42pzam4F2uWREs08g=",
+            "prev_auth_token": "Yq/jRzVVHJeeeSDf5wRDAAk0L7o=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:15:23.829059",
+            "id": 9,
+            "seen_at": "2026-11-22T09:06:57.10354",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "nXQI9mMnhe42pzam4F2uWREs08g=",
-            "created_at": "2026-11-22T05:15:23.356984",
-            "rotated_at": "2026-11-22T05:15:23.355551",
-            "updated_at": "2026-11-22T05:15:23.356984",
+            "auth_token": "Yq/jRzVVHJeeeSDf5wRDAAk0L7o=",
+            "created_at": "2026-11-22T09:06:56.638028",
+            "rotated_at": "2026-11-22T09:06:56.637248",
+            "updated_at": "2026-11-22T09:06:56.638028",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "nXQI9mMnhe42pzam4F2uWREs08g=",
+            "prev_auth_token": "Yq/jRzVVHJeeeSDf5wRDAAk0L7o=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -678,7 +678,7 @@
   ],
   "recorded_from": {
     "case": "53970ea5bca3663b51d7e27c189c741335e0bc035effc5a8d7af607c8b446254",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

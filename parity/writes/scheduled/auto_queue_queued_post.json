@@ -2,8 +2,8 @@
   "name": "auto_queue_queued_post",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:40:59.809313",
-  "transaction_started_at": "2026-11-22T05:40:59.169963",
+  "started_at": "2026-11-22T09:27:20.94152",
+  "transaction_started_at": "2026-11-22T09:27:20.134943",
   "responses": [],
   "changes": {
     "reviewable_histories": {
@@ -12,8 +12,8 @@
           "id": 1,
           "edited": null,
           "status": 2,
-          "created_at": "2026-11-22T05:40:59.82229",
-          "updated_at": "2026-11-22T05:40:59.82229",
+          "created_at": "2026-11-22T09:27:20.961437",
+          "updated_at": "2026-11-22T09:27:20.961437",
           "created_by_id": -1,
           "reviewable_id": 9311,
           "reviewable_history_type": 1
@@ -53,7 +53,7 @@
             "user_id": -1,
             "created_at": "2026-08-02T10:00:00",
             "updated_at": "2026-08-02T10:00:00",
-            "reviewed_at": "2026-11-22T05:40:59.824468",
+            "reviewed_at": "2026-11-22T09:27:20.964115",
             "meta_topic_id": null,
             "reviewable_id": 9311,
             "reviewed_by_id": -1,
@@ -109,7 +109,7 @@
             "topic_id": 35,
             "target_id": null,
             "created_at": "2026-08-02T10:00:00",
-            "updated_at": "2026-11-22T05:40:59.821327",
+            "updated_at": "2026-11-22T09:27:20.960054",
             "category_id": 4,
             "target_type": null,
             "type_source": "core",
@@ -133,16 +133,16 @@
           "email": null,
           "action": 64,
           "context": null,
-          "details": "created_at: 2026-08-02 10:00:00 UTC\nrejected_at: 2026-11-22T05:40:59+00:00\nuser: user0 (User0)\ntopic: Parity fixture: replies and posters\nraw: This reply waits for approval in the queue.",
+          "details": "created_at: 2026-08-02 10:00:00 UTC\nrejected_at: 2026-11-22T09:27:20+00:00\nuser: user0 (User0)\ntopic: Parity fixture: replies and posters\nraw: This reply waits for approval in the queue.",
           "post_id": null,
           "subject": null,
           "topic_id": 35,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-22T05:40:59.819327",
+          "created_at": "2026-11-22T09:27:20.957045",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:40:59.819327",
+          "updated_at": "2026-11-22T09:27:20.957045",
           "category_id": 4,
           "custom_type": null,
           "reviewable_id": 9311,
@@ -249,7 +249,7 @@
   ],
   "recorded_from": {
     "case": "9cf72268cbf15b6e626342ccb6c00b997424f4036273e139af45916dbdd85cde",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -48,15 +48,15 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:34:31.993982",
-  "transaction_started_at": "2026-11-22T05:34:31.135963",
+  "started_at": "2026-11-22T09:26:04.971328",
+  "transaction_started_at": "2026-11-22T09:26:04.129658",
   "responses": [
     {
       "status": 200,
       "body": {
-        "url": "http://s3-direct-put.minio.localhost:9122/temp/uploads/default/9085f0a0a4a4b5f1a93642f7a5f7fd22/c643464723d8846f093da483eaa147c4.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261122%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261122T053432Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host%3Bx-amz-acl%3Bx-amz-meta-sha1-checksum&X-Amz-Signature=2255c0a5ac63891b4ce613bc4553d064e765e849323c0af594fb9198d3516a3b",
-        "key": "temp/uploads/default/9085f0a0a4a4b5f1a93642f7a5f7fd22/c643464723d8846f093da483eaa147c4.gif",
-        "unique_identifier": "f7985c33-0a8e-47aa-bc30-08e1cc4b95d7",
+        "url": "http://s3-direct-put.minio.localhost:9122/temp/uploads/default/f3aacf949696d40ce0b1b900a21640b4/e45919230716e21178a6d36b23c8037e.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261122%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261122T092604Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host%3Bx-amz-acl%3Bx-amz-meta-sha1-checksum&X-Amz-Signature=62dfc0103650302076f8f7a9009da46e4d01658872d2a4d3a27da0bf5b2c32e9",
+        "key": "temp/uploads/default/f3aacf949696d40ce0b1b900a21640b4/e45919230716e21178a6d36b23c8037e.gif",
+        "unique_identifier": "65e14030-6832-45c0-982d-7fe9834df06f",
         "signed_headers": {
           "x-amz-acl": "private",
           "x-amz-meta-sha1-checksum": "f5cebe42706fcad01568026c8db70c8ec640d4a2"
@@ -104,33 +104,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "6B3hURZe/NW4rmNpzLItwM5ZkAQ=",
-            "created_at": "2026-11-22T05:34:31.497792",
-            "rotated_at": "2026-11-22T05:34:31.496768",
-            "updated_at": "2026-11-22T05:34:31.497792",
+            "auth_token": "zpxz1b+hfy0MER5aOexlNYSO6mA=",
+            "created_at": "2026-11-22T09:26:04.472087",
+            "rotated_at": "2026-11-22T09:26:04.471334",
+            "updated_at": "2026-11-22T09:26:04.472087",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "6B3hURZe/NW4rmNpzLItwM5ZkAQ=",
+            "prev_auth_token": "zpxz1b+hfy0MER5aOexlNYSO6mA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:34:31.999512",
+            "id": 9,
+            "seen_at": "2026-11-22T09:26:04.978211",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "6B3hURZe/NW4rmNpzLItwM5ZkAQ=",
-            "created_at": "2026-11-22T05:34:31.497792",
-            "rotated_at": "2026-11-22T05:34:31.496768",
-            "updated_at": "2026-11-22T05:34:31.497792",
+            "auth_token": "zpxz1b+hfy0MER5aOexlNYSO6mA=",
+            "created_at": "2026-11-22T09:26:04.472087",
+            "rotated_at": "2026-11-22T09:26:04.471334",
+            "updated_at": "2026-11-22T09:26:04.472087",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "6B3hURZe/NW4rmNpzLItwM5ZkAQ=",
+            "prev_auth_token": "zpxz1b+hfy0MER5aOexlNYSO6mA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -158,7 +158,7 @@
   "s3_objects": [],
   "recorded_from": {
     "case": "ca4f91a23f365ce9d6d31288311dd453d660d4c657359f87f6bd620f473a1aaa",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

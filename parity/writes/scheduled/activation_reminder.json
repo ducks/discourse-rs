@@ -2,8 +2,8 @@
   "name": "activation_reminder",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:40:48.18024",
-  "transaction_started_at": "2026-11-22T05:40:47.190689",
+  "started_at": "2026-11-22T09:27:09.037552",
+  "transaction_started_at": "2026-11-22T09:27:08.109739",
   "responses": [],
   "changes": {
     "email_logs": {
@@ -16,11 +16,11 @@
           "user_id": 4,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-22T05:40:49.6286",
+          "created_at": "2026-11-22T09:27:10.429488",
           "email_type": "activation_reminder",
-          "message_id": "b4d11952-44be-471c-8eba-9b5dfcb14fa4@localhost",
+          "message_id": "31168f3c-96bd-464a-b264-d6da5da96d4f@localhost",
           "to_address": "user2@example.com",
-          "updated_at": "2026-11-22T05:40:49.6286",
+          "updated_at": "2026-11-22T09:27:10.429488",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -41,9 +41,9 @@
           "expired": false,
           "user_id": 4,
           "confirmed": false,
-          "created_at": "2026-11-22T05:40:48.214519",
-          "token_hash": "f2a12dd98afd084ed8bfb41695c04186615e14c629870afff5a84ffde46be4b8",
-          "updated_at": "2026-11-22T05:40:48.214519"
+          "created_at": "2026-11-22T09:27:09.060105",
+          "token_hash": "9ee2d183fe62f7a8a526e947b72012ca0b8fb9d62ae05a0b0bb22a8b0dffbf91",
+          "updated_at": "2026-11-22T09:27:09.060105"
         }
       ],
       "deleted": [],
@@ -81,8 +81,8 @@
           "name": "activation_reminder",
           "value": "t",
           "user_id": 4,
-          "created_at": "2026-11-22T05:40:48.201815",
-          "updated_at": "2026-11-22T05:40:48.201815"
+          "created_at": "2026-11-22T09:27:09.051902",
+          "updated_at": "2026-11-22T09:27:09.051902"
         }
       ],
       "deleted": [],
@@ -105,7 +105,7 @@
             "approved": false,
             "username": "user2",
             "moderator": false,
-            "created_at": "2026-11-19T17:40:47.190689",
+            "created_at": "2026-11-19T21:27:08.109739",
             "flag_level": 0,
             "ip_address": null,
             "updated_at": "2026-11-21T23:56:57.750413",
@@ -145,7 +145,7 @@
             "approved": false,
             "username": "user2",
             "moderator": false,
-            "created_at": "2026-11-19T17:40:47.190689",
+            "created_at": "2026-11-19T21:27:08.109739",
             "flag_level": 0,
             "ip_address": null,
             "updated_at": "2026-11-21T23:56:57.750413",
@@ -161,7 +161,7 @@
             "last_posted_at": "2026-11-21T23:56:44.759506",
             "suspended_till": null,
             "username_lower": "user2",
-            "last_emailed_at": "2026-11-22T05:40:47.190689",
+            "last_emailed_at": "2026-11-22T09:27:08.109739",
             "primary_group_id": null,
             "previous_visit_at": null,
             "secure_identifier": null,
@@ -199,7 +199,7 @@
       {
         "type": "activation_reminder",
         "user_id": 4,
-        "email_token": "5611a02b1c928bdabd98e689514e3aec"
+        "email_token": "2d9ea9f0c3bd1b59a8aa3108a31abaed"
       }
     ]
   ],
@@ -220,7 +220,7 @@
         ],
         [
           "Message-ID",
-          "<b4d11952-44be-471c-8eba-9b5dfcb14fa4@localhost>"
+          "<31168f3c-96bd-464a-b264-d6da5da96d4f@localhost>"
         ],
         [
           "Subject",
@@ -232,7 +232,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b0280619744f_1adadf3858999"
+          "multipart/alternative; boundary=--==_mimepart_6b02b56e66a82_291a8f3811720"
         ],
         [
           "Content-Transfer-Encoding",
@@ -251,13 +251,13 @@
           "auto-generated"
         ]
       ],
-      "text": "Welcome to Discourse!\n\nThis is a friendly reminder to activate your account.\n\nClick the following link to confirm and activate your new account:\nhttp://localhost:3042/u/activate-account/5611a02b1c928bdabd98e689514e3aec\n\nIf the above link is not clickable, try copying and pasting it into the address bar of your web browser.\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Welcome to Discourse!</p>\n<p>This is a friendly reminder to activate your account.</p>\n<p>Click the following link to confirm and activate your new account:<br>\n<a href=\"http://localhost:3042/u/activate-account/5611a02b1c928bdabd98e689514e3aec\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/u/activate-account/5611a02b1c928bdabd98e689514e3aec</a></p>\n<p>If the above link is not clickable, try copying and pasting it into the address bar of your web browser.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Welcome to Discourse!\n\nThis is a friendly reminder to activate your account.\n\nClick the following link to confirm and activate your new account:\nhttp://localhost:3042/u/activate-account/2d9ea9f0c3bd1b59a8aa3108a31abaed\n\nIf the above link is not clickable, try copying and pasting it into the address bar of your web browser.\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Welcome to Discourse!</p>\n<p>This is a friendly reminder to activate your account.</p>\n<p>Click the following link to confirm and activate your new account:<br>\n<a href=\"http://localhost:3042/u/activate-account/2d9ea9f0c3bd1b59a8aa3108a31abaed\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/u/activate-account/2d9ea9f0c3bd1b59a8aa3108a31abaed</a></p>\n<p>If the above link is not clickable, try copying and pasting it into the address bar of your web browser.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "2b35aba46880e92caf35dee00907af683cae0cd2b36ce09732deac00c33962cc",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

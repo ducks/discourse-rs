@@ -2,8 +2,8 @@
   "name": "tags_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:43:45.817578",
-  "transaction_started_at": "2026-11-22T05:43:45.150233",
+  "started_at": "2026-11-22T09:30:05.290841",
+  "transaction_started_at": "2026-11-22T09:30:04.641162",
   "responses": [],
   "changes": {
     "tag_users": {
@@ -13,8 +13,8 @@
           "id": 1,
           "tag_id": 9501,
           "user_id": 3,
-          "created_at": "2026-11-22T05:43:45.150233",
-          "updated_at": "2026-11-22T05:43:45.150233",
+          "created_at": "2026-11-22T09:30:04.641162",
+          "updated_at": "2026-11-22T09:30:04.641162",
           "notification_level": 3
         }
       ],
@@ -28,8 +28,8 @@
           "name": "stale",
           "slug": "",
           "locale": null,
-          "created_at": "2026-11-21T05:43:45.150233",
-          "updated_at": "2026-11-21T05:43:45.150233",
+          "created_at": "2026-11-21T09:30:04.641162",
+          "updated_at": "2026-11-21T09:30:04.641162",
           "description": null,
           "target_tag_id": null,
           "pm_topic_count": 0,
@@ -43,8 +43,8 @@
           "name": "abandoned",
           "slug": "",
           "locale": null,
-          "created_at": "2026-11-21T05:43:45.150233",
-          "updated_at": "2026-11-21T05:43:45.150233",
+          "created_at": "2026-11-21T09:30:04.641162",
+          "updated_at": "2026-11-21T09:30:04.641162",
           "description": null,
           "target_tag_id": null,
           "pm_topic_count": 0,
@@ -63,8 +63,8 @@
           "id": 5,
           "tag_id": 9504,
           "topic_id": 40,
-          "created_at": "2026-11-22T05:43:45.150233",
-          "updated_at": "2026-11-22T05:43:45.150233"
+          "created_at": "2026-11-22T09:30:04.641162",
+          "updated_at": "2026-11-22T09:30:04.641162"
         }
       ],
       "updated": []
@@ -82,10 +82,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T05:43:45.819594",
+          "created_at": "2026-11-22T09:30:05.293021",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:43:45.819594",
+          "updated_at": "2026-11-22T09:30:05.293021",
           "category_id": null,
           "custom_type": "deleted_unused_tags",
           "reviewable_id": null,
@@ -121,7 +121,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "56819b892a23a808dd8cb83bd7974a406786669c7da3ca472e72f96e5e8ea0a0",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

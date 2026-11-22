@@ -2,8 +2,8 @@
   "name": "job_badge_grant_full",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T04:37:11.859814",
-  "transaction_started_at": "2026-11-22T04:37:11.269532",
+  "started_at": "2026-11-22T08:29:03.370296",
+  "transaction_started_at": "2026-11-22T08:29:02.787393",
   "responses": [],
   "changes": {
     "badges": {
@@ -46,7 +46,7 @@
             "listable": true,
             "created_at": "2026-11-03T05:07:09.938947",
             "show_posts": true,
-            "updated_at": "2026-11-22T04:37:12.09196",
+            "updated_at": "2026-11-22T08:29:03.573581",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
@@ -96,7 +96,7 @@
             "listable": true,
             "created_at": "2026-11-03T05:07:09.797126",
             "show_posts": true,
-            "updated_at": "2026-11-22T04:37:12.097122",
+            "updated_at": "2026-11-22T08:29:03.578198",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
@@ -121,8 +121,8 @@
           "post_id": 52,
           "user_id": 5,
           "badge_id": 11,
-          "created_at": "2026-11-19T04:37:11.269532",
-          "granted_at": "2026-11-19T04:37:11.269532",
+          "created_at": "2026-11-19T08:29:02.787393",
+          "granted_at": "2026-11-19T08:29:02.787393",
           "is_favorite": null,
           "featured_rank": null,
           "granted_by_id": -1,
@@ -679,7 +679,7 @@
   ],
   "recorded_from": {
     "case": "133c32ec0dc51650a3780be474f2162bcdea7a47ad66fbe67e0fbce974aa6d5d",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

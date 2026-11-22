@@ -27,8 +27,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T04:35:01.213241",
-  "transaction_started_at": "2026-11-22T04:35:00.489876",
+  "started_at": "2026-11-22T08:26:55.789319",
+  "transaction_started_at": "2026-11-22T08:26:55.102782",
   "responses": [
     {
       "status": 200,
@@ -109,6 +109,18 @@
           "can_change_tracking_preferences": true,
           "user_api_keys": null,
           "user_auth_tokens": [
+            {
+              "id": 6,
+              "client_ip": "172.17.0.1",
+              "location": "unknown",
+              "browser": "Unknown browser",
+              "device": "unknown device",
+              "os": "unknown operating system",
+              "icon": "question",
+              "created_at": "2026-11-22T06:29:07.657Z",
+              "seen_at": "2026-11-22T06:29:07.748Z",
+              "is_active": false
+            },
             {
               "id": 2,
               "client_ip": "172.17.0.1",
@@ -433,10 +445,10 @@
             "hidden": false,
             "user_id": null,
             "key_hash": "8bec1b0f5ea428acf61a80c032c3b163b182ed58ebed51564ad410bdca4b09a1",
-            "created_at": "2026-11-17T04:35:00.489876",
+            "created_at": "2026-11-17T08:26:55.102782",
             "revoked_at": null,
             "scope_mode": 2,
-            "updated_at": "2026-11-17T04:35:00.489876",
+            "updated_at": "2026-11-17T08:26:55.102782",
             "allowed_ips": null,
             "description": "scoped",
             "last_used_at": null,
@@ -448,13 +460,13 @@
             "hidden": false,
             "user_id": null,
             "key_hash": "8bec1b0f5ea428acf61a80c032c3b163b182ed58ebed51564ad410bdca4b09a1",
-            "created_at": "2026-11-17T04:35:00.489876",
+            "created_at": "2026-11-17T08:26:55.102782",
             "revoked_at": null,
             "scope_mode": 2,
-            "updated_at": "2026-11-17T04:35:00.489876",
+            "updated_at": "2026-11-17T08:26:55.102782",
             "allowed_ips": null,
             "description": "scoped",
-            "last_used_at": "2026-11-22T04:35:01.347573",
+            "last_used_at": "2026-11-22T08:26:55.921131",
             "created_by_id": 1,
             "truncated_key": "scop"
           }
@@ -466,7 +478,7 @@
         {
           "id": 1,
           "user_id": 1,
-          "viewed_at": "2026-11-22T04:35:01.350199",
+          "viewed_at": "2026-11-22T08:26:55.924289",
           "ip_address": null,
           "user_profile_id": 4
         }
@@ -521,7 +533,7 @@
   ],
   "recorded_from": {
     "case": "f9d5780df6c51fedb1501dd87bac347c25fe2f78280c89e5d79c9e4926e5b151",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -10,14 +10,14 @@
       }
     }
   ],
-  "started_at": "2026-11-22T04:55:58.384516",
-  "transaction_started_at": "2026-11-22T04:55:57.822368",
+  "started_at": "2026-11-22T08:47:39.318885",
+  "transaction_started_at": "2026-11-22T08:47:38.734141",
   "responses": [
     {
       "status": 302,
       "body": "",
       "headers": {
-        "Location": "/email/unsubscribed?key=unsub_bb7681364cc984eac26a76304460dc76"
+        "Location": "/email/unsubscribed?key=unsub_431241efa9fa72a54b0045ebcae66b5f"
       }
     }
   ],
@@ -215,7 +215,7 @@
   ],
   "recorded_from": {
     "case": "edb5cc09c41c470b778b241fd6e6abcb7ae5083e2a3c1b94b615545b4ee6e903",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

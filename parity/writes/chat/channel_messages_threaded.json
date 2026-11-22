@@ -11,8 +11,8 @@
       "path": "/chat/api/channels/2/messages.json?target_message_id=3"
     }
   ],
-  "started_at": "2026-11-22T04:42:00.413431",
-  "transaction_started_at": "2026-11-22T04:41:59.463996",
+  "started_at": "2026-11-22T08:33:49.730757",
+  "transaction_started_at": "2026-11-22T08:33:48.771113",
   "responses": [
     {
       "status": 200,
@@ -22,7 +22,7 @@
             "id": 1,
             "message": "Hello **world**",
             "cooked": "<p>Hello <strong>world</strong></p>",
-            "created_at": "2026-11-22T03:51:59Z",
+            "created_at": "2026-11-22T07:43:48Z",
             "excerpt": "Hello world",
             "thread_id": 1,
             "chat_channel_id": 2,
@@ -67,7 +67,7 @@
                 "thread_title_prompt_seen": false
               },
               "preview": {
-                "last_reply_created_at": "2026-11-22T04:06:59Z",
+                "last_reply_created_at": "2026-11-22T07:58:48Z",
                 "last_reply_excerpt": "thread reply two",
                 "last_reply_id": 3,
                 "participant_count": 3,
@@ -105,7 +105,7 @@
                 "id": 1,
                 "message": "Hello **world**",
                 "cooked": "<p>Hello <strong>world</strong></p>",
-                "created_at": "2026-11-22T03:51:59.463Z",
+                "created_at": "2026-11-22T07:43:48.771Z",
                 "excerpt": "Hello world",
                 "chat_channel_id": 2,
                 "deleted_at": null,
@@ -130,7 +130,7 @@
             "id": 4,
             "message": "channel chatter",
             "cooked": "<p>channel chatter</p>",
-            "created_at": "2026-11-22T04:11:59Z",
+            "created_at": "2026-11-22T08:03:48Z",
             "excerpt": "channel chatter",
             "thread_id": null,
             "chat_channel_id": 2,
@@ -190,7 +190,7 @@
             "id": 1,
             "message": "Hello **world**",
             "cooked": "<p>Hello <strong>world</strong></p>",
-            "created_at": "2026-11-22T03:51:59Z",
+            "created_at": "2026-11-22T07:43:48Z",
             "excerpt": "Hello world",
             "thread_id": 1,
             "chat_channel_id": 2,
@@ -235,7 +235,7 @@
                 "thread_title_prompt_seen": false
               },
               "preview": {
-                "last_reply_created_at": "2026-11-22T04:06:59Z",
+                "last_reply_created_at": "2026-11-22T07:58:48Z",
                 "last_reply_excerpt": "thread reply two",
                 "last_reply_id": 3,
                 "participant_count": 3,
@@ -273,7 +273,7 @@
                 "id": 1,
                 "message": "Hello **world**",
                 "cooked": "<p>Hello <strong>world</strong></p>",
-                "created_at": "2026-11-22T03:51:59.463Z",
+                "created_at": "2026-11-22T07:43:48.771Z",
                 "excerpt": "Hello world",
                 "chat_channel_id": 2,
                 "deleted_at": null,
@@ -298,7 +298,7 @@
             "id": 4,
             "message": "channel chatter",
             "cooked": "<p>channel chatter</p>",
-            "created_at": "2026-11-22T04:11:59Z",
+            "created_at": "2026-11-22T08:03:48Z",
             "excerpt": "channel chatter",
             "thread_id": null,
             "chat_channel_id": 2,
@@ -358,33 +358,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "z3abjcTynrAQi1jB4yRAqkySECA=",
-            "created_at": "2026-11-22T04:41:59.775846",
-            "rotated_at": "2026-11-22T04:41:59.775002",
-            "updated_at": "2026-11-22T04:41:59.775846",
+            "auth_token": "VDrJrfaX6WYIYBEwOMkFXAwRRfE=",
+            "created_at": "2026-11-22T08:33:49.197595",
+            "rotated_at": "2026-11-22T08:33:49.19561",
+            "updated_at": "2026-11-22T08:33:49.197595",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "z3abjcTynrAQi1jB4yRAqkySECA=",
+            "prev_auth_token": "VDrJrfaX6WYIYBEwOMkFXAwRRfE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:42:00.420906",
+            "id": 9,
+            "seen_at": "2026-11-22T08:33:49.739686",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "z3abjcTynrAQi1jB4yRAqkySECA=",
-            "created_at": "2026-11-22T04:41:59.775846",
-            "rotated_at": "2026-11-22T04:41:59.775002",
-            "updated_at": "2026-11-22T04:41:59.775846",
+            "auth_token": "VDrJrfaX6WYIYBEwOMkFXAwRRfE=",
+            "created_at": "2026-11-22T08:33:49.197595",
+            "rotated_at": "2026-11-22T08:33:49.19561",
+            "updated_at": "2026-11-22T08:33:49.197595",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "z3abjcTynrAQi1jB4yRAqkySECA=",
+            "prev_auth_token": "VDrJrfaX6WYIYBEwOMkFXAwRRfE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -424,9 +424,9 @@
             "following": true,
             "join_mode": 1,
             "created_at": "2026-11-21T23:56:57.924969",
-            "updated_at": "2026-11-22T04:42:00.601446",
+            "updated_at": "2026-11-22T08:33:49.90092",
             "muted_until": null,
-            "last_viewed_at": "2026-11-22T04:42:00.6007",
+            "last_viewed_at": "2026-11-22T08:33:49.900327",
             "chat_channel_id": 2,
             "notification_level": 1,
             "last_viewed_pins_at": null,
@@ -445,8 +445,8 @@
           "name": "last_chat_channel_id",
           "value": "2",
           "user_id": 3,
-          "created_at": "2026-11-22T04:42:00.482772",
-          "updated_at": "2026-11-22T04:42:00.482772"
+          "created_at": "2026-11-22T08:33:49.787894",
+          "updated_at": "2026-11-22T08:33:49.787894"
         }
       ],
       "deleted": [],
@@ -473,7 +473,7 @@
   ],
   "recorded_from": {
     "case": "b8a1a80f919bed0cc18c20f8f84d74e9ac5455cf49ba901e1dc26d8e21b5f748",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

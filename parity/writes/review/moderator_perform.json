@@ -31,8 +31,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:30:37.561265",
-  "transaction_started_at": "2026-11-22T05:30:36.751135",
+  "started_at": "2026-11-22T09:22:09.376338",
+  "transaction_started_at": "2026-11-22T09:22:08.572351",
   "responses": [
     {
       "status": 200,
@@ -105,10 +105,10 @@
             "id": 9401,
             "post_id": 52,
             "user_id": 3,
-            "agreed_at": "2026-11-22T05:30:37.606227",
+            "agreed_at": "2026-11-22T09:22:09.489294",
             "created_at": "2026-10-02T10:00:00",
             "deleted_at": null,
-            "updated_at": "2026-11-22T05:30:37.606451",
+            "updated_at": "2026-11-22T09:22:09.489566",
             "deferred_at": null,
             "agreed_by_id": 5,
             "disagreed_at": null,
@@ -129,8 +129,8 @@
           "id": 1,
           "edited": null,
           "status": 1,
-          "created_at": "2026-11-22T05:30:37.617218",
-          "updated_at": "2026-11-22T05:30:37.617218",
+          "created_at": "2026-11-22T09:22:09.516392",
+          "updated_at": "2026-11-22T09:22:09.516392",
           "created_by_id": 5,
           "reviewable_id": 9401,
           "reviewable_history_type": 1
@@ -170,7 +170,7 @@
             "user_id": 3,
             "created_at": "2026-10-02T10:00:00",
             "updated_at": "2026-10-02T10:00:00",
-            "reviewed_at": "2026-11-22T05:30:37.620798",
+            "reviewed_at": "2026-11-22T09:22:09.525675",
             "meta_topic_id": null,
             "reviewable_id": 9401,
             "reviewed_by_id": 5,
@@ -224,7 +224,7 @@
             "topic_id": 35,
             "target_id": 52,
             "created_at": "2026-10-02T10:00:00",
-            "updated_at": "2026-11-22T05:30:37.615603",
+            "updated_at": "2026-11-22T09:22:09.513004",
             "category_id": 4,
             "target_type": "Post",
             "type_source": "core",
@@ -247,33 +247,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 5,
             "client_ip": "127.0.0.1",
-            "auth_token": "8cHFvVHgOXuas1xxHd42YWna57M=",
-            "created_at": "2026-11-22T05:30:37.109022",
-            "rotated_at": "2026-11-22T05:30:37.108",
-            "updated_at": "2026-11-22T05:30:37.109022",
+            "auth_token": "BqVXYWyGaNJT9HLba9gUh26aUck=",
+            "created_at": "2026-11-22T09:22:08.899977",
+            "rotated_at": "2026-11-22T09:22:08.899091",
+            "updated_at": "2026-11-22T09:22:08.899977",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "8cHFvVHgOXuas1xxHd42YWna57M=",
+            "prev_auth_token": "BqVXYWyGaNJT9HLba9gUh26aUck=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:30:37.567602",
+            "id": 9,
+            "seen_at": "2026-11-22T09:22:09.390364",
             "user_id": 5,
             "client_ip": "127.0.0.1",
-            "auth_token": "8cHFvVHgOXuas1xxHd42YWna57M=",
-            "created_at": "2026-11-22T05:30:37.109022",
-            "rotated_at": "2026-11-22T05:30:37.108",
-            "updated_at": "2026-11-22T05:30:37.109022",
+            "auth_token": "BqVXYWyGaNJT9HLba9gUh26aUck=",
+            "created_at": "2026-11-22T09:22:08.899977",
+            "rotated_at": "2026-11-22T09:22:08.899091",
+            "updated_at": "2026-11-22T09:22:08.899977",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "8cHFvVHgOXuas1xxHd42YWna57M=",
+            "prev_auth_token": "BqVXYWyGaNJT9HLba9gUh26aUck=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -371,7 +371,7 @@
   ],
   "recorded_from": {
     "case": "43f5cb2204fb3f4f90780fd15fbfca7cdec2b301e31d15cf8776153ce30d810c",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -7,8 +7,8 @@
       "path": "/t/admin-guide-getting-started/6.json"
     }
   ],
-  "started_at": "2026-11-22T06:04:18.726186",
-  "transaction_started_at": "2026-11-22T06:04:17.693474",
+  "started_at": "2026-11-22T09:50:30.988002",
+  "transaction_started_at": "2026-11-22T09:50:30.116729",
   "responses": [
     {
       "status": 200,
@@ -52,7 +52,49 @@
               "can_wiki": true,
               "link_counts": [
                 {
-                  "url": "http://localhost:3000/admin/email/server-settings",
+                  "url": "https://github.com/discourse/discourse/blob/main/docs/INSTALL-email.md",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "discourse/docs/INSTALL-email.md at main · discourse/discourse · GitHub",
+                  "clicks": 0
+                },
+                {
+                  "url": "https://discover.discourse.com/",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "Discourse Discover",
+                  "clicks": 0
+                },
+                {
+                  "url": "https://blog.discourse.org/",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "Blog | Discourse",
+                  "clicks": 0
+                },
+                {
+                  "url": "https://meta.discourse.org/c/documentation/10",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "Documentation - Discourse Meta",
+                  "clicks": 0
+                },
+                {
+                  "url": "http://ask.discourse.com",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "Ask Discourse",
+                  "clicks": 0
+                },
+                {
+                  "url": "https://meta.discourse.org/",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "Discourse Meta",
+                  "clicks": 0
+                },
+                {
+                  "url": "http://localhost:3000/admin/config/login-and-authentication",
                   "internal": false,
                   "reflection": false,
                   "clicks": 0
@@ -64,51 +106,9 @@
                   "clicks": 0
                 },
                 {
-                  "url": "http://localhost:3000/admin/config/login-and-authentication",
+                  "url": "http://localhost:3000/admin/email/server-settings",
                   "internal": false,
                   "reflection": false,
-                  "clicks": 0
-                },
-                {
-                  "url": "https://meta.discourse.org/",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Discourse Meta",
-                  "clicks": 0
-                },
-                {
-                  "url": "http://ask.discourse.com",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Ask Discourse",
-                  "clicks": 0
-                },
-                {
-                  "url": "https://meta.discourse.org/c/documentation/10",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Documentation - Discourse Meta",
-                  "clicks": 0
-                },
-                {
-                  "url": "https://blog.discourse.org/",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Blog | Discourse",
-                  "clicks": 0
-                },
-                {
-                  "url": "https://discover.discourse.com/",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Discourse Discover",
-                  "clicks": 0
-                },
-                {
-                  "url": "https://github.com/discourse/discourse/blob/main/docs/INSTALL-email.md",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "discourse/docs/INSTALL-email.md at main · discourse/discourse · GitHub",
                   "clicks": 0
                 }
               ],
@@ -507,151 +507,39 @@
     }
   ],
   "changes": {
-    "topics": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
-        {
-          "before": {
-            "id": 35,
-            "slug": "parity-fixture-replies-and-posters",
-            "score": null,
-            "title": "Parity fixture: replies and posters",
-            "views": 0,
-            "closed": false,
-            "locale": null,
-            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-            "subtype": null,
-            "user_id": 2,
-            "visible": true,
-            "archived": false,
-            "archetype": "regular",
-            "bumped_at": "2026-11-21T23:56:51.452828",
-            "pinned_at": null,
-            "created_at": "2026-11-21T23:56:44.408368",
-            "deleted_at": null,
-            "like_count": 1,
-            "spam_count": 0,
-            "updated_at": "2026-11-21T23:56:51.518343",
-            "word_count": 68,
-            "category_id": 4,
-            "external_id": null,
-            "fancy_title": null,
-            "has_summary": false,
-            "posts_count": 5,
-            "reply_count": 0,
-            "percent_rank": 1,
-            "pinned_until": null,
-            "deleted_by_id": null,
-            "featured_link": null,
-            "bannered_until": null,
-            "last_posted_at": "2026-11-21T23:56:51.452828",
-            "image_upload_id": null,
-            "pinned_globally": false,
-            "reviewable_score": 0,
-            "featured_user1_id": 3,
-            "featured_user2_id": null,
-            "featured_user3_id": 1,
-            "featured_user4_id": 4,
-            "last_post_user_id": 2,
-            "participant_count": 4,
-            "slow_mode_seconds": 0,
-            "og_image_upload_id": null,
-            "highest_post_number": 5,
-            "incoming_link_count": 0,
-            "visibility_reason_id": null,
-            "moderator_posts_count": 0,
-            "notify_moderators_count": 0,
-            "highest_staff_post_number": 5
-          },
-          "after": {
-            "id": 35,
-            "slug": "parity-fixture-replies-and-posters",
-            "score": null,
-            "title": "Parity fixture: replies and posters",
-            "views": 0,
-            "closed": false,
-            "locale": null,
-            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-            "subtype": null,
-            "user_id": 2,
-            "visible": true,
-            "archived": false,
-            "archetype": "regular",
-            "bumped_at": "2026-11-21T23:56:51.452828",
-            "pinned_at": null,
-            "created_at": "2026-11-21T23:56:44.408368",
-            "deleted_at": null,
-            "like_count": 1,
-            "spam_count": 0,
-            "updated_at": "2026-11-21T23:56:51.518343",
-            "word_count": 68,
-            "category_id": 4,
-            "external_id": null,
-            "fancy_title": "Parity fixture: replies and posters",
-            "has_summary": false,
-            "posts_count": 5,
-            "reply_count": 0,
-            "percent_rank": 1,
-            "pinned_until": null,
-            "deleted_by_id": null,
-            "featured_link": null,
-            "bannered_until": null,
-            "last_posted_at": "2026-11-21T23:56:51.452828",
-            "image_upload_id": null,
-            "pinned_globally": false,
-            "reviewable_score": 0,
-            "featured_user1_id": 3,
-            "featured_user2_id": null,
-            "featured_user3_id": 1,
-            "featured_user4_id": 4,
-            "last_post_user_id": 2,
-            "participant_count": 4,
-            "slow_mode_seconds": 0,
-            "og_image_upload_id": null,
-            "highest_post_number": 5,
-            "incoming_link_count": 0,
-            "visibility_reason_id": null,
-            "moderator_posts_count": 0,
-            "notify_moderators_count": 0,
-            "highest_staff_post_number": 5
-          }
-        }
-      ]
-    },
     "user_auth_tokens": {
       "inserted": [],
       "deleted": [],
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "jzohH2pOxNtSV+WxlAtSvKGmVAc=",
-            "created_at": "2026-11-22T06:04:18.068722",
-            "rotated_at": "2026-11-22T06:04:18.067965",
-            "updated_at": "2026-11-22T06:04:18.068722",
+            "auth_token": "1Eml3tMFXf9f9TisglBhGy0tCp4=",
+            "created_at": "2026-11-22T09:50:30.530409",
+            "rotated_at": "2026-11-22T09:50:30.529311",
+            "updated_at": "2026-11-22T09:50:30.530409",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "jzohH2pOxNtSV+WxlAtSvKGmVAc=",
+            "prev_auth_token": "1Eml3tMFXf9f9TisglBhGy0tCp4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T06:04:18.733927",
+            "id": 9,
+            "seen_at": "2026-11-22T09:50:30.994704",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "jzohH2pOxNtSV+WxlAtSvKGmVAc=",
-            "created_at": "2026-11-22T06:04:18.068722",
-            "rotated_at": "2026-11-22T06:04:18.067965",
-            "updated_at": "2026-11-22T06:04:18.068722",
+            "auth_token": "1Eml3tMFXf9f9TisglBhGy0tCp4=",
+            "created_at": "2026-11-22T09:50:30.530409",
+            "rotated_at": "2026-11-22T09:50:30.529311",
+            "updated_at": "2026-11-22T09:50:30.530409",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "jzohH2pOxNtSV+WxlAtSvKGmVAc=",
+            "prev_auth_token": "1Eml3tMFXf9f9TisglBhGy0tCp4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -667,7 +555,7 @@
   ],
   "recorded_from": {
     "case": "9a1270b480264945f13bf739af21921f100b33c18f71c990c5faccd48e232233",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

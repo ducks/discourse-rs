@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T04:25:44.494072",
-  "transaction_started_at": "2026-11-22T04:25:43.875995",
+  "started_at": "2026-11-22T08:18:55.5187",
+  "transaction_started_at": "2026-11-22T08:18:54.911257",
   "responses": [
     {
       "status": 200,
@@ -32,11 +32,11 @@
           "user_id": 3,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-22T04:25:44.578744",
+          "created_at": "2026-11-22T08:18:55.609671",
           "email_type": "email_login",
-          "message_id": "97776e48-3fc8-4651-966d-27bbaf26253c@localhost",
+          "message_id": "3ca83a0e-de84-48a9-a6a4-6fbb02e43ec7@localhost",
           "to_address": "user1@example.com",
-          "updated_at": "2026-11-22T04:25:44.578744",
+          "updated_at": "2026-11-22T08:18:55.609671",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -57,9 +57,9 @@
           "expired": false,
           "user_id": 3,
           "confirmed": false,
-          "created_at": "2026-11-22T04:25:44.504896",
-          "token_hash": "e18451456ab5df93e25e07cc3eb50ff1e3cf2363f1739eff69ea26b070802549",
-          "updated_at": "2026-11-22T04:25:44.504896"
+          "created_at": "2026-11-22T08:18:55.530477",
+          "token_hash": "27145f7ae4d417df149ca5fe7706892b0adf57dc466b9254c8c07eb1f6427e97",
+          "updated_at": "2026-11-22T08:18:55.530477"
         }
       ],
       "deleted": [],
@@ -138,7 +138,7 @@
             "last_posted_at": "2026-11-21T23:56:45.425465",
             "suspended_till": null,
             "username_lower": "user1",
-            "last_emailed_at": "2026-11-22T04:25:43.875995",
+            "last_emailed_at": "2026-11-22T08:18:54.911257",
             "primary_group_id": null,
             "previous_visit_at": "2026-11-21T23:56:57.920623",
             "secure_identifier": null,
@@ -160,7 +160,7 @@
       {
         "type": "email_login",
         "user_id": 3,
-        "email_token": "38fb1c0b2c53e348d68d57de9b191766"
+        "email_token": "1ee703bac9cb57ecfeecd580a576d0a9"
       }
     ]
   ],
@@ -189,7 +189,7 @@
         ],
         [
           "Message-ID",
-          "<97776e48-3fc8-4651-966d-27bbaf26253c@localhost>"
+          "<3ca83a0e-de84-48a9-a6a4-6fbb02e43ec7@localhost>"
         ],
         [
           "Subject",
@@ -201,7 +201,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b026ec88c7f0_13631f38-280"
+          "multipart/alternative; boundary=--==_mimepart_6b02a56f93e1a_22194f38-2b9"
         ],
         [
           "Content-Transfer-Encoding",
@@ -224,13 +224,13 @@
           "auto-generated"
         ]
       ],
-      "text": "Here's your link to log in at [Discourse](http://localhost:3042).\n\nIf you did not request this link, you can safely ignore this email.\n\nClick the following link to log in:\nhttp://localhost:3042/session/email-login/38fb1c0b2c53e348d68d57de9b191766\n",
-      "html": "<html lang=\"en\" xml:lang=\"en\"><head></head><body style=\"line-height:1.4;text-align:left\" dir=\"ltr\"><div class=\"custom-wrap\"><p>Log in via link.</p>\n    \n    <p>Here’s your link to log in at <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a>.</p>\n<p>If you did not request this link, you can safely ignore this email.</p>\n<p>Click the following link to log in:<br>\n<a href=\"http://localhost:3042/session/email-login/38fb1c0b2c53e348d68d57de9b191766\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/session/email-login/38fb1c0b2c53e348d68d57de9b191766</a></p>\n</div><p>footer</p></body></html>"
+      "text": "Here's your link to log in at [Discourse](http://localhost:3042).\n\nIf you did not request this link, you can safely ignore this email.\n\nClick the following link to log in:\nhttp://localhost:3042/session/email-login/1ee703bac9cb57ecfeecd580a576d0a9\n",
+      "html": "<html lang=\"en\" xml:lang=\"en\"><head></head><body style=\"line-height:1.4;text-align:left\" dir=\"ltr\"><div class=\"custom-wrap\"><p>Log in via link.</p>\n    \n    <p>Here’s your link to log in at <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a>.</p>\n<p>If you did not request this link, you can safely ignore this email.</p>\n<p>Click the following link to log in:<br>\n<a href=\"http://localhost:3042/session/email-login/1ee703bac9cb57ecfeecd580a576d0a9\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/session/email-login/1ee703bac9cb57ecfeecd580a576d0a9</a></p>\n</div><p>footer</p></body></html>"
     }
   ],
   "recorded_from": {
     "case": "dd76f89f2f0826bd2fda502e822aae0aa858b494a246a5b083cb5a3e8636370b",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

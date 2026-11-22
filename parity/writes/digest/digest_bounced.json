@@ -2,8 +2,8 @@
   "name": "digest_bounced",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T04:51:16.544907",
-  "transaction_started_at": "2026-11-22T04:51:15.940627",
+  "started_at": "2026-11-22T08:42:58.113565",
+  "transaction_started_at": "2026-11-22T08:42:57.482419",
   "responses": [],
   "changes": {
     "user_stats": {
@@ -57,7 +57,7 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": "2026-11-22T04:51:16.547924",
+            "digest_attempted_at": "2026-11-22T08:42:58.119559",
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
             "first_post_created_at": "2026-11-21T23:56:44.45838",
@@ -87,7 +87,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "c6f73a7aae2305d39e1b76b256a5e3be99286eea679caf505c7184d09a85b7c1",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

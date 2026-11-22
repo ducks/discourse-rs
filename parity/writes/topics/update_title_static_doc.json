@@ -14,8 +14,8 @@
       "path": "/posts/4/revisions/latest.json"
     }
   ],
-  "started_at": "2026-11-22T06:07:09.472979",
-  "transaction_started_at": "2026-11-22T06:07:08.61297",
+  "started_at": "2026-11-22T09:53:20.492603",
+  "transaction_started_at": "2026-11-22T09:53:19.61269",
   "responses": [
     {
       "status": 200,
@@ -32,7 +32,7 @@
     {
       "status": 200,
       "body": {
-        "created_at": "2026-11-22T06:07:09.556Z",
+        "created_at": "2026-11-22T09:53:20.573Z",
         "post_id": 4,
         "previous_hidden": false,
         "current_hidden": false,
@@ -85,8 +85,8 @@
           "post_id": 4,
           "user_id": 1,
           "unlisted": false,
-          "created_at": "2026-11-22T06:07:09.55657",
-          "updated_at": "2026-11-22T06:07:09.55657",
+          "created_at": "2026-11-22T09:53:20.573245",
+          "updated_at": "2026-11-22T09:53:20.573245",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- Guidelines\n- Community guidelines, renamed\n"
         }
       ],
@@ -219,7 +219,7 @@
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T06:07:09.494156",
+            "updated_at": "2026-11-22T09:53:20.512689",
             "word_count": 854,
             "action_code": null,
             "cook_method": 1,
@@ -239,7 +239,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T06:07:09.490719",
+            "last_version_at": "2026-11-22T09:53:20.510216",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -352,7 +352,7 @@
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-11-22T06:07:09.531285",
+            "updated_at": "2026-11-22T09:53:20.547458",
             "word_count": 869,
             "category_id": 3,
             "external_id": null,
@@ -393,33 +393,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "aE4/615LxWMFjWaeziG2sRA1/+g=",
-            "created_at": "2026-11-22T06:07:08.997294",
-            "rotated_at": "2026-11-22T06:07:08.996389",
-            "updated_at": "2026-11-22T06:07:08.997294",
+            "auth_token": "9J95tcBwqDtOhUINAxuOw8pUlc0=",
+            "created_at": "2026-11-22T09:53:19.982764",
+            "rotated_at": "2026-11-22T09:53:19.981756",
+            "updated_at": "2026-11-22T09:53:19.982764",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "aE4/615LxWMFjWaeziG2sRA1/+g=",
+            "prev_auth_token": "9J95tcBwqDtOhUINAxuOw8pUlc0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T06:07:09.48032",
+            "id": 9,
+            "seen_at": "2026-11-22T09:53:20.49983",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "aE4/615LxWMFjWaeziG2sRA1/+g=",
-            "created_at": "2026-11-22T06:07:08.997294",
-            "rotated_at": "2026-11-22T06:07:08.996389",
-            "updated_at": "2026-11-22T06:07:08.997294",
+            "auth_token": "9J95tcBwqDtOhUINAxuOw8pUlc0=",
+            "created_at": "2026-11-22T09:53:19.982764",
+            "rotated_at": "2026-11-22T09:53:19.981756",
+            "updated_at": "2026-11-22T09:53:19.982764",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "aE4/615LxWMFjWaeziG2sRA1/+g=",
+            "prev_auth_token": "9J95tcBwqDtOhUINAxuOw8pUlc0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -523,7 +523,7 @@
   },
   "recorded_from": {
     "case": "1728a0c06b13773ee6523940e8071afd008787119ee53175ee232255dea58da5",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

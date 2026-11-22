@@ -7,8 +7,8 @@
       "path": "/chat/api/channels.json"
     }
   ],
-  "started_at": "2026-11-22T04:42:14.421163",
-  "transaction_started_at": "2026-11-22T04:42:13.489286",
+  "started_at": "2026-11-22T08:34:03.358672",
+  "transaction_started_at": "2026-11-22T08:34:02.394388",
   "responses": [
     {
       "status": 200,
@@ -99,7 +99,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-11-22T04:42:14+00:00",
+              "created_at": "2026-11-22T08:34:03+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -193,7 +193,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-11-22T04:42:14+00:00",
+              "created_at": "2026-11-22T08:34:03+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -275,7 +275,7 @@
               "notification_level": "never",
               "chat_channel_id": 3,
               "last_read_message_id": null,
-              "last_viewed_at": "2026-11-21T05:42:13.489Z",
+              "last_viewed_at": "2026-11-21T09:34:02.394Z",
               "last_viewed_pins_at": null,
               "starred": true,
               "has_unseen_pins": false
@@ -302,7 +302,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-11-22T04:42:14+00:00",
+              "created_at": "2026-11-22T08:34:03+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -325,33 +325,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "19ittVPVLOOMOGc2ytLg7e9v1XM=",
-            "created_at": "2026-11-22T04:42:13.779383",
-            "rotated_at": "2026-11-22T04:42:13.778512",
-            "updated_at": "2026-11-22T04:42:13.779383",
+            "auth_token": "e4Sijhh765XI+aRVNQWnQxDyUnY=",
+            "created_at": "2026-11-22T08:34:02.791724",
+            "rotated_at": "2026-11-22T08:34:02.788915",
+            "updated_at": "2026-11-22T08:34:02.791724",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "19ittVPVLOOMOGc2ytLg7e9v1XM=",
+            "prev_auth_token": "e4Sijhh765XI+aRVNQWnQxDyUnY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:42:14.429819",
+            "id": 9,
+            "seen_at": "2026-11-22T08:34:03.366102",
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "19ittVPVLOOMOGc2ytLg7e9v1XM=",
-            "created_at": "2026-11-22T04:42:13.779383",
-            "rotated_at": "2026-11-22T04:42:13.778512",
-            "updated_at": "2026-11-22T04:42:13.779383",
+            "auth_token": "e4Sijhh765XI+aRVNQWnQxDyUnY=",
+            "created_at": "2026-11-22T08:34:02.791724",
+            "rotated_at": "2026-11-22T08:34:02.788915",
+            "updated_at": "2026-11-22T08:34:02.791724",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "19ittVPVLOOMOGc2ytLg7e9v1XM=",
+            "prev_auth_token": "e4Sijhh765XI+aRVNQWnQxDyUnY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -369,7 +369,7 @@
   ],
   "recorded_from": {
     "case": "21937e9169496139cbc720d0440f6019e4dc888d52cb1c7b95db2b9937cea9e4",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

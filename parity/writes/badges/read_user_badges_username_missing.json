@@ -7,8 +7,8 @@
       "path": "/user-badges/nobody.json"
     }
   ],
-  "started_at": "2026-11-22T04:37:39.303934",
-  "transaction_started_at": "2026-11-22T04:37:38.72468",
+  "started_at": "2026-11-22T08:29:30.911537",
+  "transaction_started_at": "2026-11-22T08:29:30.331185",
   "responses": [
     {
       "status": 404,
@@ -31,7 +31,7 @@
   ],
   "recorded_from": {
     "case": "ca1991ad24fe2c2d377d1b7bf4771653f1055089794e78db28bf668081334999",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

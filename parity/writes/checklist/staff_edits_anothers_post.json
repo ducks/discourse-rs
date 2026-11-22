@@ -20,8 +20,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T04:48:33.874827",
-  "transaction_started_at": "2026-11-22T04:48:33.077342",
+  "started_at": "2026-11-22T08:40:20.688066",
+  "transaction_started_at": "2026-11-22T08:40:19.918544",
   "responses": [
     {
       "status": 200,
@@ -30,7 +30,7 @@
         "last_editor_id": 1,
         "raw": "Checklist to toggle:\n\n- [x] first\n- [x] second\n\n[X] fixed and [] legacy",
         "revised": true,
-        "updated_at": "2026-11-22T04:48:33.946Z",
+        "updated_at": "2026-11-22T08:40:20.758Z",
         "version": 2
       }
     }
@@ -57,8 +57,8 @@
           "post_id": 36,
           "user_id": 1,
           "unlisted": false,
-          "created_at": "2026-11-22T04:48:33.955285",
-          "updated_at": "2026-11-22T04:48:33.955285",
+          "created_at": "2026-11-22T08:40:20.768805",
+          "updated_at": "2026-11-22T08:40:20.768805",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- |-\n  Checklist to toggle:\n\n  - [ ] first\n  - [x] second\n\n  [X] fixed and [] legacy\n- |-\n  Checklist to toggle:\n\n  - [x] first\n  - [x] second\n\n  [X] fixed and [] legacy\ncooked:\n- |-\n  <p>Checklist to toggle:</p>\n  <ul>\n  <li><span class=\"chcklst-box fa fa-square-o\" data-chk-src=\"2:0\"></span> first</li>\n  <li><span class=\"chcklst-box checked fa fa-square-check-o\" data-chk-src=\"3:0\"></span> second</li>\n  </ul>\n  <p><span class=\"chcklst-box checked permanent fa fa-square-check\"></span> fixed and <span class=\"chcklst-box fa fa-square-o\" data-chk-src=\"5:1\"></span> legacy</p>\n- |-\n  <p>Checklist to toggle:</p>\n  <ul>\n  <li><span class=\"chcklst-box checked fa fa-square-check-o\" data-chk-src=\"2:0\"></span> first</li>\n  <li><span class=\"chcklst-box checked fa fa-square-check-o\" data-chk-src=\"3:0\"></span> second</li>\n  </ul>\n  <p><span class=\"chcklst-box checked permanent fa fa-square-check\"></span> fixed and <span class=\"chcklst-box fa fa-square-o\" data-chk-src=\"5:1\"></span> legacy</p>\n"
         }
       ],
@@ -160,7 +160,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-11-22T04:48:33.945875",
+            "baked_at": "2026-11-22T08:40:20.758781",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -173,7 +173,7 @@
             "self_edits": 0,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-11-22T04:48:33.946028",
+            "updated_at": "2026-11-22T08:40:20.758942",
             "word_count": 11,
             "action_code": null,
             "cook_method": 1,
@@ -193,7 +193,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T04:48:33.890994",
+            "last_version_at": "2026-11-22T08:40:20.707986",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -236,7 +236,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -288,7 +288,7 @@
             "word_count": 66,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -325,33 +325,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "NCRQWepcs02TeRLsO68RqWTOU9Q=",
-            "created_at": "2026-11-22T04:48:33.411352",
-            "rotated_at": "2026-11-22T04:48:33.410571",
-            "updated_at": "2026-11-22T04:48:33.411352",
+            "auth_token": "oAhpMAi7ez0GRfCsZYqAwtD4jzo=",
+            "created_at": "2026-11-22T08:40:20.222315",
+            "rotated_at": "2026-11-22T08:40:20.221462",
+            "updated_at": "2026-11-22T08:40:20.222315",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "NCRQWepcs02TeRLsO68RqWTOU9Q=",
+            "prev_auth_token": "oAhpMAi7ez0GRfCsZYqAwtD4jzo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:48:33.881953",
+            "id": 9,
+            "seen_at": "2026-11-22T08:40:20.696749",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "NCRQWepcs02TeRLsO68RqWTOU9Q=",
-            "created_at": "2026-11-22T04:48:33.411352",
-            "rotated_at": "2026-11-22T04:48:33.410571",
-            "updated_at": "2026-11-22T04:48:33.411352",
+            "auth_token": "oAhpMAi7ez0GRfCsZYqAwtD4jzo=",
+            "created_at": "2026-11-22T08:40:20.222315",
+            "rotated_at": "2026-11-22T08:40:20.221462",
+            "updated_at": "2026-11-22T08:40:20.222315",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "NCRQWepcs02TeRLsO68RqWTOU9Q=",
+            "prev_auth_token": "oAhpMAi7ez0GRfCsZYqAwtD4jzo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -372,10 +372,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-22T04:48:33.972216",
+          "created_at": "2026-11-22T08:40:20.787132",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:48:33.972216",
+          "updated_at": "2026-11-22T08:40:20.787132",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -495,7 +495,7 @@
   ],
   "recorded_from": {
     "case": "8440cecdf9261e914e03c83dd1dc3df1885dd6f93a949c4241211c1c89434323",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -14,8 +14,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:05:51.46304",
-  "transaction_started_at": "2026-11-22T05:05:50.837293",
+  "started_at": "2026-11-22T08:57:32.574522",
+  "transaction_started_at": "2026-11-22T08:57:31.843113",
   "responses": [
     {
       "status": 200,
@@ -36,11 +36,11 @@
           "user_id": 6,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-22T05:05:51.918897",
+          "created_at": "2026-11-22T08:57:32.874879",
           "email_type": "signup",
-          "message_id": "05e568fb-36e3-4200-b793-0a0e01473442@localhost",
+          "message_id": "7ebfa9c9-6e9d-4f46-b48c-91a97f30d30d@localhost",
           "to_address": "newbie@example.com",
-          "updated_at": "2026-11-22T05:05:51.918897",
+          "updated_at": "2026-11-22T08:57:32.874879",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -61,9 +61,9 @@
           "expired": false,
           "user_id": 6,
           "confirmed": false,
-          "created_at": "2026-11-22T05:05:51.822111",
-          "token_hash": "c13564bd60b8ac37afc862c104fb2895f7c48f94b6449d9c8f2fa134366e4b60",
-          "updated_at": "2026-11-22T05:05:51.822111"
+          "created_at": "2026-11-22T08:57:32.779845",
+          "token_hash": "2b61bab941a3b7c3c0b7cb6370546af3fd67281a765f393ac411117e66c66851",
+          "updated_at": "2026-11-22T08:57:32.779845"
         },
         {
           "id": 13,
@@ -72,9 +72,9 @@
           "expired": true,
           "user_id": 6,
           "confirmed": false,
-          "created_at": "2026-11-22T05:05:51.678983",
-          "token_hash": "f424ad577a857e95f588721d8d29bfc5ee9647fc9f2128beb6d7c075791505fd",
-          "updated_at": "2026-11-22T05:05:51.678983"
+          "created_at": "2026-11-22T08:57:32.68417",
+          "token_hash": "431f8e41c9c8850a57539e53a30b0ac7fe331c387e27e3d62280d475b4df6d5a",
+          "updated_at": "2026-11-22T08:57:32.68417"
         }
       ],
       "deleted": [],
@@ -88,9 +88,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-22T05:05:51.779467",
+          "created_at": "2026-11-22T08:57:32.739519",
           "prev_value": null,
-          "updated_at": "2026-11-22T05:05:51.779467",
+          "updated_at": "2026-11-22T08:57:32.739519",
           "acting_user_id": 3,
           "target_user_id": 6
         }
@@ -105,9 +105,9 @@
           "owner": false,
           "user_id": 6,
           "group_id": 10,
-          "created_at": "2026-11-22T05:05:51.722551",
-          "updated_at": "2026-11-22T05:05:51.722551",
-          "first_unread_pm_at": "2026-11-22T05:05:50.837293",
+          "created_at": "2026-11-22T08:57:32.701637",
+          "updated_at": "2026-11-22T08:57:32.701637",
+          "first_unread_pm_at": "2026-11-22T08:57:31.843113",
           "notification_level": 3
         },
         {
@@ -115,9 +115,9 @@
           "owner": false,
           "user_id": 6,
           "group_id": 11,
-          "created_at": "2026-11-22T05:05:51.741231",
-          "updated_at": "2026-11-22T05:05:51.741231",
-          "first_unread_pm_at": "2026-11-22T05:05:50.837293",
+          "created_at": "2026-11-22T08:57:32.711968",
+          "updated_at": "2026-11-22T08:57:32.711968",
+          "first_unread_pm_at": "2026-11-22T08:57:31.843113",
           "notification_level": 3
         },
         {
@@ -125,9 +125,9 @@
           "owner": false,
           "user_id": 6,
           "group_id": 9001,
-          "created_at": "2026-11-22T05:05:51.777432",
-          "updated_at": "2026-11-22T05:05:51.777432",
-          "first_unread_pm_at": "2026-11-22T05:05:50.837293",
+          "created_at": "2026-11-22T08:57:32.737264",
+          "updated_at": "2026-11-22T08:57:32.737264",
+          "first_unread_pm_at": "2026-11-22T08:57:31.843113",
           "notification_level": 3
         }
       ],
@@ -370,9 +370,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-02T05:05:50.837293",
+            "created_at": "2026-11-02T08:57:31.843113",
             "flair_icon": null,
-            "updated_at": "2026-11-02T05:05:50.837293",
+            "updated_at": "2026-11-02T08:57:31.843113",
             "user_count": 0,
             "flair_color": null,
             "imap_server": null,
@@ -424,9 +424,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-02T05:05:50.837293",
+            "created_at": "2026-11-02T08:57:31.843113",
             "flair_icon": null,
-            "updated_at": "2026-11-02T05:05:50.837293",
+            "updated_at": "2026-11-02T08:57:31.843113",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -476,9 +476,9 @@
           "id": 1,
           "user_id": 6,
           "invite_id": 900,
-          "created_at": "2026-11-22T05:05:51.509214",
-          "updated_at": "2026-11-22T05:05:51.787799",
-          "redeemed_at": "2026-11-22T05:05:51.503617"
+          "created_at": "2026-11-22T08:57:32.588763",
+          "updated_at": "2026-11-22T08:57:32.746582",
+          "redeemed_at": "2026-11-22T08:57:32.587684"
         }
       ],
       "deleted": [],
@@ -495,11 +495,11 @@
             "email": null,
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-19T05:05:50.837293",
+            "created_at": "2026-11-19T08:57:31.843113",
             "deleted_at": null,
-            "expires_at": "2026-12-22T05:05:50.837293",
+            "expires_at": "2026-12-22T08:57:31.843113",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-19T05:05:50.837293",
+            "updated_at": "2026-11-19T08:57:31.843113",
             "description": "for the book club",
             "email_token": null,
             "deleted_by_id": null,
@@ -516,11 +516,11 @@
             "email": null,
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-19T05:05:50.837293",
+            "created_at": "2026-11-19T08:57:31.843113",
             "deleted_at": null,
-            "expires_at": "2026-12-22T05:05:50.837293",
+            "expires_at": "2026-12-22T08:57:31.843113",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-19T05:05:50.837293",
+            "updated_at": "2026-11-19T08:57:31.843113",
             "description": "for the book club",
             "email_token": null,
             "deleted_by_id": null,
@@ -542,8 +542,8 @@
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-22T05:05:51.789303",
-          "updated_at": "2026-11-22T05:05:51.789303",
+          "created_at": "2026-11-22T08:57:32.747826",
+          "updated_at": "2026-11-22T08:57:32.747826",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
@@ -555,8 +555,8 @@
           "read": false,
           "user_id": 6,
           "topic_id": 35,
-          "created_at": "2026-11-22T05:05:51.83375",
-          "updated_at": "2026-11-22T05:05:51.83375",
+          "created_at": "2026-11-22T08:57:32.790522",
+          "updated_at": "2026-11-22T08:57:32.790522",
           "post_number": 1,
           "high_priority": false,
           "post_action_id": null,
@@ -572,8 +572,8 @@
           "id": 28,
           "user_id": 6,
           "position": 0,
-          "created_at": "2026-11-22T05:05:50.837293",
-          "updated_at": "2026-11-22T05:05:50.837293",
+          "created_at": "2026-11-22T08:57:31.843113",
+          "updated_at": "2026-11-22T08:57:31.843113",
           "linkable_id": 3,
           "linkable_type": "Category",
           "sidebar_section_id": null
@@ -582,8 +582,8 @@
           "id": 29,
           "user_id": 6,
           "position": 0,
-          "created_at": "2026-11-22T05:05:50.837293",
-          "updated_at": "2026-11-22T05:05:50.837293",
+          "created_at": "2026-11-22T08:57:31.843113",
+          "updated_at": "2026-11-22T08:57:31.843113",
           "linkable_id": 4,
           "linkable_type": "Category",
           "sidebar_section_id": null
@@ -592,8 +592,8 @@
           "id": 30,
           "user_id": 6,
           "position": 0,
-          "created_at": "2026-11-22T05:05:50.837293",
-          "updated_at": "2026-11-22T05:05:50.837293",
+          "created_at": "2026-11-22T08:57:31.843113",
+          "updated_at": "2026-11-22T08:57:31.843113",
           "linkable_id": 2,
           "linkable_type": "Category",
           "sidebar_section_id": null
@@ -607,8 +607,8 @@
         {
           "id": 8,
           "user_id": 6,
-          "created_at": "2026-11-22T05:05:51.767017",
-          "updated_at": "2026-11-22T05:05:51.767017",
+          "created_at": "2026-11-22T08:57:32.728642",
+          "updated_at": "2026-11-22T08:57:32.728642",
           "custom_upload_id": null,
           "gravatar_upload_id": null,
           "last_gravatar_download_attempt": null,
@@ -625,8 +625,8 @@
           "email": "newbie@example.com",
           "primary": true,
           "user_id": 6,
-          "created_at": "2026-11-22T05:05:51.600013",
-          "updated_at": "2026-11-22T05:05:51.600013",
+          "created_at": "2026-11-22T08:57:32.616124",
+          "updated_at": "2026-11-22T08:57:32.616124",
           "normalized_email": "newbie@example.com"
         }
       ],
@@ -731,10 +731,10 @@
         {
           "id": 8,
           "user_id": 6,
-          "created_at": "2026-11-22T05:05:51.671986",
-          "updated_at": "2026-11-22T05:05:51.671986",
-          "password_hash": "e83001c340c2d9c9e9b187f5c625497e7c19feafbc988369073d0cd19e01778e",
-          "password_salt": "91ceed1409fcb46d6ab01dd74085387e",
+          "created_at": "2026-11-22T08:57:32.681586",
+          "updated_at": "2026-11-22T08:57:32.681586",
+          "password_hash": "80cec28e62db6fc133a4380e13b7d4315144691f76c9759ae618a7920a9c7268",
+          "password_salt": "98a3c30a408e99b6e9c1a7954a0e65cf",
           "password_algorithm": "$pbkdf2-sha256$i=600000,l=32$",
           "password_expired_at": null
         }
@@ -780,7 +780,7 @@
         {
           "user_id": 6,
           "read_faq": null,
-          "new_since": "2026-11-22T05:05:51.692543",
+          "new_since": "2026-11-22T08:57:32.687165",
           "time_read": 0,
           "post_count": 0,
           "draft_count": 0,
@@ -792,11 +792,11 @@
           "flags_ignored": 0,
           "likes_received": 0,
           "topics_entered": 0,
-          "first_unread_at": "2026-11-22T05:05:50.837293",
+          "first_unread_at": "2026-11-22T08:57:31.843113",
           "flags_disagreed": 0,
           "post_edits_count": null,
           "posts_read_count": 0,
-          "first_unread_pm_at": "2026-11-22T05:05:50.837293",
+          "first_unread_pm_at": "2026-11-22T08:57:31.843113",
           "digest_attempted_at": null,
           "pending_posts_count": 0,
           "distinct_badge_count": 0,
@@ -821,10 +821,10 @@
           "approved": false,
           "username": "newbie",
           "moderator": false,
-          "created_at": "2026-11-22T05:05:51.592126",
+          "created_at": "2026-11-22T08:57:32.613431",
           "flag_level": 0,
           "ip_address": "127.0.0.1",
-          "updated_at": "2026-11-22T05:05:51.592126",
+          "updated_at": "2026-11-22T08:57:32.613431",
           "approved_at": null,
           "trust_level": 1,
           "last_seen_at": null,
@@ -837,7 +837,7 @@
           "last_posted_at": null,
           "suspended_till": null,
           "username_lower": "newbie",
-          "last_emailed_at": "2026-11-22T05:05:50.837293",
+          "last_emailed_at": "2026-11-22T08:57:31.843113",
           "primary_group_id": null,
           "previous_visit_at": null,
           "secure_identifier": null,
@@ -867,7 +867,7 @@
       {
         "type": "signup",
         "user_id": 6,
-        "email_token": "602c091bb6892d6f888e68d3a6157c88",
+        "email_token": "51b824af91615155f5eedcaf1c9c1f17",
         "to_address": null
       }
     ]
@@ -914,7 +914,7 @@
         ],
         [
           "Message-ID",
-          "<05e568fb-36e3-4200-b793-0a0e01473442@localhost>"
+          "<7ebfa9c9-6e9d-4f46-b48c-91a97f30d30d@localhost>"
         ],
         [
           "Subject",
@@ -926,7 +926,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b02782fdf85b_17904f3885857"
+          "multipart/alternative; boundary=--==_mimepart_6b02ae7cd4c74_262a9f38-343"
         ],
         [
           "Content-Transfer-Encoding",
@@ -949,13 +949,13 @@
           "auto-generated"
         ]
       ],
-      "text": "Welcome to Discourse!\n\nClick the following link to confirm and activate your new account:\nhttp://localhost:3042/u/activate-account/602c091bb6892d6f888e68d3a6157c88\n\nIf the above link is not clickable, try copying and pasting it into the address bar of your web browser.\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"><p>Confirm your account.</p></div>\n\n    \n    \n    <p>Welcome to Discourse!</p>\n<p>Click the following link to confirm and activate your new account:<br>\n<a href=\"http://localhost:3042/u/activate-account/602c091bb6892d6f888e68d3a6157c88\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/u/activate-account/602c091bb6892d6f888e68d3a6157c88</a></p>\n<p>If the above link is not clickable, try copying and pasting it into the address bar of your web browser.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Welcome to Discourse!\n\nClick the following link to confirm and activate your new account:\nhttp://localhost:3042/u/activate-account/51b824af91615155f5eedcaf1c9c1f17\n\nIf the above link is not clickable, try copying and pasting it into the address bar of your web browser.\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"><p>Confirm your account.</p></div>\n\n    \n    \n    <p>Welcome to Discourse!</p>\n<p>Click the following link to confirm and activate your new account:<br>\n<a href=\"http://localhost:3042/u/activate-account/51b824af91615155f5eedcaf1c9c1f17\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/u/activate-account/51b824af91615155f5eedcaf1c9c1f17</a></p>\n<p>If the above link is not clickable, try copying and pasting it into the address bar of your web browser.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "4fda9c9a3b5105d3ad0933ef17b03bd39efa228d43a6521ce0e9d96cb204ef50",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

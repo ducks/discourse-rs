@@ -2,8 +2,8 @@
   "name": "tl3_promote",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:43:52.59722",
-  "transaction_started_at": "2026-11-22T05:43:51.895579",
+  "started_at": "2026-11-22T09:30:12.068707",
+  "transaction_started_at": "2026-11-22T09:30:11.055959",
   "responses": [],
   "changes": {
     "group_users": {
@@ -13,9 +13,9 @@
           "owner": false,
           "user_id": 3,
           "group_id": 13,
-          "created_at": "2026-11-22T05:43:52.629819",
-          "updated_at": "2026-11-22T05:43:52.629819",
-          "first_unread_pm_at": "2026-11-22T05:43:51.895579",
+          "created_at": "2026-11-22T09:30:12.09926",
+          "updated_at": "2026-11-22T09:30:12.09926",
+          "first_unread_pm_at": "2026-11-22T09:30:11.055959",
           "notification_level": 3
         }
       ],
@@ -151,10 +151,10 @@
           "topic_id": null,
           "new_value": "3",
           "admin_only": false,
-          "created_at": "2026-11-22T05:43:52.612905",
+          "created_at": "2026-11-22T09:30:12.084363",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:43:52.612905",
+          "updated_at": "2026-11-22T09:30:12.084363",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -226,7 +226,7 @@
             "created_at": "2026-11-03T05:08:00.404788",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-22T05:43:52.615717",
+            "updated_at": "2026-11-22T09:30:12.086923",
             "approved_at": null,
             "trust_level": 3,
             "last_seen_at": "2026-11-22T04:14:24.947499",
@@ -289,7 +289,7 @@
   ],
   "recorded_from": {
     "case": "322707d517d02d3bb0ea1c19ba3a6e043fc07188c58b56efdfe259ad7d3e0dbe",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

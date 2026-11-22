@@ -2,8 +2,8 @@
   "name": "heat_likes",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:42:18.812565",
-  "transaction_started_at": "2026-11-22T05:42:18.006546",
+  "started_at": "2026-11-22T09:28:39.195549",
+  "transaction_started_at": "2026-11-22T09:28:38.392384",
   "responses": [],
   "changes": {
     "site_settings": {
@@ -13,24 +13,24 @@
           "name": "topic_post_like_heat_high",
           "value": "2.5",
           "data_type": 4,
-          "created_at": "2026-11-22T05:42:18.816566",
-          "updated_at": "2026-11-22T05:42:18.816566"
+          "created_at": "2026-11-22T09:28:39.198366",
+          "updated_at": "2026-11-22T09:28:39.198366"
         },
         {
           "id": 38,
           "name": "topic_post_like_heat_medium",
           "value": "1.5",
           "data_type": 4,
-          "created_at": "2026-11-22T05:42:18.823611",
-          "updated_at": "2026-11-22T05:42:18.823611"
+          "created_at": "2026-11-22T09:28:39.204529",
+          "updated_at": "2026-11-22T09:28:39.204529"
         },
         {
           "id": 39,
           "name": "topic_post_like_heat_low",
           "value": "0.58",
           "data_type": 4,
-          "created_at": "2026-11-22T05:42:18.829312",
-          "updated_at": "2026-11-22T05:42:18.829312"
+          "created_at": "2026-11-22T09:28:39.212029",
+          "updated_at": "2026-11-22T09:28:39.212029"
         }
       ],
       "deleted": [],
@@ -49,10 +49,10 @@
           "topic_id": null,
           "new_value": "2.5",
           "admin_only": true,
-          "created_at": "2026-11-22T05:42:18.819861",
+          "created_at": "2026-11-22T09:28:39.201773",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:42:18.819861",
+          "updated_at": "2026-11-22T09:28:39.201773",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -71,10 +71,10 @@
           "topic_id": null,
           "new_value": "1.5",
           "admin_only": true,
-          "created_at": "2026-11-22T05:42:18.826631",
+          "created_at": "2026-11-22T09:28:39.208229",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:42:18.826631",
+          "updated_at": "2026-11-22T09:28:39.208229",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -93,10 +93,10 @@
           "topic_id": null,
           "new_value": "0.58",
           "admin_only": true,
-          "created_at": "2026-11-22T05:42:18.833143",
+          "created_at": "2026-11-22T09:28:39.215207",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:42:18.833143",
+          "updated_at": "2026-11-22T09:28:39.215207",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -126,7 +126,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "91d174ddbe996f2c5b43acc39b37df48db75466c2e3b495cd1c8f1b06740408e",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

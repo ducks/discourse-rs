@@ -2,8 +2,8 @@
   "name": "animated_uploads_detect",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:40:52.3659",
-  "transaction_started_at": "2026-11-22T05:40:51.738699",
+  "started_at": "2026-11-22T09:27:13.278001",
+  "transaction_started_at": "2026-11-22T09:27:12.681837",
   "responses": [],
   "changes": {
     "optimized_images": {
@@ -20,8 +20,8 @@
           "filesize": 10,
           "extension": ".gif",
           "upload_id": 9624,
-          "created_at": "2026-11-22T05:40:51.738699",
-          "updated_at": "2026-11-22T05:40:51.738699"
+          "created_at": "2026-11-22T09:27:12.681837",
+          "updated_at": "2026-11-22T09:27:12.681837"
         }
       ],
       "updated": []
@@ -44,8 +44,8 @@
             "animated": null,
             "filesize": 100,
             "extension": "gif",
-            "created_at": "2026-11-19T05:40:51.738699",
-            "updated_at": "2026-11-19T05:40:51.738699",
+            "created_at": "2026-11-19T09:27:12.681837",
+            "updated_at": "2026-11-19T09:27:12.681837",
             "retain_hours": null,
             "original_sha1": null,
             "dominant_color": "",
@@ -70,8 +70,8 @@
             "animated": true,
             "filesize": 100,
             "extension": "gif",
-            "created_at": "2026-11-19T05:40:51.738699",
-            "updated_at": "2026-11-22T05:40:52.369629",
+            "created_at": "2026-11-19T09:27:12.681837",
+            "updated_at": "2026-11-22T09:27:13.28165",
             "retain_hours": null,
             "original_sha1": null,
             "dominant_color": "",
@@ -98,8 +98,8 @@
             "animated": null,
             "filesize": 100,
             "extension": "gif",
-            "created_at": "2026-11-19T05:40:51.738699",
-            "updated_at": "2026-11-19T05:40:51.738699",
+            "created_at": "2026-11-19T09:27:12.681837",
+            "updated_at": "2026-11-19T09:27:12.681837",
             "retain_hours": null,
             "original_sha1": null,
             "dominant_color": "",
@@ -124,8 +124,8 @@
             "animated": false,
             "filesize": 100,
             "extension": "gif",
-            "created_at": "2026-11-19T05:40:51.738699",
-            "updated_at": "2026-11-22T05:40:52.374499",
+            "created_at": "2026-11-19T09:27:12.681837",
+            "updated_at": "2026-11-22T09:27:13.285358",
             "retain_hours": null,
             "original_sha1": null,
             "dominant_color": "",
@@ -152,8 +152,8 @@
             "animated": null,
             "filesize": 100,
             "extension": null,
-            "created_at": "2026-11-19T05:40:51.738699",
-            "updated_at": "2026-11-19T05:40:51.738699",
+            "created_at": "2026-11-19T09:27:12.681837",
+            "updated_at": "2026-11-19T09:27:12.681837",
             "retain_hours": null,
             "original_sha1": null,
             "dominant_color": "",
@@ -178,8 +178,8 @@
             "animated": true,
             "filesize": 100,
             "extension": null,
-            "created_at": "2026-11-19T05:40:51.738699",
-            "updated_at": "2026-11-22T05:40:52.376113",
+            "created_at": "2026-11-19T09:27:12.681837",
+            "updated_at": "2026-11-22T09:27:13.286483",
             "retain_hours": null,
             "original_sha1": null,
             "dominant_color": "",
@@ -215,7 +215,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "163364203a9f53e0243a1d29117224215632495f2deefe940780f89faabcc66b",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

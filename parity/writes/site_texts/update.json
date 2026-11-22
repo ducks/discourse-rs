@@ -47,8 +47,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:52:34.667021",
-  "transaction_started_at": "2026-11-22T05:52:33.846926",
+  "started_at": "2026-11-22T09:38:52.164829",
+  "transaction_started_at": "2026-11-22T09:38:51.351617",
   "responses": [
     {
       "status": 200,
@@ -139,8 +139,8 @@
           "value": "Start one",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-11-22T05:52:34.683297",
-          "updated_at": "2026-11-22T05:52:34.768759",
+          "created_at": "2026-11-22T09:38:52.180884",
+          "updated_at": "2026-11-22T09:38:52.258491",
           "translation_key": "js.topic.create",
           "original_translation": "New Topic"
         },
@@ -149,8 +149,8 @@
           "value": "Welcome %{name}, to %{site_name}",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-11-22T05:52:34.901481",
-          "updated_at": "2026-11-22T05:52:34.901481",
+          "created_at": "2026-11-22T09:38:52.385192",
+          "updated_at": "2026-11-22T09:38:52.385192",
           "translation_key": "system_messages.welcome_user.subject_template",
           "original_translation": "Welcome to %{site_name}!"
         }
@@ -164,33 +164,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "kjz1Kcu7AK9uQzI/eQoPq9zjT/0=",
-            "created_at": "2026-11-22T05:52:34.207276",
-            "rotated_at": "2026-11-22T05:52:34.206317",
-            "updated_at": "2026-11-22T05:52:34.207276",
+            "auth_token": "s/W3penXA2jLoJBn6u4Y5hBXSRI=",
+            "created_at": "2026-11-22T09:38:51.676131",
+            "rotated_at": "2026-11-22T09:38:51.675215",
+            "updated_at": "2026-11-22T09:38:51.676131",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "kjz1Kcu7AK9uQzI/eQoPq9zjT/0=",
+            "prev_auth_token": "s/W3penXA2jLoJBn6u4Y5hBXSRI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:52:34.672614",
+            "id": 9,
+            "seen_at": "2026-11-22T09:38:52.170657",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "kjz1Kcu7AK9uQzI/eQoPq9zjT/0=",
-            "created_at": "2026-11-22T05:52:34.207276",
-            "rotated_at": "2026-11-22T05:52:34.206317",
-            "updated_at": "2026-11-22T05:52:34.207276",
+            "auth_token": "s/W3penXA2jLoJBn6u4Y5hBXSRI=",
+            "created_at": "2026-11-22T09:38:51.676131",
+            "rotated_at": "2026-11-22T09:38:51.675215",
+            "updated_at": "2026-11-22T09:38:51.676131",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "kjz1Kcu7AK9uQzI/eQoPq9zjT/0=",
+            "prev_auth_token": "s/W3penXA2jLoJBn6u4Y5hBXSRI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -211,10 +211,10 @@
           "topic_id": null,
           "new_value": "Start a <b>discussion</b> &amp; more",
           "admin_only": true,
-          "created_at": "2026-11-22T05:52:34.687227",
+          "created_at": "2026-11-22T09:38:52.183656",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:52:34.687227",
+          "updated_at": "2026-11-22T09:38:52.183656",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -233,10 +233,10 @@
           "topic_id": null,
           "new_value": "Start one",
           "admin_only": true,
-          "created_at": "2026-11-22T05:52:34.773621",
+          "created_at": "2026-11-22T09:38:52.261857",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:52:34.773621",
+          "updated_at": "2026-11-22T09:38:52.261857",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -255,10 +255,10 @@
           "topic_id": null,
           "new_value": "Welcome %{name}, to %{site_name}",
           "admin_only": true,
-          "created_at": "2026-11-22T05:52:34.905217",
+          "created_at": "2026-11-22T09:38:52.389808",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:52:34.905217",
+          "updated_at": "2026-11-22T09:38:52.389808",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -278,7 +278,7 @@
   },
   "recorded_from": {
     "case": "55bb1835d548fda14c5c3f865e42b2eb04bb0b88de4d9f4a3797482f1a13ebd8",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

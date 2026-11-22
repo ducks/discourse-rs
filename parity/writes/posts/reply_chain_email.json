@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:22:32.058147",
-  "transaction_started_at": "2026-11-22T05:22:31.189493",
+  "started_at": "2026-11-22T09:14:04.868346",
+  "transaction_started_at": "2026-11-22T09:14:04.006392",
   "responses": [
     {
       "status": 200,
@@ -22,12 +22,12 @@
         "name": "User1",
         "username": "user1",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-        "created_at": "2026-11-22T05:22:32.135Z",
+        "created_at": "2026-11-22T09:14:04.941Z",
         "cooked": "<p>A reply to a reply, deeper in the thread than one level.</p>",
         "post_number": 6,
         "post_type": 1,
         "posts_count": 6,
-        "updated_at": "2026-11-22T05:22:32.135Z",
+        "updated_at": "2026-11-22T09:14:04.941Z",
         "reply_count": 0,
         "reply_to_post_number": 3,
         "quote_count": 0,
@@ -264,11 +264,11 @@
           "user_id": 4,
           "topic_id": 35,
           "bounce_key": null,
-          "created_at": "2026-11-22T05:22:32.427515",
+          "created_at": "2026-11-22T09:14:05.24263",
           "email_type": "user_replied",
           "message_id": "discourse/post/53@localhost",
           "to_address": "user2@example.com",
-          "updated_at": "2026-11-22T05:22:32.427515",
+          "updated_at": "2026-11-22T09:14:05.24263",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -284,11 +284,11 @@
           "user_id": 2,
           "topic_id": 35,
           "bounce_key": null,
-          "created_at": "2026-11-22T05:22:32.507215",
+          "created_at": "2026-11-22T09:14:05.328697",
           "email_type": "user_replied",
           "message_id": "discourse/post/53@localhost",
           "to_address": "user0@example.com",
-          "updated_at": "2026-11-22T05:22:32.507215",
+          "updated_at": "2026-11-22T09:14:05.328697",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -308,8 +308,8 @@
           "read": false,
           "user_id": 4,
           "topic_id": 35,
-          "created_at": "2026-11-22T05:22:32.285548",
-          "updated_at": "2026-11-22T05:22:32.285548",
+          "created_at": "2026-11-22T09:14:05.096408",
+          "updated_at": "2026-11-22T09:14:05.096408",
           "post_number": 6,
           "high_priority": false,
           "post_action_id": null,
@@ -321,8 +321,8 @@
           "read": false,
           "user_id": 2,
           "topic_id": 35,
-          "created_at": "2026-11-22T05:22:32.311981",
-          "updated_at": "2026-11-22T05:22:32.311981",
+          "created_at": "2026-11-22T09:14:05.135159",
+          "updated_at": "2026-11-22T09:14:05.135159",
           "post_number": 6,
           "high_priority": false,
           "post_action_id": null,
@@ -350,8 +350,8 @@
       "inserted": [
         {
           "post_id": 37,
-          "created_at": "2026-11-22T05:22:32.206598",
-          "updated_at": "2026-11-22T05:22:32.206598",
+          "created_at": "2026-11-22T09:14:05.01255",
+          "updated_at": "2026-11-22T09:14:05.01255",
           "reply_post_id": 53
         }
       ],
@@ -377,8 +377,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-11-22T05:22:32.15829",
-          "updated_at": "2026-11-22T05:22:32.15829",
+          "created_at": "2026-11-22T09:14:04.961483",
+          "updated_at": "2026-11-22T09:14:04.961483",
           "drafts_saved": 0,
           "writing_device": "unknown",
           "composer_version": null,
@@ -415,20 +415,20 @@
           "locale": null,
           "user_id": 3,
           "version": 1,
-          "baked_at": "2026-11-22T05:22:32.135725",
+          "baked_at": "2026-11-22T09:14:04.941612",
           "topic_id": 35,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-11-22T05:22:32.135787",
+          "created_at": "2026-11-22T09:14:04.941661",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 6,
           "spam_count": 0,
-          "updated_at": "2026-11-22T05:22:32.135787",
+          "updated_at": "2026-11-22T09:14:04.941661",
           "word_count": 12,
           "action_code": null,
           "cook_method": 1,
@@ -448,7 +448,7 @@
           "last_editor_id": 3,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-11-22T05:22:32.155184",
+          "last_version_at": "2026-11-22T09:14:04.958872",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": 4,
@@ -830,7 +830,7 @@
             "user_id": 3,
             "topic_id": 35,
             "bookmarked": true,
-            "last_posted_at": "2026-11-22T05:22:32.173221",
+            "last_posted_at": "2026-11-22T09:14:04.975801",
             "last_visited_at": "2026-11-21T23:56:44.689516",
             "first_visited_at": "2026-11-21T23:56:44.689516",
             "cleared_pinned_at": null,
@@ -949,7 +949,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -991,13 +991,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-11-22T05:22:32.135787",
+            "bumped_at": "2026-11-22T09:14:04.941661",
             "pinned_at": null,
             "created_at": "2026-11-21T23:56:44.408368",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T05:22:32.179775",
+            "updated_at": "2026-11-22T09:14:04.982566",
             "word_count": 80,
             "category_id": 4,
             "external_id": null,
@@ -1010,7 +1010,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-11-22T05:22:32.135787",
+            "last_posted_at": "2026-11-22T09:14:04.941661",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -1035,21 +1035,21 @@
     "unsubscribe_keys": {
       "inserted": [
         {
-          "key": "6622c851b570e225486117696b913428ea4a73e1c769c344595a62ec0d014a77",
+          "key": "326d9586c6809f1e8a526b6dfa86d8699ef2bb81db96663e8a74b29d66e61e88",
           "post_id": 53,
           "user_id": 4,
           "topic_id": 35,
-          "created_at": "2026-11-22T05:22:32.360151",
-          "updated_at": "2026-11-22T05:22:32.360151",
+          "created_at": "2026-11-22T09:14:05.1785",
+          "updated_at": "2026-11-22T09:14:05.1785",
           "unsubscribe_key_type": "topic"
         },
         {
-          "key": "af1764a452c19ce75e3536c36bae8d37755658624a875c16075b59bdb78ae835",
+          "key": "17cc3d5a4183b6f00297e4951c44d9d02f47d8bd18a31424ce078f99514cbd6e",
           "post_id": 53,
           "user_id": 2,
           "topic_id": 35,
-          "created_at": "2026-11-22T05:22:32.449059",
-          "updated_at": "2026-11-22T05:22:32.449059",
+          "created_at": "2026-11-22T09:14:05.26384",
+          "updated_at": "2026-11-22T09:14:05.26384",
           "unsubscribe_key_type": "topic"
         }
       ],
@@ -1061,8 +1061,8 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-11-22T05:22:32.135787",
-          "updated_at": "2026-11-22T05:22:32.162242",
+          "created_at": "2026-11-22T09:14:04.941661",
+          "updated_at": "2026-11-22T09:14:04.965147",
           "action_type": 5,
           "acting_user_id": 3,
           "target_post_id": 53,
@@ -1072,8 +1072,8 @@
         {
           "id": 66,
           "user_id": 4,
-          "created_at": "2026-11-22T05:22:32.280012",
-          "updated_at": "2026-11-22T05:22:32.280012",
+          "created_at": "2026-11-22T09:14:05.08873",
+          "updated_at": "2026-11-22T09:14:05.08873",
           "action_type": 6,
           "acting_user_id": 3,
           "target_post_id": 53,
@@ -1083,8 +1083,8 @@
         {
           "id": 67,
           "user_id": 2,
-          "created_at": "2026-11-22T05:22:32.307584",
-          "updated_at": "2026-11-22T05:22:32.307584",
+          "created_at": "2026-11-22T09:14:05.129793",
+          "updated_at": "2026-11-22T09:14:05.129793",
           "action_type": 6,
           "acting_user_id": 3,
           "target_post_id": 53,
@@ -1101,33 +1101,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "X7d3qJepHPxtggPkRk1NxPGgEIc=",
-            "created_at": "2026-11-22T05:22:31.542955",
-            "rotated_at": "2026-11-22T05:22:31.542052",
-            "updated_at": "2026-11-22T05:22:31.542955",
+            "auth_token": "fiW26dawL9iFuZ8gD7WWAurkMHU=",
+            "created_at": "2026-11-22T09:14:04.368764",
+            "rotated_at": "2026-11-22T09:14:04.367875",
+            "updated_at": "2026-11-22T09:14:04.368764",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "X7d3qJepHPxtggPkRk1NxPGgEIc=",
+            "prev_auth_token": "fiW26dawL9iFuZ8gD7WWAurkMHU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:22:32.065342",
+            "id": 9,
+            "seen_at": "2026-11-22T09:14:04.875644",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "X7d3qJepHPxtggPkRk1NxPGgEIc=",
-            "created_at": "2026-11-22T05:22:31.542955",
-            "rotated_at": "2026-11-22T05:22:31.542052",
-            "updated_at": "2026-11-22T05:22:31.542955",
+            "auth_token": "fiW26dawL9iFuZ8gD7WWAurkMHU=",
+            "created_at": "2026-11-22T09:14:04.368764",
+            "rotated_at": "2026-11-22T09:14:04.367875",
+            "updated_at": "2026-11-22T09:14:04.368764",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "X7d3qJepHPxtggPkRk1NxPGgEIc=",
+            "prev_auth_token": "fiW26dawL9iFuZ8gD7WWAurkMHU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1255,7 +1255,7 @@
             "created_at": "2026-11-03T05:08:00.404788",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-22T05:22:32.186621",
+            "updated_at": "2026-11-22T09:14:04.989689",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": "2026-11-22T04:14:24.947499",
@@ -1265,7 +1265,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-22T05:22:32.135787",
+            "last_posted_at": "2026-11-22T09:14:04.941661",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
@@ -1350,7 +1350,7 @@
             "last_posted_at": "2026-11-21T23:56:44.759506",
             "suspended_till": null,
             "username_lower": "user2",
-            "last_emailed_at": "2026-11-22T05:22:31.189493",
+            "last_emailed_at": "2026-11-22T09:14:04.006392",
             "primary_group_id": null,
             "previous_visit_at": null,
             "secure_identifier": null,
@@ -1432,7 +1432,7 @@
             "last_posted_at": "2026-11-21T23:56:51.452828",
             "suspended_till": null,
             "username_lower": "user0",
-            "last_emailed_at": "2026-11-22T05:22:31.189493",
+            "last_emailed_at": "2026-11-22T09:14:04.006392",
             "primary_group_id": null,
             "previous_visit_at": "2026-11-21T23:56:57.795913",
             "secure_identifier": null,
@@ -1583,7 +1583,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b027c18646ae_18f79f38278b"
+          "multipart/alternative; boundary=--==_mimepart_6b02b25d37ede_2781ef38407d9"
         ],
         [
           "Content-Transfer-Encoding",
@@ -1595,7 +1595,7 @@
         ],
         [
           "List-Unsubscribe",
-          "<http://localhost:3042/email/unsubscribe/6622c851b570e225486117696b913428ea4a73e1c769c344595a62ec0d014a77>"
+          "<http://localhost:3042/email/unsubscribe/326d9586c6809f1e8a526b6dfa86d8699ef2bb81db96663e8a74b29d66e61e88>"
         ],
         [
           "List-Unsubscribe-Post",
@@ -1646,8 +1646,8 @@
           "http://localhost:3042/t/parity-fixture-replies-and-posters/35"
         ]
       ],
-      "text": "\n\nA reply to a reply, deeper in the thread than one level.\n\n\n\n\n\n---\n[Visit Topic](http://localhost:3042/t/parity-fixture-replies-and-posters/35/6) to respond.\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/6622c851b570e225486117696b913428ea4a73e1c769c344595a62ec0d014a77).\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone replied to your post.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 22</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">A reply to a reply, deeper in the thread than one level.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Topic</a> to respond.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/6622c851b570e225486117696b913428ea4a73e1c769c344595a62ec0d014a77\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "\n\nA reply to a reply, deeper in the thread than one level.\n\n\n\n\n\n---\n[Visit Topic](http://localhost:3042/t/parity-fixture-replies-and-posters/35/6) to respond.\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/326d9586c6809f1e8a526b6dfa86d8699ef2bb81db96663e8a74b29d66e61e88).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone replied to your post.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 22</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">A reply to a reply, deeper in the thread than one level.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Topic</a> to respond.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/326d9586c6809f1e8a526b6dfa86d8699ef2bb81db96663e8a74b29d66e61e88\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     },
     {
       "headers": [
@@ -1685,7 +1685,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b027c187929e_18f79f382844"
+          "multipart/alternative; boundary=--==_mimepart_6b02b25d4d164_2781ef38408ad"
         ],
         [
           "Content-Transfer-Encoding",
@@ -1697,7 +1697,7 @@
         ],
         [
           "List-Unsubscribe",
-          "<http://localhost:3042/email/unsubscribe/af1764a452c19ce75e3536c36bae8d37755658624a875c16075b59bdb78ae835>"
+          "<http://localhost:3042/email/unsubscribe/17cc3d5a4183b6f00297e4951c44d9d02f47d8bd18a31424ce078f99514cbd6e>"
         ],
         [
           "List-Unsubscribe-Post",
@@ -1748,13 +1748,13 @@
           "http://localhost:3042/t/parity-fixture-replies-and-posters/35"
         ]
       ],
-      "text": "\n\nA reply to a reply, deeper in the thread than one level.\n\n\n\n\n\n---\n[Visit Topic](http://localhost:3042/t/parity-fixture-replies-and-posters/35/6) to respond.\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/af1764a452c19ce75e3536c36bae8d37755658624a875c16075b59bdb78ae835).\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone replied to your post.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 22</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">A reply to a reply, deeper in the thread than one level.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Topic</a> to respond.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/af1764a452c19ce75e3536c36bae8d37755658624a875c16075b59bdb78ae835\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "\n\nA reply to a reply, deeper in the thread than one level.\n\n\n\n\n\n---\n[Visit Topic](http://localhost:3042/t/parity-fixture-replies-and-posters/35/6) to respond.\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/17cc3d5a4183b6f00297e4951c44d9d02f47d8bd18a31424ce078f99514cbd6e).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone replied to your post.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 22</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">A reply to a reply, deeper in the thread than one level.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Topic</a> to respond.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/17cc3d5a4183b6f00297e4951c44d9d02f47d8bd18a31424ce078f99514cbd6e\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/6\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "bc5ef57f3cfbf683034fbc7ed498bf55866b6bd1ec3f699611db629b7ddfcf8b",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

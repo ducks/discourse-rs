@@ -19,14 +19,14 @@
       "path": "/u/user1.json"
     }
   ],
-  "started_at": "2026-11-22T04:58:28.292651",
-  "transaction_started_at": "2026-11-22T04:58:27.66533",
+  "started_at": "2026-11-22T08:50:09.416314",
+  "transaction_started_at": "2026-11-22T08:50:08.792498",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/gh/login/oauth/authorize?client_id=ghclient1&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fgithub%2Fcallback&response_type=code&scope=user%3Aemail&state=249fff2c4db6c9d485d263ef748cdbefa50003b78e851bbc...",
+      "body": "Redirecting to http://fixtures.localhost:8099/gh/login/oauth/authorize?client_id=ghclient1&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fgithub%2Fcallback&response_type=code&scope=user%3Aemail&state=1df7e03b48f35b6b77866a7b0d93724963eb5430c89e2c32...",
       "headers": {
-        "Location": "/gh/login/oauth/authorize?client_id=ghclient1&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fgithub%2Fcallback&response_type=code&scope=user%3Aemail&state=249fff2c4db6c9d485d263ef748cdbefa50003b78e851bbc"
+        "Location": "/gh/login/oauth/authorize?client_id=ghclient1&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fgithub%2Fcallback&response_type=code&scope=user%3Aemail&state=1df7e03b48f35b6b77866a7b0d93724963eb5430c89e2c32"
       }
     },
     {
@@ -414,6 +414,30 @@
           "user_passkeys": [],
           "user_auth_tokens": [
             {
+              "id": 5,
+              "client_ip": "172.17.0.1",
+              "location": "unknown",
+              "browser": "Unknown browser",
+              "device": "unknown device",
+              "os": "unknown operating system",
+              "icon": "question",
+              "created_at": "2026-11-22T06:29:05.892Z",
+              "seen_at": "2026-11-22T06:29:06.028Z",
+              "is_active": false
+            },
+            {
+              "id": 9,
+              "client_ip": "127.0.0.1",
+              "location": "unknown",
+              "browser": "Unknown browser",
+              "device": "unknown device",
+              "os": "unknown operating system",
+              "icon": "question",
+              "created_at": "2026-11-22T08:50:09.590Z",
+              "seen_at": "2026-11-22T08:50:09.641Z",
+              "is_active": true
+            },
+            {
               "id": 1,
               "client_ip": "172.17.0.1",
               "location": "unknown",
@@ -424,18 +448,6 @@
               "created_at": "2026-11-22T02:18:07.527Z",
               "seen_at": "2026-11-22T02:18:07.663Z",
               "is_active": false
-            },
-            {
-              "id": 5,
-              "client_ip": "127.0.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-22T04:58:28.394Z",
-              "seen_at": "2026-11-22T04:58:28.418Z",
-              "is_active": true
             }
           ],
           "user_notification_schedule": {
@@ -689,9 +701,9 @@
             ]
           },
           "user_id": 3,
-          "last_used": "2026-11-22T04:58:28.372697",
-          "created_at": "2026-11-22T04:58:28.374009",
-          "updated_at": "2026-11-22T04:58:28.374009",
+          "last_used": "2026-11-22T08:50:09.542848",
+          "created_at": "2026-11-22T08:50:09.545415",
+          "updated_at": "2026-11-22T08:50:09.545415",
           "credentials": {
             "token": "gh-token-2",
             "expires": false
@@ -712,10 +724,10 @@
           "action": "generate",
           "user_id": 3,
           "client_ip": "127.0.0.1",
-          "auth_token": "FKnIM+aqyATo1Ihq8XMiPVbyYSg=",
-          "created_at": "2026-11-22T04:58:28.397963",
+          "auth_token": "GPlYZppTgz0nnOrJObcyl8E7QWU=",
+          "created_at": "2026-11-22T08:50:09.599355",
           "user_agent": null,
-          "user_auth_token_id": 5
+          "user_auth_token_id": 9
         }
       ],
       "deleted": [],
@@ -724,17 +736,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 5,
-          "seen_at": "2026-11-22T04:58:28.418325",
+          "id": 9,
+          "seen_at": "2026-11-22T08:50:09.641664",
           "user_id": 3,
           "client_ip": "127.0.0.1",
-          "auth_token": "FKnIM+aqyATo1Ihq8XMiPVbyYSg=",
-          "created_at": "2026-11-22T04:58:28.394941",
-          "rotated_at": "2026-11-22T04:58:28.393693",
-          "updated_at": "2026-11-22T04:58:28.394941",
+          "auth_token": "GPlYZppTgz0nnOrJObcyl8E7QWU=",
+          "created_at": "2026-11-22T08:50:09.590744",
+          "rotated_at": "2026-11-22T08:50:09.587261",
+          "updated_at": "2026-11-22T08:50:09.590744",
           "user_agent": null,
           "auth_token_seen": true,
-          "prev_auth_token": "FKnIM+aqyATo1Ihq8XMiPVbyYSg=",
+          "prev_auth_token": "GPlYZppTgz0nnOrJObcyl8E7QWU=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": true,
           "impersonation_expires_at": null
@@ -748,7 +760,7 @@
   "next_ids": {
     "user_associated_accounts": 1,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 5
+    "user_auth_tokens": 9
   },
   "settings": {
     "auth_require_interaction": false,
@@ -788,7 +800,7 @@
   ],
   "recorded_from": {
     "case": "f6dc2c8ef36453477d5584c69da46e0ab930cec9f2a81f923a83b701c6761bbd",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

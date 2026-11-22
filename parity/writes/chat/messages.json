@@ -7,8 +7,8 @@
       "path": "/chat/api/channels/2/messages.json"
     }
   ],
-  "started_at": "2026-11-22T04:45:08.409659",
-  "transaction_started_at": "2026-11-22T04:45:07.597414",
+  "started_at": "2026-11-22T08:36:56.291649",
+  "transaction_started_at": "2026-11-22T08:36:55.471893",
   "responses": [
     {
       "status": 200,
@@ -18,7 +18,7 @@
             "id": 1,
             "message": "Hello **world**",
             "cooked": "<p>Hello <strong>world</strong></p>",
-            "created_at": "2026-11-22T03:55:07Z",
+            "created_at": "2026-11-22T07:46:55Z",
             "excerpt": "Hello world",
             "chat_channel_id": 2,
             "streaming": false,
@@ -62,7 +62,7 @@
             "id": 2,
             "message": "@user0 hi back",
             "cooked": "<p><a class=\"mention\" href=\"/u/user0\">@user0</a> hi back</p>",
-            "created_at": "2026-11-22T04:05:07Z",
+            "created_at": "2026-11-22T07:56:55Z",
             "excerpt": "@user0 hi back",
             "chat_channel_id": 2,
             "streaming": false,
@@ -114,7 +114,7 @@
             "id": 3,
             "message": "edited message :heart:",
             "cooked": "<p>edited message <img src=\"/images/emoji/twitter/heart.png?v=14\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>",
-            "created_at": "2026-11-22T04:15:07Z",
+            "created_at": "2026-11-22T08:06:55Z",
             "excerpt": "edited message :heart:",
             "chat_channel_id": 2,
             "streaming": false,
@@ -191,7 +191,7 @@
             "id": 5,
             "message": "/me waves",
             "cooked": "<p>/me waves</p>",
-            "created_at": "2026-11-22T04:30:07Z",
+            "created_at": "2026-11-22T08:21:55Z",
             "excerpt": "/me waves",
             "chat_channel_id": 2,
             "streaming": false,
@@ -220,7 +220,7 @@
             "id": 6,
             "message": "https://example.com",
             "cooked": "<p><a href=\"https://example.com\" rel=\"noopener nofollow ugc\">https://example.com</a></p>",
-            "created_at": "2026-11-22T04:40:07Z",
+            "created_at": "2026-11-22T08:31:55Z",
             "excerpt": "https://example.com",
             "chat_channel_id": 2,
             "streaming": false,
@@ -272,33 +272,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "y7DOMAPfS+3RAPeVlU72atv52ik=",
-            "created_at": "2026-11-22T04:45:07.91779",
-            "rotated_at": "2026-11-22T04:45:07.916868",
-            "updated_at": "2026-11-22T04:45:07.91779",
+            "auth_token": "dTYIOWPk/0eANuLFJlH3tilA6GE=",
+            "created_at": "2026-11-22T08:36:55.792438",
+            "rotated_at": "2026-11-22T08:36:55.79154",
+            "updated_at": "2026-11-22T08:36:55.792438",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "y7DOMAPfS+3RAPeVlU72atv52ik=",
+            "prev_auth_token": "dTYIOWPk/0eANuLFJlH3tilA6GE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:45:08.417317",
+            "id": 9,
+            "seen_at": "2026-11-22T08:36:56.299502",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "y7DOMAPfS+3RAPeVlU72atv52ik=",
-            "created_at": "2026-11-22T04:45:07.91779",
-            "rotated_at": "2026-11-22T04:45:07.916868",
-            "updated_at": "2026-11-22T04:45:07.91779",
+            "auth_token": "dTYIOWPk/0eANuLFJlH3tilA6GE=",
+            "created_at": "2026-11-22T08:36:55.792438",
+            "rotated_at": "2026-11-22T08:36:55.79154",
+            "updated_at": "2026-11-22T08:36:55.792438",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "y7DOMAPfS+3RAPeVlU72atv52ik=",
+            "prev_auth_token": "dTYIOWPk/0eANuLFJlH3tilA6GE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -338,9 +338,9 @@
             "following": true,
             "join_mode": 1,
             "created_at": "2026-11-21T23:56:57.924969",
-            "updated_at": "2026-11-22T04:45:08.487595",
+            "updated_at": "2026-11-22T08:36:56.367906",
             "muted_until": null,
-            "last_viewed_at": "2026-11-22T04:45:08.486869",
+            "last_viewed_at": "2026-11-22T08:36:56.367368",
             "chat_channel_id": 2,
             "notification_level": 1,
             "last_viewed_pins_at": null,
@@ -359,8 +359,8 @@
           "name": "last_chat_channel_id",
           "value": "2",
           "user_id": 3,
-          "created_at": "2026-11-22T04:45:08.491252",
-          "updated_at": "2026-11-22T04:45:08.491252"
+          "created_at": "2026-11-22T08:36:56.37089",
+          "updated_at": "2026-11-22T08:36:56.37089"
         }
       ],
       "deleted": [],
@@ -388,7 +388,7 @@
   ],
   "recorded_from": {
     "case": "c0276b3cea78ef1ddf6c2a28f3b42489b491042687bb1de69bc435bfe1a379a0",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

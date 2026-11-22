@@ -2,8 +2,8 @@
   "name": "uploads_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:44:06.184193",
-  "transaction_started_at": "2026-11-22T05:44:05.582047",
+  "started_at": "2026-11-22T09:30:25.217679",
+  "transaction_started_at": "2026-11-22T09:30:24.568638",
   "responses": [],
   "changes": {
     "badges": {
@@ -71,8 +71,8 @@
           "status": 1,
           "filesize": 10,
           "multipart": false,
-          "created_at": "2026-11-22T03:44:05.582047",
-          "updated_at": "2026-11-22T05:44:05.582047",
+          "created_at": "2026-11-22T07:30:24.568638",
+          "updated_at": "2026-11-22T09:30:24.568638",
           "upload_type": "composer",
           "created_by_id": 3,
           "original_filename": "a.png",
@@ -85,8 +85,8 @@
           "status": 2,
           "filesize": 10,
           "multipart": false,
-          "created_at": "2026-11-21T04:44:05.582047",
-          "updated_at": "2026-11-22T05:44:05.582047",
+          "created_at": "2026-11-21T08:30:24.568638",
+          "updated_at": "2026-11-22T09:30:24.568638",
           "upload_type": "composer",
           "created_by_id": 3,
           "original_filename": "d.png",
@@ -110,8 +110,8 @@
           "filesize": 10,
           "extension": ".png",
           "upload_id": 9606,
-          "created_at": "2026-11-22T05:44:05.582047",
-          "updated_at": "2026-11-22T05:44:05.582047"
+          "created_at": "2026-11-22T09:30:24.568638",
+          "updated_at": "2026-11-22T09:30:24.568638"
         }
       ],
       "updated": []
@@ -132,8 +132,8 @@
           "animated": null,
           "filesize": 100,
           "extension": "png",
-          "created_at": "2026-11-19T05:44:05.582047",
-          "updated_at": "2026-11-19T05:44:05.582047",
+          "created_at": "2026-11-19T09:30:24.568638",
+          "updated_at": "2026-11-19T09:30:24.568638",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -158,8 +158,8 @@
           "animated": null,
           "filesize": 100,
           "extension": "png",
-          "created_at": "2026-11-19T05:44:05.582047",
-          "updated_at": "2026-11-19T05:44:05.582047",
+          "created_at": "2026-11-19T09:30:24.568638",
+          "updated_at": "2026-11-19T09:30:24.568638",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -184,8 +184,8 @@
           "animated": null,
           "filesize": 100,
           "extension": "png",
-          "created_at": "2026-11-19T05:44:05.582047",
-          "updated_at": "2026-11-19T05:44:05.582047",
+          "created_at": "2026-11-19T09:30:24.568638",
+          "updated_at": "2026-11-19T09:30:24.568638",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -271,7 +271,7 @@
           "id": 36,
           "user_id": 3,
           "upload_id": 9606,
-          "created_at": "2026-11-22T05:44:05.582047"
+          "created_at": "2026-11-22T09:30:24.568638"
         }
       ],
       "updated": []
@@ -389,7 +389,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "e5525a4e6bedbcceea3b7ca89abe5b340ba85c29c4b1fdb9041c1cddc3b9078b",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

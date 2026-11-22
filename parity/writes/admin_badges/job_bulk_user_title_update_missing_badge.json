@@ -2,8 +2,8 @@
   "name": "job_bulk_user_title_update_missing_badge",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T04:20:07.295599",
-  "transaction_started_at": "2026-11-22T04:20:06.672278",
+  "started_at": "2026-11-22T08:13:08.833896",
+  "transaction_started_at": "2026-11-22T08:13:08.005669",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -27,7 +27,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "44a8f4114b5d513eb43eba915c571f879d086ef5798eca46312b4639705ab92b",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

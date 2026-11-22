@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:51:35.594316",
-  "transaction_started_at": "2026-11-22T05:51:34.580204",
+  "started_at": "2026-11-22T09:37:53.267188",
+  "transaction_started_at": "2026-11-22T09:37:52.262694",
   "responses": [
     {
       "status": 204,
@@ -26,8 +26,8 @@
           "name": "title",
           "value": "Duck Pond",
           "data_type": 1,
-          "created_at": "2026-11-22T05:51:35.610973",
-          "updated_at": "2026-11-22T05:51:35.610973"
+          "created_at": "2026-11-22T09:37:53.281665",
+          "updated_at": "2026-11-22T09:37:53.281665"
         }
       ],
       "deleted": [],
@@ -39,33 +39,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "eOh7wLMwx9WCOruEbEoe5qj7xlg=",
-            "created_at": "2026-11-22T05:51:35.116665",
-            "rotated_at": "2026-11-22T05:51:35.115372",
-            "updated_at": "2026-11-22T05:51:35.116665",
+            "auth_token": "YUeQfOEAFu+iihbWzC0QONIJY2Q=",
+            "created_at": "2026-11-22T09:37:52.628549",
+            "rotated_at": "2026-11-22T09:37:52.627678",
+            "updated_at": "2026-11-22T09:37:52.628549",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "eOh7wLMwx9WCOruEbEoe5qj7xlg=",
+            "prev_auth_token": "YUeQfOEAFu+iihbWzC0QONIJY2Q=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:51:35.600217",
+            "id": 9,
+            "seen_at": "2026-11-22T09:37:53.272398",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "eOh7wLMwx9WCOruEbEoe5qj7xlg=",
-            "created_at": "2026-11-22T05:51:35.116665",
-            "rotated_at": "2026-11-22T05:51:35.115372",
-            "updated_at": "2026-11-22T05:51:35.116665",
+            "auth_token": "YUeQfOEAFu+iihbWzC0QONIJY2Q=",
+            "created_at": "2026-11-22T09:37:52.628549",
+            "rotated_at": "2026-11-22T09:37:52.627678",
+            "updated_at": "2026-11-22T09:37:52.628549",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "eOh7wLMwx9WCOruEbEoe5qj7xlg=",
+            "prev_auth_token": "YUeQfOEAFu+iihbWzC0QONIJY2Q=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -86,10 +86,10 @@
           "topic_id": null,
           "new_value": "Duck Pond",
           "admin_only": true,
-          "created_at": "2026-11-22T05:51:35.634619",
+          "created_at": "2026-11-22T09:37:53.300327",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:51:35.634619",
+          "updated_at": "2026-11-22T09:37:53.300327",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -112,7 +112,7 @@
   ],
   "recorded_from": {
     "case": "8c050a0b3661f82dc614341ac8317b744114f6abe50aeaa93e1ad82e0ddd5e49",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

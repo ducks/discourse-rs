@@ -2,8 +2,8 @@
   "name": "rejected_emails_purge",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:43:23.009127",
-  "transaction_started_at": "2026-11-22T05:43:22.366305",
+  "started_at": "2026-11-22T09:29:42.401089",
+  "transaction_started_at": "2026-11-22T09:29:41.764613",
   "responses": [],
   "changes": {
     "incoming_emails": {
@@ -20,9 +20,9 @@
           "topic_id": null,
           "imap_sync": null,
           "is_bounce": false,
-          "created_at": "2026-08-14T05:43:22.366305",
+          "created_at": "2026-08-14T09:29:41.764613",
           "message_id": "m9501@example.com",
-          "updated_at": "2026-08-14T05:43:22.366305",
+          "updated_at": "2026-08-14T09:29:41.764613",
           "created_via": 0,
           "cc_addresses": null,
           "from_address": null,
@@ -51,7 +51,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "a55466f08fb172fb27218c45a19be9ed248aab14ef216b12ba17cd82d4b338be",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

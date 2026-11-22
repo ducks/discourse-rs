@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T06:06:56.406778",
-  "transaction_started_at": "2026-11-22T06:06:55.5325",
+  "started_at": "2026-11-22T09:53:07.640901",
+  "transaction_started_at": "2026-11-22T09:53:06.78209",
   "responses": [
     {
       "status": 200,
@@ -182,8 +182,8 @@
           "post_id": 3,
           "user_id": 1,
           "unlisted": false,
-          "created_at": "2026-11-22T06:06:56.478898",
-          "updated_at": "2026-11-22T06:06:56.478898",
+          "created_at": "2026-11-22T09:53:07.709349",
+          "updated_at": "2026-11-22T09:53:07.709349",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- About the General category\n- About the General category, renamed\n"
         }
       ],
@@ -298,7 +298,7 @@
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T06:06:56.426693",
+            "updated_at": "2026-11-22T09:53:07.659271",
             "word_count": 12,
             "action_code": null,
             "cook_method": 1,
@@ -318,7 +318,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T06:06:56.424501",
+            "last_version_at": "2026-11-22T09:53:07.657212",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -431,7 +431,7 @@
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-11-22T06:06:56.461107",
+            "updated_at": "2026-11-22T09:53:07.692993",
             "word_count": 12,
             "category_id": 4,
             "external_id": null,
@@ -472,33 +472,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "nl7HW1ix34pBXSR/RjXK4B0B/1A=",
-            "created_at": "2026-11-22T06:06:55.938047",
-            "rotated_at": "2026-11-22T06:06:55.93633",
-            "updated_at": "2026-11-22T06:06:55.938047",
+            "auth_token": "V4e7H8Opag9KrS9CKRo+qXIUZBQ=",
+            "created_at": "2026-11-22T09:53:07.164212",
+            "rotated_at": "2026-11-22T09:53:07.163217",
+            "updated_at": "2026-11-22T09:53:07.164212",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "nl7HW1ix34pBXSR/RjXK4B0B/1A=",
+            "prev_auth_token": "V4e7H8Opag9KrS9CKRo+qXIUZBQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T06:06:56.414149",
+            "id": 9,
+            "seen_at": "2026-11-22T09:53:07.648157",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "nl7HW1ix34pBXSR/RjXK4B0B/1A=",
-            "created_at": "2026-11-22T06:06:55.938047",
-            "rotated_at": "2026-11-22T06:06:55.93633",
-            "updated_at": "2026-11-22T06:06:55.938047",
+            "auth_token": "V4e7H8Opag9KrS9CKRo+qXIUZBQ=",
+            "created_at": "2026-11-22T09:53:07.164212",
+            "rotated_at": "2026-11-22T09:53:07.163217",
+            "updated_at": "2026-11-22T09:53:07.164212",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "nl7HW1ix34pBXSR/RjXK4B0B/1A=",
+            "prev_auth_token": "V4e7H8Opag9KrS9CKRo+qXIUZBQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -602,7 +602,7 @@
   },
   "recorded_from": {
     "case": "441d7213c8142910291fd816f722be5188a001004d73e6a981a818792e19a862",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

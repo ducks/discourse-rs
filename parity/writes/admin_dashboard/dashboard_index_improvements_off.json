@@ -11,8 +11,8 @@
       "path": "/admin/dashboard/site-traffic-explorer.json"
     }
   ],
-  "started_at": "2026-11-22T04:24:18.349536",
-  "transaction_started_at": "2026-11-22T04:24:17.448444",
+  "started_at": "2026-11-22T08:17:28.985159",
+  "transaction_started_at": "2026-11-22T08:17:28.064051",
   "responses": [
     {
       "status": 200,
@@ -665,10 +665,10 @@
                     "share_change_formatted": "+24.14%"
                   },
                   {
-                    "category_id": 2,
-                    "name": "Site Feedback",
-                    "color": "808281",
-                    "slug": "site-feedback",
+                    "category_id": 34,
+                    "name": "Sub General",
+                    "color": "AB9364",
+                    "slug": "sub-general",
                     "topics": 2,
                     "posts": 2,
                     "page_views": 0,
@@ -678,10 +678,10 @@
                     "share_change_formatted": "+13.79%"
                   },
                   {
-                    "category_id": 34,
-                    "name": "Sub General",
-                    "color": "AB9364",
-                    "slug": "sub-general",
+                    "category_id": 2,
+                    "name": "Site Feedback",
+                    "color": "808281",
+                    "slug": "site-feedback",
                     "topics": 2,
                     "posts": 2,
                     "page_views": 0,
@@ -702,7 +702,7 @@
               "logging_enabled": true,
               "kpis": {
                 "total_searches": {
-                  "value": 4,
+                  "value": 8,
                   "previous_value": 0
                 },
                 "no_result_rate": {
@@ -714,41 +714,41 @@
               "trending": [
                 {
                   "term": "fixture",
-                  "searches": 1
+                  "searches": 2
                 },
                 {
                   "term": "general",
-                  "searches": 1
+                  "searches": 2
                 },
                 {
                   "term": "parity",
-                  "searches": 1
+                  "searches": 2
                 },
                 {
                   "term": "staff",
-                  "searches": 1
+                  "searches": 2
                 }
               ],
               "trending_period": "monthly",
               "content_gaps": [
                 {
                   "term": "fixture",
-                  "searches": 1,
+                  "searches": 2,
                   "status": "no_match"
                 },
                 {
                   "term": "general",
-                  "searches": 1,
+                  "searches": 2,
                   "status": "no_match"
                 },
                 {
                   "term": "parity",
-                  "searches": 1,
+                  "searches": 2,
                   "status": "no_match"
                 },
                 {
                   "term": "staff",
-                  "searches": 1,
+                  "searches": 2,
                   "status": "no_match"
                 }
               ],
@@ -770,14 +770,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 13349859328,
+                  "free_bytes": 12353159168,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 13349859328,
+                  "free_bytes": 12353159168,
                   "remote": false
                 }
               },
@@ -852,33 +852,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "9hzJbf4LuODwOsgoqCMdzC1sRRE=",
-            "created_at": "2026-11-22T04:24:17.756339",
-            "rotated_at": "2026-11-22T04:24:17.755551",
-            "updated_at": "2026-11-22T04:24:17.756339",
+            "auth_token": "IugjPiIV0YmP8Fs0s48nsqXUirA=",
+            "created_at": "2026-11-22T08:17:28.400007",
+            "rotated_at": "2026-11-22T08:17:28.398945",
+            "updated_at": "2026-11-22T08:17:28.400007",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "9hzJbf4LuODwOsgoqCMdzC1sRRE=",
+            "prev_auth_token": "IugjPiIV0YmP8Fs0s48nsqXUirA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:24:18.355864",
+            "id": 9,
+            "seen_at": "2026-11-22T08:17:28.993342",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "9hzJbf4LuODwOsgoqCMdzC1sRRE=",
-            "created_at": "2026-11-22T04:24:17.756339",
-            "rotated_at": "2026-11-22T04:24:17.755551",
-            "updated_at": "2026-11-22T04:24:17.756339",
+            "auth_token": "IugjPiIV0YmP8Fs0s48nsqXUirA=",
+            "created_at": "2026-11-22T08:17:28.400007",
+            "rotated_at": "2026-11-22T08:17:28.398945",
+            "updated_at": "2026-11-22T08:17:28.400007",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "9hzJbf4LuODwOsgoqCMdzC1sRRE=",
+            "prev_auth_token": "IugjPiIV0YmP8Fs0s48nsqXUirA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -901,7 +901,7 @@
   },
   "recorded_from": {
     "case": "e60cb69f55bfc9f20a54c375de666d5a08d9e163e5eb5e1db4c191935e60c265",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "close_poll_job",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:15:13.055511",
-  "transaction_started_at": "2026-11-22T05:15:12.143261",
+  "started_at": "2026-11-22T09:06:46.244293",
+  "transaction_started_at": "2026-11-22T09:06:45.417251",
   "responses": [],
   "changes": {
     "polls": {
@@ -47,10 +47,10 @@
             "post_id": 37,
             "results": 0,
             "close_at": null,
-            "closed_at": "2026-11-22T05:15:13.108363",
+            "closed_at": "2026-11-22T09:06:46.341166",
             "chart_type": 0,
             "created_at": "2026-10-05T10:00:00",
-            "updated_at": "2026-11-22T05:15:13.108668",
+            "updated_at": "2026-11-22T09:06:46.341622",
             "visibility": 0,
             "closed_by_id": -1,
             "anonymous_voters": null
@@ -71,10 +71,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T05:15:13.116794",
+          "created_at": "2026-11-22T09:06:46.356642",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:15:13.116794",
+          "updated_at": "2026-11-22T09:06:46.356642",
           "category_id": null,
           "custom_type": "poll_closed",
           "reviewable_id": null,
@@ -115,7 +115,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "33252ef1b4b56397d67338029a9898e06d1496b70128ca978b4e6df4cb17401e",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

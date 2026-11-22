@@ -1,7 +1,7 @@
 {
   "request": "GET /u/user0/bookmarks.json as=user0",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T06:33:18.002395899+00:00",
+  "recorded_at": "2026-11-22T10:22:54.602118116+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"bookmarks\":[]}"

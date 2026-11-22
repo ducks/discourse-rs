@@ -27,8 +27,8 @@
       "path": "/never-a-permalink"
     }
   ],
-  "started_at": "2026-11-22T05:14:45.392342",
-  "transaction_started_at": "2026-11-22T05:14:44.778419",
+  "started_at": "2026-11-22T09:06:18.62186",
+  "transaction_started_at": "2026-11-22T09:06:18.054372",
   "responses": [
     {
       "status": 404,
@@ -94,7 +94,7 @@
   ],
   "recorded_from": {
     "case": "aa01afecc254f4c4c34da3dd28126dbd05cc41a4bf548a4a21f1285e28f46d73",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

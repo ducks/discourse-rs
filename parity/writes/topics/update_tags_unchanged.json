@@ -38,8 +38,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T06:06:51.394422",
-  "transaction_started_at": "2026-11-22T06:06:50.528534",
+  "started_at": "2026-11-22T09:53:02.771936",
+  "transaction_started_at": "2026-11-22T09:53:01.893882",
   "responses": [
     {
       "status": 200,
@@ -115,8 +115,8 @@
           "post_id": 42,
           "user_id": 1,
           "unlisted": false,
-          "created_at": "2026-11-22T06:06:51.47404",
-          "updated_at": "2026-11-22T06:06:51.47404",
+          "created_at": "2026-11-22T09:53:02.840766",
+          "updated_at": "2026-11-22T09:53:02.840766",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Parity fixture: tagged in a subcategory'\n- 'Parity fixture: tagged and renamed in a subcategory'\n"
         }
       ],
@@ -231,7 +231,7 @@
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T06:06:51.418274",
+            "updated_at": "2026-11-22T09:53:02.792751",
             "word_count": 15,
             "action_code": null,
             "cook_method": 1,
@@ -251,7 +251,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T06:06:51.416094",
+            "last_version_at": "2026-11-22T09:53:02.790768",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -364,7 +364,7 @@
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-11-22T06:06:51.451826",
+            "updated_at": "2026-11-22T09:53:02.823514",
             "word_count": 15,
             "category_id": 34,
             "external_id": null,
@@ -405,33 +405,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "bvVpmzbDQim9lSsESNMmG4orjCw=",
-            "created_at": "2026-11-22T06:06:50.922573",
-            "rotated_at": "2026-11-22T06:06:50.921633",
-            "updated_at": "2026-11-22T06:06:50.922573",
+            "auth_token": "w5PZrDEiC+l8pttyiY99IzIwojc=",
+            "created_at": "2026-11-22T09:53:02.290244",
+            "rotated_at": "2026-11-22T09:53:02.289374",
+            "updated_at": "2026-11-22T09:53:02.290244",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "bvVpmzbDQim9lSsESNMmG4orjCw=",
+            "prev_auth_token": "w5PZrDEiC+l8pttyiY99IzIwojc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T06:06:51.401841",
+            "id": 9,
+            "seen_at": "2026-11-22T09:53:02.77786",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "bvVpmzbDQim9lSsESNMmG4orjCw=",
-            "created_at": "2026-11-22T06:06:50.922573",
-            "rotated_at": "2026-11-22T06:06:50.921633",
-            "updated_at": "2026-11-22T06:06:50.922573",
+            "auth_token": "w5PZrDEiC+l8pttyiY99IzIwojc=",
+            "created_at": "2026-11-22T09:53:02.290244",
+            "rotated_at": "2026-11-22T09:53:02.289374",
+            "updated_at": "2026-11-22T09:53:02.290244",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "bvVpmzbDQim9lSsESNMmG4orjCw=",
+            "prev_auth_token": "w5PZrDEiC+l8pttyiY99IzIwojc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -543,7 +543,7 @@
   },
   "recorded_from": {
     "case": "34e26d6dc3424d8770ed538a04a934a99fa65e2534f88fd516223772700a7e3a",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

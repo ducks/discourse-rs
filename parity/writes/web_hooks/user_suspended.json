@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T06:25:33.048902",
-  "transaction_started_at": "2026-11-22T06:25:31.986041",
+  "started_at": "2026-11-22T10:11:44.660915",
+  "transaction_started_at": "2026-11-22T10:11:43.759012",
   "responses": [
     {
       "status": 200,
@@ -22,7 +22,7 @@
           "suspend_reason": "Breaking the rules",
           "full_suspend_reason": "Breaking the rules\n\nPlease read the community guidelines.",
           "suspended_till": "2027-01-01T00:00:00.000Z",
-          "suspended_at": "2026-11-22T06:25:33.064Z",
+          "suspended_at": "2026-11-22T10:11:44.676Z",
           "suspended_by": {
             "id": 1,
             "username": "admin",
@@ -40,33 +40,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "O/EYXv2KUSvvRYLujFEHVrTVUsw=",
-            "created_at": "2026-11-22T06:25:32.358874",
-            "rotated_at": "2026-11-22T06:25:32.358004",
-            "updated_at": "2026-11-22T06:25:32.358874",
+            "auth_token": "ZSzPm1hruZgDLAs8/F+HZ8YRruk=",
+            "created_at": "2026-11-22T10:11:44.161147",
+            "rotated_at": "2026-11-22T10:11:44.160279",
+            "updated_at": "2026-11-22T10:11:44.161147",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "O/EYXv2KUSvvRYLujFEHVrTVUsw=",
+            "prev_auth_token": "ZSzPm1hruZgDLAs8/F+HZ8YRruk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T06:25:33.054942",
+            "id": 9,
+            "seen_at": "2026-11-22T10:11:44.667242",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "O/EYXv2KUSvvRYLujFEHVrTVUsw=",
-            "created_at": "2026-11-22T06:25:32.358874",
-            "rotated_at": "2026-11-22T06:25:32.358004",
-            "updated_at": "2026-11-22T06:25:32.358874",
+            "auth_token": "ZSzPm1hruZgDLAs8/F+HZ8YRruk=",
+            "created_at": "2026-11-22T10:11:44.161147",
+            "rotated_at": "2026-11-22T10:11:44.160279",
+            "updated_at": "2026-11-22T10:11:44.161147",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "O/EYXv2KUSvvRYLujFEHVrTVUsw=",
+            "prev_auth_token": "ZSzPm1hruZgDLAs8/F+HZ8YRruk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -87,10 +87,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-22T06:25:33.074594",
+          "created_at": "2026-11-22T10:11:44.687878",
           "expires_at": "2027-01-01T00:00:00",
           "ip_address": null,
-          "updated_at": "2026-11-22T06:25:33.074594",
+          "updated_at": "2026-11-22T10:11:44.687878",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -162,11 +162,11 @@
             "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-22T06:25:33.067901",
+            "updated_at": "2026-11-22T10:11:44.681056",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
-            "suspended_at": "2026-11-22T06:25:33.064244",
+            "suspended_at": "2026-11-22T10:11:44.676694",
             "date_of_birth": null,
             "first_seen_at": null,
             "silenced_till": null,
@@ -196,7 +196,7 @@
       "user_suspension_expired at",
       {
         "user_id": 4,
-        "suspended_at": "2026-11-22T06:25:33.064244Z",
+        "suspended_at": "2026-11-22T10:11:44.676694Z",
         "suspended_till": "2027-01-01T00:00:00.000000Z"
       }
     ],
@@ -228,7 +228,7 @@
   ],
   "recorded_from": {
     "case": "cb93f1b0ce5961b851965cabf25571120173fdbb426662e12b552f76394867b6",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

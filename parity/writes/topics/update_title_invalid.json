@@ -24,8 +24,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T06:07:01.542293",
-  "transaction_started_at": "2026-11-22T06:07:00.665866",
+  "started_at": "2026-11-22T09:53:12.725542",
+  "transaction_started_at": "2026-11-22T09:53:11.854483",
   "responses": [
     {
       "status": 422,
@@ -79,8 +79,8 @@
           "post_id": 35,
           "user_id": 2,
           "unlisted": false,
-          "created_at": "2026-11-22T06:07:01.706632",
-          "updated_at": "2026-11-22T06:07:01.706632",
+          "created_at": "2026-11-22T09:53:12.869567",
+          "updated_at": "2026-11-22T09:53:12.869567",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Parity fixture: replies and posters'\n- THIS TITLE IS SHOUTING ALL THE WAY\n"
         }
       ],
@@ -267,7 +267,7 @@
             "self_edits": 1,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T06:07:01.653611",
+            "updated_at": "2026-11-22T09:53:12.821055",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -287,7 +287,7 @@
             "last_editor_id": 2,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T06:07:01.6515",
+            "last_version_at": "2026-11-22T09:53:12.818702",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -352,7 +352,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -400,7 +400,7 @@
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T06:07:01.68575",
+            "updated_at": "2026-11-22T09:53:12.850304",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -441,33 +441,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "mnxr+9Oxhm4L01tjCL+Cgju2l3E=",
-            "created_at": "2026-11-22T06:07:01.035591",
-            "rotated_at": "2026-11-22T06:07:01.034706",
-            "updated_at": "2026-11-22T06:07:01.035591",
+            "auth_token": "E5kETw2yM/H1zaN7nGupLE7h/rc=",
+            "created_at": "2026-11-22T09:53:12.218732",
+            "rotated_at": "2026-11-22T09:53:12.217857",
+            "updated_at": "2026-11-22T09:53:12.218732",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "mnxr+9Oxhm4L01tjCL+Cgju2l3E=",
+            "prev_auth_token": "E5kETw2yM/H1zaN7nGupLE7h/rc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T06:07:01.549949",
+            "id": 9,
+            "seen_at": "2026-11-22T09:53:12.733069",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "mnxr+9Oxhm4L01tjCL+Cgju2l3E=",
-            "created_at": "2026-11-22T06:07:01.035591",
-            "rotated_at": "2026-11-22T06:07:01.034706",
-            "updated_at": "2026-11-22T06:07:01.035591",
+            "auth_token": "E5kETw2yM/H1zaN7nGupLE7h/rc=",
+            "created_at": "2026-11-22T09:53:12.218732",
+            "rotated_at": "2026-11-22T09:53:12.217857",
+            "updated_at": "2026-11-22T09:53:12.218732",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "mnxr+9Oxhm4L01tjCL+Cgju2l3E=",
+            "prev_auth_token": "E5kETw2yM/H1zaN7nGupLE7h/rc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -573,7 +573,7 @@
   },
   "recorded_from": {
     "case": "24e9a7d71328fafcee53d8938819837a4eea5ee13fd3332ecfb761cb9c78205c",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

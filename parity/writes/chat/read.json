@@ -7,8 +7,8 @@
       "path": "/chat/api/channels/2/read.json?message_id=3"
     }
   ],
-  "started_at": "2026-11-22T04:45:44.622294",
-  "transaction_started_at": "2026-11-22T04:45:43.771307",
+  "started_at": "2026-11-22T08:37:31.529383",
+  "transaction_started_at": "2026-11-22T08:37:30.680676",
   "responses": [
     {
       "status": 200,
@@ -29,8 +29,8 @@
             "read": false,
             "user_id": 2,
             "topic_id": null,
-            "created_at": "2026-11-22T04:05:43.771307",
-            "updated_at": "2026-11-22T04:05:43.771307",
+            "created_at": "2026-11-22T07:57:30.680676",
+            "updated_at": "2026-11-22T07:57:30.680676",
             "post_number": null,
             "high_priority": true,
             "post_action_id": null,
@@ -42,8 +42,8 @@
             "read": true,
             "user_id": 2,
             "topic_id": null,
-            "created_at": "2026-11-22T04:05:43.771307",
-            "updated_at": "2026-11-22T04:05:43.771307",
+            "created_at": "2026-11-22T07:57:30.680676",
+            "updated_at": "2026-11-22T07:57:30.680676",
             "post_number": null,
             "high_priority": true,
             "post_action_id": null,
@@ -58,33 +58,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "aIw0rrUf5gXLyihUMM6YFIi0vPs=",
-            "created_at": "2026-11-22T04:45:44.106807",
-            "rotated_at": "2026-11-22T04:45:44.105884",
-            "updated_at": "2026-11-22T04:45:44.106807",
+            "auth_token": "5vyr/PhNbNFBLPN1YAkX2h00fMM=",
+            "created_at": "2026-11-22T08:37:31.02307",
+            "rotated_at": "2026-11-22T08:37:31.022255",
+            "updated_at": "2026-11-22T08:37:31.02307",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "aIw0rrUf5gXLyihUMM6YFIi0vPs=",
+            "prev_auth_token": "5vyr/PhNbNFBLPN1YAkX2h00fMM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:45:44.629786",
+            "id": 9,
+            "seen_at": "2026-11-22T08:37:31.53666",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "aIw0rrUf5gXLyihUMM6YFIi0vPs=",
-            "created_at": "2026-11-22T04:45:44.106807",
-            "rotated_at": "2026-11-22T04:45:44.105884",
-            "updated_at": "2026-11-22T04:45:44.106807",
+            "auth_token": "5vyr/PhNbNFBLPN1YAkX2h00fMM=",
+            "created_at": "2026-11-22T08:37:31.02307",
+            "rotated_at": "2026-11-22T08:37:31.022255",
+            "updated_at": "2026-11-22T08:37:31.02307",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "aIw0rrUf5gXLyihUMM6YFIi0vPs=",
+            "prev_auth_token": "5vyr/PhNbNFBLPN1YAkX2h00fMM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -124,9 +124,9 @@
             "following": true,
             "join_mode": 1,
             "created_at": "2026-11-21T23:56:57.842608",
-            "updated_at": "2026-11-22T04:45:44.646287",
+            "updated_at": "2026-11-22T08:37:31.554753",
             "muted_until": null,
-            "last_viewed_at": "2026-11-22T04:45:44.64608",
+            "last_viewed_at": "2026-11-22T08:37:31.554573",
             "chat_channel_id": 2,
             "notification_level": 1,
             "last_viewed_pins_at": null,
@@ -160,7 +160,7 @@
   ],
   "recorded_from": {
     "case": "3de1c3f26a984279902226249300b4ed5c40a53a8ecded9eba0fa028316a9e6f",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

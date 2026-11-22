@@ -11,8 +11,8 @@
       "path": "/site/basic-info.json"
     }
   ],
-  "started_at": "2026-11-22T05:47:28.603631",
-  "transaction_started_at": "2026-11-22T05:47:27.844733",
+  "started_at": "2026-11-22T09:33:45.900778",
+  "transaction_started_at": "2026-11-22T09:33:44.911708",
   "responses": [
     {
       "status": 403,
@@ -99,7 +99,7 @@
   },
   "recorded_from": {
     "case": "f4bfd54fc28cf68818f80d920e5889d2a9707dd4b1b548095a0d3410af06f503",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

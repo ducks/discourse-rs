@@ -1,7 +1,7 @@
 {
   "request": "GET /notifications.json?recent=true&filter_by_types=liked,mentioned&silent=true as=user1",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T06:32:01.937246483+00:00",
+  "recorded_at": "2026-11-22T10:21:38.628003522+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"notifications\":[{\"fancy_title\":\"Parity fixture: replies and posters\",\"id\":18,\"user_id\":3,\"notification_type\":5,\"read\":false,\"high_priority\":false,\"created_at\":\"2026-11-21T23:56:51.650Z\",\"post_number\":2,\"topic_id\":35,\"slug\":\"parity-fixture-replies-and-posters\",\"data\":{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":36,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"user0\",\"display_name\":\"User1\"}},{\"fancy_title\":\"Parity fixture: replies and posters\",\"id\":17,\"user_id\":3,\"notification_type\":1,\"read\":false,\"high_priority\":false,\"created_at\":\"2026-11-21T23:56:51.581Z\",\"post_number\":5,\"topic_id\":35,\"slug\":\"parity-fixture-replies-and-posters\",\"data\":{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":52,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"user0\",\"display_name\":\"User0\"}}],\"seen_notification_id\":0}"

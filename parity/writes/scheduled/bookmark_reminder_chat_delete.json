@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_chat_delete",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:41:06.921339",
-  "transaction_started_at": "2026-11-22T05:41:06.140579",
+  "started_at": "2026-11-22T09:27:27.732049",
+  "transaction_started_at": "2026-11-22T09:27:26.964291",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -16,9 +16,9 @@
           "user_id": 3,
           "created_at": "2026-10-02T11:01:00",
           "updated_at": "2026-10-02T11:01:00",
-          "reminder_at": "2026-11-22T05:36:06.140579",
+          "reminder_at": "2026-11-22T09:22:26.964291",
           "bookmarkable_id": 2,
-          "reminder_set_at": "2026-11-21T05:41:06.140579",
+          "reminder_set_at": "2026-11-21T09:27:26.964291",
           "bookmarkable_type": "ChatMessage",
           "reminder_last_sent_at": null,
           "auto_delete_preference": 1
@@ -34,8 +34,8 @@
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-22T05:41:06.928835",
-          "updated_at": "2026-11-22T05:41:06.928835",
+          "created_at": "2026-11-22T09:27:27.739392",
+          "updated_at": "2026-11-22T09:27:27.739392",
           "post_number": null,
           "high_priority": true,
           "post_action_id": null,
@@ -72,7 +72,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "94556eff45fca7f63ee17a3fcc6c4a76fb5c7f620b36dc775f0d06660fc88207",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

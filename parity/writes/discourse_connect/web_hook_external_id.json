@@ -20,14 +20,14 @@
       }
     }
   ],
-  "started_at": "2026-11-22T04:53:13.111886",
-  "transaction_started_at": "2026-11-22T04:53:12.322204",
+  "started_at": "2026-11-22T08:44:54.472116",
+  "transaction_started_at": "2026-11-22T08:44:53.724163",
   "responses": [
     {
       "status": 302,
       "body": "",
       "headers": {
-        "Location": "/sso?sso=bm9uY2U9MzM3NGUzMjQ5NjFmOTdiNDI3NWY2MWQ4MmNmNjQ1ZmYmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=16f8174029aa5fe1704cc4d8e123f0c246905ffefa80c11add42a616989601cc"
+        "Location": "/sso?sso=bm9uY2U9ZDMzOTVjZjAxOGViOWFhYTljMzRlMmQwZTg2N2E5ODcmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=c177e567fc69469d7300c454a008f17985cd524fc98bbf90050023961f70225c"
       }
     },
     {
@@ -47,8 +47,8 @@
           "before": {
             "id": 9461,
             "user_id": 4,
-            "created_at": "2026-11-20T04:53:12.322204",
-            "updated_at": "2026-11-20T04:53:12.322204",
+            "created_at": "2026-11-20T08:44:53.724163",
+            "updated_at": "2026-11-20T08:44:53.724163",
             "external_id": "ext-user2-hook",
             "last_payload": "old",
             "external_name": "User Two",
@@ -61,10 +61,10 @@
           "after": {
             "id": 9461,
             "user_id": 4,
-            "created_at": "2026-11-20T04:53:12.322204",
-            "updated_at": "2026-11-22T04:53:13.156515",
+            "created_at": "2026-11-20T08:44:53.724163",
+            "updated_at": "2026-11-22T08:44:54.523449",
             "external_id": "ext-user2-hook",
-            "last_payload": "email=user2%40example.com&external_id=ext-user2-hook&nonce=3374e324961f97b4275f61d82cf645ff&username=user2",
+            "last_payload": "email=user2%40example.com&external_id=ext-user2-hook&nonce=d3395cf018eb9aaa9c34e2d0e867a987&username=user2",
             "external_name": null,
             "external_email": "user2@example.com",
             "external_username": "user2",
@@ -83,10 +83,10 @@
           "action": "generate",
           "user_id": 4,
           "client_ip": "127.0.0.1",
-          "auth_token": "mvdstXUNipoIKfR9aIVu8KfROts=",
-          "created_at": "2026-11-22T04:53:13.162098",
+          "auth_token": "9o+U6CXoi8qFyWj/fm7tqpu/VE0=",
+          "created_at": "2026-11-22T08:44:54.529609",
           "user_agent": null,
-          "user_auth_token_id": 5
+          "user_auth_token_id": 9
         }
       ],
       "deleted": [],
@@ -95,17 +95,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 5,
+          "id": 9,
           "seen_at": null,
           "user_id": 4,
           "client_ip": "127.0.0.1",
-          "auth_token": "mvdstXUNipoIKfR9aIVu8KfROts=",
-          "created_at": "2026-11-22T04:53:13.159427",
-          "rotated_at": "2026-11-22T04:53:13.158623",
-          "updated_at": "2026-11-22T04:53:13.159427",
+          "auth_token": "9o+U6CXoi8qFyWj/fm7tqpu/VE0=",
+          "created_at": "2026-11-22T08:44:54.526626",
+          "rotated_at": "2026-11-22T08:44:54.525868",
+          "updated_at": "2026-11-22T08:44:54.526626",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "mvdstXUNipoIKfR9aIVu8KfROts=",
+          "prev_auth_token": "9o+U6CXoi8qFyWj/fm7tqpu/VE0=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": false,
           "impersonation_expires_at": null
@@ -174,7 +174,7 @@
             "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-22T04:53:13.149253",
+            "updated_at": "2026-11-22T08:44:54.516131",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
@@ -217,7 +217,7 @@
   ],
   "next_ids": {
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 5
+    "user_auth_tokens": 9
   },
   "settings": {
     "discourse_connect_url": "https://idp.example.com/sso",
@@ -234,7 +234,7 @@
   ],
   "recorded_from": {
     "case": "06d7b927190918facf7f4604fb9c3425fdd779616728df3516dd3d12f58cc0c2",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

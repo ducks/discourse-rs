@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:15:19.011408",
-  "transaction_started_at": "2026-11-22T05:15:18.078265",
+  "started_at": "2026-11-22T09:06:52.308724",
+  "transaction_started_at": "2026-11-22T09:06:51.47366",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T05:15:19.133Z",
+          "updated_at": "2026-11-22T09:06:52.431Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -188,8 +188,8 @@
           "html": "One",
           "digest": "159d8e412be4679f2d98fb5f0d0cce91",
           "poll_id": 9002,
-          "created_at": "2026-11-22T05:15:19.087944",
-          "updated_at": "2026-11-22T05:15:19.087944",
+          "created_at": "2026-11-22T09:06:52.388484",
+          "updated_at": "2026-11-22T09:06:52.388484",
           "anonymous_votes": null
         },
         {
@@ -197,8 +197,8 @@
           "html": "Two",
           "digest": "2cbb44549228f1cf22e44fba86b6db21",
           "poll_id": 9002,
-          "created_at": "2026-11-22T05:15:19.089297",
-          "updated_at": "2026-11-22T05:15:19.089297",
+          "created_at": "2026-11-22T09:06:52.390118",
+          "updated_at": "2026-11-22T09:06:52.390118",
           "anonymous_votes": null
         },
         {
@@ -206,8 +206,8 @@
           "html": "Red",
           "digest": "d704ae0a51c9cb797cdd37d02b1e1886",
           "poll_id": 9001,
-          "created_at": "2026-11-22T05:15:19.10442",
-          "updated_at": "2026-11-22T05:15:19.10442",
+          "created_at": "2026-11-22T09:06:52.402757",
+          "updated_at": "2026-11-22T09:06:52.402757",
           "anonymous_votes": null
         },
         {
@@ -215,8 +215,8 @@
           "html": "Blue",
           "digest": "3f560561c99e5625ea0a1e039eb5c01f",
           "poll_id": 9001,
-          "created_at": "2026-11-22T05:15:19.105574",
-          "updated_at": "2026-11-22T05:15:19.105574",
+          "created_at": "2026-11-22T09:06:52.403931",
+          "updated_at": "2026-11-22T09:06:52.403931",
           "anonymous_votes": null
         }
       ],
@@ -260,8 +260,8 @@
           "close_at": null,
           "closed_at": null,
           "chart_type": 0,
-          "created_at": "2026-11-22T05:15:19.086078",
-          "updated_at": "2026-11-22T05:15:19.086078",
+          "created_at": "2026-11-22T09:06:52.386921",
+          "updated_at": "2026-11-22T09:06:52.386921",
           "visibility": 0,
           "closed_by_id": null,
           "anonymous_voters": null
@@ -309,7 +309,7 @@
             "closed_at": null,
             "chart_type": 0,
             "created_at": "2026-10-05T10:00:00",
-            "updated_at": "2026-11-22T05:15:19.095446",
+            "updated_at": "2026-11-22T09:06:52.395369",
             "visibility": 1,
             "closed_by_id": null,
             "anonymous_voters": null
@@ -324,8 +324,8 @@
           "name": "has_polls",
           "value": "t",
           "post_id": 36,
-          "created_at": "2026-11-22T05:15:19.113651",
-          "updated_at": "2026-11-22T05:15:19.113651"
+          "created_at": "2026-11-22T09:06:52.411296",
+          "updated_at": "2026-11-22T09:06:52.411296"
         }
       ],
       "deleted": [
@@ -349,8 +349,8 @@
           "post_id": 36,
           "user_id": 3,
           "unlisted": false,
-          "created_at": "2026-11-22T05:15:19.144645",
-          "updated_at": "2026-11-22T05:15:19.144645",
+          "created_at": "2026-11-22T09:06:52.440942",
+          "updated_at": "2026-11-22T09:06:52.440942",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- |-\n  A poll to change.\n\n  [poll name=pick results=on_close public=true]\n  # Now titled\n  * Red\n  * Blue\n  [/poll]\n\n  [poll name=added]\n  * One\n  * Two\n  [/poll]\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- |-\n  <p>A poll to change.</p>\n  <div class=\"poll\" data-poll-name=\"pick\" data-poll-public=\"true\" data-poll-results=\"on_close\" data-poll-status=\"open\">\n  <div class=\"poll-container\">\n  <div class=\"poll-title\">Now titled</div>\n  <ul>\n  <li data-poll-option-id=\"d704ae0a51c9cb797cdd37d02b1e1886\">Red</li>\n  <li data-poll-option-id=\"3f560561c99e5625ea0a1e039eb5c01f\">Blue</li>\n  </ul>\n  </div>\n  <div class=\"poll-info\">\n  <div class=\"poll-info_counts\">\n  <div class=\"poll-info_counts-count\">\n  <span class=\"info-number\">0</span>\n  <span class=\"info-label\">voters</span>\n  </div>\n  </div>\n  </div>\n  </div>\n  <div class=\"poll\" data-poll-name=\"added\" data-poll-status=\"open\">\n  <div class=\"poll-container\">\n  <ul>\n  <li data-poll-option-id=\"159d8e412be4679f2d98fb5f0d0cce91\">One</li>\n  <li data-poll-option-id=\"2cbb44549228f1cf22e44fba86b6db21\">Two</li>\n  </ul>\n  </div>\n  <div class=\"poll-info\">\n  <div class=\"poll-info_counts\">\n  <div class=\"poll-info_counts-count\">\n  <span class=\"info-number\">0</span>\n  <span class=\"info-label\">voters</span>\n  </div>\n  </div>\n  </div>\n  </div>\n"
         }
       ],
@@ -452,7 +452,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-11-22T05:15:19.133707",
+            "baked_at": "2026-11-22T09:06:52.43138",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -465,7 +465,7 @@
             "self_edits": 1,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-11-22T05:15:19.133895",
+            "updated_at": "2026-11-22T09:06:52.431565",
             "word_count": 22,
             "action_code": null,
             "cook_method": 1,
@@ -485,7 +485,7 @@
             "last_editor_id": 3,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T05:15:19.032076",
+            "last_version_at": "2026-11-22T09:06:52.330227",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -528,7 +528,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -580,7 +580,7 @@
             "word_count": 77,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -617,33 +617,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "XaNSt/0isXf54fQF13JXMMAOEUc=",
-            "created_at": "2026-11-22T05:15:18.546076",
-            "rotated_at": "2026-11-22T05:15:18.545268",
-            "updated_at": "2026-11-22T05:15:18.546076",
+            "auth_token": "TXKWHYyVZaMv1iGgV2snEmmDTaU=",
+            "created_at": "2026-11-22T09:06:51.821672",
+            "rotated_at": "2026-11-22T09:06:51.820812",
+            "updated_at": "2026-11-22T09:06:51.821672",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "XaNSt/0isXf54fQF13JXMMAOEUc=",
+            "prev_auth_token": "TXKWHYyVZaMv1iGgV2snEmmDTaU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:15:19.018271",
+            "id": 9,
+            "seen_at": "2026-11-22T09:06:52.316315",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "XaNSt/0isXf54fQF13JXMMAOEUc=",
-            "created_at": "2026-11-22T05:15:18.546076",
-            "rotated_at": "2026-11-22T05:15:18.545268",
-            "updated_at": "2026-11-22T05:15:18.546076",
+            "auth_token": "TXKWHYyVZaMv1iGgV2snEmmDTaU=",
+            "created_at": "2026-11-22T09:06:51.821672",
+            "rotated_at": "2026-11-22T09:06:51.820812",
+            "updated_at": "2026-11-22T09:06:51.821672",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "XaNSt/0isXf54fQF13JXMMAOEUc=",
+            "prev_auth_token": "TXKWHYyVZaMv1iGgV2snEmmDTaU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -756,7 +756,7 @@
   ],
   "recorded_from": {
     "case": "f55e2c1c14b7868cc322f13b2b0bceff20ff215828f3a9e4a0f9378303f0c210",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -17,8 +17,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T04:40:21.336068",
-  "transaction_started_at": "2026-11-22T04:40:20.542799",
+  "started_at": "2026-11-22T08:32:12.266213",
+  "transaction_started_at": "2026-11-22T08:32:11.276339",
   "responses": [
     {
       "status": 200,
@@ -776,7 +776,7 @@
             "style_type": 2,
             "text_color": "FFFFFF",
             "topics_day": 0,
-            "updated_at": "2026-11-22T04:40:21.375969",
+            "updated_at": "2026-11-22T08:32:12.307964",
             "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
             "posts_month": 0,
             "topic_count": 1,
@@ -826,33 +826,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "Xk4JEWieP/n1nKAXRN2FwR7zgaU=",
-            "created_at": "2026-11-22T04:40:20.848905",
-            "rotated_at": "2026-11-22T04:40:20.848072",
-            "updated_at": "2026-11-22T04:40:20.848905",
+            "auth_token": "qhZIQRW5RgImChuHi94P8F0hskA=",
+            "created_at": "2026-11-22T08:32:11.595468",
+            "rotated_at": "2026-11-22T08:32:11.594585",
+            "updated_at": "2026-11-22T08:32:11.595468",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Xk4JEWieP/n1nKAXRN2FwR7zgaU=",
+            "prev_auth_token": "qhZIQRW5RgImChuHi94P8F0hskA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:40:21.34333",
+            "id": 9,
+            "seen_at": "2026-11-22T08:32:12.273396",
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "Xk4JEWieP/n1nKAXRN2FwR7zgaU=",
-            "created_at": "2026-11-22T04:40:20.848905",
-            "rotated_at": "2026-11-22T04:40:20.848072",
-            "updated_at": "2026-11-22T04:40:20.848905",
+            "auth_token": "qhZIQRW5RgImChuHi94P8F0hskA=",
+            "created_at": "2026-11-22T08:32:11.595468",
+            "rotated_at": "2026-11-22T08:32:11.594585",
+            "updated_at": "2026-11-22T08:32:11.595468",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Xk4JEWieP/n1nKAXRN2FwR7zgaU=",
+            "prev_auth_token": "qhZIQRW5RgImChuHi94P8F0hskA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -873,10 +873,10 @@
           "topic_id": null,
           "new_value": "Read only",
           "admin_only": true,
-          "created_at": "2026-11-22T04:40:21.395255",
+          "created_at": "2026-11-22T08:32:12.326814",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:40:21.395255",
+          "updated_at": "2026-11-22T08:32:12.326814",
           "category_id": 2,
           "custom_type": null,
           "reviewable_id": null,
@@ -895,10 +895,10 @@
           "topic_id": null,
           "new_value": "null",
           "admin_only": true,
-          "created_at": "2026-11-22T04:40:21.397017",
+          "created_at": "2026-11-22T08:32:12.328582",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:40:21.397017",
+          "updated_at": "2026-11-22T08:32:12.328582",
           "category_id": 2,
           "custom_type": null,
           "reviewable_id": null,
@@ -931,7 +931,7 @@
   ],
   "recorded_from": {
     "case": "b6681a97a2e7384b052d998b64a8daa378a280c0175cc1895bf82518b5c546aa",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

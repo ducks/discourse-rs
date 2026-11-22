@@ -19,21 +19,21 @@
       "path": "/auth/apple/callback"
     }
   ],
-  "started_at": "2026-11-22T04:58:15.56785",
-  "transaction_started_at": "2026-11-22T04:58:14.949693",
+  "started_at": "2026-11-22T08:49:56.975179",
+  "transaction_started_at": "2026-11-22T08:49:56.323184",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/apple/auth/authorize?client_id=com.example.app&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fapple%2Fcallback&response_mode=form_post&response_type=code&scope=email%20name&state=21f72eaa840e91b779ee78d076815e09eccd084378961f2f...",
+      "body": "Redirecting to http://fixtures.localhost:8099/apple/auth/authorize?client_id=com.example.app&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fapple%2Fcallback&response_mode=form_post&response_type=code&scope=email%20name&state=188060ad2f55a72fcf39c7ac052c424ab801c65640956f11...",
       "headers": {
-        "Location": "/apple/auth/authorize?client_id=com.example.app&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fapple%2Fcallback&response_mode=form_post&response_type=code&scope=email%20name&state=21f72eaa840e91b779ee78d076815e09eccd084378961f2f"
+        "Location": "/apple/auth/authorize?client_id=com.example.app&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fapple%2Fcallback&response_mode=form_post&response_type=code&scope=email%20name&state=188060ad2f55a72fcf39c7ac052c424ab801c65640956f11"
       }
     },
     {
       "status": 302,
-      "body": "Redirecting to http://localhost:3042/auth/apple/callback?code=good-code&state=21f72eaa840e91b779ee78d076815e09eccd084378961f2f&user=%7B%22name%22%3A%7B%22firstName%22%3A%22Ann%22%2C%22lastName%22%3A%22Apple%22%7D%7D...",
+      "body": "Redirecting to http://localhost:3042/auth/apple/callback?code=good-code&state=188060ad2f55a72fcf39c7ac052c424ab801c65640956f11&user=%7B%22name%22%3A%7B%22firstName%22%3A%22Ann%22%2C%22lastName%22%3A%22Apple%22%7D%7D...",
       "headers": {
-        "Location": "/auth/apple/callback?code=good-code&state=21f72eaa840e91b779ee78d076815e09eccd084378961f2f&user=%7B%22name%22%3A%7B%22firstName%22%3A%22Ann%22%2C%22lastName%22%3A%22Apple%22%7D%7D"
+        "Location": "/auth/apple/callback?code=good-code&state=188060ad2f55a72fcf39c7ac052c424ab801c65640956f11&user=%7B%22name%22%3A%7B%22firstName%22%3A%22Ann%22%2C%22lastName%22%3A%22Apple%22%7D%7D"
       }
     },
     {
@@ -78,9 +78,9 @@
             }
           },
           "user_id": 5,
-          "last_used": "2026-11-22T04:58:15.654817",
-          "created_at": "2026-11-22T04:58:15.656237",
-          "updated_at": "2026-11-22T04:58:15.656237",
+          "last_used": "2026-11-22T08:49:57.140645",
+          "created_at": "2026-11-22T08:49:57.1477",
+          "updated_at": "2026-11-22T08:49:57.1477",
           "credentials": {
             "token": "apple-access",
             "expires": false
@@ -101,10 +101,10 @@
           "action": "generate",
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "EgbtAN8czqHDpZhtw6GB+ukbgUU=",
-          "created_at": "2026-11-22T04:58:15.856315",
+          "auth_token": "7d1yjGDsfVBtEN19Njnphb/PIUk=",
+          "created_at": "2026-11-22T08:49:57.218274",
           "user_agent": null,
-          "user_auth_token_id": 5
+          "user_auth_token_id": 9
         }
       ],
       "deleted": [],
@@ -113,17 +113,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 5,
+          "id": 9,
           "seen_at": null,
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "EgbtAN8czqHDpZhtw6GB+ukbgUU=",
-          "created_at": "2026-11-22T04:58:15.850235",
-          "rotated_at": "2026-11-22T04:58:15.846507",
-          "updated_at": "2026-11-22T04:58:15.850235",
+          "auth_token": "7d1yjGDsfVBtEN19Njnphb/PIUk=",
+          "created_at": "2026-11-22T08:49:57.212898",
+          "rotated_at": "2026-11-22T08:49:57.208973",
+          "updated_at": "2026-11-22T08:49:57.212898",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "EgbtAN8czqHDpZhtw6GB+ukbgUU=",
+          "prev_auth_token": "7d1yjGDsfVBtEN19Njnphb/PIUk=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": true,
           "impersonation_expires_at": null
@@ -192,7 +192,7 @@
             "created_at": "2026-11-03T05:08:00.934987",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-22T04:58:15.679836",
+            "updated_at": "2026-11-22T08:49:57.171503",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -225,7 +225,7 @@
   "next_ids": {
     "user_associated_accounts": 1,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 5
+    "user_auth_tokens": 9
   },
   "settings": {
     "auth_require_interaction": false,
@@ -259,7 +259,7 @@
   ],
   "recorded_from": {
     "case": "e77189c5ad578d105569a976d94a85444d1b61fe87ab8c6daa755fe2df789c06",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

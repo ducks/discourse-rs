@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T04:40:13.878554",
-  "transaction_started_at": "2026-11-22T04:40:13.105984",
+  "started_at": "2026-11-22T08:32:04.933887",
+  "transaction_started_at": "2026-11-22T08:32:04.00284",
   "responses": [
     {
       "status": 200,
@@ -759,7 +759,7 @@
             "style_type": 2,
             "text_color": "000000",
             "topics_day": 0,
-            "updated_at": "2026-11-22T04:40:13.916321",
+            "updated_at": "2026-11-22T08:32:04.979019",
             "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
             "posts_month": 0,
             "topic_count": 1,
@@ -809,33 +809,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "pECj06bsPEbxKf4k1CUITyBNguo=",
-            "created_at": "2026-11-22T04:40:13.412295",
-            "rotated_at": "2026-11-22T04:40:13.411519",
-            "updated_at": "2026-11-22T04:40:13.412295",
+            "auth_token": "Fnkq69b1iJxhSb81dqX7Wxksv3I=",
+            "created_at": "2026-11-22T08:32:04.297944",
+            "rotated_at": "2026-11-22T08:32:04.297197",
+            "updated_at": "2026-11-22T08:32:04.297944",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "pECj06bsPEbxKf4k1CUITyBNguo=",
+            "prev_auth_token": "Fnkq69b1iJxhSb81dqX7Wxksv3I=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:40:13.886697",
+            "id": 9,
+            "seen_at": "2026-11-22T08:32:04.941993",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "pECj06bsPEbxKf4k1CUITyBNguo=",
-            "created_at": "2026-11-22T04:40:13.412295",
-            "rotated_at": "2026-11-22T04:40:13.411519",
-            "updated_at": "2026-11-22T04:40:13.412295",
+            "auth_token": "Fnkq69b1iJxhSb81dqX7Wxksv3I=",
+            "created_at": "2026-11-22T08:32:04.297944",
+            "rotated_at": "2026-11-22T08:32:04.297197",
+            "updated_at": "2026-11-22T08:32:04.297944",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "pECj06bsPEbxKf4k1CUITyBNguo=",
+            "prev_auth_token": "Fnkq69b1iJxhSb81dqX7Wxksv3I=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -856,10 +856,10 @@
           "topic_id": null,
           "new_value": "000000",
           "admin_only": true,
-          "created_at": "2026-11-22T04:40:13.93411",
+          "created_at": "2026-11-22T08:32:04.999325",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:40:13.93411",
+          "updated_at": "2026-11-22T08:32:04.999325",
           "category_id": 2,
           "custom_type": null,
           "reviewable_id": null,
@@ -878,10 +878,10 @@
           "topic_id": null,
           "new_value": "null",
           "admin_only": true,
-          "created_at": "2026-11-22T04:40:13.935559",
+          "created_at": "2026-11-22T08:32:05.000959",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:40:13.935559",
+          "updated_at": "2026-11-22T08:32:05.000959",
           "category_id": 2,
           "custom_type": null,
           "reviewable_id": null,
@@ -908,7 +908,7 @@
   },
   "recorded_from": {
     "case": "e15e15ab6d333f78f4f1b6876d7ddd35a916e962cd0ac751b127cb41f3f8f263",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

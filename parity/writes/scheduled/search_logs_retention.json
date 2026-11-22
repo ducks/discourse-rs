@@ -2,8 +2,8 @@
   "name": "search_logs_retention",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:43:38.170915",
-  "transaction_started_at": "2026-11-22T05:43:37.526927",
+  "started_at": "2026-11-22T09:29:57.772613",
+  "transaction_started_at": "2026-11-22T09:29:57.12293",
   "responses": [],
   "changes": {
     "search_logs": {
@@ -14,7 +14,7 @@
           "term": "one",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2025-10-18T05:43:37.526927",
+          "created_at": "2025-10-18T09:29:57.12293",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -42,7 +42,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "59b1192f9688b1459c3e51f9b7dbf69737e332c220535a58e783958737948507",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

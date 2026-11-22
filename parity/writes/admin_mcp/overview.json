@@ -15,8 +15,8 @@
       "path": "/admin/mcp/capabilities.json"
     }
   ],
-  "started_at": "2026-11-22T04:28:26.188443",
-  "transaction_started_at": "2026-11-22T04:28:25.433115",
+  "started_at": "2026-11-22T08:21:29.075682",
+  "transaction_started_at": "2026-11-22T08:21:28.335441",
   "responses": [
     {
       "status": 200,
@@ -3908,232 +3908,232 @@
           "id": 1,
           "scope": "chat:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 2,
           "scope": "chat:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 3,
           "scope": "discourse-calendar:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 4,
           "scope": "discourse-reactions:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 5,
           "scope": "discourse-solved:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 6,
           "scope": "discourse-topic-voting:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 7,
           "scope": "mcp:categories:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 8,
           "scope": "mcp:categories:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 9,
           "scope": "mcp:content:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 10,
           "scope": "mcp:content:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 11,
           "scope": "mcp:data-explorer:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 12,
           "scope": "mcp:drafts:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 13,
           "scope": "mcp:drafts:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 14,
           "scope": "mcp:groups:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 15,
           "scope": "mcp:groups:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 16,
           "scope": "mcp:moderation:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 17,
           "scope": "mcp:moderation:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 18,
           "scope": "mcp:private-messages:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 19,
           "scope": "mcp:private-messages:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 20,
           "scope": "mcp:profile:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 21,
           "scope": "mcp:profile:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 22,
           "scope": "mcp:reports:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 23,
           "scope": "mcp:repository:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 24,
           "scope": "mcp:site-settings:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 25,
           "scope": "mcp:site-settings:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 26,
           "scope": "mcp:tag-groups:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 27,
           "scope": "mcp:tag-groups:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 28,
           "scope": "mcp:themes:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 29,
           "scope": "mcp:themes:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 30,
           "scope": "mcp:users:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 31,
           "scope": "mcp:users:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 32,
           "scope": "mcp:webhooks:read",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         },
         {
           "id": 33,
           "scope": "mcp:webhooks:write",
           "group_id": 1,
-          "created_at": "2026-11-22T04:28:26.22725",
-          "updated_at": "2026-11-22T04:28:26.22725"
+          "created_at": "2026-11-22T08:21:29.109779",
+          "updated_at": "2026-11-22T08:21:29.109779"
         }
       ],
       "deleted": [],
@@ -4145,33 +4145,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "PVyzrmPS0vhKUTukfY53gB1PqxU=",
-            "created_at": "2026-11-22T04:28:25.721715",
-            "rotated_at": "2026-11-22T04:28:25.720275",
-            "updated_at": "2026-11-22T04:28:25.721715",
+            "auth_token": "LjTp9ZR7pAYZ4bXcTvradTxzYyo=",
+            "created_at": "2026-11-22T08:21:28.616029",
+            "rotated_at": "2026-11-22T08:21:28.61517",
+            "updated_at": "2026-11-22T08:21:28.616029",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "PVyzrmPS0vhKUTukfY53gB1PqxU=",
+            "prev_auth_token": "LjTp9ZR7pAYZ4bXcTvradTxzYyo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:28:26.194005",
+            "id": 9,
+            "seen_at": "2026-11-22T08:21:29.08102",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "PVyzrmPS0vhKUTukfY53gB1PqxU=",
-            "created_at": "2026-11-22T04:28:25.721715",
-            "rotated_at": "2026-11-22T04:28:25.720275",
-            "updated_at": "2026-11-22T04:28:25.721715",
+            "auth_token": "LjTp9ZR7pAYZ4bXcTvradTxzYyo=",
+            "created_at": "2026-11-22T08:21:28.616029",
+            "rotated_at": "2026-11-22T08:21:28.61517",
+            "updated_at": "2026-11-22T08:21:28.616029",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "PVyzrmPS0vhKUTukfY53gB1PqxU=",
+            "prev_auth_token": "LjTp9ZR7pAYZ4bXcTvradTxzYyo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -4186,7 +4186,7 @@
   },
   "recorded_from": {
     "case": "e229e7dc20f35871af5ee2d9a32ca96d4c1786c25223d860c6e11af34625fa56",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

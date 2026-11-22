@@ -2,8 +2,8 @@
   "name": "user_visit_rollups_incremental",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T06:38:21.111187",
-  "transaction_started_at": "2026-11-22T06:38:17.302393",
+  "started_at": "2026-11-22T09:30:37.233807",
+  "transaction_started_at": "2026-11-22T09:30:36.601084",
   "responses": [],
   "changes": {
     "user_visit_daily_rollups": {
@@ -51,7 +51,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "64030fc6bf7dd912b2c2d8554165a9da79a6ff4ded35e1a662f312d7e383029b",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

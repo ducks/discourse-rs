@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_chat_direct_message",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:41:07.943668",
-  "transaction_started_at": "2026-11-22T05:41:07.198186",
+  "started_at": "2026-11-22T09:27:28.605941",
+  "transaction_started_at": "2026-11-22T09:27:27.978722",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -18,9 +18,9 @@
             "user_id": 3,
             "created_at": "2026-10-02T11:02:00",
             "updated_at": "2026-10-02T11:02:00",
-            "reminder_at": "2026-11-22T05:36:07.198186",
+            "reminder_at": "2026-11-22T09:22:27.978722",
             "bookmarkable_id": 3,
-            "reminder_set_at": "2026-11-21T05:41:07.198186",
+            "reminder_set_at": "2026-11-21T09:27:27.978722",
             "bookmarkable_type": "ChatMessage",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 3
@@ -31,12 +31,12 @@
             "pinned": null,
             "user_id": 3,
             "created_at": "2026-10-02T11:02:00",
-            "updated_at": "2026-11-22T05:41:07.963185",
+            "updated_at": "2026-11-22T09:27:28.626491",
             "reminder_at": null,
             "bookmarkable_id": 3,
             "reminder_set_at": null,
             "bookmarkable_type": "ChatMessage",
-            "reminder_last_sent_at": "2026-11-22T05:41:07.962255",
+            "reminder_last_sent_at": "2026-11-22T09:27:28.625468",
             "auto_delete_preference": 3
           }
         }
@@ -50,8 +50,8 @@
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-22T05:41:07.961422",
-          "updated_at": "2026-11-22T05:41:07.961422",
+          "created_at": "2026-11-22T09:27:28.624298",
+          "updated_at": "2026-11-22T09:27:28.624298",
           "post_number": null,
           "high_priority": true,
           "post_action_id": null,
@@ -88,7 +88,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "2ae40446ba09ea5d724c3df0ee7fd83f84e825e172f5abf9275493013fe8ec5e",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

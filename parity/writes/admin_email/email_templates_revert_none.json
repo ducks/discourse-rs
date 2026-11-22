@@ -7,8 +7,8 @@
       "path": "/admin/email/templates/test_mailer"
     }
   ],
-  "started_at": "2026-11-22T04:25:57.335602",
-  "transaction_started_at": "2026-11-22T04:25:56.450949",
+  "started_at": "2026-11-22T08:19:08.38506",
+  "transaction_started_at": "2026-11-22T08:19:07.458927",
   "responses": [
     {
       "status": 200,
@@ -35,33 +35,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "79El9egJr0mvXU1z8jVzqnrfXb4=",
-            "created_at": "2026-11-22T04:25:56.797212",
-            "rotated_at": "2026-11-22T04:25:56.796271",
-            "updated_at": "2026-11-22T04:25:56.797212",
+            "auth_token": "NpNiK8vY3SS9pMcUcJ3l1Y49zJs=",
+            "created_at": "2026-11-22T08:19:07.753109",
+            "rotated_at": "2026-11-22T08:19:07.752302",
+            "updated_at": "2026-11-22T08:19:07.753109",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "79El9egJr0mvXU1z8jVzqnrfXb4=",
+            "prev_auth_token": "NpNiK8vY3SS9pMcUcJ3l1Y49zJs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:25:57.343308",
+            "id": 9,
+            "seen_at": "2026-11-22T08:19:08.403109",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "79El9egJr0mvXU1z8jVzqnrfXb4=",
-            "created_at": "2026-11-22T04:25:56.797212",
-            "rotated_at": "2026-11-22T04:25:56.796271",
-            "updated_at": "2026-11-22T04:25:56.797212",
+            "auth_token": "NpNiK8vY3SS9pMcUcJ3l1Y49zJs=",
+            "created_at": "2026-11-22T08:19:07.753109",
+            "rotated_at": "2026-11-22T08:19:07.752302",
+            "updated_at": "2026-11-22T08:19:07.753109",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "79El9egJr0mvXU1z8jVzqnrfXb4=",
+            "prev_auth_token": "NpNiK8vY3SS9pMcUcJ3l1Y49zJs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -82,10 +82,10 @@
           "topic_id": null,
           "new_value": "[%{email_prefix}] Email Deliverability Test",
           "admin_only": true,
-          "created_at": "2026-11-22T04:25:57.43917",
+          "created_at": "2026-11-22T08:19:08.525061",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:25:57.43917",
+          "updated_at": "2026-11-22T08:19:08.525061",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -104,10 +104,10 @@
           "topic_id": null,
           "new_value": "This is a test email from\n\n[**%{base_url}**][0]\n\nWe hope you received this email deliverability test OK!\n\nHere is a [handy checklist for verifying email delivery configuration][1].\n\nGood luck,\n\nYour friends at [Discourse](https://www.discourse.org)\n\n[0]: %{base_url}\n[1]: https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\n",
           "admin_only": true,
-          "created_at": "2026-11-22T04:25:57.51144",
+          "created_at": "2026-11-22T08:19:08.52842",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:25:57.51144",
+          "updated_at": "2026-11-22T08:19:08.52842",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -126,7 +126,7 @@
   },
   "recorded_from": {
     "case": "22071dfd7215787b089f5bbed849ccb876e6b832d1a38fe1778214e3950bb6aa",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

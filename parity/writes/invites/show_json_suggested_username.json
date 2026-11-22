@@ -7,8 +7,8 @@
       "path": "/invites/Fixture901?t=0123456789abcdef0123456789abcdef"
     }
   ],
-  "started_at": "2026-11-22T05:07:54.89615",
-  "transaction_started_at": "2026-11-22T05:07:54.252127",
+  "started_at": "2026-11-22T08:59:34.106446",
+  "transaction_started_at": "2026-11-22T08:59:33.480503",
   "responses": [
     {
       "status": 200,
@@ -45,7 +45,7 @@
   ],
   "recorded_from": {
     "case": "c6a990dea0429bc4a08163270cb9051ab13d42e1de9f2c57c62b97ada6dac4ab",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

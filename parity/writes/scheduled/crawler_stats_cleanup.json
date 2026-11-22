@@ -2,8 +2,8 @@
   "name": "crawler_stats_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:41:54.753218",
-  "transaction_started_at": "2026-11-22T05:41:54.126847",
+  "started_at": "2026-11-22T09:28:15.252026",
+  "transaction_started_at": "2026-11-22T09:28:14.651711",
   "responses": [],
   "changes": {
     "web_crawler_requests": {
@@ -76,7 +76,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "249f235748e1b17d063d873f4daff0f946cc0a9ca7390905fb45d7c2270570ed",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

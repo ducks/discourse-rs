@@ -7,8 +7,8 @@
       "path": "/chat/api/channels/2/messages/7/restore.json"
     }
   ],
-  "started_at": "2026-11-22T06:24:00.993108",
-  "transaction_started_at": "2026-11-22T06:24:00.131813",
+  "started_at": "2026-11-22T10:10:10.652139",
+  "transaction_started_at": "2026-11-22T10:10:09.78857",
   "responses": [
     {
       "status": 200,
@@ -56,7 +56,7 @@
             "status": 0,
             "created_at": "2026-11-03T05:07:24.951301",
             "deleted_at": null,
-            "updated_at": "2026-11-22T06:24:01.018021",
+            "updated_at": "2026-11-22T10:10:10.682909",
             "user_count": 3,
             "chatable_id": 4,
             "description": null,
@@ -88,9 +88,9 @@
             "user_id": 3,
             "streaming": false,
             "thread_id": null,
-            "created_at": "2026-11-22T06:21:00.131813",
-            "deleted_at": "2026-11-22T06:22:00.131813",
-            "updated_at": "2026-11-22T06:21:00.131813",
+            "created_at": "2026-11-22T10:07:09.78857",
+            "deleted_at": "2026-11-22T10:08:09.78857",
+            "updated_at": "2026-11-22T10:07:09.78857",
             "broadcasted": false,
             "deleted_by_id": 3,
             "cooked_version": 1,
@@ -108,9 +108,9 @@
             "user_id": 3,
             "streaming": false,
             "thread_id": null,
-            "created_at": "2026-11-22T06:21:00.131813",
+            "created_at": "2026-11-22T10:07:09.78857",
             "deleted_at": null,
-            "updated_at": "2026-11-22T06:21:00.131813",
+            "updated_at": "2026-11-22T10:07:09.78857",
             "broadcasted": false,
             "deleted_by_id": null,
             "cooked_version": 1,
@@ -128,33 +128,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "4iAIxPRJoR5SRHZYAmQgi9seg48=",
-            "created_at": "2026-11-22T06:24:00.50323",
-            "rotated_at": "2026-11-22T06:24:00.50242",
-            "updated_at": "2026-11-22T06:24:00.50323",
+            "auth_token": "JvGGw6NHuCFefEj7AxcmESFwpq8=",
+            "created_at": "2026-11-22T10:10:10.169557",
+            "rotated_at": "2026-11-22T10:10:10.168769",
+            "updated_at": "2026-11-22T10:10:10.169557",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "4iAIxPRJoR5SRHZYAmQgi9seg48=",
+            "prev_auth_token": "JvGGw6NHuCFefEj7AxcmESFwpq8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T06:24:01.00099",
+            "id": 9,
+            "seen_at": "2026-11-22T10:10:10.660703",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "4iAIxPRJoR5SRHZYAmQgi9seg48=",
-            "created_at": "2026-11-22T06:24:00.50323",
-            "rotated_at": "2026-11-22T06:24:00.50242",
-            "updated_at": "2026-11-22T06:24:00.50323",
+            "auth_token": "JvGGw6NHuCFefEj7AxcmESFwpq8=",
+            "created_at": "2026-11-22T10:10:10.169557",
+            "rotated_at": "2026-11-22T10:10:10.168769",
+            "updated_at": "2026-11-22T10:10:10.169557",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "4iAIxPRJoR5SRHZYAmQgi9seg48=",
+            "prev_auth_token": "JvGGw6NHuCFefEj7AxcmESFwpq8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -167,7 +167,7 @@
     [
       "emit_web_hook_event",
       {
-        "payload": "{\"message\":{\"id\":7,\"message\":\"oops\",\"cooked\":\"\\u003cp\\u003eoops\\u003c/p\\u003e\",\"created_at\":\"2026-11-22T06:21:00Z\",\"excerpt\":\"oops\",\"chat_channel_id\":2,\"streaming\":false,\"user\":{\"id\":3,\"username\":\"user1\",\"name\":\"User1\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"can_chat\":null,\"has_chat_enabled\":null,\"moderator\":false,\"admin\":false,\"staff\":false,\"new_user\":false,\"primary_group_name\":null},\"mentioned_users\":[],\"available_flags\":[],\"blocks\":[],\"pinned\":false,\"is_action\":false,\"chat_webhook_event\":null,\"uploads\":[]},\"channel\":{\"id\":2,\"allow_channel_wide_mentions\":true,\"chatable\":{\"id\":4,\"name\":\"General\",\"color\":\"25AAE2\",\"text_color\":\"FFFFFF\",\"style_type\":\"emoji\",\"icon\":null,\"emoji\":\"blue_book\",\"slug\":\"general\",\"topic_count\":3,\"post_count\":0,\"position\":3,\"description\":\"\\u003cp\\u003eCreate topics here that don’t fit into any other existing category.\\u003c/p\\u003e\",\"description_text\":\"Create topics here that don’t fit into any other existing category.\",\"description_excerpt\":\"Create topics here that don’t fit into any other existing category.\",\"topic_url\":\"/t/about-the-general-category/3\",\"read_restricted\":false,\"permission\":null,\"notification_level\":null,\"topic_template\":null,\"topic_title_placeholder\":null,\"has_children\":null,\"subcategory_count\":null,\"sort_order\":null,\"sort_ascending\":null,\"show_subcategory_list\":false,\"num_featured_topics\":3,\"default_view\":null,\"subcategory_list_style\":\"rows_with_featured_topics\",\"default_top_period\":\"all\",\"default_list_filter\":\"all\",\"minimum_required_tags\":0,\"navigate_to_first_post_after_read\":false,\"uploaded_logo\":null,\"uploaded_logo_dark\":null,\"uploaded_background\":null,\"uploaded_background_dark\":null},\"chatable_id\":4,\"chatable_type\":\"Category\",\"chatable_url\":\"/c/general/4\",\"title\":\"General\",\"unicode_title\":\"General\",\"slug\":\"general\",\"status\":\"open\",\"memberships_count\":3,\"current_user_membership\":{\"following\":true,\"muted\":false,\"muted_until\":null,\"notification_level\":\"mention\",\"chat_channel_id\":2,\"last_read_message_id\":2,\"last_viewed_at\":\"2026-11-21T23:56:57.925Z\",\"last_viewed_pins_at\":null,\"starred\":false,\"has_unseen_pins\":false},\"meta\":{\"message_bus_last_ids\":{\"channel_message_bus_last_id\":0,\"new_messages\":0,\"new_mentions\":0,\"kick\":0},\"can_join_chat_channel\":true,\"can_flag\":true,\"user_silenced\":false,\"can_moderate\":false,\"can_delete_self\":true,\"can_delete_others\":false,\"can_remove_members\":false,\"can_manage_pins\":false},\"threading_enabled\":false,\"pinned_messages_count\":0,\"last_message\":{\"id\":7,\"message\":\"oops\",\"cooked\":\"\\u003cp\\u003eoops\\u003c/p\\u003e\",\"created_at\":\"2026-11-22T06:21:00Z\",\"excerpt\":\"oops\",\"deleted_at\":null,\"deleted_by_id\":null,\"thread_id\":null,\"chat_channel_id\":2,\"streaming\":false}}}",
+        "payload": "{\"message\":{\"id\":7,\"message\":\"oops\",\"cooked\":\"\\u003cp\\u003eoops\\u003c/p\\u003e\",\"created_at\":\"2026-11-22T10:07:09Z\",\"excerpt\":\"oops\",\"chat_channel_id\":2,\"streaming\":false,\"user\":{\"id\":3,\"username\":\"user1\",\"name\":\"User1\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"can_chat\":null,\"has_chat_enabled\":null,\"moderator\":false,\"admin\":false,\"staff\":false,\"new_user\":false,\"primary_group_name\":null},\"mentioned_users\":[],\"available_flags\":[],\"blocks\":[],\"pinned\":false,\"is_action\":false,\"chat_webhook_event\":null,\"uploads\":[]},\"channel\":{\"id\":2,\"allow_channel_wide_mentions\":true,\"chatable\":{\"id\":4,\"name\":\"General\",\"color\":\"25AAE2\",\"text_color\":\"FFFFFF\",\"style_type\":\"emoji\",\"icon\":null,\"emoji\":\"blue_book\",\"slug\":\"general\",\"topic_count\":3,\"post_count\":0,\"position\":3,\"description\":\"\\u003cp\\u003eCreate topics here that don’t fit into any other existing category.\\u003c/p\\u003e\",\"description_text\":\"Create topics here that don’t fit into any other existing category.\",\"description_excerpt\":\"Create topics here that don’t fit into any other existing category.\",\"topic_url\":\"/t/about-the-general-category/3\",\"read_restricted\":false,\"permission\":null,\"notification_level\":null,\"topic_template\":null,\"topic_title_placeholder\":null,\"has_children\":null,\"subcategory_count\":null,\"sort_order\":null,\"sort_ascending\":null,\"show_subcategory_list\":false,\"num_featured_topics\":3,\"default_view\":null,\"subcategory_list_style\":\"rows_with_featured_topics\",\"default_top_period\":\"all\",\"default_list_filter\":\"all\",\"minimum_required_tags\":0,\"navigate_to_first_post_after_read\":false,\"uploaded_logo\":null,\"uploaded_logo_dark\":null,\"uploaded_background\":null,\"uploaded_background_dark\":null},\"chatable_id\":4,\"chatable_type\":\"Category\",\"chatable_url\":\"/c/general/4\",\"title\":\"General\",\"unicode_title\":\"General\",\"slug\":\"general\",\"status\":\"open\",\"memberships_count\":3,\"current_user_membership\":{\"following\":true,\"muted\":false,\"muted_until\":null,\"notification_level\":\"mention\",\"chat_channel_id\":2,\"last_read_message_id\":2,\"last_viewed_at\":\"2026-11-21T23:56:57.925Z\",\"last_viewed_pins_at\":null,\"starred\":false,\"has_unseen_pins\":false},\"meta\":{\"message_bus_last_ids\":{\"channel_message_bus_last_id\":0,\"new_messages\":0,\"new_mentions\":0,\"kick\":0},\"can_join_chat_channel\":true,\"can_flag\":true,\"user_silenced\":false,\"can_moderate\":false,\"can_delete_self\":true,\"can_delete_others\":false,\"can_remove_members\":false,\"can_manage_pins\":false},\"threading_enabled\":false,\"pinned_messages_count\":0,\"last_message\":{\"id\":7,\"message\":\"oops\",\"cooked\":\"\\u003cp\\u003eoops\\u003c/p\\u003e\",\"created_at\":\"2026-11-22T10:07:09Z\",\"excerpt\":\"oops\",\"deleted_at\":null,\"deleted_by_id\":null,\"thread_id\":null,\"chat_channel_id\":2,\"streaming\":false}}}",
         "category_id": 4,
         "web_hook_id": 9001,
         "event_name": "chat_message_restored",
@@ -197,7 +197,7 @@
   ],
   "recorded_from": {
     "case": "f747432c990441ce39d0542f05035a90b1f2dcd1174a28af4a9a056bd43d27e7",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

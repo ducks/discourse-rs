@@ -7,8 +7,8 @@
       "path": "/site/banner.json"
     }
   ],
-  "started_at": "2026-11-22T05:49:48.072663",
-  "transaction_started_at": "2026-11-22T05:49:47.347722",
+  "started_at": "2026-11-22T09:36:06.111755",
+  "transaction_started_at": "2026-11-22T09:36:05.502041",
   "responses": [
     {
       "status": 403,
@@ -31,7 +31,7 @@
   ],
   "recorded_from": {
     "case": "9cb0dd96d767eff2922fcdefd8cfb90cce8c588cad1fe75c379c8c34c3d58eca",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

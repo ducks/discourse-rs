@@ -19,8 +19,8 @@
       "path": "/latest.json?f%5B%5D=x"
     }
   ],
-  "started_at": "2026-11-22T05:09:18.37319",
-  "transaction_started_at": "2026-11-22T05:09:17.798601",
+  "started_at": "2026-11-22T09:00:54.574357",
+  "transaction_started_at": "2026-11-22T09:00:54.015183",
   "responses": [
     {
       "status": 200,
@@ -139,7 +139,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "4dcaf54afe77c48723b9d4f9fa2d810491cd785e52123e29f87355191d02ae97",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

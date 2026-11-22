@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:06:53.11861",
-  "transaction_started_at": "2026-11-22T05:06:52.157796",
+  "started_at": "2026-11-22T08:58:33.038128",
+  "transaction_started_at": "2026-11-22T08:58:32.113292",
   "responses": [
     {
       "status": 200,
@@ -32,11 +32,11 @@
             "email": "old@example.com",
             "domain": null,
             "moderator": false,
-            "created_at": "2026-08-14T05:06:52.157796",
+            "created_at": "2026-08-14T08:58:32.113292",
             "deleted_at": null,
-            "expires_at": "2026-11-12T05:06:52.157796",
+            "expires_at": "2026-11-12T08:58:32.113292",
             "invite_key": "Fixture903",
-            "updated_at": "2026-08-14T05:06:52.157796",
+            "updated_at": "2026-08-14T08:58:32.113292",
             "description": null,
             "email_token": "fedcba9876543210fedcba9876543210",
             "deleted_by_id": null,
@@ -53,11 +53,11 @@
             "email": "old@example.com",
             "domain": null,
             "moderator": false,
-            "created_at": "2026-08-14T05:06:52.157796",
-            "deleted_at": "2026-11-22T05:06:53.133339",
-            "expires_at": "2026-11-12T05:06:52.157796",
+            "created_at": "2026-08-14T08:58:32.113292",
+            "deleted_at": "2026-11-22T08:58:33.068663",
+            "expires_at": "2026-11-12T08:58:32.113292",
             "invite_key": "Fixture903",
-            "updated_at": "2026-08-14T05:06:52.157796",
+            "updated_at": "2026-08-14T08:58:32.113292",
             "description": null,
             "email_token": "fedcba9876543210fedcba9876543210",
             "deleted_by_id": 1,
@@ -77,33 +77,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Gp3VPkFRXElU7h+peSvNXz87h2o=",
-            "created_at": "2026-11-22T05:06:52.472005",
-            "rotated_at": "2026-11-22T05:06:52.471087",
-            "updated_at": "2026-11-22T05:06:52.472005",
+            "auth_token": "6LRXWPmL2L+ZTr5ky1ZU5LDUUkM=",
+            "created_at": "2026-11-22T08:58:32.424738",
+            "rotated_at": "2026-11-22T08:58:32.423964",
+            "updated_at": "2026-11-22T08:58:32.424738",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Gp3VPkFRXElU7h+peSvNXz87h2o=",
+            "prev_auth_token": "6LRXWPmL2L+ZTr5ky1ZU5LDUUkM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:06:53.125119",
+            "id": 9,
+            "seen_at": "2026-11-22T08:58:33.050307",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Gp3VPkFRXElU7h+peSvNXz87h2o=",
-            "created_at": "2026-11-22T05:06:52.472005",
-            "rotated_at": "2026-11-22T05:06:52.471087",
-            "updated_at": "2026-11-22T05:06:52.472005",
+            "auth_token": "6LRXWPmL2L+ZTr5ky1ZU5LDUUkM=",
+            "created_at": "2026-11-22T08:58:32.424738",
+            "rotated_at": "2026-11-22T08:58:32.423964",
+            "updated_at": "2026-11-22T08:58:32.424738",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Gp3VPkFRXElU7h+peSvNXz87h2o=",
+            "prev_auth_token": "6LRXWPmL2L+ZTr5ky1ZU5LDUUkM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -123,7 +123,7 @@
   ],
   "recorded_from": {
     "case": "98c3cff0792b058d96ea8c191487e7e2c4a2c6d2374b1f48b94ea86bd4bafeac",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

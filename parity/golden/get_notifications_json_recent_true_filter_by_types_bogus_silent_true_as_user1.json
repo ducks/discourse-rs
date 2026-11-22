@@ -1,7 +1,7 @@
 {
   "request": "GET /notifications.json?recent=true&filter_by_types=bogus&silent=true as=user1",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T06:32:03.452646285+00:00",
+  "recorded_at": "2026-11-22T10:21:40.143089507+00:00",
   "status": 400,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"errors\":[\"You supplied invalid parameters to the request: invalid notification type: bogus\"],\"error_type\":\"invalid_parameters\"}"

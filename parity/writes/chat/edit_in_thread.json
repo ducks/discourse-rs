@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T04:44:11.273249",
-  "transaction_started_at": "2026-11-22T04:44:10.441654",
+  "started_at": "2026-11-22T08:36:00.190905",
+  "transaction_started_at": "2026-11-22T08:35:59.342887",
   "responses": [
     {
       "status": 200,
@@ -29,8 +29,8 @@
           "id": 1,
           "type": "Chat::UserMention",
           "target_id": 2,
-          "created_at": "2026-11-22T04:04:10.441654",
-          "updated_at": "2026-11-22T04:04:10.441654",
+          "created_at": "2026-11-22T07:55:59.342887",
+          "updated_at": "2026-11-22T07:55:59.342887",
           "chat_message_id": 2
         }
       ],
@@ -41,8 +41,8 @@
         {
           "id": 1,
           "user_id": 3,
-          "created_at": "2026-11-22T04:44:11.387498",
-          "updated_at": "2026-11-22T04:44:11.387498",
+          "created_at": "2026-11-22T08:36:00.311226",
+          "updated_at": "2026-11-22T08:36:00.311226",
           "new_message": "edited thread reply",
           "old_message": "@user0 hi back",
           "chat_message_id": 2
@@ -78,9 +78,9 @@
             "user_id": 3,
             "streaming": false,
             "thread_id": 1,
-            "created_at": "2026-11-22T04:04:10.441654",
+            "created_at": "2026-11-22T07:55:59.342887",
             "deleted_at": null,
-            "updated_at": "2026-11-22T04:04:10.441654",
+            "updated_at": "2026-11-22T07:55:59.342887",
             "broadcasted": false,
             "deleted_by_id": null,
             "cooked_version": 1,
@@ -98,9 +98,9 @@
             "user_id": 3,
             "streaming": false,
             "thread_id": 1,
-            "created_at": "2026-11-22T04:04:10.441654",
+            "created_at": "2026-11-22T07:55:59.342887",
             "deleted_at": null,
-            "updated_at": "2026-11-22T04:44:11.38364",
+            "updated_at": "2026-11-22T08:36:00.307809",
             "broadcasted": false,
             "deleted_by_id": null,
             "cooked_version": 2,
@@ -118,33 +118,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "ryvFeQWImVf0qvxMuDZ4ckZx7jY=",
-            "created_at": "2026-11-22T04:44:10.798346",
-            "rotated_at": "2026-11-22T04:44:10.797299",
-            "updated_at": "2026-11-22T04:44:10.798346",
+            "auth_token": "zTQwgalUUwkRZ1e7cMe0PdjGLYw=",
+            "created_at": "2026-11-22T08:35:59.654219",
+            "rotated_at": "2026-11-22T08:35:59.653284",
+            "updated_at": "2026-11-22T08:35:59.654219",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ryvFeQWImVf0qvxMuDZ4ckZx7jY=",
+            "prev_auth_token": "zTQwgalUUwkRZ1e7cMe0PdjGLYw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:44:11.281028",
+            "id": 9,
+            "seen_at": "2026-11-22T08:36:00.19823",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "ryvFeQWImVf0qvxMuDZ4ckZx7jY=",
-            "created_at": "2026-11-22T04:44:10.798346",
-            "rotated_at": "2026-11-22T04:44:10.797299",
-            "updated_at": "2026-11-22T04:44:10.798346",
+            "auth_token": "zTQwgalUUwkRZ1e7cMe0PdjGLYw=",
+            "created_at": "2026-11-22T08:35:59.654219",
+            "rotated_at": "2026-11-22T08:35:59.653284",
+            "updated_at": "2026-11-22T08:35:59.654219",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ryvFeQWImVf0qvxMuDZ4ckZx7jY=",
+            "prev_auth_token": "zTQwgalUUwkRZ1e7cMe0PdjGLYw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -158,7 +158,7 @@
       "Jobs::Chat::ProcessMessage",
       {
         "chat_message_id": 2,
-        "edit_timestamp": "2026-11-22T04:44:11.387498Z"
+        "edit_timestamp": "2026-11-22T08:36:00.311226Z"
       }
     ]
   ],
@@ -182,7 +182,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "30f5802cbf51e1f4168d5549cffc48898970f9228b23a95d8e79c81f5130e183",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

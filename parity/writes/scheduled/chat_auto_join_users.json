@@ -2,8 +2,8 @@
   "name": "chat_auto_join_users",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:41:28.803926",
-  "transaction_started_at": "2026-11-22T05:41:28.157674",
+  "started_at": "2026-11-22T09:27:49.847409",
+  "transaction_started_at": "2026-11-22T09:27:49.072597",
   "responses": [],
   "changes": {
     "chat_channels": {
@@ -44,7 +44,7 @@
             "status": 0,
             "created_at": "2026-11-03T05:07:24.951301",
             "deleted_at": null,
-            "updated_at": "2026-11-22T05:41:28.833052",
+            "updated_at": "2026-11-22T09:27:49.875075",
             "user_count": 4,
             "chatable_id": 4,
             "description": null,
@@ -71,10 +71,10 @@
           "user_id": 4,
           "following": true,
           "join_mode": 1,
-          "created_at": "2026-11-22T05:41:28.805142",
-          "updated_at": "2026-11-22T05:41:28.805142",
+          "created_at": "2026-11-22T09:27:49.848264",
+          "updated_at": "2026-11-22T09:27:49.848264",
           "muted_until": null,
-          "last_viewed_at": "2026-11-22T05:41:28.157674",
+          "last_viewed_at": "2026-11-22T09:27:49.072597",
           "chat_channel_id": 2,
           "notification_level": 1,
           "last_viewed_pins_at": null,
@@ -112,7 +112,7 @@
   ],
   "recorded_from": {
     "case": "99aacf550576a4f00835ae39ea7c533a97bf1b5e3052cf475d5a1d182d5e68bf",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

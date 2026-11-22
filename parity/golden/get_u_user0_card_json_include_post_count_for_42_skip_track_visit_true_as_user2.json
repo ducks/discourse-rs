@@ -1,7 +1,7 @@
 {
   "request": "GET /u/user0/card.json?include_post_count_for=42&skip_track_visit=true as=user2",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T06:29:07.780137795+00:00",
+  "recorded_at": "2026-11-22T10:18:44.213935047+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"user_badges\":[],\"user\":{\"id\":2,\"username\":\"user0\",\"name\":\"User0\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png\",\"last_posted_at\":\"2026-11-21T23:56:51.452Z\",\"last_seen_at\":\"2026-11-22T04:14:24.791Z\",\"created_at\":\"2026-11-03T05:08:00.105Z\",\"ignored\":false,\"muted\":false,\"can_ignore_user\":true,\"can_mute_user\":true,\"can_send_private_messages\":true,\"can_send_private_message_to_user\":true,\"trust_level\":1,\"moderator\":false,\"admin\":false,\"title\":null,\"badge_count\":0,\"custom_fields\":{},\"time_read\":0,\"recent_time_read\":0,\"primary_group_id\":null,\"primary_group_name\":null,\"flair_group_id\":null,\"flair_name\":null,\"flair_url\":null,\"flair_bg_color\":null,\"flair_color\":null,\"can_chat_user\":true,\"accepted_answers\":0,\"featured_user_badge_ids\":[]}}"

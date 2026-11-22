@@ -13,8 +13,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T06:24:42.594948",
-  "transaction_started_at": "2026-11-22T06:24:41.714667",
+  "started_at": "2026-11-22T10:10:53.653913",
+  "transaction_started_at": "2026-11-22T10:10:52.724834",
   "responses": [
     {
       "status": 200,
@@ -29,7 +29,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T06:24:42.660Z",
+          "updated_at": "2026-11-22T10:10:53.730Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -140,8 +140,8 @@
           "post_id": 36,
           "user_id": 3,
           "unlisted": false,
-          "created_at": "2026-11-22T06:24:42.669991",
-          "updated_at": "2026-11-22T06:24:42.669991",
+          "created_at": "2026-11-22T10:10:53.741587",
+          "updated_at": "2026-11-22T10:10:53.741587",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- Reply one from user1, edited while a web hook listens.\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- \"<p>Reply one from user1, edited while a web hook listens.</p>\"\nedit_reason:\n-\n- for the hook\n"
         }
       ],
@@ -243,7 +243,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-11-22T06:24:42.660573",
+            "baked_at": "2026-11-22T10:10:53.730269",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -256,7 +256,7 @@
             "self_edits": 1,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-11-22T06:24:42.66083",
+            "updated_at": "2026-11-22T10:10:53.730537",
             "word_count": 10,
             "action_code": null,
             "cook_method": 1,
@@ -276,7 +276,7 @@
             "last_editor_id": 3,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T06:24:42.614222",
+            "last_version_at": "2026-11-22T10:10:53.677352",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -319,7 +319,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -371,7 +371,7 @@
             "word_count": 65,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -408,33 +408,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "Ved3rw8vxIwUKcaD/50OWujSRuE=",
-            "created_at": "2026-11-22T06:24:42.107113",
-            "rotated_at": "2026-11-22T06:24:42.106112",
-            "updated_at": "2026-11-22T06:24:42.107113",
+            "auth_token": "XrngFI33QXFZSm6vfBoIsNCvm50=",
+            "created_at": "2026-11-22T10:10:53.133012",
+            "rotated_at": "2026-11-22T10:10:53.132075",
+            "updated_at": "2026-11-22T10:10:53.133012",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Ved3rw8vxIwUKcaD/50OWujSRuE=",
+            "prev_auth_token": "XrngFI33QXFZSm6vfBoIsNCvm50=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T06:24:42.60171",
+            "id": 9,
+            "seen_at": "2026-11-22T10:10:53.659492",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "Ved3rw8vxIwUKcaD/50OWujSRuE=",
-            "created_at": "2026-11-22T06:24:42.107113",
-            "rotated_at": "2026-11-22T06:24:42.106112",
-            "updated_at": "2026-11-22T06:24:42.107113",
+            "auth_token": "XrngFI33QXFZSm6vfBoIsNCvm50=",
+            "created_at": "2026-11-22T10:10:53.133012",
+            "rotated_at": "2026-11-22T10:10:53.132075",
+            "updated_at": "2026-11-22T10:10:53.133012",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Ved3rw8vxIwUKcaD/50OWujSRuE=",
+            "prev_auth_token": "XrngFI33QXFZSm6vfBoIsNCvm50=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -523,7 +523,7 @@
         "tag_ids": [
           2
         ],
-        "payload": "{\"id\":36,\"name\":\"User1\",\"username\":\"user1\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"created_at\":\"2026-11-21T23:56:44.654Z\",\"cooked\":\"\\u003cp\\u003eReply one from user1, edited while a web hook listens.\\u003c/p\\u003e\",\"post_number\":2,\"post_type\":1,\"posts_count\":5,\"updated_at\":\"2026-11-22T06:24:42.660Z\",\"reply_count\":0,\"reply_to_post_number\":null,\"quote_count\":0,\"incoming_link_count\":0,\"reads\":1,\"score\":0,\"topic_id\":35,\"topic_slug\":\"parity-fixture-replies-and-posters\",\"topic_title\":\"Parity fixture: replies and posters\",\"category_id\":4,\"display_username\":\"User1\",\"primary_group_name\":null,\"flair_name\":null,\"flair_group_id\":null,\"version\":2,\"user_title\":null,\"bookmarked\":false,\"raw\":\"Reply one from user1, edited while a web hook listens.\",\"moderator\":false,\"admin\":false,\"staff\":false,\"user_id\":3,\"hidden\":false,\"trust_level\":2,\"deleted_at\":null,\"user_deleted\":false,\"edit_reason\":\"for the hook\",\"wiki\":false,\"reviewable_id\":null,\"reviewable_score_count\":0,\"reviewable_score_pending_count\":0,\"post_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"reactions\":[{\"id\":\"heart\",\"type\":\"emoji\",\"count\":1}],\"current_user_reaction\":null,\"reaction_users_count\":1,\"current_user_used_main_reaction\":false,\"can_accept_answer\":false,\"can_unaccept_answer\":false,\"accepted_answer\":false,\"topic_accepted_answer\":null,\"topic_posts_count\":5,\"topic_filtered_posts_count\":5,\"topic_archetype\":\"regular\",\"category_slug\":\"general\"}",
+        "payload": "{\"id\":36,\"name\":\"User1\",\"username\":\"user1\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"created_at\":\"2026-11-21T23:56:44.654Z\",\"cooked\":\"\\u003cp\\u003eReply one from user1, edited while a web hook listens.\\u003c/p\\u003e\",\"post_number\":2,\"post_type\":1,\"posts_count\":5,\"updated_at\":\"2026-11-22T10:10:53.730Z\",\"reply_count\":0,\"reply_to_post_number\":null,\"quote_count\":0,\"incoming_link_count\":0,\"reads\":1,\"score\":0,\"topic_id\":35,\"topic_slug\":\"parity-fixture-replies-and-posters\",\"topic_title\":\"Parity fixture: replies and posters\",\"category_id\":4,\"display_username\":\"User1\",\"primary_group_name\":null,\"flair_name\":null,\"flair_group_id\":null,\"version\":2,\"user_title\":null,\"bookmarked\":false,\"raw\":\"Reply one from user1, edited while a web hook listens.\",\"moderator\":false,\"admin\":false,\"staff\":false,\"user_id\":3,\"hidden\":false,\"trust_level\":2,\"deleted_at\":null,\"user_deleted\":false,\"edit_reason\":\"for the hook\",\"wiki\":false,\"reviewable_id\":null,\"reviewable_score_count\":0,\"reviewable_score_pending_count\":0,\"post_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"reactions\":[{\"id\":\"heart\",\"type\":\"emoji\",\"count\":1}],\"current_user_reaction\":null,\"reaction_users_count\":1,\"current_user_used_main_reaction\":false,\"can_accept_answer\":false,\"can_unaccept_answer\":false,\"accepted_answer\":false,\"topic_accepted_answer\":null,\"topic_posts_count\":5,\"topic_filtered_posts_count\":5,\"topic_archetype\":\"regular\",\"category_slug\":\"general\"}",
         "web_hook_id": 9001,
         "event_name": "post_edited",
         "event_type": "post"
@@ -558,7 +558,7 @@
   ],
   "recorded_from": {
     "case": "d62fe979f9c7292f934f5d7c09b8a282022b50b0e3cac6214718475dd8580d42",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

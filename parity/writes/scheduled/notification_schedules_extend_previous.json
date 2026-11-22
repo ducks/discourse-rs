@@ -2,8 +2,8 @@
   "name": "notification_schedules_extend_previous",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:42:45.236027",
-  "transaction_started_at": "2026-11-22T05:42:44.602546",
+  "started_at": "2026-11-22T09:29:05.266295",
+  "transaction_started_at": "2026-11-22T09:29:04.611832",
   "responses": [],
   "changes": {
     "do_not_disturb_timings": {
@@ -38,14 +38,14 @@
             "ends_at": "2026-11-21T23:59:59.999999",
             "user_id": 3,
             "scheduled": true,
-            "starts_at": "2026-11-21T05:42:44.602546"
+            "starts_at": "2026-11-21T09:29:04.611832"
           },
           "after": {
             "id": 1,
             "ends_at": "2026-11-22T07:59:00",
             "user_id": 3,
             "scheduled": true,
-            "starts_at": "2026-11-21T05:42:44.602546"
+            "starts_at": "2026-11-21T09:29:04.611832"
           }
         }
       ]
@@ -68,7 +68,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "2d61f272442c30036bc321b97ecdd2fdcd765957123fb7b8bf83e47eaa02c585",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

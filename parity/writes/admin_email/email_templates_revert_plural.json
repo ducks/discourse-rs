@@ -7,8 +7,8 @@
       "path": "/admin/email/templates/system_messages.pending_users_reminder"
     }
   ],
-  "started_at": "2026-11-22T04:25:58.68365",
-  "transaction_started_at": "2026-11-22T04:25:57.755144",
+  "started_at": "2026-11-22T08:19:09.491363",
+  "transaction_started_at": "2026-11-22T08:19:08.723124",
   "responses": [
     {
       "status": 200,
@@ -34,33 +34,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "MeKkVrXCUWOZpVTu74pU6jqNxW8=",
-            "created_at": "2026-11-22T04:25:58.083155",
-            "rotated_at": "2026-11-22T04:25:58.0824",
-            "updated_at": "2026-11-22T04:25:58.083155",
+            "auth_token": "0vtbDcSR16b35KnhDbFRDIKqHcM=",
+            "created_at": "2026-11-22T08:19:09.033173",
+            "rotated_at": "2026-11-22T08:19:09.032361",
+            "updated_at": "2026-11-22T08:19:09.033173",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "MeKkVrXCUWOZpVTu74pU6jqNxW8=",
+            "prev_auth_token": "0vtbDcSR16b35KnhDbFRDIKqHcM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:25:58.689645",
+            "id": 9,
+            "seen_at": "2026-11-22T08:19:09.496543",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "MeKkVrXCUWOZpVTu74pU6jqNxW8=",
-            "created_at": "2026-11-22T04:25:58.083155",
-            "rotated_at": "2026-11-22T04:25:58.0824",
-            "updated_at": "2026-11-22T04:25:58.083155",
+            "auth_token": "0vtbDcSR16b35KnhDbFRDIKqHcM=",
+            "created_at": "2026-11-22T08:19:09.033173",
+            "rotated_at": "2026-11-22T08:19:09.032361",
+            "updated_at": "2026-11-22T08:19:09.033173",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "MeKkVrXCUWOZpVTu74pU6jqNxW8=",
+            "prev_auth_token": "0vtbDcSR16b35KnhDbFRDIKqHcM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -81,10 +81,10 @@
           "topic_id": null,
           "new_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
           "admin_only": true,
-          "created_at": "2026-11-22T04:25:58.77029",
+          "created_at": "2026-11-22T08:19:09.564861",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:25:58.77029",
+          "updated_at": "2026-11-22T08:19:09.564861",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -103,10 +103,10 @@
           "topic_id": null,
           "new_value": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
           "admin_only": true,
-          "created_at": "2026-11-22T04:25:58.775449",
+          "created_at": "2026-11-22T08:19:09.569033",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:25:58.775449",
+          "updated_at": "2026-11-22T08:19:09.569033",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -125,7 +125,7 @@
   },
   "recorded_from": {
     "case": "b8d57455d1b71624f88cd4eba294cb90cbb5be6ba8d84fbddb44748365b9711c",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

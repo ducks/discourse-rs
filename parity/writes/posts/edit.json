@@ -21,8 +21,8 @@
       "path": "/posts/36/revisions/latest.json"
     }
   ],
-  "started_at": "2026-11-22T05:19:19.942772",
-  "transaction_started_at": "2026-11-22T05:19:19.104136",
+  "started_at": "2026-11-22T09:10:51.232116",
+  "transaction_started_at": "2026-11-22T09:10:50.209447",
   "responses": [
     {
       "status": 200,
@@ -37,7 +37,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T05:19:20.005Z",
+          "updated_at": "2026-11-22T09:10:51.298Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -128,7 +128,7 @@
     {
       "status": 200,
       "body": {
-        "created_at": "2026-11-22T05:19:20.012Z",
+        "created_at": "2026-11-22T09:10:51.305Z",
         "post_id": 36,
         "previous_hidden": false,
         "current_hidden": false,
@@ -157,7 +157,7 @@
     {
       "status": 200,
       "body": {
-        "created_at": "2026-11-22T05:19:20.012Z",
+        "created_at": "2026-11-22T09:10:51.305Z",
         "post_id": 36,
         "previous_hidden": false,
         "current_hidden": false,
@@ -206,8 +206,8 @@
           "post_id": 36,
           "user_id": 3,
           "unlisted": false,
-          "created_at": "2026-11-22T05:19:20.012317",
-          "updated_at": "2026-11-22T05:19:20.012317",
+          "created_at": "2026-11-22T09:10:51.305671",
+          "updated_at": "2026-11-22T09:10:51.305671",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- Reply one from user1, edited for the posting slice so it has a revision.\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- \"<p>Reply one from user1, edited for the posting slice so it has a revision.</p>\"\nedit_reason:\n-\n- fixing it up\n"
         }
       ],
@@ -309,7 +309,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-11-22T05:19:20.00513",
+            "baked_at": "2026-11-22T09:10:51.298173",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -322,7 +322,7 @@
             "self_edits": 1,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-11-22T05:19:20.005305",
+            "updated_at": "2026-11-22T09:10:51.298354",
             "word_count": 14,
             "action_code": null,
             "cook_method": 1,
@@ -342,7 +342,7 @@
             "last_editor_id": 3,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T05:19:19.962217",
+            "last_version_at": "2026-11-22T09:10:51.252964",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -385,7 +385,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -437,7 +437,7 @@
             "word_count": 69,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -474,33 +474,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "xNAC+8ittSufi9fPfQ6Om/zAcY8=",
-            "created_at": "2026-11-22T05:19:19.437439",
-            "rotated_at": "2026-11-22T05:19:19.436636",
-            "updated_at": "2026-11-22T05:19:19.437439",
+            "auth_token": "FAkVxEGviaCdT8YCU6fL1aq2ZZU=",
+            "created_at": "2026-11-22T09:10:50.569442",
+            "rotated_at": "2026-11-22T09:10:50.568602",
+            "updated_at": "2026-11-22T09:10:50.569442",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "xNAC+8ittSufi9fPfQ6Om/zAcY8=",
+            "prev_auth_token": "FAkVxEGviaCdT8YCU6fL1aq2ZZU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:19:19.949316",
+            "id": 9,
+            "seen_at": "2026-11-22T09:10:51.239694",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "xNAC+8ittSufi9fPfQ6Om/zAcY8=",
-            "created_at": "2026-11-22T05:19:19.437439",
-            "rotated_at": "2026-11-22T05:19:19.436636",
-            "updated_at": "2026-11-22T05:19:19.437439",
+            "auth_token": "FAkVxEGviaCdT8YCU6fL1aq2ZZU=",
+            "created_at": "2026-11-22T09:10:50.569442",
+            "rotated_at": "2026-11-22T09:10:50.568602",
+            "updated_at": "2026-11-22T09:10:50.569442",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "xNAC+8ittSufi9fPfQ6Om/zAcY8=",
+            "prev_auth_token": "FAkVxEGviaCdT8YCU6fL1aq2ZZU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -606,7 +606,7 @@
   },
   "recorded_from": {
     "case": "bc5312d8b9d1f6ff6df383b30af8a1b39093307584b7661905a8e17238e3a9fc",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

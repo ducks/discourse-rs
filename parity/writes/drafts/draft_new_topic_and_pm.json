@@ -25,8 +25,8 @@
       "path": "/drafts.json"
     }
   ],
-  "started_at": "2026-11-22T04:55:01.514423",
-  "transaction_started_at": "2026-11-22T04:55:00.748792",
+  "started_at": "2026-11-22T08:46:42.44053",
+  "transaction_started_at": "2026-11-22T08:46:41.485292",
   "responses": [
     {
       "status": 200,
@@ -48,7 +48,7 @@
         "drafts": [
           {
             "excerpt": "A message still being written",
-            "created_at": "2026-11-22T04:55:00.748Z",
+            "created_at": "2026-11-22T08:46:41.485Z",
             "draft_key": "new_private_message",
             "sequence": 0,
             "draft_username": "user0",
@@ -64,7 +64,7 @@
           },
           {
             "excerpt": "The body of a topic still being written",
-            "created_at": "2026-11-22T04:55:00.748Z",
+            "created_at": "2026-11-22T08:46:41.485Z",
             "draft_key": "new_topic",
             "sequence": 0,
             "draft_username": "user0",
@@ -126,8 +126,8 @@
           "sequence": 0,
           "draft_key": "new_topic",
           "revisions": 1,
-          "created_at": "2026-11-22T04:55:00.748792",
-          "updated_at": "2026-11-22T04:55:00.748792"
+          "created_at": "2026-11-22T08:46:41.485292",
+          "updated_at": "2026-11-22T08:46:41.485292"
         },
         {
           "id": 2,
@@ -137,8 +137,8 @@
           "sequence": 0,
           "draft_key": "new_private_message",
           "revisions": 1,
-          "created_at": "2026-11-22T04:55:00.748792",
-          "updated_at": "2026-11-22T04:55:00.748792"
+          "created_at": "2026-11-22T08:46:41.485292",
+          "updated_at": "2026-11-22T08:46:41.485292"
         }
       ],
       "deleted": [],
@@ -150,33 +150,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "8mp6e/HpKkqUd6V8KUK8SqU5lZc=",
-            "created_at": "2026-11-22T04:55:01.048605",
-            "rotated_at": "2026-11-22T04:55:01.047664",
-            "updated_at": "2026-11-22T04:55:01.048605",
+            "auth_token": "6OERxhu3kyOfLSaQqm3/1KazbsU=",
+            "created_at": "2026-11-22T08:46:41.974251",
+            "rotated_at": "2026-11-22T08:46:41.973329",
+            "updated_at": "2026-11-22T08:46:41.974251",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "8mp6e/HpKkqUd6V8KUK8SqU5lZc=",
+            "prev_auth_token": "6OERxhu3kyOfLSaQqm3/1KazbsU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:55:01.521311",
+            "id": 9,
+            "seen_at": "2026-11-22T08:46:42.447734",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "8mp6e/HpKkqUd6V8KUK8SqU5lZc=",
-            "created_at": "2026-11-22T04:55:01.048605",
-            "rotated_at": "2026-11-22T04:55:01.047664",
-            "updated_at": "2026-11-22T04:55:01.048605",
+            "auth_token": "6OERxhu3kyOfLSaQqm3/1KazbsU=",
+            "created_at": "2026-11-22T08:46:41.974251",
+            "rotated_at": "2026-11-22T08:46:41.973329",
+            "updated_at": "2026-11-22T08:46:41.974251",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "8mp6e/HpKkqUd6V8KUK8SqU5lZc=",
+            "prev_auth_token": "6OERxhu3kyOfLSaQqm3/1KazbsU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -256,7 +256,7 @@
   ],
   "recorded_from": {
     "case": "e9ff3b610c464aca1674e864b16da7773a8d98faf0d806407248fc6bf6955154",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

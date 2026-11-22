@@ -7,14 +7,14 @@
       "path": "/admin/users/3/anonymize.json"
     }
   ],
-  "started_at": "2026-11-22T04:31:26.460149",
-  "transaction_started_at": "2026-11-22T04:31:25.685617",
+  "started_at": "2026-11-22T08:23:30.05093",
+  "transaction_started_at": "2026-11-22T08:23:29.173298",
   "responses": [
     {
       "status": 200,
       "body": {
         "success": "OK",
-        "username": "anon46716286"
+        "username": "anon12554397"
       }
     }
   ],
@@ -30,11 +30,11 @@
           "user_id": 3,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-22T04:31:25.685617",
+          "created_at": "2026-11-22T08:23:29.173298",
           "email_type": "digest",
           "message_id": null,
           "to_address": "second1@example.com",
-          "updated_at": "2026-11-22T04:31:25.685617",
+          "updated_at": "2026-11-22T08:23:29.173298",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -77,9 +77,9 @@
           "expired": false,
           "user_id": 3,
           "confirmed": false,
-          "created_at": "2026-11-22T04:31:25.685617",
+          "created_at": "2026-11-22T08:23:29.173298",
           "token_hash": "aaaa1",
-          "updated_at": "2026-11-22T04:31:25.685617"
+          "updated_at": "2026-11-22T08:23:29.173298"
         }
       ],
       "updated": []
@@ -93,11 +93,11 @@
           "email": "second1@example.com",
           "domain": null,
           "moderator": false,
-          "created_at": "2026-11-22T04:31:25.685617",
+          "created_at": "2026-11-22T08:23:29.173298",
           "deleted_at": null,
-          "expires_at": "2026-12-22T04:31:25.685617",
+          "expires_at": "2026-12-22T08:23:29.173298",
           "invite_key": "anonkey1",
-          "updated_at": "2026-11-22T04:31:25.685617",
+          "updated_at": "2026-11-22T08:23:29.173298",
           "description": null,
           "email_token": null,
           "deleted_by_id": null,
@@ -131,7 +131,7 @@
           },
           "after": {
             "id": 9,
-            "data": "{\"topic_title\": \"Parity fixture: liked and archived\", \"display_name\": \"User0\", \"revision_number\": null, \"display_username\": \"anon46716286\", \"original_post_id\": 46, \"original_username\": \"anon46716286\", \"original_post_type\": 1}",
+            "data": "{\"topic_title\": \"Parity fixture: liked and archived\", \"display_name\": \"User0\", \"revision_number\": null, \"display_username\": \"anon12554397\", \"original_post_id\": 46, \"original_username\": \"anon12554397\", \"original_post_type\": 1}",
             "read": false,
             "user_id": 2,
             "topic_id": 41,
@@ -159,7 +159,7 @@
           },
           "after": {
             "id": 10,
-            "data": "{\"topic_title\": \"Parity fixture: PM user1 to user0\", \"display_name\": \"User1\", \"revision_number\": null, \"display_username\": \"anon46716286\", \"original_post_id\": 48, \"original_username\": \"anon46716286\", \"original_post_type\": 1}",
+            "data": "{\"topic_title\": \"Parity fixture: PM user1 to user0\", \"display_name\": \"User1\", \"revision_number\": null, \"display_username\": \"anon12554397\", \"original_post_id\": 48, \"original_username\": \"anon12554397\", \"original_post_type\": 1}",
             "read": false,
             "user_id": 2,
             "topic_id": 42,
@@ -187,7 +187,7 @@
           },
           "after": {
             "id": 11,
-            "data": "{\"topic_title\": \"Parity fixture: PM user1 to user0\", \"display_name\": \"User1\", \"revision_number\": null, \"display_username\": \"anon46716286\", \"original_post_id\": 48, \"original_username\": \"anon46716286\", \"original_post_type\": 1}",
+            "data": "{\"topic_title\": \"Parity fixture: PM user1 to user0\", \"display_name\": \"User1\", \"revision_number\": null, \"display_username\": \"anon12554397\", \"original_post_id\": 48, \"original_username\": \"anon12554397\", \"original_post_type\": 1}",
             "read": false,
             "user_id": 2,
             "topic_id": 42,
@@ -215,7 +215,7 @@
           },
           "after": {
             "id": 19,
-            "data": "{\"title\": \"Parity fixture: replies and posters\", \"bookmark_id\": 5, \"bookmark_name\": \"Parity fixture: reminder sent\", \"bookmarkable_id\": 52, \"bookmarkable_url\": \"/t/parity-fixture-replies-and-posters/35/5\", \"display_username\": \"anon46716286\", \"bookmarkable_type\": \"Post\"}",
+            "data": "{\"title\": \"Parity fixture: replies and posters\", \"bookmark_id\": 5, \"bookmark_name\": \"Parity fixture: reminder sent\", \"bookmarkable_id\": 52, \"bookmarkable_url\": \"/t/parity-fixture-replies-and-posters/35/5\", \"display_username\": \"anon12554397\", \"bookmarkable_type\": \"Post\"}",
             "read": false,
             "user_id": 3,
             "topic_id": 35,
@@ -243,7 +243,7 @@
           },
           "after": {
             "id": 23,
-            "data": "{\"badge_id\": 1, \"username\": \"anon46716286\", \"badge_name\": \"Basic\", \"badge_slug\": \"basic\", \"badge_title\": false}",
+            "data": "{\"badge_id\": 1, \"username\": \"anon12554397\", \"badge_name\": \"Basic\", \"badge_slug\": \"basic\", \"badge_title\": false}",
             "read": false,
             "user_id": 3,
             "topic_id": null,
@@ -271,7 +271,7 @@
           },
           "after": {
             "id": 26,
-            "data": "{\"badge_id\": 2, \"username\": \"anon46716286\", \"badge_name\": \"Member\", \"badge_slug\": \"member\", \"badge_title\": false}",
+            "data": "{\"badge_id\": 2, \"username\": \"anon12554397\", \"badge_name\": \"Member\", \"badge_slug\": \"member\", \"badge_title\": false}",
             "read": false,
             "user_id": 3,
             "topic_id": null,
@@ -299,7 +299,7 @@
           },
           "after": {
             "id": 30,
-            "data": "{\"badge_id\": 11, \"username\": \"anon46716286\", \"badge_name\": \"First Like\", \"badge_slug\": \"first-like\", \"badge_title\": false}",
+            "data": "{\"badge_id\": 11, \"username\": \"anon12554397\", \"badge_name\": \"First Like\", \"badge_slug\": \"first-like\", \"badge_title\": false}",
             "read": false,
             "user_id": 3,
             "topic_id": null,
@@ -327,7 +327,7 @@
           },
           "after": {
             "id": 32,
-            "data": "{\"badge_id\": 5, \"username\": \"anon46716286\", \"badge_name\": \"Welcome\", \"badge_slug\": \"welcome\", \"badge_title\": false}",
+            "data": "{\"badge_id\": 5, \"username\": \"anon12554397\", \"badge_name\": \"Welcome\", \"badge_slug\": \"welcome\", \"badge_title\": false}",
             "read": false,
             "user_id": 3,
             "topic_id": null,
@@ -349,8 +349,8 @@
           "post_id": 36,
           "user_id": 3,
           "reply_key": "1b2b3b4b-1b2b-1b2b-1b2b-1b2b3b4b5b6b",
-          "created_at": "2026-11-22T04:31:25.685617",
-          "updated_at": "2026-11-22T04:31:25.685617"
+          "created_at": "2026-11-22T08:23:29.173298",
+          "updated_at": "2026-11-22T08:23:29.173298"
         }
       ],
       "updated": []
@@ -372,8 +372,8 @@
             "locale": "en",
             "post_id": 52,
             "version": 5,
-            "raw_data": "Reply from user0 mentioning @anon46716286 so a mention notification exists.",
-            "search_data": "'anon46716286':12 'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10",
+            "raw_data": "Reply from user0 mentioning @anon12554397 so a mention notification exists.",
+            "search_data": "'anon12554397':12 'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10",
             "private_message": false
           }
         }
@@ -441,11 +441,11 @@
           },
           "after": {
             "id": 52,
-            "raw": "Reply from user0 mentioning @anon46716286 so a mention notification exists.",
+            "raw": "Reply from user0 mentioning @anon12554397 so a mention notification exists.",
             "wiki": false,
             "reads": 1,
             "score": null,
-            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/anon46716286\">@anon46716286</a> so a mention notification exists.</p>",
+            "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/anon12554397\">@anon12554397</a> so a mention notification exists.</p>",
             "hidden": false,
             "locale": null,
             "user_id": 2,
@@ -613,6 +613,22 @@
       "inserted": [],
       "deleted": [
         {
+          "id": 5,
+          "seen_at": "2026-11-22T06:29:06.028641",
+          "user_id": 3,
+          "client_ip": "172.17.0.1",
+          "auth_token": "B5xAk3LMW9/UzKrNEk6zs2gUP9A=",
+          "created_at": "2026-11-22T06:29:05.892882",
+          "rotated_at": "2026-11-22T06:29:05.890519",
+          "updated_at": "2026-11-22T06:29:05.892882",
+          "user_agent": null,
+          "auth_token_seen": true,
+          "prev_auth_token": "B5xAk3LMW9/UzKrNEk6zs2gUP9A=",
+          "impersonated_user_id": null,
+          "authenticated_with_oauth": false,
+          "impersonation_expires_at": null
+        },
+        {
           "id": 1,
           "seen_at": "2026-11-22T02:18:07.66345",
           "user_id": 3,
@@ -632,33 +648,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "NmdAUFw3sR7SSeSYWdDVQ1Vhv1o=",
-            "created_at": "2026-11-22T04:31:25.993054",
-            "rotated_at": "2026-11-22T04:31:25.99211",
-            "updated_at": "2026-11-22T04:31:25.993054",
+            "auth_token": "YlbPnvIfrFDpT+ENGMxx3PXg24c=",
+            "created_at": "2026-11-22T08:23:29.451389",
+            "rotated_at": "2026-11-22T08:23:29.45051",
+            "updated_at": "2026-11-22T08:23:29.451389",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "NmdAUFw3sR7SSeSYWdDVQ1Vhv1o=",
+            "prev_auth_token": "YlbPnvIfrFDpT+ENGMxx3PXg24c=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T04:31:26.476345",
+            "id": 9,
+            "seen_at": "2026-11-22T08:23:30.056381",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "NmdAUFw3sR7SSeSYWdDVQ1Vhv1o=",
-            "created_at": "2026-11-22T04:31:25.993054",
-            "rotated_at": "2026-11-22T04:31:25.99211",
-            "updated_at": "2026-11-22T04:31:25.993054",
+            "auth_token": "YlbPnvIfrFDpT+ENGMxx3PXg24c=",
+            "created_at": "2026-11-22T08:23:29.451389",
+            "rotated_at": "2026-11-22T08:23:29.45051",
+            "updated_at": "2026-11-22T08:23:29.451389",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "NmdAUFw3sR7SSeSYWdDVQ1Vhv1o=",
+            "prev_auth_token": "YlbPnvIfrFDpT+ENGMxx3PXg24c=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -690,8 +706,8 @@
           "email": "second1@example.com",
           "primary": false,
           "user_id": 3,
-          "created_at": "2026-11-22T04:31:25.685617",
-          "updated_at": "2026-11-22T04:31:25.685617",
+          "created_at": "2026-11-22T08:23:29.173298",
+          "updated_at": "2026-11-22T08:23:29.173298",
           "normalized_email": "second1@example.com"
         }
       ],
@@ -708,12 +724,12 @@
           },
           "after": {
             "id": 3,
-            "email": "anon46716286@anonymized.invalid",
+            "email": "anon12554397@anonymized.invalid",
             "primary": true,
             "user_id": 3,
             "created_at": "2026-11-03T05:08:00.408089",
-            "updated_at": "2026-11-22T04:31:26.804495",
-            "normalized_email": "anon46716286@anonymized.invalid"
+            "updated_at": "2026-11-22T08:23:30.372206",
+            "normalized_email": "anon12554397@anonymized.invalid"
           }
         }
       ]
@@ -731,10 +747,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T04:31:26.831294",
+          "created_at": "2026-11-22T08:23:30.397207",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T04:31:26.831294",
+          "updated_at": "2026-11-22T08:23:30.397207",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -946,9 +962,9 @@
             "id": 5,
             "user_id": 3,
             "created_at": "2026-11-03T05:08:00.519699",
-            "updated_at": "2026-11-22T04:31:26.786691",
-            "password_hash": "2de936b15b3abe75d6d4082a434259fc5c867be42c4eee678235a5fc96123839",
-            "password_salt": "20449825745662c48044aaca7c05dd42",
+            "updated_at": "2026-11-22T08:23:30.353029",
+            "password_hash": "d3ac3d6d0f5138149dce70991b03c67bec66409302ba3f4721cfe7d80844c413",
+            "password_salt": "4ce1b4f156d711cdcd2304378e427ed9",
             "password_algorithm": "$pbkdf2-sha256$i=600000,l=32$",
             "password_expired_at": null
           }
@@ -1007,8 +1023,8 @@
             "locale": "en",
             "user_id": 3,
             "version": 3,
-            "raw_data": "anon46716286",
-            "search_data": "'anon46716286':1A"
+            "raw_data": "anon12554397",
+            "search_data": "'anon12554397':1A"
           }
         }
       ]
@@ -1018,7 +1034,7 @@
       "deleted": [
         {
           "emoji": "tada",
-          "set_at": "2026-11-22T04:31:25.685617",
+          "set_at": "2026-11-22T08:23:29.173298",
           "ends_at": null,
           "user_id": 3,
           "description": "Busy"
@@ -1081,12 +1097,12 @@
             "locale": null,
             "staged": false,
             "approved": false,
-            "username": "anon46716286",
+            "username": "anon12554397",
             "moderator": false,
             "created_at": "2026-11-03T05:08:00.404788",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-22T04:31:26.720496",
+            "updated_at": "2026-11-22T08:23:30.288497",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": "2026-11-22T04:14:24.947499",
@@ -1098,7 +1114,7 @@
             "flair_group_id": null,
             "last_posted_at": "2026-11-21T23:56:45.425465",
             "suspended_till": null,
-            "username_lower": "anon46716286",
+            "username_lower": "anon12554397",
             "last_emailed_at": null,
             "primary_group_id": null,
             "previous_visit_at": "2026-11-21T23:56:57.920623",
@@ -1135,8 +1151,8 @@
       {
         "user_id": 3,
         "old_username": "user1",
-        "new_username": "anon46716286",
-        "avatar_template": "/letter_avatar_proxy/v4/letter/a/fbc32d/{size}.png"
+        "new_username": "anon12554397",
+        "avatar_template": "/letter_avatar_proxy/v4/letter/a/71c47a/{size}.png"
       }
     ],
     [
@@ -1169,7 +1185,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "6914fd2947f3e49a6f9ba53757869f1bc77d769ded1c7f33663008e2029faed2",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

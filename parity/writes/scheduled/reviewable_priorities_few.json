@@ -2,8 +2,8 @@
   "name": "reviewable_priorities_few",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:43:24.752355",
-  "transaction_started_at": "2026-11-22T05:43:24.107704",
+  "started_at": "2026-11-22T09:29:44.165999",
+  "transaction_started_at": "2026-11-22T09:29:43.54321",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -21,7 +21,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "5e4aac6fe422b1ad75f9f46822844e2d6a5e95e91f130436736522bf08bd1062",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

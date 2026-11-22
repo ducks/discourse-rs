@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:19:16.147958",
-  "transaction_started_at": "2026-11-22T05:19:15.179714",
+  "started_at": "2026-11-22T09:10:47.272936",
+  "transaction_started_at": "2026-11-22T09:10:46.378342",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T05:19:16.224Z",
+          "updated_at": "2026-11-22T09:10:47.356Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 1,
@@ -134,8 +134,8 @@
       "inserted": [
         {
           "post_id": 35,
-          "created_at": "2026-11-22T05:19:16.234729",
-          "updated_at": "2026-11-22T05:19:16.234729",
+          "created_at": "2026-11-22T09:10:47.366535",
+          "updated_at": "2026-11-22T09:10:47.366535",
           "reply_post_id": 36
         }
       ],
@@ -151,8 +151,8 @@
           "post_id": 36,
           "user_id": 3,
           "unlisted": false,
-          "created_at": "2026-11-22T05:19:16.240692",
-          "updated_at": "2026-11-22T05:19:16.240692",
+          "created_at": "2026-11-22T09:10:47.372748",
+          "updated_at": "2026-11-22T09:10:47.372748",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- |-\n  [quote=\"user0, post:1, topic:35\"]\n  First post of a topic with several repliers\n  [/quote]\n\n  Reply one from user1, edited to quote the first post.\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- |-\n  <aside class=\"quote no-group\" data-username=\"user0\" data-post=\"1\" data-topic=\"35\">\n  <div class=\"title\">\n  <div class=\"quote-controls\"></div>\n  <img alt=\"\" width=\"24\" height=\"24\" src=\"//localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/48.png\" class=\"avatar\"> user0:</div>\n  <blockquote>\n  <p>First post of a topic with several repliers</p>\n  </blockquote>\n  </aside>\n  <p>Reply one from user1, edited to quote the first post.</p>\n"
         }
       ],
@@ -254,7 +254,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-11-22T05:19:16.224043",
+            "baked_at": "2026-11-22T09:10:47.356151",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -267,7 +267,7 @@
             "self_edits": 1,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-11-22T05:19:16.224215",
+            "updated_at": "2026-11-22T09:10:47.356325",
             "word_count": 25,
             "action_code": null,
             "cook_method": 1,
@@ -287,7 +287,7 @@
             "last_editor_id": 3,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T05:19:16.168989",
+            "last_version_at": "2026-11-22T09:10:47.294244",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -418,8 +418,8 @@
         {
           "id": 1,
           "post_id": 36,
-          "created_at": "2026-11-22T05:19:15.179714",
-          "updated_at": "2026-11-22T05:19:15.179714",
+          "created_at": "2026-11-22T09:10:46.378342",
+          "updated_at": "2026-11-22T09:10:46.378342",
           "quoted_post_id": 35
         }
       ],
@@ -455,7 +455,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -507,7 +507,7 @@
             "word_count": 80,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -544,33 +544,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "Fl8aj17qVYd5oHWBEm31Vw2YBAw=",
-            "created_at": "2026-11-22T05:19:15.508547",
-            "rotated_at": "2026-11-22T05:19:15.507727",
-            "updated_at": "2026-11-22T05:19:15.508547",
+            "auth_token": "/t+IoEvh5FQTo7nkO57YOiTIh+Q=",
+            "created_at": "2026-11-22T09:10:46.802987",
+            "rotated_at": "2026-11-22T09:10:46.802054",
+            "updated_at": "2026-11-22T09:10:46.802987",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Fl8aj17qVYd5oHWBEm31Vw2YBAw=",
+            "prev_auth_token": "/t+IoEvh5FQTo7nkO57YOiTIh+Q=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:19:16.15485",
+            "id": 9,
+            "seen_at": "2026-11-22T09:10:47.280537",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "Fl8aj17qVYd5oHWBEm31Vw2YBAw=",
-            "created_at": "2026-11-22T05:19:15.508547",
-            "rotated_at": "2026-11-22T05:19:15.507727",
-            "updated_at": "2026-11-22T05:19:15.508547",
+            "auth_token": "/t+IoEvh5FQTo7nkO57YOiTIh+Q=",
+            "created_at": "2026-11-22T09:10:46.802987",
+            "rotated_at": "2026-11-22T09:10:46.802054",
+            "updated_at": "2026-11-22T09:10:46.802987",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Fl8aj17qVYd5oHWBEm31Vw2YBAw=",
+            "prev_auth_token": "/t+IoEvh5FQTo7nkO57YOiTIh+Q=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -682,7 +682,7 @@
   ],
   "recorded_from": {
     "case": "c4c3a8cbf8ede2cbe63b2f2d25f240a8bb2e7b8f2f62375f0e2a94afa3c8ae79",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

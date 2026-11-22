@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T05:11:06.750263",
-  "transaction_started_at": "2026-11-22T05:11:05.944782",
+  "started_at": "2026-11-22T09:02:42.47172",
+  "transaction_started_at": "2026-11-22T09:02:41.683452",
   "responses": [
     {
       "status": 200,
@@ -36,11 +36,11 @@
           "user_id": 2,
           "topic_id": 43,
           "bounce_key": null,
-          "created_at": "2026-11-22T05:11:06.997892",
+          "created_at": "2026-11-22T09:02:42.724132",
           "email_type": "user_invited_to_private_message",
           "message_id": "discourse/post/50@localhost",
           "to_address": "user0@example.com",
-          "updated_at": "2026-11-22T05:11:06.997892",
+          "updated_at": "2026-11-22T09:02:42.724132",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -60,8 +60,8 @@
           "read": false,
           "user_id": 2,
           "topic_id": 43,
-          "created_at": "2026-11-22T05:11:06.875877",
-          "updated_at": "2026-11-22T05:11:06.875877",
+          "created_at": "2026-11-22T09:02:42.608027",
+          "updated_at": "2026-11-22T09:02:42.608027",
           "post_number": 1,
           "high_priority": false,
           "post_action_id": null,
@@ -78,8 +78,8 @@
           "name": "action_code_who",
           "value": "user0",
           "post_id": 53,
-          "created_at": "2026-11-22T05:11:06.81146",
-          "updated_at": "2026-11-22T05:11:06.81146"
+          "created_at": "2026-11-22T09:02:42.535795",
+          "updated_at": "2026-11-22T09:02:42.535795"
         }
       ],
       "deleted": [],
@@ -90,8 +90,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-11-22T05:11:06.808656",
-          "updated_at": "2026-11-22T05:11:06.808656",
+          "created_at": "2026-11-22T09:02:42.532704",
+          "updated_at": "2026-11-22T09:02:42.532704",
           "drafts_saved": 0,
           "writing_device": null,
           "composer_version": null,
@@ -128,20 +128,20 @@
           "locale": null,
           "user_id": 1,
           "version": 1,
-          "baked_at": "2026-11-22T05:11:06.783395",
+          "baked_at": "2026-11-22T09:02:42.505837",
           "topic_id": 43,
           "hidden_at": null,
           "post_type": 3,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-11-22T05:11:06.783421",
+          "created_at": "2026-11-22T09:02:42.505863",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 2,
           "spam_count": 0,
-          "updated_at": "2026-11-22T05:11:06.783421",
+          "updated_at": "2026-11-22T09:02:42.505863",
           "word_count": 0,
           "action_code": "invited_user",
           "cook_method": 1,
@@ -161,7 +161,7 @@
           "last_editor_id": 1,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-11-22T05:11:06.805736",
+          "last_version_at": "2026-11-22T09:02:42.529916",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -182,8 +182,8 @@
           "id": 9,
           "user_id": 2,
           "topic_id": 43,
-          "created_at": "2026-11-22T05:11:06.770678",
-          "updated_at": "2026-11-22T05:11:06.770678"
+          "created_at": "2026-11-22T09:02:42.492508",
+          "updated_at": "2026-11-22T09:02:42.492508"
         }
       ],
       "deleted": [],
@@ -199,15 +199,15 @@
           "topic_id": 43,
           "bookmarked": false,
           "last_posted_at": null,
-          "last_visited_at": "2026-11-22T05:11:06.772651",
-          "first_visited_at": "2026-11-22T05:11:06.772651",
+          "last_visited_at": "2026-11-22T09:02:42.495253",
+          "first_visited_at": "2026-11-22T09:02:42.495253",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": null,
           "notifications_reason_id": 2,
           "last_emailed_post_number": 1,
-          "notifications_changed_at": "2026-11-22T05:11:06.771685"
+          "notifications_changed_at": "2026-11-22T09:02:42.494431"
         }
       ],
       "deleted": [],
@@ -238,7 +238,7 @@
             "user_id": 1,
             "topic_id": 43,
             "bookmarked": true,
-            "last_posted_at": "2026-11-22T05:11:06.842389",
+            "last_posted_at": "2026-11-22T09:02:42.56951",
             "last_visited_at": "2026-11-21T23:56:51.017967",
             "first_visited_at": "2026-11-21T23:56:51.017967",
             "cleared_pinned_at": null,
@@ -329,7 +329,7 @@
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-11-22T05:11:06.846331",
+            "updated_at": "2026-11-22T09:02:42.574133",
             "word_count": 14,
             "category_id": null,
             "external_id": null,
@@ -367,12 +367,12 @@
     "unsubscribe_keys": {
       "inserted": [
         {
-          "key": "c2dd9bc6f0f6000cc8927197f4114c5a2a12f1c873dc6feba59c00b4abc92b55",
+          "key": "23a4b409a2b05eb925ca8c0934df787c0add822ef566d7c9f980902c352cd148",
           "post_id": 50,
           "user_id": 2,
           "topic_id": 43,
-          "created_at": "2026-11-22T05:11:06.943824",
-          "updated_at": "2026-11-22T05:11:06.943824",
+          "created_at": "2026-11-22T09:02:42.676233",
+          "updated_at": "2026-11-22T09:02:42.676233",
           "unsubscribe_key_type": "topic"
         }
       ],
@@ -384,8 +384,8 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-11-22T05:11:06.783421",
-          "updated_at": "2026-11-22T05:11:06.817674",
+          "created_at": "2026-11-22T09:02:42.505863",
+          "updated_at": "2026-11-22T09:02:42.541816",
           "action_type": 13,
           "acting_user_id": 1,
           "target_post_id": 53,
@@ -395,8 +395,8 @@
         {
           "id": 66,
           "user_id": 4,
-          "created_at": "2026-11-22T05:11:06.783421",
-          "updated_at": "2026-11-22T05:11:06.82404",
+          "created_at": "2026-11-22T09:02:42.505863",
+          "updated_at": "2026-11-22T09:02:42.548701",
           "action_type": 13,
           "acting_user_id": 1,
           "target_post_id": 53,
@@ -406,8 +406,8 @@
         {
           "id": 67,
           "user_id": 1,
-          "created_at": "2026-11-22T05:11:06.783421",
-          "updated_at": "2026-11-22T05:11:06.830506",
+          "created_at": "2026-11-22T09:02:42.505863",
+          "updated_at": "2026-11-22T09:02:42.555492",
           "action_type": 12,
           "acting_user_id": 1,
           "target_post_id": 53,
@@ -417,8 +417,8 @@
         {
           "id": 68,
           "user_id": 2,
-          "created_at": "2026-11-22T05:11:06.783421",
-          "updated_at": "2026-11-22T05:11:06.836678",
+          "created_at": "2026-11-22T09:02:42.505863",
+          "updated_at": "2026-11-22T09:02:42.562022",
           "action_type": 13,
           "acting_user_id": 1,
           "target_post_id": 53,
@@ -435,33 +435,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "CpPPwmjhLV7yugcKfGzadws9Hk8=",
-            "created_at": "2026-11-22T05:11:06.281794",
-            "rotated_at": "2026-11-22T05:11:06.280952",
-            "updated_at": "2026-11-22T05:11:06.281794",
+            "auth_token": "uFgy7s5YqSmmxH2tuJ+TNzUoDiw=",
+            "created_at": "2026-11-22T09:02:42.001999",
+            "rotated_at": "2026-11-22T09:02:42.001077",
+            "updated_at": "2026-11-22T09:02:42.001999",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "CpPPwmjhLV7yugcKfGzadws9Hk8=",
+            "prev_auth_token": "uFgy7s5YqSmmxH2tuJ+TNzUoDiw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:11:06.756374",
+            "id": 9,
+            "seen_at": "2026-11-22T09:02:42.478297",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "CpPPwmjhLV7yugcKfGzadws9Hk8=",
-            "created_at": "2026-11-22T05:11:06.281794",
-            "rotated_at": "2026-11-22T05:11:06.280952",
-            "updated_at": "2026-11-22T05:11:06.281794",
+            "auth_token": "uFgy7s5YqSmmxH2tuJ+TNzUoDiw=",
+            "created_at": "2026-11-22T09:02:42.001999",
+            "rotated_at": "2026-11-22T09:02:42.001077",
+            "updated_at": "2026-11-22T09:02:42.001999",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "CpPPwmjhLV7yugcKfGzadws9Hk8=",
+            "prev_auth_token": "uFgy7s5YqSmmxH2tuJ+TNzUoDiw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -542,7 +542,7 @@
             "last_posted_at": "2026-11-21T23:56:51.452828",
             "suspended_till": null,
             "username_lower": "user0",
-            "last_emailed_at": "2026-11-22T05:11:05.944782",
+            "last_emailed_at": "2026-11-22T09:02:41.683452",
             "primary_group_id": null,
             "previous_visit_at": "2026-11-21T23:56:57.795913",
             "secure_identifier": null,
@@ -656,7 +656,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b02796af115d_17f9df383891b"
+          "multipart/alternative; boundary=--==_mimepart_6b02afb2ae79c_268f5f3877f4"
         ],
         [
           "Content-Transfer-Encoding",
@@ -664,7 +664,7 @@
         ],
         [
           "List-Unsubscribe",
-          "<http://localhost:3042/email/unsubscribe/c2dd9bc6f0f6000cc8927197f4114c5a2a12f1c873dc6feba59c00b4abc92b55>"
+          "<http://localhost:3042/email/unsubscribe/23a4b409a2b05eb925ca8c0934df787c0add822ef566d7c9f980902c352cd148>"
         ],
         [
           "List-Unsubscribe-Post",
@@ -707,13 +707,13 @@
           "http://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43"
         ]
       ],
-      "text": "\n\nadmin invited you to a message\n\n> **[Parity fixture: PM admin to user1 and user2](http://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43)**\n>\n> A private message from admin to two users, so the list shows three participants.\n\nat\n\n> Discourse -- \n\nTo join the message, click the link below:\n\nhttp://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43\n\n\n---\n[Visit Message](http://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43/1) to respond to [admin](http://localhost:3042/u/admin), [user1](http://localhost:3042/u/user1), [user2](http://localhost:3042/u/user2).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/c2dd9bc6f0f6000cc8927197f4114c5a2a12f1c873dc6feba59c00b4abc92b55).\n",
+      "text": "\n\nadmin invited you to a message\n\n> **[Parity fixture: PM admin to user1 and user2](http://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43)**\n>\n> A private message from admin to two users, so the list shows three participants.\n\nat\n\n> Discourse -- \n\nTo join the message, click the link below:\n\nhttp://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43\n\n\n---\n[Visit Message](http://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43/1) to respond to [admin](http://localhost:3042/u/admin), [user1](http://localhost:3042/u/user1), [user2](http://localhost:3042/u/user2).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/23a4b409a2b05eb925ca8c0934df787c0add822ef566d7c9f980902c352cd148).\n",
       "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>admin invited you to a message</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-top:0\"><strong><a href=\"http://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Parity fixture: PM admin to user1 and user2</a></strong></p>\n<p style=\"padding:0;margin-bottom:0\">A private message from admin to two users, so the list shows three participants.</p>\n</blockquote>\n<p>at</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\">Discourse –</p>\n</blockquote>\n<p>To join the message, click the link below:</p>\n<p><a href=\"http://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "4d20412c1d4eddc916c1454f64c14063fba8175b09bf34071c84f71ee369203d",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -17,8 +17,8 @@
       "path": "/t/35.json"
     }
   ],
-  "started_at": "2026-11-22T05:19:22.460653",
-  "transaction_started_at": "2026-11-22T05:19:21.631732",
+  "started_at": "2026-11-22T09:10:53.762448",
+  "transaction_started_at": "2026-11-22T09:10:52.783984",
   "responses": [
     {
       "status": 200,
@@ -33,7 +33,7 @@
           "post_number": 1,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T05:19:22.523Z",
+          "updated_at": "2026-11-22T09:10:53.826Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -106,7 +106,7 @@
           "notice": {
             "type": "new_user"
           },
-          "last_wiki_edit": "2026-11-22T05:19:22.529Z",
+          "last_wiki_edit": "2026-11-22T09:10:53.832Z",
           "reviewable_id": null,
           "reviewable_score_count": 0,
           "reviewable_score_pending_count": 0,
@@ -138,7 +138,7 @@
               "post_number": 1,
               "post_type": 1,
               "posts_count": 5,
-              "updated_at": "2026-11-22T05:19:22.523Z",
+              "updated_at": "2026-11-22T09:10:53.826Z",
               "reply_count": 0,
               "reply_to_post_number": null,
               "quote_count": 0,
@@ -210,7 +210,7 @@
               "notice": {
                 "type": "new_user"
               },
-              "last_wiki_edit": "2026-11-22T05:19:22.529Z",
+              "last_wiki_edit": "2026-11-22T09:10:53.832Z",
               "reviewable_id": 0,
               "reviewable_score_count": 0,
               "reviewable_score_pending_count": 0,
@@ -931,8 +931,8 @@
           "post_id": 35,
           "user_id": 1,
           "unlisted": false,
-          "created_at": "2026-11-22T05:19:22.529008",
-          "updated_at": "2026-11-22T05:19:22.529008",
+          "created_at": "2026-11-22T09:10:53.832123",
+          "updated_at": "2026-11-22T09:10:53.832123",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- First post of a topic with several repliers, long enough to be a real post body\n  for the excerpt.\n- First post of a topic with several repliers, a wiki edited without a bump.\ncooked:\n- \"<p>First post of a topic with several repliers, long enough to be a real post body\n  for the excerpt.</p>\"\n- \"<p>First post of a topic with several repliers, a wiki edited without a bump.</p>\"\n"
         }
       ],
@@ -1034,7 +1034,7 @@
             "locale": null,
             "user_id": 2,
             "version": 2,
-            "baked_at": "2026-11-22T05:19:22.522992",
+            "baked_at": "2026-11-22T09:10:53.826665",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -1047,7 +1047,7 @@
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T05:19:22.523269",
+            "updated_at": "2026-11-22T09:10:53.826814",
             "word_count": 14,
             "action_code": null,
             "cook_method": 1,
@@ -1067,7 +1067,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T05:19:22.47544",
+            "last_version_at": "2026-11-22T09:10:53.778356",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -1132,7 +1132,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -1221,33 +1221,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "yMAn0wJ2v1kOBcAoyHRyDQHOGYQ=",
-            "created_at": "2026-11-22T05:19:21.998221",
-            "rotated_at": "2026-11-22T05:19:21.997369",
-            "updated_at": "2026-11-22T05:19:21.998221",
+            "auth_token": "GKnaflEsEpaPwHfsVkOK5xROYXQ=",
+            "created_at": "2026-11-22T09:10:53.267746",
+            "rotated_at": "2026-11-22T09:10:53.266855",
+            "updated_at": "2026-11-22T09:10:53.267746",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "yMAn0wJ2v1kOBcAoyHRyDQHOGYQ=",
+            "prev_auth_token": "GKnaflEsEpaPwHfsVkOK5xROYXQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:19:22.466654",
+            "id": 9,
+            "seen_at": "2026-11-22T09:10:53.768718",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "yMAn0wJ2v1kOBcAoyHRyDQHOGYQ=",
-            "created_at": "2026-11-22T05:19:21.998221",
-            "rotated_at": "2026-11-22T05:19:21.997369",
-            "updated_at": "2026-11-22T05:19:21.998221",
+            "auth_token": "GKnaflEsEpaPwHfsVkOK5xROYXQ=",
+            "created_at": "2026-11-22T09:10:53.267746",
+            "rotated_at": "2026-11-22T09:10:53.266855",
+            "updated_at": "2026-11-22T09:10:53.267746",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "yMAn0wJ2v1kOBcAoyHRyDQHOGYQ=",
+            "prev_auth_token": "GKnaflEsEpaPwHfsVkOK5xROYXQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1268,10 +1268,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-22T05:19:22.543628",
+          "created_at": "2026-11-22T09:10:53.846963",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T05:19:22.543628",
+          "updated_at": "2026-11-22T09:10:53.846963",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1392,7 +1392,7 @@
   ],
   "recorded_from": {
     "case": "fe39c857e7f1e36d2224392baeb32e98d750cc0aad7bc30a5aeac08f9484feba",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2371,13 +2371,13 @@ COPY public.topics (id, title, last_posted_at, created_at, updated_at, views, po
 36	Downloading remote images disabled	2026-11-21 23:56:44.961064	2026-11-21 23:56:44.880117	2026-11-21 23:56:45.007765	0	1	-1	-1	0	\N	\N	\N	\N	1	0	0	\N	t	0	f	f	2026-11-21 23:56:44.961064	f	private_message	\N	0	0	\N	\N	1	system_message	downloading-remote-images-disabled	\N	1	14	The download_remote_images_to_local setting was disabled because the disk space limit at download_remote_images_threshold was reached.	f	\N	Downloading remote images disabled	1	\N	0	\N	0	\N	\N	\N	\N	\N
 37	Parity fixture: pinned and closed	2026-11-21 23:56:45.180473	2026-11-21 23:56:45.144012	2026-11-21 23:56:45.292803	0	1	1	1	0	\N	\N	\N	\N	1	0	0	2	t	1	t	f	2026-11-21 23:56:45.180473	f	regular	\N	0	0	2026-11-21 23:56:45.252586	\N	1	\N	parity-fixture-pinned-and-closed	\N	1	17	A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.	f	\N	Parity fixture: pinned and closed	1	\N	0	\N	0	\N	\N	\N	\N	\N
 38	Parity fixture: tagged in a subcategory	2026-11-21 23:56:45.425465	2026-11-21 23:56:45.383974	2026-11-21 23:56:45.450416	0	1	3	3	0	\N	\N	\N	\N	1	0	0	34	t	0	f	f	2026-11-21 23:56:45.425465	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-tagged-in-a-subcategory	\N	1	15	A topic in a subcategory carrying a tag, so tags and category ids show up.	f	\N	Parity fixture: tagged in a subcategory	1	\N	0	\N	0	\N	\N	\N	\N	\N
-39	Parity fixture: unlisted topic	2026-11-21 23:56:45.555639	2026-11-21 23:56:45.520199	2026-11-21 23:56:45.672878	0	1	1	1	0	\N	\N	\N	\N	1	0	0	4	f	1	f	f	2026-11-21 23:56:45.555639	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-unlisted-topic	\N	1	13	This topic is unlisted and must not appear in latest for anonymous users.	f	\N	\N	1	\N	0	\N	0	\N	\N	99	\N	\N
 40	Parity fixture: deleted topic	\N	2026-11-21 23:56:45.712892	2026-11-21 23:56:45.808456	0	0	4	4	0	\N	\N	\N	2026-11-21 23:56:45.823292	0	0	0	4	t	0	f	f	2026-11-21 23:56:45.74625	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-deleted-topic	1	1	\N	This topic is deleted and must not appear anywhere.	f	\N	Parity fixture: deleted topic	0	\N	0	\N	0	\N	\N	\N	\N	\N
-41	Parity fixture: liked and archived	2026-11-21 23:56:45.971921	2026-11-21 23:56:45.940269	2026-11-21 23:56:46.270798	0	1	2	2	0	\N	\N	1	\N	1	1	0	4	t	1	f	t	2026-11-21 23:56:45.971921	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-liked-and-archived	\N	2	13	An archived topic whose first post got a like, for like_count and op_like_count.	f	\N	\N	1	\N	0	\N	0	\N	\N	\N	\N	\N
 42	Parity fixture: PM user1 to user0	2026-11-21 23:56:50.87372	2026-11-21 23:56:50.628587	2026-11-21 23:56:50.92648	0	2	3	2	0	\N	\N	\N	\N	2	0	0	\N	t	0	f	f	2026-11-21 23:56:50.87372	f	private_message	\N	0	0	\N	\N	1	user_to_user	parity-fixture-pm-user1-to-user0	\N	2	26	A private message from user1 to user0, long enough to be a real post body.	f	\N	Parity fixture: PM user1 to user0	2	\N	0	\N	0	\N	\N	\N	\N	\N
 43	Parity fixture: PM admin to user1 and user2	2026-11-21 23:56:51.039304	2026-11-21 23:56:51.006888	2026-11-21 23:56:51.059616	0	1	1	1	0	\N	\N	\N	\N	1	0	0	\N	t	0	f	f	2026-11-21 23:56:51.039304	f	private_message	\N	0	0	\N	\N	1	user_to_user	parity-fixture-pm-admin-to-user1-and-user2	\N	1	14	A private message from admin to two users, so the list shows three participants.	f	\N	Parity fixture: PM admin to user1 and user2	1	\N	0	\N	0	\N	\N	\N	\N	\N
 44	Parity fixture: PM user2 to user1, archived	2026-11-21 23:56:51.258297	2026-11-21 23:56:51.174925	2026-11-21 23:56:51.305511	0	1	4	4	0	\N	\N	\N	\N	1	0	0	\N	t	0	f	f	2026-11-21 23:56:51.258297	f	private_message	\N	0	0	\N	\N	1	user_to_user	parity-fixture-pm-user2-to-user1-archived	\N	1	10	A private message from user2 to user1 that user1 archives.	f	\N	Parity fixture: PM user2 to user1, archived	1	\N	0	\N	0	\N	\N	\N	\N	\N
-35	Parity fixture: replies and posters	2026-11-21 23:56:51.452828	2026-11-21 23:56:44.408368	2026-11-21 23:56:51.518343	0	5	2	2	0	3	\N	1	\N	5	1	0	4	t	0	f	f	2026-11-21 23:56:51.452828	f	regular	4	0	0	\N	\N	1	\N	parity-fixture-replies-and-posters	\N	4	68	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	f	\N	\N	5	\N	0	\N	0	\N	\N	\N	\N	\N
+35	Parity fixture: replies and posters	2026-11-21 23:56:51.452828	2026-11-21 23:56:44.408368	2026-11-21 23:56:51.518343	0	5	2	2	0	3	\N	1	\N	5	1	0	4	t	0	f	f	2026-11-21 23:56:51.452828	f	regular	4	0	0	\N	\N	1	\N	parity-fixture-replies-and-posters	\N	4	68	First post of a topic with several repliers, long enough to be a real post body for the excerpt.	f	\N	Parity fixture: replies and posters	5	\N	0	\N	0	\N	\N	\N	\N	\N
+39	Parity fixture: unlisted topic	2026-11-21 23:56:45.555639	2026-11-21 23:56:45.520199	2026-11-21 23:56:45.672878	0	1	1	1	0	\N	\N	\N	\N	1	0	0	4	f	1	f	f	2026-11-21 23:56:45.555639	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-unlisted-topic	\N	1	13	This topic is unlisted and must not appear in latest for anonymous users.	f	\N	Parity fixture: unlisted topic	1	\N	0	\N	0	\N	\N	99	\N	\N
+41	Parity fixture: liked and archived	2026-11-21 23:56:45.971921	2026-11-21 23:56:45.940269	2026-11-21 23:56:46.270798	0	1	2	2	0	\N	\N	1	\N	1	1	0	4	t	1	f	t	2026-11-21 23:56:45.971921	f	regular	\N	0	0	\N	\N	1	\N	parity-fixture-liked-and-archived	\N	2	13	An archived topic whose first post got a like, for like_count and op_like_count.	f	\N	Parity fixture: liked and archived	1	\N	0	\N	0	\N	\N	\N	\N	\N
 \.
 
 
@@ -10922,7 +10922,7 @@ SELECT pg_catalog.setval('public.screened_urls_id_seq', 1, false);
 -- Name: search_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.search_logs_id_seq', 18, true);
+SELECT pg_catalog.setval('public.search_logs_id_seq', 36, true);
 
 
 --
@@ -11398,7 +11398,7 @@ SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 1, false);
 -- Name: user_auth_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 4, true);
+SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 8, true);
 
 
 --

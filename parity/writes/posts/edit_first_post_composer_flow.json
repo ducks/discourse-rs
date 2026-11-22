@@ -40,8 +40,8 @@
       "path": "/posts/35/revisions/latest.json"
     }
   ],
-  "started_at": "2026-11-22T05:19:30.465409",
-  "transaction_started_at": "2026-11-22T05:19:29.516601",
+  "started_at": "2026-11-22T09:11:02.277521",
+  "transaction_started_at": "2026-11-22T09:11:01.435068",
   "responses": [
     {
       "status": 200,
@@ -75,7 +75,7 @@
           "post_number": 1,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T05:19:30.684Z",
+          "updated_at": "2026-11-22T09:11:02.478Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -153,7 +153,7 @@
     {
       "status": 200,
       "body": {
-        "created_at": "2026-11-22T05:19:30.569Z",
+        "created_at": "2026-11-22T09:11:02.361Z",
         "post_id": 35,
         "previous_hidden": false,
         "current_hidden": false,
@@ -206,8 +206,8 @@
           "post_id": 35,
           "user_id": 2,
           "unlisted": false,
-          "created_at": "2026-11-22T05:19:30.569936",
-          "updated_at": "2026-11-22T05:19:30.69235",
+          "created_at": "2026-11-22T09:11:02.361016",
+          "updated_at": "2026-11-22T09:11:02.485919",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Parity fixture: replies and posters'\n- 'Parity fixture: replies and posters, as the composer saves'\nraw:\n- First post of a topic with several repliers, long enough to be a real post body\n  for the excerpt.\n- First post of a topic with several repliers, saved by the composer with its new\n  title.\ncooked:\n- \"<p>First post of a topic with several repliers, long enough to be a real post body\n  for the excerpt.</p>\"\n- \"<p>First post of a topic with several repliers, saved by the composer with its\n  new title.</p>\"\n"
         }
       ],
@@ -239,60 +239,6 @@
         {
           "before": {
             "locale": "en",
-            "post_id": 36,
-            "version": 5,
-            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
-            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 36,
-            "version": 0,
-            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
-            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
-            "post_id": 37,
-            "version": 5,
-            "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
-            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'two':9 'user2':11",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 37,
-            "version": 0,
-            "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
-            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'two':9 'user2':11",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
-            "post_id": 39,
-            "version": 5,
-            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
-            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 39,
-            "version": 0,
-            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
-            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
             "post_id": 35,
             "version": 5,
             "raw_data": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
@@ -305,6 +251,60 @@
             "version": 5,
             "raw_data": "First post of a topic with several repliers, saved by the composer with its new title.",
             "search_data": "'compos':8A,23 'first':12 'fixtur':2A 'general':10B 'guid':11C 'new':26 'pariti':1A 'post':13 'poster':5A 'repli':3A 'replier':19 'save':9A,20 'sever':18 'titl':27 'topic':16",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 5,
+            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 36,
+            "version": 0,
+            "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'one':9 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'user1':11",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 37,
+            "version": 5,
+            "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'two':9 'user2':11",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 37,
+            "version": 0,
+            "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
+            "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'two':9 'user2':11",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 39,
+            "version": 5,
+            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
+            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 39,
+            "version": 0,
+            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
+            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
             "private_message": false
           }
         }
@@ -381,7 +381,7 @@
             "locale": null,
             "user_id": 2,
             "version": 2,
-            "baked_at": "2026-11-22T05:19:30.684704",
+            "baked_at": "2026-11-22T09:11:02.47789",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -394,7 +394,7 @@
             "self_edits": 2,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T05:19:30.684866",
+            "updated_at": "2026-11-22T09:11:02.478062",
             "word_count": 16,
             "action_code": null,
             "cook_method": 1,
@@ -414,7 +414,7 @@
             "last_editor_id": 2,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T05:19:30.510431",
+            "last_version_at": "2026-11-22T09:11:02.303198",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -479,7 +479,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -527,7 +527,7 @@
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T05:19:30.548004",
+            "updated_at": "2026-11-22T09:11:02.339275",
             "word_count": 65,
             "category_id": 4,
             "external_id": null,
@@ -568,33 +568,33 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 9,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "fC49Spv47RcOcwajQN2jvGwS0Vk=",
-            "created_at": "2026-11-22T05:19:29.850154",
-            "rotated_at": "2026-11-22T05:19:29.849214",
-            "updated_at": "2026-11-22T05:19:29.850154",
+            "auth_token": "k0wGdU2k3KGNYofGdlTBBSrO7n4=",
+            "created_at": "2026-11-22T09:11:01.797916",
+            "rotated_at": "2026-11-22T09:11:01.797",
+            "updated_at": "2026-11-22T09:11:01.797916",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "fC49Spv47RcOcwajQN2jvGwS0Vk=",
+            "prev_auth_token": "k0wGdU2k3KGNYofGdlTBBSrO7n4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 5,
-            "seen_at": "2026-11-22T05:19:30.474338",
+            "id": 9,
+            "seen_at": "2026-11-22T09:11:02.284072",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "fC49Spv47RcOcwajQN2jvGwS0Vk=",
-            "created_at": "2026-11-22T05:19:29.850154",
-            "rotated_at": "2026-11-22T05:19:29.849214",
-            "updated_at": "2026-11-22T05:19:29.850154",
+            "auth_token": "k0wGdU2k3KGNYofGdlTBBSrO7n4=",
+            "created_at": "2026-11-22T09:11:01.797916",
+            "rotated_at": "2026-11-22T09:11:01.797",
+            "updated_at": "2026-11-22T09:11:01.797916",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "fC49Spv47RcOcwajQN2jvGwS0Vk=",
+            "prev_auth_token": "k0wGdU2k3KGNYofGdlTBBSrO7n4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -726,7 +726,7 @@
   },
   "recorded_from": {
     "case": "90ff8fd38b2ad600933ea4765c7ccf9fa3731030de86abfdca3570ffd795174b",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

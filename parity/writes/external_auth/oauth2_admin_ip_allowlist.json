@@ -15,14 +15,14 @@
       "path": "/session/current.json"
     }
   ],
-  "started_at": "2026-11-22T04:58:41.638497",
-  "transaction_started_at": "2026-11-22T04:58:40.984232",
+  "started_at": "2026-11-22T08:50:22.63552",
+  "transaction_started_at": "2026-11-22T08:50:21.990216",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=17a3928f38d5cf45c467e34e7332027c02f5db510cc13492...",
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=bd546668ead3eda25fa5814ad8f37e34ff9e5bdccf88120a...",
       "headers": {
-        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=17a3928f38d5cf45c467e34e7332027c02f5db510cc13492"
+        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=bd546668ead3eda25fa5814ad8f37e34ff9e5bdccf88120a"
       }
     },
     {
@@ -50,9 +50,9 @@
           },
           "extra": {},
           "user_id": 1,
-          "last_used": "2026-11-22T04:58:41.736274",
-          "created_at": "2026-11-22T04:58:41.737315",
-          "updated_at": "2026-11-22T04:58:41.737315",
+          "last_used": "2026-11-22T08:50:22.69738",
+          "created_at": "2026-11-22T08:50:22.698753",
+          "updated_at": "2026-11-22T08:50:22.698753",
           "credentials": {
             "token": "access-9",
             "expires": false
@@ -125,7 +125,7 @@
             "created_at": "2026-11-03T05:07:59.531425",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-22T04:58:41.750985",
+            "updated_at": "2026-11-22T08:50:22.714879",
             "approved_at": "2026-11-03T05:07:59.903079",
             "trust_level": 4,
             "last_seen_at": "2026-11-22T04:14:24.970474",
@@ -199,7 +199,7 @@
   ],
   "recorded_from": {
     "case": "bdd5cd977287935171dfdcbeab59da626f07b0cdbcafffe27f00e2f385515be8",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

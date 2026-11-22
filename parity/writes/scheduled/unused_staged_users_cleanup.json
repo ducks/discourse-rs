@@ -2,8 +2,8 @@
   "name": "unused_staged_users_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:44:04.335041",
-  "transaction_started_at": "2026-11-22T05:44:03.705824",
+  "started_at": "2026-11-22T09:30:23.325152",
+  "transaction_started_at": "2026-11-22T09:30:22.687611",
   "responses": [],
   "changes": {
     "badges": {
@@ -1144,16 +1144,16 @@
           "email": null,
           "action": 1,
           "context": "Unused staged user",
-          "details": "id: 5\nusername: user3\nname: User3\ncreated_at: 2025-10-18 05:44:03 UTC\ntrust_level: 4\nlast_seen_at: \nlast_emailed_at: ",
+          "details": "id: 5\nusername: user3\nname: User3\ncreated_at: 2025-10-18 09:30:22 UTC\ntrust_level: 4\nlast_seen_at: \nlast_emailed_at: ",
           "post_id": null,
           "subject": null,
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-22T05:44:04.420407",
+          "created_at": "2026-11-22T09:30:23.405481",
           "expires_at": null,
           "ip_address": "",
-          "updated_at": "2026-11-22T05:44:04.420407",
+          "updated_at": "2026-11-22T09:30:23.405481",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1354,7 +1354,7 @@
           "approved": false,
           "username": "user3",
           "moderator": false,
-          "created_at": "2025-10-18T05:44:03.705824",
+          "created_at": "2025-10-18T09:30:22.687611",
           "flag_level": 0,
           "ip_address": null,
           "updated_at": "2026-11-03T05:08:01.110099",
@@ -1409,7 +1409,7 @@
   ],
   "recorded_from": {
     "case": "c40930c9d5a2e31574d65ecb2c760bd23471192eaa91e6c0ee20aed04ef8a548",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

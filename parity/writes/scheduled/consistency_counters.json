@@ -2,8 +2,8 @@
   "name": "consistency_counters",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T05:41:43.725418",
-  "transaction_started_at": "2026-11-22T05:41:43.110401",
+  "started_at": "2026-11-22T09:28:04.325389",
+  "transaction_started_at": "2026-11-22T09:28:03.708014",
   "responses": [],
   "changes": {
     "badges": {
@@ -84,7 +84,7 @@
             "group_id": 10,
             "created_at": "2026-11-03T05:07:59.74266",
             "updated_at": "2026-11-03T05:07:59.74266",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         },
@@ -106,7 +106,7 @@
             "group_id": 1,
             "created_at": "2026-11-03T05:07:59.833677",
             "updated_at": "2026-11-03T05:07:59.833677",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 2
           }
         },
@@ -128,7 +128,7 @@
             "group_id": 3,
             "created_at": "2026-11-03T05:07:59.833677",
             "updated_at": "2026-11-03T05:07:59.833677",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 2
           }
         },
@@ -150,7 +150,7 @@
             "group_id": 11,
             "created_at": "2026-11-03T05:07:59.960501",
             "updated_at": "2026-11-03T05:07:59.960501",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         },
@@ -172,7 +172,7 @@
             "group_id": 12,
             "created_at": "2026-11-03T05:07:59.974341",
             "updated_at": "2026-11-03T05:07:59.974341",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         },
@@ -194,7 +194,7 @@
             "group_id": 13,
             "created_at": "2026-11-03T05:07:59.98744",
             "updated_at": "2026-11-03T05:07:59.98744",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         },
@@ -216,7 +216,7 @@
             "group_id": 14,
             "created_at": "2026-11-03T05:08:00.00371",
             "updated_at": "2026-11-03T05:08:00.00371",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         },
@@ -238,7 +238,7 @@
             "group_id": 10,
             "created_at": "2026-11-03T05:08:00.247582",
             "updated_at": "2026-11-03T05:08:00.247582",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         },
@@ -260,7 +260,7 @@
             "group_id": 11,
             "created_at": "2026-11-03T05:08:00.346634",
             "updated_at": "2026-11-03T05:08:00.346634",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         },
@@ -282,7 +282,7 @@
             "group_id": 10,
             "created_at": "2026-11-03T05:08:00.537378",
             "updated_at": "2026-11-03T05:08:00.537378",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         },
@@ -304,7 +304,7 @@
             "group_id": 11,
             "created_at": "2026-11-03T05:08:00.594226",
             "updated_at": "2026-11-03T05:08:00.594226",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         },
@@ -326,7 +326,7 @@
             "group_id": 12,
             "created_at": "2026-11-03T05:08:00.607537",
             "updated_at": "2026-11-03T05:08:00.607537",
-            "first_unread_pm_at": "2026-11-22T05:31:43.830968",
+            "first_unread_pm_at": "2026-11-22T09:18:04.424937",
             "notification_level": 3
           }
         }
@@ -743,7 +743,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -795,7 +795,7 @@
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
-            "fancy_title": null,
+            "fancy_title": "Parity fixture: replies and posters",
             "has_summary": false,
             "posts_count": 5,
             "reply_count": 0,
@@ -980,11 +980,11 @@
             "flags_ignored": 0,
             "likes_received": 1,
             "topics_entered": 0,
-            "first_unread_at": "2026-11-22T05:31:43.823122",
+            "first_unread_at": "2026-11-22T09:18:04.418955",
             "flags_disagreed": 0,
             "post_edits_count": null,
             "posts_read_count": 3,
-            "first_unread_pm_at": "2026-11-22T05:31:43.828713",
+            "first_unread_pm_at": "2026-11-22T09:18:04.423484",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
@@ -1092,7 +1092,7 @@
             "flags_disagreed": 0,
             "post_edits_count": null,
             "posts_read_count": 6,
-            "first_unread_pm_at": "2026-11-22T05:31:43.828713",
+            "first_unread_pm_at": "2026-11-22T09:18:04.423484",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
@@ -1124,7 +1124,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "068285557e6adde7df172eaad8c77bc54ff10e6cb7b608b153424d35b2a9f150",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -1,7 +1,7 @@
 {
   "request": "GET /search.json?q=fixture&page=11",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T06:28:29.102086898+00:00",
+  "recorded_at": "2026-11-22T10:18:05.353718749+00:00",
   "status": 400,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"errors\":[\"You supplied invalid parameters to the request: page parameter must not be greater than 10\"],\"error_type\":\"invalid_parameters\"}"

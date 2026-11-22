@@ -19,14 +19,14 @@
       "path": "/invites/Fixture901"
     }
   ],
-  "started_at": "2026-11-22T04:58:32.986222",
-  "transaction_started_at": "2026-11-22T04:58:32.187506",
+  "started_at": "2026-11-22T08:50:13.960829",
+  "transaction_started_at": "2026-11-22T08:50:13.324418",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=036f7f478590ea8ac91fa177c38ae6b0c62a6f2c184ac715...",
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=7912586c7a289d2bc2f929ed302e9c45a9831643ab2d2050...",
       "headers": {
-        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=036f7f478590ea8ac91fa177c38ae6b0c62a6f2c184ac715"
+        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=7912586c7a289d2bc2f929ed302e9c45a9831643ab2d2050"
       }
     },
     {
@@ -83,9 +83,9 @@
           },
           "extra": {},
           "user_id": null,
-          "last_used": "2026-11-22T04:58:33.055853",
-          "created_at": "2026-11-22T04:58:33.057292",
-          "updated_at": "2026-11-22T04:58:33.057292",
+          "last_used": "2026-11-22T08:50:14.0547",
+          "created_at": "2026-11-22T08:50:14.057736",
+          "updated_at": "2026-11-22T08:50:14.057736",
           "credentials": {
             "token": "access-2",
             "expires": false
@@ -148,7 +148,7 @@
   ],
   "recorded_from": {
     "case": "3881c86204138a389365d2ceea2808ceb06ea68e08b313a8c05fd9048d20def3",
-    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }
