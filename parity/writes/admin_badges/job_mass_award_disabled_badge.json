@@ -2,8 +2,8 @@
   "name": "job_mass_award_disabled_badge",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T00:02:07.045481",
-  "transaction_started_at": "2026-11-22T00:02:06.476323",
+  "started_at": "2026-11-22T04:20:09.011871",
+  "transaction_started_at": "2026-11-22T04:20:08.44725",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -27,7 +27,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "35ada6f74fc2f869dcf6853baf9cd1324352a3ae0eefc2d1257698108d107d48",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

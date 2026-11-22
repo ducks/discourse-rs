@@ -7,8 +7,8 @@
       "path": "/badges/11/first-like.json"
     }
   ],
-  "started_at": "2026-11-22T00:18:30.096246",
-  "transaction_started_at": "2026-11-22T00:18:29.511416",
+  "started_at": "2026-11-22T04:37:23.490032",
+  "transaction_started_at": "2026-11-22T04:37:22.922126",
   "responses": [
     {
       "status": 200,
@@ -24,7 +24,7 @@
           "id": 11,
           "name": "First Like",
           "description": "Liked a post",
-          "grant_count": 0,
+          "grant_count": 2,
           "allow_title": false,
           "multiple_grant": false,
           "icon": "heart",
@@ -53,7 +53,7 @@
   ],
   "recorded_from": {
     "case": "4ccb43fc712745d7f3bd5abbe9819cd39b44b1c6b718af62b4561c2c31cc761f",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

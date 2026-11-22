@@ -7,8 +7,8 @@
       "path": "/badges/11.json"
     }
   ],
-  "started_at": "2026-11-22T00:18:27.982503",
-  "transaction_started_at": "2026-11-22T00:18:27.203505",
+  "started_at": "2026-11-22T04:37:21.410938",
+  "transaction_started_at": "2026-11-22T04:37:20.61466",
   "responses": [
     {
       "status": 200,
@@ -24,7 +24,7 @@
           "id": 11,
           "name": "First Like",
           "description": "Liked a post",
-          "grant_count": 0,
+          "grant_count": 2,
           "allow_title": false,
           "multiple_grant": false,
           "icon": "heart",
@@ -35,6 +35,7 @@
           "system": true,
           "long_description": "This badge is granted the first time you like a post using the :heart: button. Liking posts is a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun. Share the love!\n",
           "slug": "first-like",
+          "has_badge": true,
           "manually_grantable": false,
           "show_in_post_header": false,
           "badge_type_id": 3
@@ -43,39 +44,73 @@
     }
   ],
   "changes": {
+    "notifications": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 30,
+            "data": "{\"badge_id\":11,\"badge_name\":\"First Like\",\"badge_slug\":\"first-like\",\"badge_title\":false,\"username\":\"user1\"}",
+            "read": false,
+            "user_id": 3,
+            "topic_id": null,
+            "created_at": "2026-11-22T04:14:26.18351",
+            "updated_at": "2026-11-22T04:14:26.18351",
+            "post_number": null,
+            "high_priority": false,
+            "post_action_id": null,
+            "notification_type": 12
+          },
+          "after": {
+            "id": 30,
+            "data": "{\"badge_id\":11,\"badge_name\":\"First Like\",\"badge_slug\":\"first-like\",\"badge_title\":false,\"username\":\"user1\"}",
+            "read": true,
+            "user_id": 3,
+            "topic_id": null,
+            "created_at": "2026-11-22T04:14:26.18351",
+            "updated_at": "2026-11-22T04:37:21.428399",
+            "post_number": null,
+            "high_priority": false,
+            "post_action_id": null,
+            "notification_type": 12
+          }
+        }
+      ]
+    },
     "user_auth_tokens": {
       "inserted": [],
       "deleted": [],
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "1pxhH5v2vSFWNep6vfGV3nHViqc=",
-            "created_at": "2026-11-22T00:18:27.510444",
-            "rotated_at": "2026-11-22T00:18:27.509462",
-            "updated_at": "2026-11-22T00:18:27.510444",
+            "auth_token": "BBbFv4pqavsSyQA/RqT+SxDr5QU=",
+            "created_at": "2026-11-22T04:37:20.929383",
+            "rotated_at": "2026-11-22T04:37:20.928387",
+            "updated_at": "2026-11-22T04:37:20.929383",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "1pxhH5v2vSFWNep6vfGV3nHViqc=",
+            "prev_auth_token": "BBbFv4pqavsSyQA/RqT+SxDr5QU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:18:27.98855",
+            "id": 5,
+            "seen_at": "2026-11-22T04:37:21.417612",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "1pxhH5v2vSFWNep6vfGV3nHViqc=",
-            "created_at": "2026-11-22T00:18:27.510444",
-            "rotated_at": "2026-11-22T00:18:27.509462",
-            "updated_at": "2026-11-22T00:18:27.510444",
+            "auth_token": "BBbFv4pqavsSyQA/RqT+SxDr5QU=",
+            "created_at": "2026-11-22T04:37:20.929383",
+            "rotated_at": "2026-11-22T04:37:20.928387",
+            "updated_at": "2026-11-22T04:37:20.929383",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "1pxhH5v2vSFWNep6vfGV3nHViqc=",
+            "prev_auth_token": "BBbFv4pqavsSyQA/RqT+SxDr5QU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -94,7 +129,7 @@
   ],
   "recorded_from": {
     "case": "f6ff41ba40789c20994aef37478388ad4fa75359dc0892f77adf9e33b0aefdcc",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

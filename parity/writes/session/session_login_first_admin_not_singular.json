@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T01:27:34.061406",
-  "transaction_started_at": "2026-11-22T01:27:33.448437",
+  "started_at": "2026-11-22T05:47:52.470734",
+  "transaction_started_at": "2026-11-22T05:47:51.836842",
   "responses": [
     {
       "status": 200,
@@ -60,7 +60,7 @@
           "can_edit_email": true,
           "can_edit_name": true,
           "uploaded_avatar_id": null,
-          "has_title_badges": false,
+          "has_title_badges": true,
           "pending_count": 0,
           "profile_view_count": 0,
           "second_factor_enabled": false,
@@ -101,15 +101,27 @@
           "user_passkeys": [],
           "user_auth_tokens": [
             {
-              "id": 1,
+              "id": 3,
+              "client_ip": "172.17.0.1",
+              "location": "unknown",
+              "browser": "Unknown browser",
+              "device": "unknown device",
+              "os": "unknown operating system",
+              "icon": "question",
+              "created_at": "2026-11-22T02:18:12.554Z",
+              "seen_at": "2026-11-22T02:18:12.637Z",
+              "is_active": false
+            },
+            {
+              "id": 5,
               "client_ip": "127.0.0.1",
               "location": "unknown",
               "browser": "Unknown browser",
               "device": "unknown device",
               "os": "unknown operating system",
               "icon": "question",
-              "created_at": "2026-11-22T01:27:34.141Z",
-              "seen_at": "2026-11-22T01:27:34.141Z",
+              "created_at": "2026-11-22T05:47:52.555Z",
+              "seen_at": "2026-11-22T05:47:52.555Z",
               "is_active": false
             }
           ],
@@ -303,7 +315,7 @@
               "automatic": true,
               "name": "trust_level_3",
               "display_name": "trust_level_3",
-              "user_count": 3,
+              "user_count": 2,
               "mentionable_level": 0,
               "messageable_level": 0,
               "visibility_level": 1,
@@ -492,10 +504,10 @@
           "action": "generate",
           "user_id": 1,
           "client_ip": "127.0.0.1",
-          "auth_token": "dgOCo2RmknriY8fMvIR7dulMAxc=",
-          "created_at": "2026-11-22T01:27:34.144236",
+          "auth_token": "DXbVGWmBxAmchoNSq7TnMGH+TTs=",
+          "created_at": "2026-11-22T05:47:52.557874",
           "user_agent": null,
-          "user_auth_token_id": 1
+          "user_auth_token_id": 5
         }
       ],
       "deleted": [],
@@ -504,17 +516,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 1,
+          "id": 5,
           "seen_at": null,
           "user_id": 1,
           "client_ip": "127.0.0.1",
-          "auth_token": "dgOCo2RmknriY8fMvIR7dulMAxc=",
-          "created_at": "2026-11-22T01:27:34.141593",
-          "rotated_at": "2026-11-22T01:27:34.140741",
-          "updated_at": "2026-11-22T01:27:34.141593",
+          "auth_token": "DXbVGWmBxAmchoNSq7TnMGH+TTs=",
+          "created_at": "2026-11-22T05:47:52.555125",
+          "rotated_at": "2026-11-22T05:47:52.554135",
+          "updated_at": "2026-11-22T05:47:52.555125",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "dgOCo2RmknriY8fMvIR7dulMAxc=",
+          "prev_auth_token": "DXbVGWmBxAmchoNSq7TnMGH+TTs=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": false,
           "impersonation_expires_at": null
@@ -536,7 +548,7 @@
   ],
   "next_ids": {
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 1
+    "user_auth_tokens": 5
   },
   "setup": [
     "UPDATE users SET moderator = false, last_seen_at = NULL WHERE id = 1",
@@ -546,7 +558,7 @@
   ],
   "recorded_from": {
     "case": "3e9df211d41259320e30391ea5e5d998c434c59dab2eb748a1c28d43624ed4cf",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

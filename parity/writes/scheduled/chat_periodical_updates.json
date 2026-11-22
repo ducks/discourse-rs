@@ -2,8 +2,8 @@
   "name": "chat_periodical_updates",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:21:18.400115",
-  "transaction_started_at": "2026-11-22T01:21:17.784912",
+  "started_at": "2026-11-22T05:41:33.86608",
+  "transaction_started_at": "2026-11-22T05:41:33.221515",
   "responses": [],
   "changes": {
     "chat_channels": {
@@ -128,7 +128,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "8f1d6ffbde0d723b5fc50fc61ea1aee05ca84651f531d739402906b46565723a",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

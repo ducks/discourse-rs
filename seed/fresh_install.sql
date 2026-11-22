@@ -84,13 +84,13 @@ COPY public.groups (id, name, created_at, updated_at, automatic, user_count, aut
 2	moderators	2026-11-03 05:07:09.368508	2026-11-03 05:07:09.373426	t	0	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Moderators	2	1	f	f	\N	99	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 11	trust_level_1	2026-11-03 05:07:09.409398	2026-11-03 05:07:09.411815	t	5	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 1	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 12	trust_level_2	2026-11-03 05:07:09.418049	2026-11-03 05:07:09.420396	t	4	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 2	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
-13	trust_level_3	2026-11-03 05:07:09.42686	2026-11-03 05:07:09.429184	t	3	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 3	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 14	trust_level_4	2026-11-03 05:07:09.435017	2026-11-03 05:07:09.437833	t	2	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 4	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 0	everyone	2026-11-03 05:07:09.350446	2026-11-03 05:07:09.354159	t	0	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Everyone	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 4	anonymous_users	2026-11-03 05:07:09.387639	2026-11-03 05:07:09.390458	t	0	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Anonymous users	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 5	logged_in_users	2026-11-03 05:07:09.394249	2026-11-03 05:07:09.396981	t	0	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Logged in users	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 1	admins	2026-11-03 05:07:09.359134	2026-11-03 05:07:09.361546	t	1	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Admins	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 3	staff	2026-11-03 05:07:09.379049	2026-11-03 05:07:09.381914	t	1	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Staff	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
+13	trust_level_3	2026-11-03 05:07:09.42686	2026-11-03 05:07:09.429184	t	2	\N	f	\N	\N	\N	f	\N	\N	\N	\N	f	Trust level 3	3	1	f	f	\N	0	0	\N	\N	\N	\N	\N		0	0	\N	\N	f	0	\N	\N	\N	\N	\N	f	f	\N	\N	f	\N	\N	0	\N	0
 \.
 
 
@@ -131,9 +131,9 @@ COPY public.users (id, username, created_at, updated_at, name, last_posted_at, a
 -1	system	2026-11-03 05:07:10.272522	2026-11-21 23:55:42.925297	system	2026-11-03 05:07:24.677747	t	system	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	t	\N	34	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 -2	discobot	2026-11-03 05:07:25.57085	2026-11-21 23:55:43.03818	discobot	\N	t	discobot	\N	t	\N	4	t	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	35	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
 4	user2	2026-11-03 05:08:00.661478	2026-11-21 23:56:57.750413	User2	2026-11-21 23:56:44.759506	t	user2	\N	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	\N	f	\N	\N	\N	\N	\N	f	\N	\N	\N	\N	\N	\N	\N	\N	0
-2	user0	2026-11-03 05:08:00.105147	2026-11-21 23:56:51.522858	User0	2026-11-21 23:56:51.452828	t	user0	2026-11-21 23:56:57.795913	f	\N	1	f	\N	\N	\N	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-11-21 23:56:57.795913	\N	\N	\N	\N	\N	\N	\N	0
-3	user1	2026-11-03 05:08:00.404788	2026-11-21 23:56:45.45602	User1	2026-11-21 23:56:45.425465	t	user1	2026-11-21 23:56:57.920623	f	\N	2	f	\N	\N	\N	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-11-21 23:56:57.920623	\N	\N	\N	\N	\N	\N	\N	0
-1	admin	2026-11-03 05:07:59.531425	2026-11-21 23:56:45.584857	Admin	2026-11-21 23:56:45.555639	t	admin	2026-11-21 23:56:57.944136	t	\N	4	t	-1	2026-11-03 05:07:59.903079	\N	\N	\N	\N	0	0	127.0.0.1	f	\N	\N	\N	\N	\N	f	2026-11-21 23:56:57.944136	\N	\N	\N	\N	\N	\N	\N	0
+2	user0	2026-11-03 05:08:00.105147	2026-11-21 23:56:51.522858	User0	2026-11-21 23:56:51.452828	t	user0	2026-11-22 04:14:24.791911	f	\N	1	f	\N	\N	2026-11-21 23:56:57.795913	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-11-21 23:56:57.795913	\N	\N	\N	\N	\N	\N	\N	0
+3	user1	2026-11-03 05:08:00.404788	2026-11-21 23:56:45.45602	User1	2026-11-21 23:56:45.425465	t	user1	2026-11-22 04:14:24.947499	f	\N	2	f	\N	\N	2026-11-21 23:56:57.920623	\N	\N	\N	0	0	172.17.0.1	f	\N	\N	\N	\N	\N	f	2026-11-21 23:56:57.920623	\N	\N	\N	\N	\N	\N	\N	0
+1	admin	2026-11-03 05:07:59.531425	2026-11-21 23:56:45.584857	Admin	2026-11-21 23:56:45.555639	t	admin	2026-11-22 04:14:24.970474	t	\N	4	t	-1	2026-11-03 05:07:59.903079	2026-11-21 23:56:57.944136	\N	\N	\N	0	0	127.0.0.1	f	\N	\N	\N	\N	\N	f	2026-11-21 23:56:57.944136	\N	\N	\N	\N	\N	\N	\N	0
 \.
 
 
@@ -190,6 +190,9 @@ ALTER TABLE public.admin_dashboard_sections ENABLE TRIGGER ALL;
 ALTER TABLE public.admin_notices DISABLE TRIGGER ALL;
 
 COPY public.admin_notices (id, subject, priority, identifier, details, created_at, updated_at) FROM stdin;
+1	0	0	force_https	{"base_path":"","target":"__NULL__"}	2026-11-22 04:14:31.060847	2026-11-22 04:14:31.060847
+2	0	0	host_names	{"base_path":"","target":"__NULL__"}	2026-11-22 04:14:31.331895	2026-11-22 04:14:31.331895
+3	0	0	rails_env	{"env":"development","base_path":"","target":"__NULL__"}	2026-11-22 04:14:31.710018	2026-11-22 04:14:31.710018
 \.
 
 
@@ -746,15 +749,10 @@ ALTER TABLE public.badge_types ENABLE TRIGGER ALL;
 ALTER TABLE public.badges DISABLE TRIGGER ALL;
 
 COPY public.badges (id, name, description, badge_type_id, grant_count, created_at, updated_at, allow_title, multiple_grant, icon, listable, target_posts, query, enabled, auto_revoke, badge_grouping_id, trigger, show_posts, system, long_description, image_upload_id, show_in_post_header) FROM stdin;
-1	Basic User	\N	3	0	2026-11-03 05:07:09.727562	2026-11-03 05:07:09.727562	f	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 1 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
-2	Member	\N	3	0	2026-11-03 05:07:09.735546	2026-11-03 05:07:09.735546	f	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 2 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
-3	Regular	\N	2	0	2026-11-03 05:07:09.745042	2026-11-03 05:07:09.745042	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 3 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
-4	Leader	\N	1	0	2026-11-03 05:07:09.752034	2026-11-03 05:07:09.752034	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 4 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
 17	Reader	\N	3	0	2026-11-03 05:07:09.759013	2026-11-03 05:07:09.759013	f	f	book-open-reader	t	f	SELECT id user_id, current_timestamp granted_at\nFROM users\nWHERE id IN\n(\n  SELECT pt.user_id\n  FROM post_timings pt\n  JOIN badge_posts b ON b.post_number = pt.post_number AND\n                        b.topic_id = pt.topic_id\n  JOIN topics t ON t.id = pt.topic_id\n  LEFT JOIN user_badges ub ON ub.badge_id = 17 AND ub.user_id = pt.user_id\n  WHERE ub.id IS NULL AND t.posts_count > 100\n  GROUP BY pt.user_id, pt.topic_id, t.posts_count\n  HAVING count(*) >= t.posts_count\n)\n	t	f	1	\N	f	t	\N	\N	f
 16	Read Guidelines	\N	3	0	2026-11-03 05:07:09.769335	2026-11-03 05:07:09.769335	f	f	file-lines	t	f	SELECT user_id, read_faq granted_at\nFROM user_stats\nWHERE read_faq IS NOT NULL AND (user_id IN (:user_ids) OR :backfill)\n	t	t	1	8	f	t	\N	\N	f
 14	First Link	\N	3	0	2026-11-03 05:07:09.775151	2026-11-03 05:07:09.775151	f	f	link	t	t	SELECT l.user_id, l.post_id, l.created_at granted_at\nFROM\n(\n  SELECT MIN(l1.id) id\n  FROM topic_links l1\n  JOIN badge_posts p1 ON p1.id = l1.post_id\n  JOIN badge_posts p2 ON p2.id = l1.link_post_id\n  WHERE NOT reflection AND p1.topic_id <> p2.topic_id AND not quote AND\n    (:backfill OR ( p1.id in (:post_ids) ))\n  GROUP BY l1.user_id\n) ids\nJOIN topic_links l ON l.id = ids.id\n	t	t	1	2	t	t	\N	\N	f
 15	First Quote	\N	3	0	2026-11-03 05:07:09.784476	2026-11-03 05:07:09.784476	f	f	quote-right	t	t	SELECT ids.user_id, q.post_id, p3.created_at granted_at\nFROM\n(\n  SELECT p1.user_id, MIN(q1.id) id\n  FROM quoted_posts q1\n  JOIN badge_posts p1 ON p1.id = q1.post_id\n  JOIN badge_posts p2 ON p2.id = q1.quoted_post_id\n  WHERE (:backfill OR ( p1.id IN (:post_ids) ))\n  GROUP BY p1.user_id\n) ids\nJOIN quoted_posts q ON q.id = ids.id\nJOIN badge_posts p3 ON q.post_id = p3.id\n	t	t	1	2	t	t	\N	\N	f
-11	First Like	\N	3	0	2026-11-03 05:07:09.797126	2026-11-03 05:07:09.797126	f	f	heart	t	t	SELECT pa1.user_id, pa1.created_at granted_at, pa1.post_id\nFROM (\n  SELECT pa.user_id, min(pa.id) id\n  FROM post_actions pa\n  JOIN badge_posts p on p.id = pa.post_id\n  WHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\n  GROUP BY pa.user_id\n) x\nJOIN post_actions pa1 on pa1.id = x.id\n	t	t	1	1	t	t	\N	\N	f
 13	First Flag	\N	3	0	2026-11-03 05:07:09.806834	2026-11-03 05:07:09.806834	f	f	flag	t	t	SELECT pa1.user_id, pa1.created_at granted_at, pa1.post_id\nFROM (\n  SELECT pa.user_id, min(pa.id) id\n  FROM post_actions pa\n  JOIN badge_posts p on p.id = pa.post_id\n  WHERE post_action_type_id IN (\n    SELECT f.id\n    FROM flags f\n    WHERE name != 'like'\n    AND score_type IS FALSE\n    AND require_message IS FALSE\n  )\n  AND (:backfill OR pa.post_id IN (:post_ids))\n  GROUP BY pa.user_id\n) x\nJOIN post_actions pa1 on pa1.id = x.id\n	t	f	1	1	f	t	\N	\N	f
 25	Promoter	\N	3	0	2026-11-03 05:07:09.817077	2026-11-03 05:07:09.817077	f	f	user-plus	t	f	SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nWHERE u.id IN (\n  SELECT invited_by_id\n  FROM invites i\n  JOIN invited_users iu ON iu.invite_id = i.id\n  JOIN users u2 ON u2.id = iu.user_id\n  WHERE i.deleted_at IS NULL\n  AND i.invited_by_id <> u2.id\n  AND u2.active\n  AND u2.trust_level >= 0\n  AND u2.silenced_till IS NULL\n  GROUP BY invited_by_id\n  HAVING COUNT(*) >= 1\n) AND u.active AND u.silenced_till IS NULL AND u.id > 0 AND\n(:backfill OR u.id IN (:user_ids) )\n	t	t	2	0	f	t	\N	\N	f
 26	Campaigner	\N	2	0	2026-11-03 05:07:09.839986	2026-11-03 05:07:09.839986	f	f	user-plus	t	f	SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nWHERE u.id IN (\n  SELECT invited_by_id\n  FROM invites i\n  JOIN invited_users iu ON iu.invite_id = i.id\n  JOIN users u2 ON u2.id = iu.user_id\n  WHERE i.deleted_at IS NULL\n  AND i.invited_by_id <> u2.id\n  AND u2.active\n  AND u2.trust_level >= 1\n  AND u2.silenced_till IS NULL\n  GROUP BY invited_by_id\n  HAVING COUNT(*) >= 3\n) AND u.active AND u.silenced_till IS NULL AND u.id > 0 AND\n(:backfill OR u.id IN (:user_ids) )\n	t	t	2	0	f	t	\N	\N	f
@@ -763,9 +761,13 @@ COPY public.badges (id, name, description, badge_type_id, grant_count, created_a
 21	Nice Share	\N	3	0	2026-11-03 05:07:09.859535	2026-11-03 05:07:09.859535	f	t	share-nodes	t	t	SELECT i.user_id, i.post_id, CURRENT_TIMESTAMP granted_at\nFROM incoming_links i\nJOIN badge_posts p on p.id = i.post_id\nJOIN users u on u.id = i.user_id\nGROUP BY i.user_id,i.post_id\nHAVING COUNT(DISTINCT(i.ip_address, i.current_user_id)) >= 25\n	t	t	2	0	t	t	\N	\N	f
 22	Good Share	\N	2	0	2026-11-03 05:07:09.86252	2026-11-03 05:07:09.86252	f	t	share-nodes	t	t	SELECT i.user_id, i.post_id, CURRENT_TIMESTAMP granted_at\nFROM incoming_links i\nJOIN badge_posts p on p.id = i.post_id\nJOIN users u on u.id = i.user_id\nGROUP BY i.user_id,i.post_id\nHAVING COUNT(DISTINCT(i.ip_address, i.current_user_id)) >= 300\n	t	t	2	0	t	t	\N	\N	f
 23	Great Share	\N	1	0	2026-11-03 05:07:09.866655	2026-11-03 05:07:09.866655	f	t	share-nodes	t	t	SELECT i.user_id, i.post_id, CURRENT_TIMESTAMP granted_at\nFROM incoming_links i\nJOIN badge_posts p on p.id = i.post_id\nJOIN users u on u.id = i.user_id\nGROUP BY i.user_id,i.post_id\nHAVING COUNT(DISTINCT(i.ip_address, i.current_user_id)) >= 1000\n	t	t	2	0	t	t	\N	\N	f
-5	Welcome	\N	3	0	2026-11-03 05:07:09.869719	2026-11-03 05:07:09.869719	f	f	heart	t	t	SELECT p.user_id, min(post_id) post_id, min(pa.created_at) granted_at\nFROM post_actions pa\nJOIN badge_posts p on p.id = pa.post_id\nWHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	2	1	t	t	\N	\N	f
 9	Autobiographer	\N	3	0	2026-11-03 05:07:09.8731	2026-11-03 05:07:09.8731	f	f	user-pen	t	f	SELECT u.id user_id, current_timestamp granted_at\nFROM users u\nJOIN user_profiles up on u.id = up.user_id\nWHERE bio_raw IS NOT NULL AND LENGTH(TRIM(bio_raw)) > 10 AND\n      uploaded_avatar_id IS NOT NULL AND\n      (:backfill OR u.id IN (:user_ids) )\n	t	t	1	8	f	t	\N	\N	f
 10	Editor	\N	3	0	2026-11-03 05:07:09.876336	2026-11-03 05:07:09.876336	f	f	pen	t	f	SELECT p.user_id, min(p.id) post_id, min(p.created_at) granted_at\nFROM badge_posts p\nWHERE p.self_edits > 0 AND\n    (:backfill OR p.id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	1	2	f	t	\N	\N	f
+1	Basic User	\N	3	5	2026-11-03 05:07:09.727562	2026-11-22 04:14:25.431519	f	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 1 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
+2	Member	\N	3	4	2026-11-03 05:07:09.735546	2026-11-22 04:14:25.67553	f	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 2 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
+4	Leader	\N	1	2	2026-11-03 05:07:09.752034	2026-11-22 04:14:25.858004	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 4 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
+11	First Like	\N	3	2	2026-11-03 05:07:09.797126	2026-11-22 04:14:26.337846	f	f	heart	t	t	SELECT pa1.user_id, pa1.created_at granted_at, pa1.post_id\nFROM (\n  SELECT pa.user_id, min(pa.id) id\n  FROM post_actions pa\n  JOIN badge_posts p on p.id = pa.post_id\n  WHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\n  GROUP BY pa.user_id\n) x\nJOIN post_actions pa1 on pa1.id = x.id\n	t	t	1	1	t	t	\N	\N	f
+5	Welcome	\N	3	2	2026-11-03 05:07:09.869719	2026-11-22 04:14:26.862982	f	f	heart	t	t	SELECT p.user_id, min(post_id) post_id, min(pa.created_at) granted_at\nFROM post_actions pa\nJOIN badge_posts p on p.id = pa.post_id\nWHERE post_action_type_id = 2 AND\n    (:backfill OR pa.post_id IN (:post_ids) )\nGROUP BY p.user_id\n	t	t	2	1	t	t	\N	\N	f
 48	Wiki Editor	\N	3	0	2026-11-03 05:07:09.879098	2026-11-03 05:07:09.879098	f	f	far-pen-to-square	t	t	SELECT pr2.user_id, pr2.post_id, pr2.created_at granted_at\nFROM\n(\n  SELECT min(pr.id) id\n  FROM post_revisions pr\n  JOIN badge_posts p on p.id = pr.post_id\n  WHERE p.wiki\n      AND NOT pr.hidden\n      AND (:backfill OR p.id IN (:post_ids))\n  GROUP BY pr.user_id\n) as X\nJOIN post_revisions pr2 ON pr2.id = X.id\n	t	t	1	2	f	t	\N	\N	f
 6	Nice Post	\N	3	0	2026-11-03 05:07:09.884231	2026-11-03 05:07:09.884231	f	t	reply	t	t	SELECT p.user_id, p.id post_id, current_timestamp granted_at\nFROM badge_posts p\nWHERE p.post_number > 1 AND p.like_count >= 10 AND\n  (:backfill OR p.id IN (:post_ids) )\n	t	t	3	1	t	t	\N	\N	f
 7	Good Post	\N	2	0	2026-11-03 05:07:09.8869	2026-11-03 05:07:09.8869	f	t	reply	t	t	SELECT p.user_id, p.id post_id, current_timestamp granted_at\nFROM badge_posts p\nWHERE p.post_number > 1 AND p.like_count >= 25 AND\n  (:backfill OR p.id IN (:post_ids) )\n	t	t	3	1	t	t	\N	\N	f
@@ -786,7 +788,6 @@ COPY public.badges (id, name, description, badge_type_id, grant_count, created_a
 33	Out of Love	\N	3	0	2026-11-03 05:07:09.930145	2026-11-03 05:07:09.930145	f	f	heart	t	f	SELECT gdl.user_id, current_timestamp AS granted_at\nFROM given_daily_likes AS gdl\nWHERE gdl.limit_reached\n  AND (:backfill OR gdl.user_id IN (:user_ids))\nGROUP BY gdl.user_id\nHAVING COUNT(*) >= 1\n	t	f	2	0	f	t	\N	\N	f
 34	Higher Love	\N	2	0	2026-11-03 05:07:09.933272	2026-11-03 05:07:09.933272	f	f	heart	t	f	SELECT gdl.user_id, current_timestamp AS granted_at\nFROM given_daily_likes AS gdl\nWHERE gdl.limit_reached\n  AND (:backfill OR gdl.user_id IN (:user_ids))\nGROUP BY gdl.user_id\nHAVING COUNT(*) >= 5\n	t	f	2	0	f	t	\N	\N	f
 35	Crazy in Love	\N	1	0	2026-11-03 05:07:09.935897	2026-11-03 05:07:09.935897	f	f	heart	t	f	SELECT gdl.user_id, current_timestamp AS granted_at\nFROM given_daily_likes AS gdl\nWHERE gdl.limit_reached\n  AND (:backfill OR gdl.user_id IN (:user_ids))\nGROUP BY gdl.user_id\nHAVING COUNT(*) >= 20\n	t	f	2	0	f	t	\N	\N	f
-40	First Mention	\N	3	0	2026-11-03 05:07:09.938947	2026-11-03 05:07:09.938947	f	f	at	t	t	SELECT acting_user_id AS user_id, min(target_post_id) AS post_id, min(p.created_at) AS granted_at\nFROM user_actions\nJOIN posts p ON p.id = target_post_id\nJOIN topics t ON t.id = topic_id\nJOIN categories c on c.id = category_id\nWHERE action_type = 7\n  AND NOT read_restricted\n  AND p.deleted_at IS  NULL\n  AND t.deleted_at IS  NULL\n  AND t.visible\n  AND t.archetype <> 'private_message'\n  AND (:backfill OR p.id IN (:post_ids))\nGROUP BY acting_user_id\n	t	t	1	2	t	t	\N	\N	f
 41	First Emoji	\N	3	0	2026-11-03 05:07:09.941517	2026-11-03 05:07:09.941517	f	f	face-smile	t	t	\N	t	t	1	0	t	t	\N	\N	f
 42	First Onebox	\N	3	0	2026-11-03 05:07:09.944138	2026-11-03 05:07:09.944138	f	f	cube	t	t	\N	t	t	1	0	t	t	\N	\N	f
 43	First Reply By Email	\N	3	0	2026-11-03 05:07:09.947361	2026-11-03 05:07:09.947361	f	f	envelope	t	t	\N	t	t	1	0	t	t	\N	\N	f
@@ -832,6 +833,8 @@ COPY public.badges (id, name, description, badge_type_id, grant_count, created_a
 135	Packed House	\N	2	0	2026-11-03 05:07:25.996013	2026-11-03 05:07:25.996013	f	f	people-group	t	f	\N	f	t	6	0	f	t	\N	\N	f
 136	Weekend Warrior	\N	2	0	2026-11-03 05:07:25.999543	2026-11-03 05:07:25.999543	f	f	calendar-week	t	f	SELECT user_id, current_timestamp granted_at\nFROM live_sessions\nWHERE EXTRACT(DOW FROM joined_at) IN (0, 6)\nGROUP BY user_id\nHAVING SUM(EXTRACT(EPOCH FROM (COALESCE(left_at, CURRENT_TIMESTAMP) - joined_at))) >= 18000\n	f	f	6	0	f	t	\N	\N	f
 137	Marathoner	\N	1	0	2026-11-03 05:07:26.002701	2026-11-03 05:07:26.002701	t	f	trophy	t	f	\N	f	t	6	0	f	t	\N	\N	f
+3	Regular	\N	2	2	2026-11-03 05:07:09.745042	2026-11-22 04:14:25.763723	t	f	user	t	f	SELECT u.id user_id, current_timestamp granted_at FROM users u\nWHERE trust_level >= 3 AND (\n  :backfill OR u.id IN (:user_ids)\n)\n	t	t	4	4	f	t	\N	\N	f
+40	First Mention	\N	3	1	2026-11-03 05:07:09.938947	2026-11-22 04:14:27.970672	f	f	at	t	t	SELECT acting_user_id AS user_id, min(target_post_id) AS post_id, min(p.created_at) AS granted_at\nFROM user_actions\nJOIN posts p ON p.id = target_post_id\nJOIN topics t ON t.id = topic_id\nJOIN categories c on c.id = category_id\nWHERE action_type = 7\n  AND NOT read_restricted\n  AND p.deleted_at IS  NULL\n  AND t.deleted_at IS  NULL\n  AND t.visible\n  AND t.archetype <> 'private_message'\n  AND (:backfill OR p.id IN (:post_ids))\nGROUP BY acting_user_id\n	t	t	1	2	t	t	\N	\N	f
 \.
 
 
@@ -1115,9 +1118,11 @@ COPY public.category_featured_topics (category_id, topic_id, created_at, updated
 3	6	2026-11-03 05:07:24.658393	2026-11-03 05:07:24.658393	0	3
 3	4	2026-11-03 05:07:24.659598	2026-11-03 05:07:24.659598	1	4
 34	38	2026-11-21 23:56:45.406186	2026-11-21 23:56:45.406186	0	37
-4	5	2026-11-21 23:56:45.953064	2026-11-21 23:56:45.953064	0	46
-4	38	2026-11-21 23:56:45.954559	2026-11-21 23:56:45.954559	2	48
-4	35	2026-11-21 23:56:45.956119	2026-11-21 23:56:45.956119	3	49
+2	37	2026-11-22 04:14:29.161122	2026-11-22 04:14:29.161122	0	50
+4	5	2026-11-22 04:14:29.300395	2026-11-22 04:14:29.300395	0	51
+4	35	2026-11-22 04:14:29.307427	2026-11-22 04:14:29.307427	1	52
+4	41	2026-11-22 04:14:29.315138	2026-11-22 04:14:29.315138	2	53
+4	38	2026-11-22 04:14:29.32101	2026-11-22 04:14:29.32101	3	54
 \.
 
 
@@ -2144,6 +2149,8 @@ COPY public.directory_columns (id, name, automatic_position, icon, user_field_id
 5	topics_entered	5	\N	\N	t	5	2026-11-03 05:07:10.217712	0
 6	posts_read	6	\N	\N	t	6	2026-11-03 05:07:10.220021	0
 7	days_visited	7	\N	\N	t	7	2026-11-03 05:07:10.222839	0
+34	gamification_score	\N	\N	\N	f	8	2026-11-22 04:14:29.454892	2
+35	solutions	\N	\N	\N	f	9	2026-11-22 04:14:29.51301	2
 \.
 
 
@@ -2156,6 +2163,36 @@ ALTER TABLE public.directory_columns ENABLE TRIGGER ALL;
 ALTER TABLE public.directory_items DISABLE TRIGGER ALL;
 
 COPY public.directory_items (id, period_type, user_id, likes_received, likes_given, topics_entered, topic_count, post_count, created_at, updated_at, days_visited, posts_read, solutions, gamification_score) FROM stdin;
+1	1	5	0	0	0	0	0	\N	\N	0	0	0	0
+2	1	4	0	0	0	0	1	\N	\N	0	0	0	0
+3	1	2	1	1	0	2	1	\N	\N	2	0	0	0
+4	1	3	1	1	0	1	1	\N	\N	2	0	0	0
+5	1	1	0	0	0	1	1	\N	\N	2	0	0	0
+6	2	5	0	0	0	0	0	\N	\N	0	0	0	0
+7	2	4	0	0	0	0	1	\N	\N	0	0	0	0
+8	2	2	1	1	0	2	1	\N	\N	2	0	0	0
+9	2	3	1	1	0	1	1	\N	\N	2	0	0	0
+10	2	1	0	0	0	1	1	\N	\N	2	0	0	0
+11	3	5	0	0	0	0	0	\N	\N	0	0	0	0
+12	3	4	0	0	0	0	1	\N	\N	0	0	0	0
+13	3	2	1	1	0	2	1	\N	\N	2	0	0	0
+14	3	3	1	1	0	1	1	\N	\N	2	0	0	0
+15	3	1	0	0	0	1	1	\N	\N	2	0	0	0
+16	4	5	0	0	0	0	0	\N	\N	0	0	0	0
+17	4	4	0	0	0	0	1	\N	\N	0	0	0	0
+18	4	2	1	1	0	2	1	\N	\N	2	0	0	0
+19	4	3	1	1	0	1	1	\N	\N	2	0	0	0
+20	4	1	0	0	0	1	1	\N	\N	2	0	0	0
+21	5	5	0	0	0	0	0	\N	\N	0	0	0	0
+22	5	4	0	0	0	0	1	\N	\N	0	0	0	0
+23	5	2	1	1	0	2	1	\N	\N	1	0	0	0
+24	5	3	1	1	0	1	1	\N	\N	1	0	0	0
+25	5	1	0	0	0	1	1	\N	\N	1	0	0	0
+26	6	5	0	0	0	0	0	\N	\N	0	0	0	0
+27	6	4	0	0	0	0	1	\N	\N	0	0	0	0
+28	6	2	1	1	0	2	1	\N	\N	2	0	0	0
+29	6	3	1	1	0	1	1	\N	\N	2	0	0	0
+30	6	1	0	0	0	1	1	\N	\N	2	0	0	0
 \.
 
 
@@ -3710,6 +3747,20 @@ COPY public.notifications (notification_type, user_id, data, read, created_at, u
 1	3	{"topic_title":"Parity fixture: replies and posters","original_post_id":52,"original_post_type":1,"original_username":"user0","revision_number":null,"display_username":"user0","display_name":"User0"}	f	2026-11-21 23:56:51.581419	2026-11-21 23:56:51.581419	35	5	\N	f	17
 5	3	{"topic_title":"Parity fixture: replies and posters","original_post_id":36,"original_post_type":1,"original_username":"user0","revision_number":null,"display_username":"user0","display_name":"User1"}	f	2026-11-21 23:56:51.650292	2026-11-21 23:56:51.650292	35	2	2	f	18
 24	3	{"title":"Parity fixture: replies and posters","bookmarkable_url":"/t/parity-fixture-replies-and-posters/35/5","display_username":"user1","bookmark_name":"Parity fixture: reminder sent","bookmark_id":5,"bookmarkable_type":"Post","bookmarkable_id":52}	f	2026-11-21 23:56:54.712382	2026-11-21 23:56:54.712382	35	5	\N	t	19
+12	2	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user0"}	f	2026-11-22 04:14:25.153403	2026-11-22 04:14:25.153403	\N	\N	\N	f	20
+12	5	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user3"}	f	2026-11-22 04:14:25.217722	2026-11-22 04:14:25.217722	\N	\N	\N	f	21
+12	4	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user2"}	f	2026-11-22 04:14:25.238033	2026-11-22 04:14:25.238033	\N	\N	\N	f	22
+12	3	{"badge_id":1,"badge_name":"Basic","badge_slug":"basic","badge_title":false,"username":"user1"}	f	2026-11-22 04:14:25.256477	2026-11-22 04:14:25.256477	\N	\N	\N	f	23
+12	5	{"badge_id":2,"badge_name":"Member","badge_slug":"member","badge_title":false,"username":"user3"}	f	2026-11-22 04:14:25.448216	2026-11-22 04:14:25.448216	\N	\N	\N	f	24
+12	4	{"badge_id":2,"badge_name":"Member","badge_slug":"member","badge_title":false,"username":"user2"}	f	2026-11-22 04:14:25.492155	2026-11-22 04:14:25.492155	\N	\N	\N	f	25
+12	3	{"badge_id":2,"badge_name":"Member","badge_slug":"member","badge_title":false,"username":"user1"}	f	2026-11-22 04:14:25.539746	2026-11-22 04:14:25.539746	\N	\N	\N	f	26
+12	5	{"badge_id":3,"badge_name":"Regular","badge_slug":"regular","badge_title":true,"username":"user3"}	f	2026-11-22 04:14:25.706153	2026-11-22 04:14:25.706153	\N	\N	\N	f	27
+12	5	{"badge_id":4,"badge_name":"Leader","badge_slug":"leader","badge_title":true,"username":"user3"}	f	2026-11-22 04:14:25.790232	2026-11-22 04:14:25.790232	\N	\N	\N	f	28
+12	2	{"badge_id":11,"badge_name":"First Like","badge_slug":"first-like","badge_title":false,"username":"user0"}	f	2026-11-22 04:14:26.089354	2026-11-22 04:14:26.089354	\N	\N	\N	f	29
+12	3	{"badge_id":11,"badge_name":"First Like","badge_slug":"first-like","badge_title":false,"username":"user1"}	f	2026-11-22 04:14:26.18351	2026-11-22 04:14:26.18351	\N	\N	\N	f	30
+12	2	{"badge_id":5,"badge_name":"Welcome","badge_slug":"welcome","badge_title":false,"username":"user0"}	f	2026-11-22 04:14:26.662255	2026-11-22 04:14:26.662255	\N	\N	\N	f	31
+12	3	{"badge_id":5,"badge_name":"Welcome","badge_slug":"welcome","badge_title":false,"username":"user1"}	f	2026-11-22 04:14:26.747344	2026-11-22 04:14:26.747344	\N	\N	\N	f	32
+12	2	{"badge_id":40,"badge_name":"First Mention","badge_slug":"first-mention","badge_title":false,"username":"user0"}	f	2026-11-22 04:14:27.833032	2026-11-22 04:14:27.833032	\N	\N	\N	f	33
 \.
 
 
@@ -7249,8 +7300,8 @@ COPY public.site_settings (id, name, data_type, value, created_at, updated_at) F
 17	vapid_public_key_bytes	1	4|209|238|5|9|194|114|16|66|111|111|5|191|229|8|11|73|202|132|152|18|125|212|136|237|66|251|124|215|92|129|182|244|14|84|203|7|228|255|20|21|129|239|159|226|26|187|117|35|143|182|78|54|66|128|6|241|77|184|80|47|77|19|125|240	2026-11-03 05:07:24.858866	2026-11-21 23:55:49.394647
 18	vapid_base_url	1	http://localhost:3042	2026-11-03 05:07:24.865863	2026-11-21 23:55:49.40269
 34	download_remote_images_to_local	5	f	2026-11-21 23:56:44.794412	2026-11-21 23:56:44.794412
-35	login_required	5	f	2026-11-21 23:56:57.669694	2026-11-21 23:56:57.675733
 36	bypass_wizard_check	5	t	2026-11-21 23:56:57.681391	2026-11-21 23:56:57.681391
+35	login_required	5	f	2026-11-21 23:56:57.669694	2026-11-22 04:14:24.64845
 \.
 
 
@@ -7263,6 +7314,9 @@ ALTER TABLE public.site_settings ENABLE TRIGGER ALL;
 ALTER TABLE public.sitemaps DISABLE TRIGGER ALL;
 
 COPY public.sitemaps (id, name, last_posted_at, enabled) FROM stdin;
+1	recent	2026-11-21 23:56:51.518343	t
+2	news	2026-11-21 23:56:51.518343	t
+3	1	2026-11-21 23:56:51.518343	t
 \.
 
 
@@ -7762,6 +7816,17 @@ ALTER TABLE public.topic_groups ENABLE TRIGGER ALL;
 ALTER TABLE public.topic_hot_scores DISABLE TRIGGER ALL;
 
 COPY public.topic_hot_scores (id, topic_id, score, recent_likes, recent_posters, recent_first_bumped_at, created_at, updated_at) FROM stdin;
+4	3	0	0	0	\N	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+1	37	0	0	1	2026-11-21 23:56:45.180473	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+3	5	0	0	0	\N	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+11	4	0	0	0	\N	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+2	34	0	0	1	2026-11-21 23:56:44.259514	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+7	35	0.5495963255057066	1	4	2026-11-21 23:56:44.45838	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+10	6	0	0	0	\N	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+5	2	0	0	0	\N	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+8	41	0.21985607826286127	1	1	2026-11-21 23:56:45.971921	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+9	38	0	0	1	2026-11-21 23:56:45.425465	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
+6	1	0	0	0	\N	2026-11-22 04:14:32.158699	2026-11-22 04:14:32.158699
 \.
 
 
@@ -8384,6 +8449,24 @@ ALTER TABLE public.user_avatars ENABLE TRIGGER ALL;
 ALTER TABLE public.user_badges DISABLE TRIGGER ALL;
 
 COPY public.user_badges (id, badge_id, user_id, granted_at, granted_by_id, post_id, seq, featured_rank, created_at, is_favorite, notification_id) FROM stdin;
+4	1	1	2026-11-22 04:14:25.139308	-1	\N	0	\N	2026-11-22 04:14:25.139308	\N	\N
+1	1	2	2026-11-22 04:14:25.139308	-1	\N	0	\N	2026-11-22 04:14:25.139308	\N	20
+2	1	5	2026-11-22 04:14:25.139308	-1	\N	0	\N	2026-11-22 04:14:25.139308	\N	21
+3	1	4	2026-11-22 04:14:25.139308	-1	\N	0	\N	2026-11-22 04:14:25.139308	\N	22
+5	1	3	2026-11-22 04:14:25.139308	-1	\N	0	\N	2026-11-22 04:14:25.139308	\N	23
+8	2	1	2026-11-22 04:14:25.44377	-1	\N	0	\N	2026-11-22 04:14:25.44377	\N	\N
+6	2	5	2026-11-22 04:14:25.44377	-1	\N	0	\N	2026-11-22 04:14:25.44377	\N	24
+7	2	4	2026-11-22 04:14:25.44377	-1	\N	0	\N	2026-11-22 04:14:25.44377	\N	25
+9	2	3	2026-11-22 04:14:25.44377	-1	\N	0	\N	2026-11-22 04:14:25.44377	\N	26
+11	3	1	2026-11-22 04:14:25.695588	-1	\N	0	\N	2026-11-22 04:14:25.695588	\N	\N
+10	3	5	2026-11-22 04:14:25.695588	-1	\N	0	\N	2026-11-22 04:14:25.695588	\N	27
+13	4	1	2026-11-22 04:14:25.780075	-1	\N	0	\N	2026-11-22 04:14:25.780075	\N	\N
+12	4	5	2026-11-22 04:14:25.780075	-1	\N	0	\N	2026-11-22 04:14:25.780075	\N	28
+14	11	2	2026-11-21 23:56:51.597279	-1	36	0	\N	2026-11-22 04:14:26.065763	\N	29
+15	11	3	2026-11-21 23:56:46.052486	-1	46	0	\N	2026-11-22 04:14:26.065763	\N	30
+16	5	2	2026-11-21 23:56:46.052486	-1	46	0	\N	2026-11-22 04:14:26.651291	\N	31
+17	5	3	2026-11-21 23:56:51.597279	-1	36	0	\N	2026-11-22 04:14:26.651291	\N	32
+18	40	2	2026-11-21 23:56:51.452828	-1	52	0	\N	2026-11-22 04:14:27.812709	\N	33
 \.
 
 
@@ -8712,9 +8795,9 @@ COPY public.user_stats (user_id, topics_entered, time_read, days_visited, posts_
 -2	0	0	0	0	0	0	2026-11-03 05:07:25.688554	\N	\N	0	0	0	\N	0	0	0	2026-11-03 05:07:25.553795	0	2026-11-03 05:07:25.553795	\N	\N	0	0
 5	0	0	0	0	0	0	2026-11-03 05:08:01.056554	\N	\N	0	0	0	\N	0	0	0	2026-11-03 05:08:00.933794	0	2026-11-03 05:08:00.933794	\N	\N	0	0
 4	0	0	0	2	0	0	2026-11-03 05:08:00.780867	\N	2026-11-21 23:56:44.759506	1	0	0	\N	0	0	0	2026-11-03 05:08:00.660415	0	2026-11-03 05:08:00.660415	\N	\N	0	0
-2	0	0	1	3	1	1	2026-11-03 05:08:00.230026	\N	2026-11-21 23:56:44.45838	1	2	0	\N	0	0	0	2026-11-03 05:08:00.103863	0	2026-11-03 05:08:00.103863	\N	\N	0	0
-3	0	0	1	2	1	1	2026-11-03 05:08:00.524419	\N	2026-11-21 23:56:44.654494	1	1	0	\N	0	0	0	2026-11-03 05:08:00.403916	0	2026-11-03 05:08:00.403916	\N	\N	0	0
-1	0	0	1	6	0	0	2026-11-03 05:07:59.663488	\N	2026-11-21 23:56:45.037179	1	1	0	\N	0	0	0	2026-11-03 05:07:59.53259	0	2026-11-03 05:07:59.53259	\N	\N	0	0
+2	0	0	2	3	1	1	2026-11-03 05:08:00.230026	\N	2026-11-21 23:56:44.45838	1	2	0	\N	0	0	0	2026-11-03 05:08:00.103863	0	2026-11-03 05:08:00.103863	\N	\N	0	0
+3	0	0	2	2	1	1	2026-11-03 05:08:00.524419	\N	2026-11-21 23:56:44.654494	1	1	0	\N	0	0	0	2026-11-03 05:08:00.403916	0	2026-11-03 05:08:00.403916	\N	\N	0	0
+1	0	0	2	6	0	0	2026-11-03 05:07:59.663488	\N	2026-11-21 23:56:45.037179	1	1	0	\N	0	0	0	2026-11-03 05:07:59.53259	0	2026-11-03 05:07:59.53259	\N	\N	0	0
 \.
 
 
@@ -8772,6 +8855,9 @@ COPY public.user_visits (id, user_id, visited_at, posts_read, mobile, time_read)
 1	2	2026-11-21	0	f	0
 2	3	2026-11-21	0	f	0
 3	1	2026-11-21	0	f	0
+4	2	2026-11-22	0	f	0
+5	3	2026-11-22	0	f	0
+6	1	2026-11-22	0	f	0
 \.
 
 
@@ -8974,7 +9060,7 @@ SELECT pg_catalog.setval('public.admin_dashboard_sections_id_seq', 33, true);
 -- Name: admin_notices_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.admin_notices_id_seq', 1, false);
+SELECT pg_catalog.setval('public.admin_notices_id_seq', 3, true);
 
 
 --
@@ -9240,7 +9326,7 @@ SELECT pg_catalog.setval('public.badge_types_id_seq', 3, true);
 -- Name: badges_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.badges_id_seq', 48, true);
+SELECT pg_catalog.setval('public.badges_id_seq', 137, true);
 
 
 --
@@ -9380,7 +9466,7 @@ SELECT pg_catalog.setval('public.category_custom_fields_id_seq', 34, true);
 -- Name: category_featured_topics_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.category_featured_topics_id_seq', 49, true);
+SELECT pg_catalog.setval('public.category_featured_topics_id_seq', 54, true);
 
 
 --
@@ -9723,14 +9809,14 @@ SELECT pg_catalog.setval('public.direct_message_users_id_seq', 1, false);
 -- Name: directory_columns_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.directory_columns_id_seq', 33, true);
+SELECT pg_catalog.setval('public.directory_columns_id_seq', 35, true);
 
 
 --
 -- Name: directory_items_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.directory_items_id_seq', 1, false);
+SELECT pg_catalog.setval('public.directory_items_id_seq', 30, true);
 
 
 --
@@ -10528,7 +10614,7 @@ SELECT pg_catalog.setval('public.nested_view_post_stats_id_seq', 1, false);
 -- Name: notifications_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.notifications_id_seq', 19, true);
+SELECT pg_catalog.setval('public.notifications_id_seq', 33, true);
 
 
 --
@@ -10710,7 +10796,7 @@ SELECT pg_catalog.setval('public.posts_id_seq', 52, true);
 -- Name: problem_check_trackers_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.problem_check_trackers_id_seq', 24, true);
+SELECT pg_catalog.setval('public.problem_check_trackers_id_seq', 76, true);
 
 
 --
@@ -10836,7 +10922,7 @@ SELECT pg_catalog.setval('public.screened_urls_id_seq', 1, false);
 -- Name: search_logs_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.search_logs_id_seq', 1, false);
+SELECT pg_catalog.setval('public.search_logs_id_seq', 18, true);
 
 
 --
@@ -10934,7 +11020,7 @@ SELECT pg_catalog.setval('public.site_settings_id_seq', 36, true);
 -- Name: sitemaps_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.sitemaps_id_seq', 1, false);
+SELECT pg_catalog.setval('public.sitemaps_id_seq', 3, true);
 
 
 --
@@ -10990,7 +11076,7 @@ SELECT pg_catalog.setval('public.tag_localizations_id_seq', 1, false);
 -- Name: tag_search_data_tag_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.tag_search_data_tag_id_seq', 1, false);
+SELECT pg_catalog.setval('public.tag_search_data_tag_id_seq', 2, true);
 
 
 --
@@ -11116,7 +11202,7 @@ SELECT pg_catalog.setval('public.topic_groups_id_seq', 1, false);
 -- Name: topic_hot_scores_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_hot_scores_id_seq', 1, false);
+SELECT pg_catalog.setval('public.topic_hot_scores_id_seq', 11, true);
 
 
 --
@@ -11151,7 +11237,7 @@ SELECT pg_catalog.setval('public.topic_localizations_id_seq', 1, false);
 -- Name: topic_search_data_topic_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.topic_search_data_topic_id_seq', 1, false);
+SELECT pg_catalog.setval('public.topic_search_data_topic_id_seq', 44, true);
 
 
 --
@@ -11312,7 +11398,7 @@ SELECT pg_catalog.setval('public.user_auth_token_logs_id_seq', 1, false);
 -- Name: user_auth_tokens_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_auth_tokens_id_seq', 4, true);
 
 
 --
@@ -11326,7 +11412,7 @@ SELECT pg_catalog.setval('public.user_avatars_id_seq', 33, true);
 -- Name: user_badges_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_badges_id_seq', 1, false);
+SELECT pg_catalog.setval('public.user_badges_id_seq', 18, true);
 
 
 --
@@ -11466,7 +11552,7 @@ SELECT pg_catalog.setval('public.user_visit_daily_rollups_id_seq', 1, false);
 -- Name: user_visits_id_seq; Type: SEQUENCE SET; Schema: public; Owner: -
 --
 
-SELECT pg_catalog.setval('public.user_visits_id_seq', 3, true);
+SELECT pg_catalog.setval('public.user_visits_id_seq', 6, true);
 
 
 --

@@ -2,81 +2,10 @@
   "name": "periodical_rebake_message",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:22:46.925922",
-  "transaction_started_at": "2026-11-22T01:22:46.07192",
+  "started_at": "2026-11-22T05:43:02.969163",
+  "transaction_started_at": "2026-11-22T05:43:02.344802",
   "responses": [],
   "changes": {
-    "category_featured_topics": {
-      "inserted": [
-        {
-          "id": 50,
-          "rank": 0,
-          "topic_id": 37,
-          "created_at": "2026-11-22T01:22:46.935269",
-          "updated_at": "2026-11-22T01:22:46.935269",
-          "category_id": 2
-        },
-        {
-          "id": 51,
-          "rank": 0,
-          "topic_id": 5,
-          "created_at": "2026-11-22T01:22:46.948637",
-          "updated_at": "2026-11-22T01:22:46.948637",
-          "category_id": 4
-        },
-        {
-          "id": 52,
-          "rank": 1,
-          "topic_id": 35,
-          "created_at": "2026-11-22T01:22:46.94928",
-          "updated_at": "2026-11-22T01:22:46.94928",
-          "category_id": 4
-        },
-        {
-          "id": 53,
-          "rank": 2,
-          "topic_id": 41,
-          "created_at": "2026-11-22T01:22:46.949713",
-          "updated_at": "2026-11-22T01:22:46.949713",
-          "category_id": 4
-        },
-        {
-          "id": 54,
-          "rank": 3,
-          "topic_id": 38,
-          "created_at": "2026-11-22T01:22:46.950178",
-          "updated_at": "2026-11-22T01:22:46.950178",
-          "category_id": 4
-        }
-      ],
-      "deleted": [
-        {
-          "id": 46,
-          "rank": 0,
-          "topic_id": 5,
-          "created_at": "2026-11-21T23:56:45.953064",
-          "updated_at": "2026-11-21T23:56:45.953064",
-          "category_id": 4
-        },
-        {
-          "id": 48,
-          "rank": 2,
-          "topic_id": 38,
-          "created_at": "2026-11-21T23:56:45.954559",
-          "updated_at": "2026-11-21T23:56:45.954559",
-          "category_id": 4
-        },
-        {
-          "id": 49,
-          "rank": 3,
-          "topic_id": 35,
-          "created_at": "2026-11-21T23:56:45.956119",
-          "updated_at": "2026-11-21T23:56:45.956119",
-          "category_id": 4
-        }
-      ],
-      "updated": []
-    },
     "posts": {
       "inserted": [],
       "deleted": [],
@@ -2164,7 +2093,7 @@
             "locale": null,
             "user_id": 2,
             "version": 1,
-            "baked_at": "2026-11-22T01:22:46.981981",
+            "baked_at": "2026-11-22T05:43:03.021981",
             "topic_id": 42,
             "hidden_at": null,
             "post_type": 1,
@@ -3641,9 +3570,7 @@
     }
   },
   "jobs": [],
-  "next_ids": {
-    "category_featured_topics": 50
-  },
+  "next_ids": {},
   "setup": [
     "UPDATE posts SET baked_version = 1 WHERE id = 49"
   ],
@@ -3671,7 +3598,7 @@
   ],
   "recorded_from": {
     "case": "a45a16e822b38bac80abb46f889ddc8bbc9d4f7e93b32365569cf608b208a592",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

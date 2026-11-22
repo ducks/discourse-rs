@@ -2,8 +2,8 @@
   "name": "pending_reviewables_reminder_too_recent",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:22:39.015101",
-  "transaction_started_at": "2026-11-22T01:22:38.390603",
+  "started_at": "2026-11-22T05:42:55.152071",
+  "transaction_started_at": "2026-11-22T05:42:54.4702",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -20,7 +20,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "de10687c8f899b1a159de46614245f2a93893e4f0b2739c47890b3b8ed98b347",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

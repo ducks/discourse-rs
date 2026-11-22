@@ -56,15 +56,15 @@
       }
     }
   ],
-  "started_at": "2026-11-22T02:08:33.201498",
-  "transaction_started_at": "2026-11-22T02:08:30.80974",
+  "started_at": "2026-11-22T05:34:25.767856",
+  "transaction_started_at": "2026-11-22T05:34:23.472069",
   "responses": [
     {
       "status": 200,
       "body": {
-        "external_upload_identifier": "ZTNhN2ZlODEtYmE3My00NjcxLWJmMjUtMWQ0OGM0YjQ3Y2VmLmEwNmZkYTA4LWU3MTgtNGQ4Ny1hM2YwLWY3YTllYzdhYThjNHgxNzk1MzEzMzEzMjQ2NDU1Mzk1",
-        "key": "temp/default/8eac36ac6edf2472580ce897bcb395b1/8c56145b5595fca5d5c42dcf41968351.gz",
-        "unique_identifier": "7e7b3523-cf32-4833-90b1-1e4e7fdc763c"
+        "external_upload_identifier": "NzVmMGUyNGItYWI1Mi00OTBhLTg2ZjQtOTAyMzVhYTM1YTNiLmNjYzgyMjc1LWQ3Y2YtNGZiYS1hNDdhLTUyOTE1NWE5ODI1YngxNzk1MzI1NjY1ODM5MjA2Mzk0",
+        "key": "temp/default/6498d958eea17ae1bd546ce319f5de85/14620b6dcdd31e8614f55229d5b328f4.gz",
+        "unique_identifier": "f81957c5-2689-427a-a039-836f0964fc12"
       }
     },
     {
@@ -87,7 +87,7 @@
       "status": 200,
       "body": {
         "presigned_urls": {
-          "1": "http://s3-direct-backups-b.minio.localhost:9122/temp/default/8eac36ac6edf2472580ce897bcb395b1/8c56145b5595fca5d5c42dcf41968351.gz?partNumber=1&uploadId=ZTNhN2ZlODEtYmE3My00NjcxLWJmMjUtMWQ0OGM0YjQ3Y2VmLmEwNmZkYTA4LWU3MTgtNGQ4Ny1hM2YwLWY3YTllYzdhYThjNHgxNzk1MzEzMzEzMjQ2NDU1Mzk1&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261122%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261122T020833Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&X-Amz-Signature=a0a36b14a391f8e4527091604a3f3e10b4c9d249e208a0ff3ce308f5b4b2ebab"
+          "1": "http://s3-direct-backups-b.minio.localhost:9122/temp/default/6498d958eea17ae1bd546ce319f5de85/14620b6dcdd31e8614f55229d5b328f4.gz?partNumber=1&uploadId=NzVmMGUyNGItYWI1Mi00OTBhLTg2ZjQtOTAyMzVhYTM1YTNiLmNjYzgyMjc1LWQ3Y2YtNGZiYS1hNDdhLTUyOTE1NWE5ODI1YngxNzk1MzI1NjY1ODM5MjA2Mzk0&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261122%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261122T053425Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&X-Amz-Signature=12da3ade4be8362af0531a26fd21fea62bbe873adf7be5eca771caa403f2a28e"
         }
       }
     },
@@ -100,9 +100,9 @@
     {
       "status": 200,
       "body": {
-        "external_upload_identifier": "ZTNhN2ZlODEtYmE3My00NjcxLWJmMjUtMWQ0OGM0YjQ3Y2VmLmVmNTdhYThkLWJhNTgtNGJhYi1iNWY5LWFiMmRhMDNlNjkyNXgxNzk1MzEzMzEzMzY2MDk5MDU4",
-        "key": "temp/default/5961c875f5df9d9f386b1e876612a904/80acde0a68bbcd87b3c5e0c21efa33d0.gz",
-        "unique_identifier": "9c409fc0-f1dc-4f0e-9432-784de4314f2e"
+        "external_upload_identifier": "NzVmMGUyNGItYWI1Mi00OTBhLTg2ZjQtOTAyMzVhYTM1YTNiLmViNWU0ZmFlLWY5OTgtNDNiMy1iOWJkLWFjYzdjYTUwZWU0NXgxNzk1MzI1NjY1OTM2NDgwOTM1",
+        "key": "temp/default/42a89f6fbc530da9d97c8318b39b70cd/d105883bcb61c54051e19b0c3c7f008f.gz",
+        "unique_identifier": "03c36af2-5d96-4127-ac31-291c673e032d"
       }
     }
   ],
@@ -111,17 +111,17 @@
       "inserted": [
         {
           "id": 2,
-          "key": "temp/default/5961c875f5df9d9f386b1e876612a904/80acde0a68bbcd87b3c5e0c21efa33d0.gz",
+          "key": "temp/default/42a89f6fbc530da9d97c8318b39b70cd/d105883bcb61c54051e19b0c3c7f008f.gz",
           "status": 1,
           "filesize": 100,
           "multipart": true,
-          "created_at": "2026-11-22T02:08:33.369569",
-          "updated_at": "2026-11-22T02:08:33.369569",
+          "created_at": "2026-11-22T05:34:25.938818",
+          "updated_at": "2026-11-22T05:34:25.938818",
           "upload_type": "backup",
           "created_by_id": 1,
           "original_filename": "sneaky.tar.gz",
-          "unique_identifier": "9c409fc0-f1dc-4f0e-9432-784de4314f2e",
-          "external_upload_identifier": "ZTNhN2ZlODEtYmE3My00NjcxLWJmMjUtMWQ0OGM0YjQ3Y2VmLmVmNTdhYThkLWJhNTgtNGJhYi1iNWY5LWFiMmRhMDNlNjkyNXgxNzk1MzEzMzEzMzY2MDk5MDU4"
+          "unique_identifier": "03c36af2-5d96-4127-ac31-291c673e032d",
+          "external_upload_identifier": "NzVmMGUyNGItYWI1Mi00OTBhLTg2ZjQtOTAyMzVhYTM1YTNiLmViNWU0ZmFlLWY5OTgtNDNiMy1iOWJkLWFjYzdjYTUwZWU0NXgxNzk1MzI1NjY1OTM2NDgwOTM1"
         }
       ],
       "deleted": [],
@@ -133,33 +133,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "HoMwMcuamYCFtwmrz1jE1gjAJQ8=",
-            "created_at": "2026-11-22T02:08:31.809931",
-            "rotated_at": "2026-11-22T02:08:31.805618",
-            "updated_at": "2026-11-22T02:08:31.809931",
+            "auth_token": "V9nNIpA4zo2dWTOCvAxbe+Vga7Y=",
+            "created_at": "2026-11-22T05:34:24.465892",
+            "rotated_at": "2026-11-22T05:34:24.461935",
+            "updated_at": "2026-11-22T05:34:24.465892",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "HoMwMcuamYCFtwmrz1jE1gjAJQ8=",
+            "prev_auth_token": "V9nNIpA4zo2dWTOCvAxbe+Vga7Y=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T02:08:33.21017",
+            "id": 5,
+            "seen_at": "2026-11-22T05:34:25.775721",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "HoMwMcuamYCFtwmrz1jE1gjAJQ8=",
-            "created_at": "2026-11-22T02:08:31.809931",
-            "rotated_at": "2026-11-22T02:08:31.805618",
-            "updated_at": "2026-11-22T02:08:31.809931",
+            "auth_token": "V9nNIpA4zo2dWTOCvAxbe+Vga7Y=",
+            "created_at": "2026-11-22T05:34:24.465892",
+            "rotated_at": "2026-11-22T05:34:24.461935",
+            "updated_at": "2026-11-22T05:34:24.465892",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "HoMwMcuamYCFtwmrz1jE1gjAJQ8=",
+            "prev_auth_token": "V9nNIpA4zo2dWTOCvAxbe+Vga7Y=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -206,7 +206,7 @@
   ],
   "recorded_from": {
     "case": "4185a511d9bb1aefc3c8b7c428ba1778d5f17d0021e9f9e3ecdea6237a1a6087",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

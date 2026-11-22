@@ -2,8 +2,8 @@
   "name": "category_activity_rollups_rebuild",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:21:10.67649",
-  "transaction_started_at": "2026-11-22T01:21:10.081343",
+  "started_at": "2026-11-22T05:41:25.5818",
+  "transaction_started_at": "2026-11-22T05:41:24.94907",
   "responses": [],
   "changes": {
     "category_activity_daily_rollups": {
@@ -168,7 +168,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "9834584bdeccd7f232faa361747ad52f38ee18a8ff17469aa79da89d5184eb19",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

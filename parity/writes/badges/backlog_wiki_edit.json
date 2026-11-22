@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:17:52.48891",
-  "transaction_started_at": "2026-11-22T00:17:51.719423",
+  "started_at": "2026-11-22T04:36:46.736617",
+  "transaction_started_at": "2026-11-22T04:36:45.935266",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T00:17:52.557Z",
+          "updated_at": "2026-11-22T04:36:46.802Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -162,7 +162,57 @@
             "listable": true,
             "created_at": "2026-11-03T05:07:09.879098",
             "show_posts": false,
-            "updated_at": "2026-11-22T00:17:52.672187",
+            "updated_at": "2026-11-22T04:36:46.910929",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 1,
+            "target_posts": true,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          }
+        },
+        {
+          "before": {
+            "id": 40,
+            "icon": "at",
+            "name": "First Mention",
+            "query": "SELECT acting_user_id AS user_id, min(target_post_id) AS post_id, min(p.created_at) AS granted_at\nFROM user_actions\nJOIN posts p ON p.id = target_post_id\nJOIN topics t ON t.id = topic_id\nJOIN categories c on c.id = category_id\nWHERE action_type = 7\n  AND NOT read_restricted\n  AND p.deleted_at IS  NULL\n  AND t.deleted_at IS  NULL\n  AND t.visible\n  AND t.archetype <> 'private_message'\n  AND (:backfill OR p.id IN (:post_ids))\nGROUP BY acting_user_id\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 2,
+            "listable": true,
+            "created_at": "2026-11-03T05:07:09.938947",
+            "show_posts": true,
+            "updated_at": "2026-11-22T04:14:27.970672",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 0,
+            "target_posts": true,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          },
+          "after": {
+            "id": 40,
+            "icon": "at",
+            "name": "First Mention",
+            "query": "SELECT acting_user_id AS user_id, min(target_post_id) AS post_id, min(p.created_at) AS granted_at\nFROM user_actions\nJOIN posts p ON p.id = target_post_id\nJOIN topics t ON t.id = topic_id\nJOIN categories c on c.id = category_id\nWHERE action_type = 7\n  AND NOT read_restricted\n  AND p.deleted_at IS  NULL\n  AND t.deleted_at IS  NULL\n  AND t.visible\n  AND t.archetype <> 'private_message'\n  AND (:backfill OR p.id IN (:post_ids))\nGROUP BY acting_user_id\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 2,
+            "listable": true,
+            "created_at": "2026-11-03T05:07:09.938947",
+            "show_posts": true,
+            "updated_at": "2026-11-22T04:36:46.925776",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
@@ -193,13 +243,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 20,
+          "id": 34,
           "data": "{\"badge_id\":48,\"badge_name\":\"Wiki Editor\",\"badge_slug\":\"wiki-editor\",\"badge_title\":false,\"username\":\"user2\"}",
           "read": false,
           "user_id": 4,
           "topic_id": null,
-          "created_at": "2026-11-22T00:17:52.665955",
-          "updated_at": "2026-11-22T00:17:52.665955",
+          "created_at": "2026-11-22T04:36:46.904593",
+          "updated_at": "2026-11-22T04:36:46.904593",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
@@ -218,8 +268,8 @@
           "post_id": 36,
           "user_id": 4,
           "unlisted": false,
-          "created_at": "2026-11-22T00:17:52.564238",
-          "updated_at": "2026-11-22T00:17:52.564238",
+          "created_at": "2026-11-22T04:36:46.808062",
+          "updated_at": "2026-11-22T04:36:46.808062",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- A wiki edit by someone else, long enough for the wiki editor badge.\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- \"<p>A wiki edit by someone else, long enough for the wiki editor badge.</p>\"\n"
         }
       ],
@@ -321,7 +371,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-11-22T00:17:52.557592",
+            "baked_at": "2026-11-22T04:36:46.802077",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -334,7 +384,7 @@
             "self_edits": 0,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-11-22T00:17:52.557843",
+            "updated_at": "2026-11-22T04:36:46.802267",
             "word_count": 13,
             "action_code": null,
             "cook_method": 1,
@@ -354,7 +404,7 @@
             "last_editor_id": 4,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T00:17:52.506779",
+            "last_version_at": "2026-11-22T04:36:46.754523",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -374,33 +424,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "PDMdfUMsNgksBwse3NeOnRS69u0=",
-            "created_at": "2026-11-22T00:17:52.022465",
-            "rotated_at": "2026-11-22T00:17:52.021457",
-            "updated_at": "2026-11-22T00:17:52.022465",
+            "auth_token": "62rcC3HqP1taNGLk+OakMlw2Vjo=",
+            "created_at": "2026-11-22T04:36:46.257824",
+            "rotated_at": "2026-11-22T04:36:46.256899",
+            "updated_at": "2026-11-22T04:36:46.257824",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "PDMdfUMsNgksBwse3NeOnRS69u0=",
+            "prev_auth_token": "62rcC3HqP1taNGLk+OakMlw2Vjo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:17:52.494833",
+            "id": 5,
+            "seen_at": "2026-11-22T04:36:46.743107",
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "PDMdfUMsNgksBwse3NeOnRS69u0=",
-            "created_at": "2026-11-22T00:17:52.022465",
-            "rotated_at": "2026-11-22T00:17:52.021457",
-            "updated_at": "2026-11-22T00:17:52.022465",
+            "auth_token": "62rcC3HqP1taNGLk+OakMlw2Vjo=",
+            "created_at": "2026-11-22T04:36:46.257824",
+            "rotated_at": "2026-11-22T04:36:46.256899",
+            "updated_at": "2026-11-22T04:36:46.257824",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "PDMdfUMsNgksBwse3NeOnRS69u0=",
+            "prev_auth_token": "62rcC3HqP1taNGLk+OakMlw2Vjo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -411,17 +461,17 @@
     "user_badges": {
       "inserted": [
         {
-          "id": 1,
+          "id": 19,
           "seq": 0,
           "post_id": 36,
           "user_id": 4,
           "badge_id": 48,
-          "created_at": "2026-11-22T00:17:51.719423",
-          "granted_at": "2026-11-22T00:17:52.564238",
+          "created_at": "2026-11-22T04:36:45.935266",
+          "granted_at": "2026-11-22T04:36:46.808062",
           "is_favorite": null,
           "featured_rank": null,
           "granted_by_id": -1,
-          "notification_id": 20
+          "notification_id": 34
         }
       ],
       "deleted": [],
@@ -527,9 +577,9 @@
   ],
   "next_ids": {
     "draft_sequences": 1,
-    "notifications": 20,
+    "notifications": 34,
     "post_revisions": 1,
-    "user_badges": 1
+    "user_badges": 19
   },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",
@@ -554,7 +604,7 @@
   ],
   "recorded_from": {
     "case": "f135f26813a51f43f3aab2fd26d385ea28f27b08f96e30aff698afcffe78a654",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

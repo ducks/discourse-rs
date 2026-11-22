@@ -11,8 +11,8 @@
       "path": "/auth/discourse_id/revoke?identifier=abc&timestamp=soon&signature="
     }
   ],
-  "started_at": "2026-11-22T00:39:36.648047",
-  "transaction_started_at": "2026-11-22T00:39:35.945581",
+  "started_at": "2026-11-22T04:58:22.12724",
+  "transaction_started_at": "2026-11-22T04:58:21.508328",
   "responses": [
     {
       "status": 400,
@@ -37,7 +37,7 @@
   },
   "recorded_from": {
     "case": "cfb3a2bb3b7ee9b2424160143b790fdf6358cfccac5f26d7f9fcab4cddd6e255",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

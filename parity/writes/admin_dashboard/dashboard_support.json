@@ -166,8 +166,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:06:12.668354",
-  "transaction_started_at": "2026-11-22T00:06:11.843981",
+  "started_at": "2026-11-22T04:24:26.106808",
+  "transaction_started_at": "2026-11-22T04:24:25.068341",
   "responses": [
     {
       "status": 200,
@@ -845,14 +845,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "remote": false
                 }
               },
@@ -938,7 +938,26 @@
             }
           }
         ],
-        "problems": [],
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          }
+        ],
         "configuration": {
           "sections": [
             {
@@ -1702,14 +1721,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "remote": false
                 }
               },
@@ -1805,7 +1824,26 @@
             }
           }
         ],
-        "problems": [],
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          }
+        ],
         "configuration": {
           "sections": [
             {
@@ -2991,14 +3029,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "remote": false
                 }
               },
@@ -3089,7 +3127,26 @@
             }
           }
         ],
-        "problems": [],
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          }
+        ],
         "configuration": {
           "sections": [
             {
@@ -3849,14 +3906,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "remote": false
                 }
               },
@@ -3948,7 +4005,26 @@
             }
           }
         ],
-        "problems": [],
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          }
+        ],
         "configuration": {
           "sections": [
             {
@@ -4663,14 +4739,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 17457999872,
+                  "free_bytes": 13348139008,
                   "remote": false
                 }
               },
@@ -4678,7 +4754,26 @@
             }
           }
         ],
-        "problems": [],
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          }
+        ],
         "configuration": {
           "sections": [
             {
@@ -4729,9 +4824,9 @@
               ]
             }
           },
-          "created_at": "2026-11-22T00:06:13.222212",
+          "created_at": "2026-11-22T04:24:26.742973",
           "section_id": "support",
-          "updated_at": "2026-11-22T00:06:13.222212"
+          "updated_at": "2026-11-22T04:24:26.742973"
         }
       ],
       "deleted": [],
@@ -4751,9 +4846,9 @@
             "visible": true,
             "position": 1,
             "settings": {},
-            "created_at": "2026-11-22T00:06:13.222212",
+            "created_at": "2026-11-22T04:24:26.742973",
             "section_id": "highlights",
-            "updated_at": "2026-11-22T00:06:13.222212"
+            "updated_at": "2026-11-22T04:24:26.742973"
           }
         },
         {
@@ -4771,9 +4866,9 @@
             "visible": true,
             "position": 2,
             "settings": {},
-            "created_at": "2026-11-22T00:06:13.222212",
+            "created_at": "2026-11-22T04:24:26.742973",
             "section_id": "reports",
-            "updated_at": "2026-11-22T00:06:13.222212"
+            "updated_at": "2026-11-22T04:24:26.742973"
           }
         },
         {
@@ -4791,9 +4886,9 @@
             "visible": true,
             "position": 3,
             "settings": {},
-            "created_at": "2026-11-22T00:06:13.222212",
+            "created_at": "2026-11-22T04:24:26.742973",
             "section_id": "traffic",
-            "updated_at": "2026-11-22T00:06:13.222212"
+            "updated_at": "2026-11-22T04:24:26.742973"
           }
         },
         {
@@ -4811,9 +4906,9 @@
             "visible": true,
             "position": 4,
             "settings": {},
-            "created_at": "2026-11-22T00:06:13.222212",
+            "created_at": "2026-11-22T04:24:26.742973",
             "section_id": "engagement",
-            "updated_at": "2026-11-22T00:06:13.222212"
+            "updated_at": "2026-11-22T04:24:26.742973"
           }
         },
         {
@@ -4831,9 +4926,9 @@
             "visible": true,
             "position": 5,
             "settings": {},
-            "created_at": "2026-11-22T00:06:13.222212",
+            "created_at": "2026-11-22T04:24:26.742973",
             "section_id": "search",
-            "updated_at": "2026-11-22T00:06:13.222212"
+            "updated_at": "2026-11-22T04:24:26.742973"
           }
         },
         {
@@ -4851,9 +4946,9 @@
             "visible": true,
             "position": 6,
             "settings": {},
-            "created_at": "2026-11-22T00:06:13.222212",
+            "created_at": "2026-11-22T04:24:26.742973",
             "section_id": "system",
-            "updated_at": "2026-11-22T00:06:13.222212"
+            "updated_at": "2026-11-22T04:24:26.742973"
           }
         }
       ]
@@ -4864,33 +4959,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "UWDhzvZVgZZOcA8ntKE+OJqtB60=",
-            "created_at": "2026-11-22T00:06:12.216299",
-            "rotated_at": "2026-11-22T00:06:12.215456",
-            "updated_at": "2026-11-22T00:06:12.216299",
+            "auth_token": "Inx8qDRI17yVWdBHEZ+ToTytx08=",
+            "created_at": "2026-11-22T04:24:25.567893",
+            "rotated_at": "2026-11-22T04:24:25.566549",
+            "updated_at": "2026-11-22T04:24:25.567893",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "UWDhzvZVgZZOcA8ntKE+OJqtB60=",
+            "prev_auth_token": "Inx8qDRI17yVWdBHEZ+ToTytx08=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:06:12.674635",
+            "id": 5,
+            "seen_at": "2026-11-22T04:24:26.113877",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "UWDhzvZVgZZOcA8ntKE+OJqtB60=",
-            "created_at": "2026-11-22T00:06:12.216299",
-            "rotated_at": "2026-11-22T00:06:12.215456",
-            "updated_at": "2026-11-22T00:06:12.216299",
+            "auth_token": "Inx8qDRI17yVWdBHEZ+ToTytx08=",
+            "created_at": "2026-11-22T04:24:25.567893",
+            "rotated_at": "2026-11-22T04:24:25.566549",
+            "updated_at": "2026-11-22T04:24:25.567893",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "UWDhzvZVgZZOcA8ntKE+OJqtB60=",
+            "prev_auth_token": "Inx8qDRI17yVWdBHEZ+ToTytx08=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -4911,10 +5006,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T00:06:13.225881",
+          "created_at": "2026-11-22T04:24:26.746592",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:06:13.225881",
+          "updated_at": "2026-11-22T04:24:26.746592",
           "category_id": null,
           "custom_type": "update_dashboard_sections",
           "reviewable_id": null,
@@ -4977,7 +5072,7 @@
   ],
   "recorded_from": {
     "case": "68dd6eae906eb5d3bee0660ab3cfec02b82d96f973b1cdc76c00cb3c87e620c6",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -20,8 +20,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:06:11.451827",
-  "transaction_started_at": "2026-11-22T00:06:10.700612",
+  "started_at": "2026-11-22T04:24:24.681231",
+  "transaction_started_at": "2026-11-22T04:24:23.914865",
   "responses": [
     {
       "status": 200,
@@ -699,14 +699,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 17458315264,
+                  "free_bytes": 13348458496,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 17458315264,
+                  "free_bytes": 13348458496,
                   "remote": false
                 }
               },
@@ -794,7 +794,26 @@
             }
           }
         ],
-        "problems": [],
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          }
+        ],
         "configuration": {
           "sections": [
             {
@@ -922,33 +941,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "FfB6OjxrOvXTVuH+U3Bs4GHBxyU=",
-            "created_at": "2026-11-22T00:06:10.972767",
-            "rotated_at": "2026-11-22T00:06:10.971942",
-            "updated_at": "2026-11-22T00:06:10.972767",
+            "auth_token": "TW+Xx3AJn0oacmBdQ0tOWLnEI8w=",
+            "created_at": "2026-11-22T04:24:24.229038",
+            "rotated_at": "2026-11-22T04:24:24.228235",
+            "updated_at": "2026-11-22T04:24:24.229038",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "FfB6OjxrOvXTVuH+U3Bs4GHBxyU=",
+            "prev_auth_token": "TW+Xx3AJn0oacmBdQ0tOWLnEI8w=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:06:11.457151",
+            "id": 5,
+            "seen_at": "2026-11-22T04:24:24.687136",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "FfB6OjxrOvXTVuH+U3Bs4GHBxyU=",
-            "created_at": "2026-11-22T00:06:10.972767",
-            "rotated_at": "2026-11-22T00:06:10.971942",
-            "updated_at": "2026-11-22T00:06:10.972767",
+            "auth_token": "TW+Xx3AJn0oacmBdQ0tOWLnEI8w=",
+            "created_at": "2026-11-22T04:24:24.229038",
+            "rotated_at": "2026-11-22T04:24:24.228235",
+            "updated_at": "2026-11-22T04:24:24.229038",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "FfB6OjxrOvXTVuH+U3Bs4GHBxyU=",
+            "prev_auth_token": "TW+Xx3AJn0oacmBdQ0tOWLnEI8w=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -974,7 +993,7 @@
   ],
   "recorded_from": {
     "case": "4ecf48a3904ed5f13b08d472a4dc2d0ee17a953e0ef0bf0b6f547a92cd37f7c6",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

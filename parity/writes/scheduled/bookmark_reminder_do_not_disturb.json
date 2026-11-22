@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_do_not_disturb",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:20:59.295955",
-  "transaction_started_at": "2026-11-22T01:20:58.54041",
+  "started_at": "2026-11-22T05:41:13.887428",
+  "transaction_started_at": "2026-11-22T05:41:13.105113",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -18,9 +18,9 @@
             "user_id": 3,
             "created_at": "2026-11-21T23:56:54.662129",
             "updated_at": "2026-11-21T23:56:54.662129",
-            "reminder_at": "2026-11-22T01:15:58.54041",
+            "reminder_at": "2026-11-22T05:36:13.105113",
             "bookmarkable_id": 36,
-            "reminder_set_at": "2026-11-21T01:20:58.54041",
+            "reminder_set_at": "2026-11-21T05:41:13.105113",
             "bookmarkable_type": "Post",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 0
@@ -31,12 +31,12 @@
             "pinned": null,
             "user_id": 3,
             "created_at": "2026-11-21T23:56:54.662129",
-            "updated_at": "2026-11-22T01:20:59.304426",
-            "reminder_at": "2026-11-22T01:15:58.54041",
+            "updated_at": "2026-11-22T05:41:13.896433",
+            "reminder_at": "2026-11-22T05:36:13.105113",
             "bookmarkable_id": 36,
             "reminder_set_at": null,
             "bookmarkable_type": "Post",
-            "reminder_last_sent_at": "2026-11-22T01:20:59.303657",
+            "reminder_last_sent_at": "2026-11-22T05:41:13.895363",
             "auto_delete_preference": 0
           }
         }
@@ -45,13 +45,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 20,
+          "id": 34,
           "data": "{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"display_username\":\"user1\",\"bookmark_name\":\"Parity fixture: with a reminder\",\"bookmark_id\":3,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":36}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-22T01:20:59.302879",
-          "updated_at": "2026-11-22T01:20:59.302879",
+          "created_at": "2026-11-22T05:41:13.894578",
+          "updated_at": "2026-11-22T05:41:13.894578",
           "post_number": 2,
           "high_priority": true,
           "post_action_id": null,
@@ -65,7 +65,7 @@
       "inserted": [
         {
           "id": 1,
-          "notification_id": 20
+          "notification_id": 34
         }
       ],
       "deleted": [],
@@ -186,7 +186,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 20,
+    "notifications": 34,
     "shelved_notifications": 1
   },
   "setup": [
@@ -202,7 +202,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "cef3516fcf5268cb3e414a1a4f3d14ca30494f4606610d4efa289672d485184a",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

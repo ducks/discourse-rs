@@ -14,8 +14,8 @@
       "path": "/posts/35/revisions/latest.json"
     }
   ],
-  "started_at": "2026-11-22T01:46:31.31263",
-  "transaction_started_at": "2026-11-22T01:46:30.460467",
+  "started_at": "2026-11-22T06:06:42.361825",
+  "transaction_started_at": "2026-11-22T06:06:41.540996",
   "responses": [
     {
       "status": 200,
@@ -33,7 +33,7 @@
     {
       "status": 200,
       "body": {
-        "created_at": "2026-11-22T01:46:31.370Z",
+        "created_at": "2026-11-22T06:06:42.417Z",
         "post_id": 35,
         "previous_hidden": false,
         "current_hidden": false,
@@ -112,8 +112,8 @@
           "post_id": 35,
           "user_id": 1,
           "unlisted": false,
-          "created_at": "2026-11-22T01:46:31.370444",
-          "updated_at": "2026-11-22T01:46:31.370444",
+          "created_at": "2026-11-22T06:06:42.417629",
+          "updated_at": "2026-11-22T06:06:42.417629",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntags:\n- - guide\n- []\n"
         }
       ],
@@ -163,24 +163,6 @@
         {
           "before": {
             "locale": "en",
-            "post_id": 52,
-            "version": 5,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 52,
-            "version": 0,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
             "post_id": 37,
             "version": 5,
             "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
@@ -211,6 +193,24 @@
             "version": 0,
             "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
             "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 5,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 0,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
             "private_message": false
           }
         }
@@ -300,7 +300,7 @@
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T01:46:31.339961",
+            "updated_at": "2026-11-22T06:06:42.387589",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -320,7 +320,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T01:46:31.334188",
+            "last_version_at": "2026-11-22T06:06:42.38202",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -503,33 +503,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "5w5qcI3+A4BxAsTOnSrogQlHdTs=",
-            "created_at": "2026-11-22T01:46:30.830366",
-            "rotated_at": "2026-11-22T01:46:30.829556",
-            "updated_at": "2026-11-22T01:46:30.830366",
+            "auth_token": "MjAwJfWvIRwBGFoME1lfl8lv3po=",
+            "created_at": "2026-11-22T06:06:41.896071",
+            "rotated_at": "2026-11-22T06:06:41.895181",
+            "updated_at": "2026-11-22T06:06:41.896071",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "5w5qcI3+A4BxAsTOnSrogQlHdTs=",
+            "prev_auth_token": "MjAwJfWvIRwBGFoME1lfl8lv3po=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T01:46:31.321167",
+            "id": 5,
+            "seen_at": "2026-11-22T06:06:42.369503",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "5w5qcI3+A4BxAsTOnSrogQlHdTs=",
-            "created_at": "2026-11-22T01:46:30.830366",
-            "rotated_at": "2026-11-22T01:46:30.829556",
-            "updated_at": "2026-11-22T01:46:30.830366",
+            "auth_token": "MjAwJfWvIRwBGFoME1lfl8lv3po=",
+            "created_at": "2026-11-22T06:06:41.896071",
+            "rotated_at": "2026-11-22T06:06:41.895181",
+            "updated_at": "2026-11-22T06:06:41.896071",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "5w5qcI3+A4BxAsTOnSrogQlHdTs=",
+            "prev_auth_token": "MjAwJfWvIRwBGFoME1lfl8lv3po=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -552,7 +552,7 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
@@ -578,7 +578,7 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
@@ -654,7 +654,7 @@
   },
   "recorded_from": {
     "case": "709c09a41d6f4fa765b7aa0ed4e772bd4f4880a6c6494286af7917e16442dc99",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

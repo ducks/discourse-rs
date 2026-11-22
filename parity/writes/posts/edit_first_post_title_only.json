@@ -18,8 +18,8 @@
       "path": "/posts/35/revisions/latest.json"
     }
   ],
-  "started_at": "2026-11-22T01:00:30.337534",
-  "transaction_started_at": "2026-11-22T01:00:29.523274",
+  "started_at": "2026-11-22T05:19:37.140086",
+  "transaction_started_at": "2026-11-22T05:19:36.177241",
   "responses": [
     {
       "status": 200,
@@ -34,7 +34,7 @@
           "post_number": 1,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T01:00:30.389Z",
+          "updated_at": "2026-11-22T05:19:37.198Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -112,7 +112,7 @@
     {
       "status": 200,
       "body": {
-        "created_at": "2026-11-22T01:00:30.443Z",
+        "created_at": "2026-11-22T05:19:37.246Z",
         "post_id": 35,
         "previous_hidden": false,
         "current_hidden": false,
@@ -165,8 +165,8 @@
           "post_id": 35,
           "user_id": 2,
           "unlisted": false,
-          "created_at": "2026-11-22T01:00:30.443168",
-          "updated_at": "2026-11-22T01:00:30.443168",
+          "created_at": "2026-11-22T05:19:37.246745",
+          "updated_at": "2026-11-22T05:19:37.246745",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Parity fixture: replies and posters'\n- 'Parity fixture: a title edited through posts update'\n"
         }
       ],
@@ -180,6 +180,24 @@
         {
           "before": {
             "locale": "en",
+            "post_id": 52,
+            "version": 5,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 0,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
             "post_id": 36,
             "version": 5,
             "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
@@ -228,24 +246,6 @@
             "version": 0,
             "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
             "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
-            "post_id": 52,
-            "version": 5,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 52,
-            "version": 0,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
             "private_message": false
           }
         },
@@ -353,7 +353,7 @@
             "self_edits": 1,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T01:00:30.389411",
+            "updated_at": "2026-11-22T05:19:37.19819",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -373,7 +373,7 @@
             "last_editor_id": 2,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T01:00:30.360252",
+            "last_version_at": "2026-11-22T05:19:37.16791",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -486,7 +486,7 @@
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T01:00:30.420186",
+            "updated_at": "2026-11-22T05:19:37.227835",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -527,33 +527,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "PGgvFftQXyDsCUdSDWXM4Edz2zs=",
-            "created_at": "2026-11-22T01:00:29.862721",
-            "rotated_at": "2026-11-22T01:00:29.861401",
-            "updated_at": "2026-11-22T01:00:29.862721",
+            "auth_token": "NiZbxusOhjVt357yyo/+4r/LOq0=",
+            "created_at": "2026-11-22T05:19:36.503545",
+            "rotated_at": "2026-11-22T05:19:36.502667",
+            "updated_at": "2026-11-22T05:19:36.503545",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "PGgvFftQXyDsCUdSDWXM4Edz2zs=",
+            "prev_auth_token": "NiZbxusOhjVt357yyo/+4r/LOq0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T01:00:30.344424",
+            "id": 5,
+            "seen_at": "2026-11-22T05:19:37.14858",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "PGgvFftQXyDsCUdSDWXM4Edz2zs=",
-            "created_at": "2026-11-22T01:00:29.862721",
-            "rotated_at": "2026-11-22T01:00:29.861401",
-            "updated_at": "2026-11-22T01:00:29.862721",
+            "auth_token": "NiZbxusOhjVt357yyo/+4r/LOq0=",
+            "created_at": "2026-11-22T05:19:36.503545",
+            "rotated_at": "2026-11-22T05:19:36.502667",
+            "updated_at": "2026-11-22T05:19:36.503545",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "PGgvFftQXyDsCUdSDWXM4Edz2zs=",
+            "prev_auth_token": "NiZbxusOhjVt357yyo/+4r/LOq0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -576,7 +576,7 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -602,7 +602,7 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -659,7 +659,7 @@
   },
   "recorded_from": {
     "case": "74d09a423c1289e63b74cd6009086f34db9a401c0c257929817e96dd8ac695fa",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

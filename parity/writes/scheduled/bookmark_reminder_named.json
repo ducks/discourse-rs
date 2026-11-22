@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_named",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:21:00.179302",
-  "transaction_started_at": "2026-11-22T01:20:59.569148",
+  "started_at": "2026-11-22T05:41:14.91531",
+  "transaction_started_at": "2026-11-22T05:41:14.151949",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -18,9 +18,9 @@
             "user_id": 3,
             "created_at": "2026-11-21T23:56:54.662129",
             "updated_at": "2026-11-21T23:56:54.662129",
-            "reminder_at": "2026-11-22T01:15:59.569148",
+            "reminder_at": "2026-11-22T05:36:14.151949",
             "bookmarkable_id": 36,
-            "reminder_set_at": "2026-11-21T01:20:59.569148",
+            "reminder_set_at": "2026-11-21T05:41:14.151949",
             "bookmarkable_type": "Post",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 0
@@ -31,12 +31,12 @@
             "pinned": null,
             "user_id": 3,
             "created_at": "2026-11-21T23:56:54.662129",
-            "updated_at": "2026-11-22T01:21:00.18815",
-            "reminder_at": "2026-11-22T01:15:59.569148",
+            "updated_at": "2026-11-22T05:41:14.923203",
+            "reminder_at": "2026-11-22T05:36:14.151949",
             "bookmarkable_id": 36,
             "reminder_set_at": null,
             "bookmarkable_type": "Post",
-            "reminder_last_sent_at": "2026-11-22T01:21:00.187006",
+            "reminder_last_sent_at": "2026-11-22T05:41:14.922381",
             "auto_delete_preference": 0
           }
         }
@@ -45,13 +45,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 20,
+          "id": 34,
           "data": "{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"display_username\":\"user1\",\"bookmark_name\":\"read later\",\"bookmark_id\":3,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":36}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-22T01:21:00.186294",
-          "updated_at": "2026-11-22T01:21:00.186294",
+          "created_at": "2026-11-22T05:41:14.921522",
+          "updated_at": "2026-11-22T05:41:14.921522",
           "post_number": 2,
           "high_priority": true,
           "post_action_id": null,
@@ -176,7 +176,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 20
+    "notifications": 34
   },
   "setup": [
     "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', auto_delete_preference = 0, name = 'read later' WHERE id = 3"
@@ -190,7 +190,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "7f2e271cc4060a42e369d0f80279e925b85786be51de6f5537fc5820b0eb7663",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

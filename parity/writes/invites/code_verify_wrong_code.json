@@ -27,14 +27,14 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:47:19.584089",
-  "transaction_started_at": "2026-11-22T00:47:18.78848",
+  "started_at": "2026-11-22T05:06:14.546629",
+  "transaction_started_at": "2026-11-22T05:06:13.809188",
   "responses": [
     {
       "status": 200,
       "body": {
-        "value": "d822bb0d360a71204f90784c5fad1216",
-        "challenge": "1f50e53c827bc3a2dd6a86b5510aa318",
+        "value": "fe467f74bd0161ce201469d666b403a6",
+        "challenge": "7119fc84073af6f365edafdc4811d447",
         "expires_in": 3600
       }
     },
@@ -59,10 +59,10 @@
           "email": "newbie@example.com",
           "purpose": 0,
           "attempts": 1,
-          "code_hash": "4b2f04e7a6f5b40844b58ad445618b5a7782c27a2933198d2d7f91e761756d89",
-          "created_at": "2026-11-22T00:47:19.651658",
-          "expires_at": "2026-11-22T00:57:19.651443",
-          "updated_at": "2026-11-22T00:47:19.651658",
+          "code_hash": "54c3a684af2ac4a6f2eea577310cbd31299b668d982755b0a3119cb7b6679d7e",
+          "created_at": "2026-11-22T05:06:14.600365",
+          "expires_at": "2026-11-22T05:16:14.600168",
+          "updated_at": "2026-11-22T05:06:14.600365",
           "consumed_at": null
         }
       ],
@@ -75,7 +75,7 @@
       "send_email_login_code",
       {
         "to_address": "newbie@example.com",
-        "code": "516619"
+        "code": "851383"
       }
     ]
   ],
@@ -92,7 +92,7 @@
   ],
   "recorded_from": {
     "case": "da5ec3e8a8ed761b601d6be9761a3a6435553893ebf6590b30f9dcf1cb6250e4",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

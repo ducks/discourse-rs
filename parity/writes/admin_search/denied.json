@@ -11,8 +11,8 @@
       "path": "/admin/search.json"
     }
   ],
-  "started_at": "2026-11-22T00:12:08.084619",
-  "transaction_started_at": "2026-11-22T00:12:07.257667",
+  "started_at": "2026-11-22T04:30:47.406854",
+  "transaction_started_at": "2026-11-22T04:30:46.474232",
   "responses": [
     {
       "status": 403,
@@ -40,33 +40,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "7oRfwCI8j0oneBnPQy5hJIW1itE=",
-            "created_at": "2026-11-22T00:12:07.522373",
-            "rotated_at": "2026-11-22T00:12:07.521542",
-            "updated_at": "2026-11-22T00:12:07.522373",
+            "auth_token": "kmFpIT4P6Ez2XqcxVZzCQ8z8gTo=",
+            "created_at": "2026-11-22T04:30:46.830312",
+            "rotated_at": "2026-11-22T04:30:46.828994",
+            "updated_at": "2026-11-22T04:30:46.830312",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "7oRfwCI8j0oneBnPQy5hJIW1itE=",
+            "prev_auth_token": "kmFpIT4P6Ez2XqcxVZzCQ8z8gTo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:12:08.098611",
+            "id": 5,
+            "seen_at": "2026-11-22T04:30:47.41492",
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "7oRfwCI8j0oneBnPQy5hJIW1itE=",
-            "created_at": "2026-11-22T00:12:07.522373",
-            "rotated_at": "2026-11-22T00:12:07.521542",
-            "updated_at": "2026-11-22T00:12:07.522373",
+            "auth_token": "kmFpIT4P6Ez2XqcxVZzCQ8z8gTo=",
+            "created_at": "2026-11-22T04:30:46.830312",
+            "rotated_at": "2026-11-22T04:30:46.828994",
+            "updated_at": "2026-11-22T04:30:46.830312",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "7oRfwCI8j0oneBnPQy5hJIW1itE=",
+            "prev_auth_token": "kmFpIT4P6Ez2XqcxVZzCQ8z8gTo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -82,7 +82,7 @@
   ],
   "recorded_from": {
     "case": "3fee3eb266315497f6b87ef4c823f297c73c1500c36bde8c00ac83cd6f18d3dd",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

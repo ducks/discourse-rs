@@ -55,8 +55,8 @@
       "path": "/auth/lti/callback?state=abc&id_token=x"
     }
   ],
-  "started_at": "2026-11-22T00:39:53.657732",
-  "transaction_started_at": "2026-11-22T00:39:53.030291",
+  "started_at": "2026-11-22T04:58:39.559904",
+  "transaction_started_at": "2026-11-22T04:58:38.776343",
   "responses": [
     {
       "status": 302,
@@ -67,7 +67,7 @@
     },
     {
       "status": 200,
-      "body": "<html>\n  <head>\n    <script src=\"http://localhost:3042/plugins/discourse-lti/javascripts/submit-on-load-lti.js\" nonce=\"ZK3Twk7fE1S40pj4LFGZrNINX\"></script>\n  </head>\n  <body>\n    <form method=\"post\">\n      <input type='hidden' name='samesite' value='true'/>\n      <input type='hidden' name='iss' value='https:&#x2F;&#x2F;lms.example'/>\n<input type='hidden' name='login_hint' value='u&#x27;s hint'/>\n<input type='hidden' name='target_link_uri' value='&#x2F;latest'/>\n      <noscript>\n        <input type=\"submit\" value=\"Continue\"/>\n      </noscript>\n    </form>\n  </body>\n</html>\n",
+      "body": "<html>\n  <head>\n    <script src=\"http://localhost:3042/plugins/discourse-lti/javascripts/submit-on-load-lti.js\" nonce=\"ejMeP7guJXkjGLJh6gKcTQYED\"></script>\n  </head>\n  <body>\n    <form method=\"post\">\n      <input type='hidden' name='samesite' value='true'/>\n      <input type='hidden' name='iss' value='https:&#x2F;&#x2F;lms.example'/>\n<input type='hidden' name='login_hint' value='u&#x27;s hint'/>\n<input type='hidden' name='target_link_uri' value='&#x2F;latest'/>\n      <noscript>\n        <input type=\"submit\" value=\"Continue\"/>\n      </noscript>\n    </form>\n  </body>\n</html>\n",
       "headers": {
         "Content-Type": "text/html; charset=UTF-8"
       }
@@ -102,9 +102,9 @@
     },
     {
       "status": 302,
-      "body": "Redirecting to https://lms.example/auth?client_id=client-b&login_hint=u1&lti_message_hint=m&nonce=6fd7638df90b347c30413afaa50e2b77&prompt=none&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flti%2Fcallback&response_mode=form_post&response_type=id_token&scope=openid&state=76d1a2e4210905cf5aa3c02e10017e21...",
+      "body": "Redirecting to https://lms.example/auth?client_id=client-b&login_hint=u1&lti_message_hint=m&nonce=cd0573182f6d9bad5da72de415ec681b&prompt=none&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flti%2Fcallback&response_mode=form_post&response_type=id_token&scope=openid&state=bf8dae81cb818ea52ae12abfc88369c2...",
       "headers": {
-        "Location": "/auth?client_id=client-b&login_hint=u1&lti_message_hint=m&nonce=6fd7638df90b347c30413afaa50e2b77&prompt=none&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flti%2Fcallback&response_mode=form_post&response_type=id_token&scope=openid&state=76d1a2e4210905cf5aa3c02e10017e21"
+        "Location": "/auth?client_id=client-b&login_hint=u1&lti_message_hint=m&nonce=cd0573182f6d9bad5da72de415ec681b&prompt=none&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flti%2Fcallback&response_mode=form_post&response_type=id_token&scope=openid&state=bf8dae81cb818ea52ae12abfc88369c2"
       }
     },
     {
@@ -144,7 +144,7 @@
     },
     {
       "status": 200,
-      "body": "<html>\n  <head>\n    <script src=\"http://localhost:3042/plugins/discourse-lti/javascripts/submit-on-load-lti.js\" nonce=\"UK6iMiNVVsoYshi41L2Oebi4q\"></script>\n  </head>\n  <body>\n    <form method=\"post\">\n      <input type='hidden' name='samesite' value='true'/>\n      <input type='hidden' name='state' value='abc'/>\n<input type='hidden' name='id_token' value='x'/>\n      <noscript>\n        <input type=\"submit\" value=\"Continue\"/>\n      </noscript>\n    </form>\n  </body>\n</html>\n",
+      "body": "<html>\n  <head>\n    <script src=\"http://localhost:3042/plugins/discourse-lti/javascripts/submit-on-load-lti.js\" nonce=\"sLH8ucq5COLhu4k99Nz2PlWUp\"></script>\n  </head>\n  <body>\n    <form method=\"post\">\n      <input type='hidden' name='samesite' value='true'/>\n      <input type='hidden' name='state' value='abc'/>\n<input type='hidden' name='id_token' value='x'/>\n      <noscript>\n        <input type=\"submit\" value=\"Continue\"/>\n      </noscript>\n    </form>\n  </body>\n</html>\n",
       "headers": {
         "Content-Type": "text/html; charset=UTF-8"
       }
@@ -167,7 +167,7 @@
   ],
   "recorded_from": {
     "case": "a583a9e6b99a3c4db022321a85398cb49a6c3f84ad54949f358050eec068df36",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

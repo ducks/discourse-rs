@@ -36,8 +36,8 @@
       "path": "/admin/api/web_hooks/9001/events/failed_redeliver.json"
     }
   ],
-  "started_at": "2026-11-22T02:04:54.333801",
-  "transaction_started_at": "2026-11-22T02:04:53.489386",
+  "started_at": "2026-11-22T06:24:46.865509",
+  "transaction_started_at": "2026-11-22T06:24:46.042986",
   "responses": [
     {
       "status": 200,
@@ -51,7 +51,7 @@
           "status": 200,
           "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"6\",\"content-type\":\"text/plain\"}",
           "response_body": "thanks",
-          "duration": 33,
+          "duration": 32,
           "created_at": "2026-10-02T10:00:00.000Z",
           "redelivering": false
         }
@@ -98,9 +98,9 @@
       "inserted": [
         {
           "id": 1,
-          "created_at": "2026-11-22T02:04:54.427947",
+          "created_at": "2026-11-22T06:24:46.96214",
           "processing": false,
-          "updated_at": "2026-11-22T02:04:54.427947",
+          "updated_at": "2026-11-22T06:24:46.96214",
           "web_hook_event_id": 9003
         }
       ],
@@ -113,33 +113,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "2Q/MzqkCjFA9eDhNHiIQBUa/AVQ=",
-            "created_at": "2026-11-22T02:04:53.880242",
-            "rotated_at": "2026-11-22T02:04:53.879409",
-            "updated_at": "2026-11-22T02:04:53.880242",
+            "auth_token": "60sqLy81aAmAoehYgoSYxper2KY=",
+            "created_at": "2026-11-22T06:24:46.413193",
+            "rotated_at": "2026-11-22T06:24:46.412334",
+            "updated_at": "2026-11-22T06:24:46.413193",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "2Q/MzqkCjFA9eDhNHiIQBUa/AVQ=",
+            "prev_auth_token": "60sqLy81aAmAoehYgoSYxper2KY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T02:04:54.340101",
+            "id": 5,
+            "seen_at": "2026-11-22T06:24:46.871709",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "2Q/MzqkCjFA9eDhNHiIQBUa/AVQ=",
-            "created_at": "2026-11-22T02:04:53.880242",
-            "rotated_at": "2026-11-22T02:04:53.879409",
-            "updated_at": "2026-11-22T02:04:53.880242",
+            "auth_token": "60sqLy81aAmAoehYgoSYxper2KY=",
+            "created_at": "2026-11-22T06:24:46.413193",
+            "rotated_at": "2026-11-22T06:24:46.412334",
+            "updated_at": "2026-11-22T06:24:46.413193",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "2Q/MzqkCjFA9eDhNHiIQBUa/AVQ=",
+            "prev_auth_token": "60sqLy81aAmAoehYgoSYxper2KY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -169,9 +169,9 @@
             "status": 200,
             "headers": "{\"Accept\":\"*/*\",\"Content-Type\":\"application/json\",\"X-Discourse-Event-Id\":\"9001\",\"X-Discourse-Event-Type\":\"post\"}",
             "payload": "{\"post\":{\"id\":1}}",
-            "duration": 33,
+            "duration": 32,
             "created_at": "2026-10-02T10:00:00",
-            "updated_at": "2026-11-22T02:04:54.384281",
+            "updated_at": "2026-11-22T06:24:46.915486",
             "web_hook_id": 9001,
             "response_body": "thanks",
             "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"6\",\"content-type\":\"text/plain\"}"
@@ -203,7 +203,7 @@
             "secret": "",
             "status": 1,
             "created_at": "2026-10-01T10:00:00",
-            "updated_at": "2026-11-22T02:04:54.387616",
+            "updated_at": "2026-11-22T06:24:46.91953",
             "payload_url": "http://fixtures.localhost:8099/hook",
             "content_type": 1,
             "wildcard_web_hook": false,
@@ -241,7 +241,7 @@
   },
   "recorded_from": {
     "case": "83329374548fd8f9f741a05d83336be17bb107a52303fa4145389d3c3416c3b7",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -23,14 +23,14 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:34:07.653849",
-  "transaction_started_at": "2026-11-22T00:34:07.051896",
+  "started_at": "2026-11-22T04:52:50.661005",
+  "transaction_started_at": "2026-11-22T04:52:50.055443",
   "responses": [
     {
       "status": 302,
       "body": "",
       "headers": {
-        "Location": "/sso?sso=bm9uY2U9NmVjODczNjczMWRmMWYzN2NlNzA0ZGNkN2Y0OGRmNDcmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=562dd570c7607a6787fadb083cbe04b3ab633b32917337b1408f2cca0ca5dde6"
+        "Location": "/sso?sso=bm9uY2U9YmMyZTZkMTYyZTFhY2U5YTZhMDZjYzljMGEzMGQ5ZTMmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=63d59838a30f13536a111008e53cde18aa71e814dd568d9999b8f293cebdad97"
       }
     },
     {
@@ -78,9 +78,9 @@
           "subject": null,
           "group_id": 9411,
           "new_value": null,
-          "created_at": "2026-11-22T00:34:08.715397",
+          "created_at": "2026-11-22T04:52:51.694279",
           "prev_value": null,
-          "updated_at": "2026-11-22T00:34:08.715397",
+          "updated_at": "2026-11-22T04:52:51.694279",
           "acting_user_id": -1,
           "target_user_id": 4
         },
@@ -90,9 +90,9 @@
           "subject": null,
           "group_id": 9412,
           "new_value": null,
-          "created_at": "2026-11-22T00:34:08.721593",
+          "created_at": "2026-11-22T04:52:51.700576",
           "prev_value": null,
-          "updated_at": "2026-11-22T00:34:08.721593",
+          "updated_at": "2026-11-22T04:52:51.700576",
           "acting_user_id": -1,
           "target_user_id": 4
         }
@@ -107,9 +107,9 @@
           "owner": false,
           "user_id": 4,
           "group_id": 9411,
-          "created_at": "2026-11-22T00:34:08.712744",
-          "updated_at": "2026-11-22T00:34:08.712744",
-          "first_unread_pm_at": "2026-11-22T00:34:07.051896",
+          "created_at": "2026-11-22T04:52:51.690627",
+          "updated_at": "2026-11-22T04:52:51.690627",
+          "first_unread_pm_at": "2026-11-22T04:52:50.055443",
           "notification_level": 3
         }
       ],
@@ -119,9 +119,9 @@
           "owner": false,
           "user_id": 4,
           "group_id": 9412,
-          "created_at": "2026-11-20T00:34:07.051896",
-          "updated_at": "2026-11-20T00:34:07.051896",
-          "first_unread_pm_at": "2026-11-22T00:34:07.051896",
+          "created_at": "2026-11-20T04:52:50.055443",
+          "updated_at": "2026-11-20T04:52:50.055443",
+          "first_unread_pm_at": "2026-11-22T04:52:50.055443",
           "notification_level": 3
         }
       ],
@@ -143,9 +143,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-20T00:34:07.051896",
+            "created_at": "2026-11-20T04:52:50.055443",
             "flair_icon": null,
-            "updated_at": "2026-11-20T00:34:07.051896",
+            "updated_at": "2026-11-20T04:52:50.055443",
             "user_count": 0,
             "flair_color": null,
             "imap_server": null,
@@ -197,9 +197,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-20T00:34:07.051896",
+            "created_at": "2026-11-20T04:52:50.055443",
             "flair_icon": null,
-            "updated_at": "2026-11-20T00:34:07.051896",
+            "updated_at": "2026-11-20T04:52:50.055443",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -253,9 +253,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-20T00:34:07.051896",
+            "created_at": "2026-11-20T04:52:50.055443",
             "flair_icon": null,
-            "updated_at": "2026-11-20T00:34:07.051896",
+            "updated_at": "2026-11-20T04:52:50.055443",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -307,9 +307,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-20T00:34:07.051896",
+            "created_at": "2026-11-20T04:52:50.055443",
             "flair_icon": null,
-            "updated_at": "2026-11-20T00:34:07.051896",
+            "updated_at": "2026-11-20T04:52:50.055443",
             "user_count": 0,
             "flair_color": null,
             "imap_server": null,
@@ -361,8 +361,8 @@
           "before": {
             "id": 9401,
             "user_id": 4,
-            "created_at": "2026-11-20T00:34:07.051896",
-            "updated_at": "2026-11-20T00:34:07.051896",
+            "created_at": "2026-11-20T04:52:50.055443",
+            "updated_at": "2026-11-20T04:52:50.055443",
             "external_id": "ext-user2",
             "last_payload": "old",
             "external_name": "User Two",
@@ -375,10 +375,10 @@
           "after": {
             "id": 9401,
             "user_id": 4,
-            "created_at": "2026-11-20T00:34:07.051896",
-            "updated_at": "2026-11-22T00:34:08.707326",
+            "created_at": "2026-11-20T04:52:50.055443",
+            "updated_at": "2026-11-22T04:52:51.684869",
             "external_id": "ext-user2",
-            "last_payload": "add_groups=Connected%2Cmissing&bio=Hello+from+**connect**&email=user2.moved%40example.com&external_id=ext-user2&nonce=6ec8736731df1f37ce704dcd7f48df47&remove_groups=leaving&username=user2",
+            "last_payload": "add_groups=Connected%2Cmissing&bio=Hello+from+**connect**&email=user2.moved%40example.com&external_id=ext-user2&nonce=bc2e6d162e1ace9a6a06cc9c0a30d9e3&remove_groups=leaving&username=user2",
             "external_name": null,
             "external_email": "user2.moved@example.com",
             "external_username": "user2",
@@ -397,10 +397,10 @@
           "action": "generate",
           "user_id": 4,
           "client_ip": "127.0.0.1",
-          "auth_token": "alXbEzFxdGRuYOY4oQ+QL6f92eQ=",
-          "created_at": "2026-11-22T00:34:08.740715",
+          "auth_token": "usdAxI9K9SOAeDwmgUgSmeGgIRU=",
+          "created_at": "2026-11-22T04:52:51.719944",
           "user_agent": null,
-          "user_auth_token_id": 1
+          "user_auth_token_id": 5
         }
       ],
       "deleted": [],
@@ -409,17 +409,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 1,
+          "id": 5,
           "seen_at": null,
           "user_id": 4,
           "client_ip": "127.0.0.1",
-          "auth_token": "alXbEzFxdGRuYOY4oQ+QL6f92eQ=",
-          "created_at": "2026-11-22T00:34:08.738107",
-          "rotated_at": "2026-11-22T00:34:08.737331",
-          "updated_at": "2026-11-22T00:34:08.738107",
+          "auth_token": "usdAxI9K9SOAeDwmgUgSmeGgIRU=",
+          "created_at": "2026-11-22T04:52:51.717466",
+          "rotated_at": "2026-11-22T04:52:51.716702",
+          "updated_at": "2026-11-22T04:52:51.717466",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "alXbEzFxdGRuYOY4oQ+QL6f92eQ=",
+          "prev_auth_token": "usdAxI9K9SOAeDwmgUgSmeGgIRU=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": false,
           "impersonation_expires_at": null
@@ -448,7 +448,7 @@
             "primary": true,
             "user_id": 4,
             "created_at": "2026-11-03T05:08:00.663991",
-            "updated_at": "2026-11-22T00:34:07.694752",
+            "updated_at": "2026-11-22T04:52:50.701545",
             "normalized_email": "user2moved@example.com"
           }
         }
@@ -550,7 +550,7 @@
             "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-22T00:34:07.690315",
+            "updated_at": "2026-11-22T04:52:50.696987",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
@@ -591,7 +591,7 @@
     "group_histories": 1,
     "group_users": 38,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 1
+    "user_auth_tokens": 5
   },
   "settings": {
     "discourse_connect_url": "https://idp.example.com/sso",
@@ -611,7 +611,7 @@
   ],
   "recorded_from": {
     "case": "c93a156c9e936cc342c6463a2b93aed020a8567018d20c1247019e8262fbc819",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

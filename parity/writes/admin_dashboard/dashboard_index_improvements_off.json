@@ -11,8 +11,8 @@
       "path": "/admin/dashboard/site-traffic-explorer.json"
     }
   ],
-  "started_at": "2026-11-22T00:06:05.210472",
-  "transaction_started_at": "2026-11-22T00:06:04.432728",
+  "started_at": "2026-11-22T04:24:18.349536",
+  "transaction_started_at": "2026-11-22T04:24:17.448444",
   "responses": [
     {
       "status": 200,
@@ -702,18 +702,56 @@
               "logging_enabled": true,
               "kpis": {
                 "total_searches": {
-                  "value": 0,
+                  "value": 4,
                   "previous_value": 0
                 },
                 "no_result_rate": {
-                  "value": null,
+                  "value": 100,
                   "previous_value": null,
-                  "exceeds_threshold": false
+                  "exceeds_threshold": true
                 }
               },
-              "trending": [],
+              "trending": [
+                {
+                  "term": "fixture",
+                  "searches": 1
+                },
+                {
+                  "term": "general",
+                  "searches": 1
+                },
+                {
+                  "term": "parity",
+                  "searches": 1
+                },
+                {
+                  "term": "staff",
+                  "searches": 1
+                }
+              ],
               "trending_period": "monthly",
-              "content_gaps": [],
+              "content_gaps": [
+                {
+                  "term": "fixture",
+                  "searches": 1,
+                  "status": "no_match"
+                },
+                {
+                  "term": "general",
+                  "searches": 1,
+                  "status": "no_match"
+                },
+                {
+                  "term": "parity",
+                  "searches": 1,
+                  "status": "no_match"
+                },
+                {
+                  "term": "staff",
+                  "searches": 1,
+                  "status": "no_match"
+                }
+              ],
               "search_type": "non_staff_only"
             }
           },
@@ -732,14 +770,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 17461645312,
+                  "free_bytes": 13349859328,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 17461645312,
+                  "free_bytes": 13349859328,
                   "remote": false
                 }
               },
@@ -747,7 +785,26 @@
             }
           }
         ],
-        "problems": [],
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          }
+        ],
         "configuration": {
           "sections": [
             {
@@ -795,33 +852,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Z6ipEA3c/SPCDlfBeel6cOFG+yI=",
-            "created_at": "2026-11-22T00:06:04.728656",
-            "rotated_at": "2026-11-22T00:06:04.727903",
-            "updated_at": "2026-11-22T00:06:04.728656",
+            "auth_token": "9hzJbf4LuODwOsgoqCMdzC1sRRE=",
+            "created_at": "2026-11-22T04:24:17.756339",
+            "rotated_at": "2026-11-22T04:24:17.755551",
+            "updated_at": "2026-11-22T04:24:17.756339",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Z6ipEA3c/SPCDlfBeel6cOFG+yI=",
+            "prev_auth_token": "9hzJbf4LuODwOsgoqCMdzC1sRRE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:06:05.21633",
+            "id": 5,
+            "seen_at": "2026-11-22T04:24:18.355864",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Z6ipEA3c/SPCDlfBeel6cOFG+yI=",
-            "created_at": "2026-11-22T00:06:04.728656",
-            "rotated_at": "2026-11-22T00:06:04.727903",
-            "updated_at": "2026-11-22T00:06:04.728656",
+            "auth_token": "9hzJbf4LuODwOsgoqCMdzC1sRRE=",
+            "created_at": "2026-11-22T04:24:17.756339",
+            "rotated_at": "2026-11-22T04:24:17.755551",
+            "updated_at": "2026-11-22T04:24:17.756339",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Z6ipEA3c/SPCDlfBeel6cOFG+yI=",
+            "prev_auth_token": "9hzJbf4LuODwOsgoqCMdzC1sRRE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -844,7 +901,7 @@
   },
   "recorded_from": {
     "case": "e60cb69f55bfc9f20a54c375de666d5a08d9e163e5eb5e1db4c191935e60c265",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

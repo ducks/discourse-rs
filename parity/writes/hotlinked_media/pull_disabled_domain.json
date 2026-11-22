@@ -2,8 +2,8 @@
   "name": "pull_disabled_domain",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T00:45:31.100069",
-  "transaction_started_at": "2026-11-22T00:45:30.157687",
+  "started_at": "2026-11-22T05:04:23.927221",
+  "transaction_started_at": "2026-11-22T05:04:22.950312",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -27,7 +27,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "0bbcbb077095e79b5cc759af8316f3933312f4dd67e712428f269b906ba94dd1",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

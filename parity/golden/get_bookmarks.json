@@ -1,7 +1,7 @@
 {
   "request": "GET /bookmarks",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T02:19:48.649344491+00:00",
+  "recorded_at": "2026-11-22T06:30:47.127934274+00:00",
   "status": 403,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"errors\":[\"You need to be logged in to do that.\"],\"error_type\":\"not_logged_in\"}"

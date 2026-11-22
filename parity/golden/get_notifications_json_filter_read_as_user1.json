@@ -1,7 +1,7 @@
 {
   "request": "GET /notifications.json?filter=read as=user1",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T02:20:48.201254599+00:00",
+  "recorded_at": "2026-11-22T06:31:46.729227838+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"notifications\":[],\"total_rows_notifications\":0,\"seen_notification_id\":0,\"load_more_notifications\":\"/notifications?filter=read&limit=60&offset=60&username=user1\"}"

@@ -2,20 +2,20 @@
   "name": "mass_award",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T02:04:41.879275",
-  "transaction_started_at": "2026-11-22T02:04:41.251354",
+  "started_at": "2026-11-22T06:24:34.377094",
+  "transaction_started_at": "2026-11-22T06:24:33.71849",
   "responses": [],
   "changes": {
     "notifications": {
       "inserted": [
         {
-          "id": 20,
+          "id": 34,
           "data": "{\"badge_id\":6,\"badge_name\":\"Nice Reply\",\"badge_slug\":\"nice-reply\",\"badge_title\":false,\"username\":\"user1\"}",
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-22T02:04:41.883481",
-          "updated_at": "2026-11-22T02:04:41.883481",
+          "created_at": "2026-11-22T06:24:34.381189",
+          "updated_at": "2026-11-22T06:24:34.381189",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
@@ -28,34 +28,146 @@
     "user_badges": {
       "inserted": [
         {
-          "id": 1,
+          "id": 19,
           "seq": 1,
           "post_id": null,
           "user_id": 3,
           "badge_id": 6,
-          "created_at": "2026-11-22T02:04:41.881509",
-          "granted_at": "2026-11-22T02:04:41.881509",
+          "created_at": "2026-11-22T06:24:34.379256",
+          "granted_at": "2026-11-22T06:24:34.379256",
           "is_favorite": null,
-          "featured_rank": 1,
+          "featured_rank": 2,
           "granted_by_id": -1,
-          "notification_id": 20
+          "notification_id": 34
         },
         {
-          "id": 2,
+          "id": 20,
           "seq": 2,
           "post_id": null,
           "user_id": 3,
           "badge_id": 6,
-          "created_at": "2026-11-22T02:04:41.881509",
-          "granted_at": "2026-11-22T02:04:41.881509",
+          "created_at": "2026-11-22T06:24:34.379256",
+          "granted_at": "2026-11-22T06:24:34.379256",
           "is_favorite": null,
-          "featured_rank": 1,
+          "featured_rank": 2,
           "granted_by_id": -1,
-          "notification_id": 20
+          "notification_id": 34
         }
       ],
       "deleted": [],
       "updated": [
+        {
+          "before": {
+            "id": 5,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 3,
+            "badge_id": 1,
+            "created_at": "2026-11-22T04:14:25.139308",
+            "granted_at": "2026-11-22T04:14:25.139308",
+            "is_favorite": null,
+            "featured_rank": null,
+            "granted_by_id": -1,
+            "notification_id": 23
+          },
+          "after": {
+            "id": 5,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 3,
+            "badge_id": 1,
+            "created_at": "2026-11-22T04:14:25.139308",
+            "granted_at": "2026-11-22T04:14:25.139308",
+            "is_favorite": null,
+            "featured_rank": 5,
+            "granted_by_id": -1,
+            "notification_id": 23
+          }
+        },
+        {
+          "before": {
+            "id": 9,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 3,
+            "badge_id": 2,
+            "created_at": "2026-11-22T04:14:25.44377",
+            "granted_at": "2026-11-22T04:14:25.44377",
+            "is_favorite": null,
+            "featured_rank": null,
+            "granted_by_id": -1,
+            "notification_id": 26
+          },
+          "after": {
+            "id": 9,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 3,
+            "badge_id": 2,
+            "created_at": "2026-11-22T04:14:25.44377",
+            "granted_at": "2026-11-22T04:14:25.44377",
+            "is_favorite": null,
+            "featured_rank": 1,
+            "granted_by_id": -1,
+            "notification_id": 26
+          }
+        },
+        {
+          "before": {
+            "id": 15,
+            "seq": 0,
+            "post_id": 46,
+            "user_id": 3,
+            "badge_id": 11,
+            "created_at": "2026-11-22T04:14:26.065763",
+            "granted_at": "2026-11-21T23:56:46.052486",
+            "is_favorite": null,
+            "featured_rank": null,
+            "granted_by_id": -1,
+            "notification_id": 30
+          },
+          "after": {
+            "id": 15,
+            "seq": 0,
+            "post_id": 46,
+            "user_id": 3,
+            "badge_id": 11,
+            "created_at": "2026-11-22T04:14:26.065763",
+            "granted_at": "2026-11-21T23:56:46.052486",
+            "is_favorite": null,
+            "featured_rank": 3,
+            "granted_by_id": -1,
+            "notification_id": 30
+          }
+        },
+        {
+          "before": {
+            "id": 17,
+            "seq": 0,
+            "post_id": 36,
+            "user_id": 3,
+            "badge_id": 5,
+            "created_at": "2026-11-22T04:14:26.651291",
+            "granted_at": "2026-11-21T23:56:51.597279",
+            "is_favorite": null,
+            "featured_rank": 2,
+            "granted_by_id": -1,
+            "notification_id": 32
+          },
+          "after": {
+            "id": 17,
+            "seq": 0,
+            "post_id": 36,
+            "user_id": 3,
+            "badge_id": 5,
+            "created_at": "2026-11-22T04:14:26.651291",
+            "granted_at": "2026-11-21T23:56:51.597279",
+            "is_favorite": null,
+            "featured_rank": 4,
+            "granted_by_id": -1,
+            "notification_id": 32
+          }
+        },
         {
           "before": {
             "id": 950,
@@ -79,9 +191,9 @@
             "created_at": "2026-10-02T10:00:00",
             "granted_at": "2026-10-02T10:00:00",
             "is_favorite": null,
-            "featured_rank": 1,
+            "featured_rank": 2,
             "granted_by_id": -1,
-            "notification_id": 20
+            "notification_id": 34
           }
         }
       ]
@@ -89,8 +201,8 @@
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 20,
-    "user_badges": 1
+    "notifications": 34,
+    "user_badges": 19
   },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",
@@ -114,7 +226,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "239151418e14a41692b453d6a137c5adb0c2530f177f515fc8ffa364514beae8",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

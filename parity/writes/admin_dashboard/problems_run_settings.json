@@ -7,8 +7,8 @@
       "path": "/admin/dashboard/problems.json"
     }
   ],
-  "started_at": "2026-11-22T00:06:29.360742",
-  "transaction_started_at": "2026-11-22T00:06:28.615186",
+  "started_at": "2026-11-22T04:24:44.285244",
+  "transaction_started_at": "2026-11-22T04:24:43.441014",
   "responses": [
     {
       "status": 200,
@@ -17,32 +17,32 @@
           {
             "id": 1,
             "priority": "low",
-            "message": "The content-security-policy feature has been disabled. This is an important security feature, and should never be disabled in production environments. <a href=\"/admin/site_settings/category/all_results?filter=content_security_policy\">Re-enable it here</a>.",
-            "identifier": "content_security_policy_disabled"
-          },
-          {
-            "id": 2,
-            "priority": "low",
             "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
             "identifier": "force_https"
           },
           {
-            "id": 3,
-            "priority": "low",
-            "message": "Your Discourse is currently using Google Analytics 3, which will no longer be supported after July 2023. <a href=\"https://meta.discourse.org/t/260498\">Upgrade to Google Analytics 4</a> now to continue receiving valuable insights and analytics for your website's performance.",
-            "identifier": "google_analytics_version"
-          },
-          {
-            "id": 4,
+            "id": 2,
             "priority": "low",
             "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
             "identifier": "host_names"
           },
           {
-            "id": 5,
+            "id": 3,
             "priority": "low",
             "message": "Your server is running in development mode.",
             "identifier": "rails_env"
+          },
+          {
+            "id": 4,
+            "priority": "low",
+            "message": "The content-security-policy feature has been disabled. This is an important security feature, and should never be disabled in production environments. <a href=\"/admin/site_settings/category/all_results?filter=content_security_policy\">Re-enable it here</a>.",
+            "identifier": "content_security_policy_disabled"
+          },
+          {
+            "id": 5,
+            "priority": "low",
+            "message": "Your Discourse is currently using Google Analytics 3, which will no longer be supported after July 2023. <a href=\"https://meta.discourse.org/t/260498\">Upgrade to Google Analytics 4</a> now to continue receiving valuable insights and analytics for your website's performance.",
+            "identifier": "google_analytics_version"
           }
         ]
       }
@@ -52,42 +52,6 @@
     "admin_notices": {
       "inserted": [
         {
-          "id": 1,
-          "details": {
-            "target": "__NULL__",
-            "base_path": ""
-          },
-          "subject": 0,
-          "priority": 0,
-          "created_at": "2026-11-22T00:06:29.385193",
-          "identifier": "content_security_policy_disabled",
-          "updated_at": "2026-11-22T00:06:29.385193"
-        },
-        {
-          "id": 2,
-          "details": {
-            "target": "__NULL__",
-            "base_path": ""
-          },
-          "subject": 0,
-          "priority": 0,
-          "created_at": "2026-11-22T00:06:29.425829",
-          "identifier": "force_https",
-          "updated_at": "2026-11-22T00:06:29.425829"
-        },
-        {
-          "id": 3,
-          "details": {
-            "target": "__NULL__",
-            "base_path": ""
-          },
-          "subject": 0,
-          "priority": 0,
-          "created_at": "2026-11-22T00:06:29.448989",
-          "identifier": "google_analytics_version",
-          "updated_at": "2026-11-22T00:06:29.448989"
-        },
-        {
           "id": 4,
           "details": {
             "target": "__NULL__",
@@ -95,22 +59,21 @@
           },
           "subject": 0,
           "priority": 0,
-          "created_at": "2026-11-22T00:06:29.474213",
-          "identifier": "host_names",
-          "updated_at": "2026-11-22T00:06:29.474213"
+          "created_at": "2026-11-22T04:24:44.319486",
+          "identifier": "content_security_policy_disabled",
+          "updated_at": "2026-11-22T04:24:44.319486"
         },
         {
           "id": 5,
           "details": {
-            "env": "development",
             "target": "__NULL__",
             "base_path": ""
           },
           "subject": 0,
           "priority": 0,
-          "created_at": "2026-11-22T00:06:29.631679",
-          "identifier": "rails_env",
-          "updated_at": "2026-11-22T00:06:29.631679"
+          "created_at": "2026-11-22T04:24:44.383489",
+          "identifier": "google_analytics_version",
+          "updated_at": "2026-11-22T04:24:44.383489"
         }
       ],
       "deleted": [],
@@ -119,7 +82,83 @@
     "problem_check_trackers": {
       "inserted": [
         {
-          "id": 31,
+          "id": 77,
+          "blips": 1,
+          "target": "__NULL__",
+          "details": {
+            "base_path": ""
+          },
+          "identifier": "content_security_policy_disabled",
+          "ignored_at": null,
+          "last_run_at": "2026-11-22T04:24:44.311137",
+          "next_run_at": null,
+          "last_problem_at": "2026-11-22T04:24:44.311137",
+          "last_success_at": null
+        },
+        {
+          "id": 78,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "email_polling_errored_recently",
+          "ignored_at": null,
+          "last_run_at": "2026-11-22T04:24:44.32598",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-11-22T04:24:44.32598"
+        },
+        {
+          "id": 79,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "facebook_config",
+          "ignored_at": null,
+          "last_run_at": "2026-11-22T04:24:44.334053",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-11-22T04:24:44.334053"
+        },
+        {
+          "id": 80,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "failing_emails",
+          "ignored_at": null,
+          "last_run_at": "2026-11-22T04:24:44.342097",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-11-22T04:24:44.342097"
+        },
+        {
+          "id": 81,
+          "blips": 1,
+          "target": "__NULL__",
+          "details": {
+            "base_path": ""
+          },
+          "identifier": "force_https",
+          "ignored_at": null,
+          "last_run_at": "2026-11-22T04:24:44.353516",
+          "next_run_at": null,
+          "last_problem_at": "2026-11-22T04:24:44.353516",
+          "last_success_at": null
+        },
+        {
+          "id": 82,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "github_config",
+          "ignored_at": null,
+          "last_run_at": "2026-11-22T04:24:44.365624",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-11-22T04:24:44.365624"
+        },
+        {
+          "id": 83,
           "blips": 1,
           "target": "__NULL__",
           "details": {
@@ -127,25 +166,25 @@
           },
           "identifier": "google_analytics_version",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.442982",
+          "last_run_at": "2026-11-22T04:24:44.377585",
           "next_run_at": null,
-          "last_problem_at": "2026-11-22T00:06:29.442982",
+          "last_problem_at": "2026-11-22T04:24:44.377585",
           "last_success_at": null
         },
         {
-          "id": 32,
+          "id": 84,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "google_oauth2_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.457817",
+          "last_run_at": "2026-11-22T04:24:44.390831",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.457817"
+          "last_success_at": "2026-11-22T04:24:44.390831"
         },
         {
-          "id": 33,
+          "id": 85,
           "blips": 1,
           "target": "__NULL__",
           "details": {
@@ -153,85 +192,85 @@
           },
           "identifier": "host_names",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.468235",
+          "last_run_at": "2026-11-22T04:24:44.400741",
           "next_run_at": null,
-          "last_problem_at": "2026-11-22T00:06:29.468235",
+          "last_problem_at": "2026-11-22T04:24:44.400741",
           "last_success_at": null
         },
         {
-          "id": 34,
+          "id": 86,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "image_magick",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.482831",
+          "last_run_at": "2026-11-22T04:24:44.414376",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.482831"
+          "last_success_at": "2026-11-22T04:24:44.414376"
         },
         {
-          "id": 35,
+          "id": 87,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "landlock",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.491653",
+          "last_run_at": "2026-11-22T04:24:44.423522",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.491653"
+          "last_success_at": "2026-11-22T04:24:44.423522"
         },
         {
-          "id": 36,
+          "id": 88,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "missing_aws_sns_topic_arn",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.506906",
+          "last_run_at": "2026-11-22T04:24:44.433625",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.506906"
+          "last_success_at": "2026-11-22T04:24:44.433625"
         },
         {
-          "id": 37,
+          "id": 89,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "missing_mailgun_api_key",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.531882",
+          "last_run_at": "2026-11-22T04:24:44.441013",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.531882"
+          "last_success_at": "2026-11-22T04:24:44.441013"
         },
         {
-          "id": 38,
+          "id": 90,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "out_of_date_themes",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.562731",
+          "last_run_at": "2026-11-22T04:24:44.451705",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.562731"
+          "last_success_at": "2026-11-22T04:24:44.451705"
         },
         {
-          "id": 39,
+          "id": 91,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "qq_mail_smtp",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.589488",
+          "last_run_at": "2026-11-22T04:24:44.460696",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.589488"
+          "last_success_at": "2026-11-22T04:24:44.460696"
         },
         {
-          "id": 40,
+          "id": 92,
           "blips": 1,
           "target": "__NULL__",
           "details": {
@@ -240,218 +279,142 @@
           },
           "identifier": "rails_env",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.615592",
+          "last_run_at": "2026-11-22T04:24:44.471059",
           "next_run_at": null,
-          "last_problem_at": "2026-11-22T00:06:29.615592",
+          "last_problem_at": "2026-11-22T04:24:44.471059",
           "last_success_at": null
         },
         {
-          "id": 41,
+          "id": 93,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "ram",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.650669",
+          "last_run_at": "2026-11-22T04:24:44.482549",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.650669"
+          "last_success_at": "2026-11-22T04:24:44.482549"
         },
         {
-          "id": 42,
+          "id": 94,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "s3_backup_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.666868",
+          "last_run_at": "2026-11-22T04:24:44.490768",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.666868"
+          "last_success_at": "2026-11-22T04:24:44.490768"
         },
         {
-          "id": 43,
+          "id": 95,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "s3_cdn",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.696583",
+          "last_run_at": "2026-11-22T04:24:44.502218",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.696583"
+          "last_success_at": "2026-11-22T04:24:44.502218"
         },
         {
-          "id": 44,
+          "id": 96,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "s3_upload_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.727832",
+          "last_run_at": "2026-11-22T04:24:44.510908",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.727832"
+          "last_success_at": "2026-11-22T04:24:44.510908"
         },
         {
-          "id": 45,
+          "id": 97,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "sidekiq_check",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.755179",
+          "last_run_at": "2026-11-22T04:24:44.520013",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.755179"
+          "last_success_at": "2026-11-22T04:24:44.520013"
         },
         {
-          "id": 46,
+          "id": 98,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "subfolder_ends_in_slash",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.765436",
+          "last_run_at": "2026-11-22T04:24:44.529134",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.765436"
+          "last_success_at": "2026-11-22T04:24:44.529134"
         },
         {
-          "id": 25,
-          "blips": 1,
-          "target": "__NULL__",
-          "details": {
-            "base_path": ""
-          },
-          "identifier": "content_security_policy_disabled",
-          "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.379856",
-          "next_run_at": null,
-          "last_problem_at": "2026-11-22T00:06:29.379856",
-          "last_success_at": null
-        },
-        {
-          "id": 26,
-          "blips": 0,
-          "target": "__NULL__",
-          "details": {},
-          "identifier": "email_polling_errored_recently",
-          "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.392114",
-          "next_run_at": null,
-          "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.392114"
-        },
-        {
-          "id": 27,
-          "blips": 0,
-          "target": "__NULL__",
-          "details": {},
-          "identifier": "facebook_config",
-          "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.401074",
-          "next_run_at": null,
-          "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.401074"
-        },
-        {
-          "id": 28,
-          "blips": 0,
-          "target": "__NULL__",
-          "details": {},
-          "identifier": "failing_emails",
-          "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.41114",
-          "next_run_at": null,
-          "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.41114"
-        },
-        {
-          "id": 29,
-          "blips": 1,
-          "target": "__NULL__",
-          "details": {
-            "base_path": ""
-          },
-          "identifier": "force_https",
-          "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.420499",
-          "next_run_at": null,
-          "last_problem_at": "2026-11-22T00:06:29.420499",
-          "last_success_at": null
-        },
-        {
-          "id": 30,
-          "blips": 0,
-          "target": "__NULL__",
-          "details": {},
-          "identifier": "github_config",
-          "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.432606",
-          "next_run_at": null,
-          "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.432606"
-        },
-        {
-          "id": 47,
+          "id": 99,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "starttls_disabled",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.775971",
+          "last_run_at": "2026-11-22T04:24:44.547556",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.775971"
+          "last_success_at": "2026-11-22T04:24:44.547556"
         },
         {
-          "id": 48,
+          "id": 100,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "translation_overrides",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.786854",
+          "last_run_at": "2026-11-22T04:24:44.560867",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.786854"
+          "last_success_at": "2026-11-22T04:24:44.560867"
         },
         {
-          "id": 49,
+          "id": 101,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "twitter_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.797956",
+          "last_run_at": "2026-11-22T04:24:44.570164",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.797956"
+          "last_success_at": "2026-11-22T04:24:44.570164"
         },
         {
-          "id": 50,
+          "id": 102,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "unreachable_themes",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.809707",
+          "last_run_at": "2026-11-22T04:24:44.581711",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.809707"
+          "last_success_at": "2026-11-22T04:24:44.581711"
         },
         {
-          "id": 51,
+          "id": 103,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "watched_words",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T00:06:29.829049",
+          "last_run_at": "2026-11-22T04:24:44.605273",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-22T00:06:29.829049"
+          "last_success_at": "2026-11-22T04:24:44.605273"
         }
       ],
       "deleted": [],
@@ -463,33 +426,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "BXbMPMNsMP3BO/SOz66BR/mXOZI=",
-            "created_at": "2026-11-22T00:06:28.916709",
-            "rotated_at": "2026-11-22T00:06:28.915959",
-            "updated_at": "2026-11-22T00:06:28.916709",
+            "auth_token": "h3UxMg/CWb7D9BayBt/EoulcHFI=",
+            "created_at": "2026-11-22T04:24:43.754828",
+            "rotated_at": "2026-11-22T04:24:43.753511",
+            "updated_at": "2026-11-22T04:24:43.754828",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "BXbMPMNsMP3BO/SOz66BR/mXOZI=",
+            "prev_auth_token": "h3UxMg/CWb7D9BayBt/EoulcHFI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:06:29.366497",
+            "id": 5,
+            "seen_at": "2026-11-22T04:24:44.295341",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "BXbMPMNsMP3BO/SOz66BR/mXOZI=",
-            "created_at": "2026-11-22T00:06:28.916709",
-            "rotated_at": "2026-11-22T00:06:28.915959",
-            "updated_at": "2026-11-22T00:06:28.916709",
+            "auth_token": "h3UxMg/CWb7D9BayBt/EoulcHFI=",
+            "created_at": "2026-11-22T04:24:43.754828",
+            "rotated_at": "2026-11-22T04:24:43.753511",
+            "updated_at": "2026-11-22T04:24:43.754828",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "BXbMPMNsMP3BO/SOz66BR/mXOZI=",
+            "prev_auth_token": "h3UxMg/CWb7D9BayBt/EoulcHFI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -500,8 +463,8 @@
   },
   "jobs": [],
   "next_ids": {
-    "admin_notices": 1,
-    "problem_check_trackers": 25
+    "admin_notices": 4,
+    "problem_check_trackers": 77
   },
   "settings": {
     "content_security_policy": false,
@@ -512,7 +475,7 @@
   ],
   "recorded_from": {
     "case": "0855aea11dc554edb45d72e886a85ee4041eac65f5d307a3d7599265645eb93c",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

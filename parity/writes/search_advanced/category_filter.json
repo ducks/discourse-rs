@@ -43,8 +43,8 @@
       "path": "/search.json?q=fixture%20category%3Ageneral"
     }
   ],
-  "started_at": "2026-11-22T01:25:20.189927",
-  "transaction_started_at": "2026-11-22T01:25:18.131532",
+  "started_at": "2026-11-22T05:45:39.035886",
+  "transaction_started_at": "2026-11-22T05:45:37.004399",
   "responses": [
     {
       "status": 200,
@@ -263,7 +263,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "category:general",
-          "search_log_id": 1,
+          "search_log_id": 19,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -466,7 +466,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "category:=general",
-          "search_log_id": 2,
+          "search_log_id": 20,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -581,7 +581,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "fixture categories:site-feedback,sub-general",
-          "search_log_id": 3,
+          "search_log_id": 21,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -694,7 +694,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "category:34",
-          "search_log_id": 4,
+          "search_log_id": 22,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -927,7 +927,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "category:General",
-          "search_log_id": 5,
+          "search_log_id": 23,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -1163,7 +1163,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "category:gen%",
-          "search_log_id": 6,
+          "search_log_id": 24,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -1195,7 +1195,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "category:nowhere",
-          "search_log_id": 7,
+          "search_log_id": 25,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -1221,7 +1221,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "category:staff",
-          "search_log_id": 8,
+          "search_log_id": 26,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -1418,7 +1418,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "category:general,=general",
-          "search_log_id": 9,
+          "search_log_id": 27,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -1601,7 +1601,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "fixture category:general",
-          "search_log_id": 10,
+          "search_log_id": 28,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -1623,11 +1623,11 @@
     "search_logs": {
       "inserted": [
         {
-          "id": 1,
+          "id": 19,
           "term": "category:general",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:20.219313",
+          "created_at": "2026-11-22T05:45:39.100858",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1637,11 +1637,11 @@
           "search_result_type": null
         },
         {
-          "id": 2,
+          "id": 20,
           "term": "category:=general",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:21.287497",
+          "created_at": "2026-11-22T05:45:40.256657",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1651,11 +1651,11 @@
           "search_result_type": null
         },
         {
-          "id": 3,
+          "id": 21,
           "term": "fixture categories:site-feedback,sub-general",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:21.335082",
+          "created_at": "2026-11-22T05:45:40.302259",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1665,11 +1665,11 @@
           "search_result_type": null
         },
         {
-          "id": 4,
+          "id": 22,
           "term": "category:34",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:21.464892",
+          "created_at": "2026-11-22T05:45:40.359832",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1679,11 +1679,11 @@
           "search_result_type": null
         },
         {
-          "id": 5,
+          "id": 23,
           "term": "category:General",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:21.593669",
+          "created_at": "2026-11-22T05:45:40.423817",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1693,11 +1693,11 @@
           "search_result_type": null
         },
         {
-          "id": 6,
+          "id": 24,
           "term": "category:gen%",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:21.641309",
+          "created_at": "2026-11-22T05:45:40.47281",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1707,11 +1707,11 @@
           "search_result_type": null
         },
         {
-          "id": 7,
+          "id": 25,
           "term": "category:nowhere",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:21.693165",
+          "created_at": "2026-11-22T05:45:40.521765",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1721,11 +1721,11 @@
           "search_result_type": null
         },
         {
-          "id": 8,
+          "id": 26,
           "term": "category:staff",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:21.723944",
+          "created_at": "2026-11-22T05:45:40.552078",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1735,11 +1735,11 @@
           "search_result_type": null
         },
         {
-          "id": 9,
+          "id": 27,
           "term": "category:general,=general",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:21.748725",
+          "created_at": "2026-11-22T05:45:40.578255",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1749,11 +1749,11 @@
           "search_result_type": null
         },
         {
-          "id": 10,
+          "id": 28,
           "term": "fixture category:general",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:21.789917",
+          "created_at": "2026-11-22T05:45:40.618252",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1990,33 +1990,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "wZi4xIyN0nG2LywgLhYkH9CaIlA=",
-            "created_at": "2026-11-22T01:25:19.12195",
-            "rotated_at": "2026-11-22T01:25:19.117536",
-            "updated_at": "2026-11-22T01:25:19.12195",
+            "auth_token": "K1GH5mFPIK635RHPFLHv49jwlrY=",
+            "created_at": "2026-11-22T05:45:37.970825",
+            "rotated_at": "2026-11-22T05:45:37.966779",
+            "updated_at": "2026-11-22T05:45:37.970825",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "wZi4xIyN0nG2LywgLhYkH9CaIlA=",
+            "prev_auth_token": "K1GH5mFPIK635RHPFLHv49jwlrY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T01:25:20.205706",
+            "id": 5,
+            "seen_at": "2026-11-22T05:45:39.064264",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "wZi4xIyN0nG2LywgLhYkH9CaIlA=",
-            "created_at": "2026-11-22T01:25:19.12195",
-            "rotated_at": "2026-11-22T01:25:19.117536",
-            "updated_at": "2026-11-22T01:25:19.12195",
+            "auth_token": "K1GH5mFPIK635RHPFLHv49jwlrY=",
+            "created_at": "2026-11-22T05:45:37.970825",
+            "rotated_at": "2026-11-22T05:45:37.966779",
+            "updated_at": "2026-11-22T05:45:37.970825",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "wZi4xIyN0nG2LywgLhYkH9CaIlA=",
+            "prev_auth_token": "K1GH5mFPIK635RHPFLHv49jwlrY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -2027,11 +2027,11 @@
   },
   "jobs": [],
   "next_ids": {
-    "search_logs": 1
+    "search_logs": 19
   },
   "recorded_from": {
     "case": "9b995c8417178bcb06496b39f4a4641a39662e4521ace8ea4ddb964c280e6719",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

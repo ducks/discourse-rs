@@ -11,14 +11,14 @@
       "path": "/auth/amazon/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
     }
   ],
-  "started_at": "2026-11-22T00:39:28.569744",
-  "transaction_started_at": "2026-11-22T00:39:27.625463",
+  "started_at": "2026-11-22T04:58:13.70111",
+  "transaction_started_at": "2026-11-22T04:58:12.715388",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/amz-www/ap/oa?client_id=amzn-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Famazon%2Fcallback&response_type=code&scope=profile&state=02da51ba1d3c4ae6ac672bcd21b568a0038423a1d68d87c2...",
+      "body": "Redirecting to http://fixtures.localhost:8099/amz-www/ap/oa?client_id=amzn-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Famazon%2Fcallback&response_type=code&scope=profile&state=cd298423f1fcc5f6ee86dcc9354af88f13208cae40605b7f...",
       "headers": {
-        "Location": "/amz-www/ap/oa?client_id=amzn-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Famazon%2Fcallback&response_type=code&scope=profile&state=02da51ba1d3c4ae6ac672bcd21b568a0038423a1d68d87c2"
+        "Location": "/amz-www/ap/oa?client_id=amzn-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Famazon%2Fcallback&response_type=code&scope=profile&state=cd298423f1fcc5f6ee86dcc9354af88f13208cae40605b7f"
       }
     },
     {
@@ -42,9 +42,9 @@
             "postal_code": "98101"
           },
           "user_id": null,
-          "last_used": "2026-11-22T00:39:29.003865",
-          "created_at": "2026-11-22T00:39:29.004671",
-          "updated_at": "2026-11-22T00:39:29.004671",
+          "last_used": "2026-11-22T04:58:14.245766",
+          "created_at": "2026-11-22T04:58:14.246498",
+          "updated_at": "2026-11-22T04:58:14.246498",
           "credentials": {
             "token": "Atza|amzn-token",
             "expires": false
@@ -94,7 +94,7 @@
   ],
   "recorded_from": {
     "case": "87c8d0aea23873dd9ff2ec710dc701dc993a1c62867ab532332c965b2bac867b",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -48,15 +48,15 @@
       }
     }
   ],
-  "started_at": "2026-11-22T02:08:38.723099",
-  "transaction_started_at": "2026-11-22T02:08:37.919486",
+  "started_at": "2026-11-22T05:34:31.993982",
+  "transaction_started_at": "2026-11-22T05:34:31.135963",
   "responses": [
     {
       "status": 200,
       "body": {
-        "url": "http://s3-direct-put.minio.localhost:9122/temp/uploads/default/70e20e27d07384b7f12f103214949bd8/b5431f5f11128d807af6e47dfce05502.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261122%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261122T020838Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host%3Bx-amz-acl%3Bx-amz-meta-sha1-checksum&X-Amz-Signature=2827c6a4fe2c4680e53766d01fd7db7079b1c4b9c7c7afe933b18e40f793729f",
-        "key": "temp/uploads/default/70e20e27d07384b7f12f103214949bd8/b5431f5f11128d807af6e47dfce05502.gif",
-        "unique_identifier": "da6751cd-3708-4dfa-938f-c412fdc9294e",
+        "url": "http://s3-direct-put.minio.localhost:9122/temp/uploads/default/9085f0a0a4a4b5f1a93642f7a5f7fd22/c643464723d8846f093da483eaa147c4.gif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261122%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261122T053432Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host%3Bx-amz-acl%3Bx-amz-meta-sha1-checksum&X-Amz-Signature=2255c0a5ac63891b4ce613bc4553d064e765e849323c0af594fb9198d3516a3b",
+        "key": "temp/uploads/default/9085f0a0a4a4b5f1a93642f7a5f7fd22/c643464723d8846f093da483eaa147c4.gif",
+        "unique_identifier": "f7985c33-0a8e-47aa-bc30-08e1cc4b95d7",
         "signed_headers": {
           "x-amz-acl": "private",
           "x-amz-meta-sha1-checksum": "f5cebe42706fcad01568026c8db70c8ec640d4a2"
@@ -104,33 +104,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "QOPn2ncAjzPYtImJzt15MrLzDFk=",
-            "created_at": "2026-11-22T02:08:38.216409",
-            "rotated_at": "2026-11-22T02:08:38.215643",
-            "updated_at": "2026-11-22T02:08:38.216409",
+            "auth_token": "6B3hURZe/NW4rmNpzLItwM5ZkAQ=",
+            "created_at": "2026-11-22T05:34:31.497792",
+            "rotated_at": "2026-11-22T05:34:31.496768",
+            "updated_at": "2026-11-22T05:34:31.497792",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "QOPn2ncAjzPYtImJzt15MrLzDFk=",
+            "prev_auth_token": "6B3hURZe/NW4rmNpzLItwM5ZkAQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T02:08:38.72985",
+            "id": 5,
+            "seen_at": "2026-11-22T05:34:31.999512",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "QOPn2ncAjzPYtImJzt15MrLzDFk=",
-            "created_at": "2026-11-22T02:08:38.216409",
-            "rotated_at": "2026-11-22T02:08:38.215643",
-            "updated_at": "2026-11-22T02:08:38.216409",
+            "auth_token": "6B3hURZe/NW4rmNpzLItwM5ZkAQ=",
+            "created_at": "2026-11-22T05:34:31.497792",
+            "rotated_at": "2026-11-22T05:34:31.496768",
+            "updated_at": "2026-11-22T05:34:31.497792",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "QOPn2ncAjzPYtImJzt15MrLzDFk=",
+            "prev_auth_token": "6B3hURZe/NW4rmNpzLItwM5ZkAQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -158,7 +158,7 @@
   "s3_objects": [],
   "recorded_from": {
     "case": "ca4f91a23f365ce9d6d31288311dd453d660d4c657359f87f6bd620f473a1aaa",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

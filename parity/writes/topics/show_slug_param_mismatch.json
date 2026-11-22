@@ -15,8 +15,8 @@
       "path": "/t/parity-fixture-replies-and-posters.json"
     }
   ],
-  "started_at": "2026-11-22T01:44:25.211513",
-  "transaction_started_at": "2026-11-22T01:44:24.542671",
+  "started_at": "2026-11-22T06:04:35.279778",
+  "transaction_started_at": "2026-11-22T06:04:34.609217",
   "responses": [
     {
       "status": 200,
@@ -696,7 +696,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "906c85946b3fef234bab4ce3b51a90f169a7c7661aeb6057403f9cbe348c50c9",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -19,14 +19,14 @@
       "path": "/auth/facebook/callback?code=good-code&state={{responses.2.headers.Location|state_param}}"
     }
   ],
-  "started_at": "2026-11-22T00:39:39.341622",
-  "transaction_started_at": "2026-11-22T00:39:38.765502",
+  "started_at": "2026-11-22T04:58:25.079725",
+  "transaction_started_at": "2026-11-22T04:58:24.310279",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to https://www.facebook.com/v19.0/dialog/oauth?client_id=123456&display=popup&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=email&state=6a721e5b977e981dcadae324915c47b36b141d397a5c329e...",
+      "body": "Redirecting to https://www.facebook.com/v19.0/dialog/oauth?client_id=123456&display=popup&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=email&state=1cc264e0db020bfe4358c9db2144aca5a63c940779621a7d...",
       "headers": {
-        "Location": "/v19.0/dialog/oauth?client_id=123456&display=popup&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=email&state=6a721e5b977e981dcadae324915c47b36b141d397a5c329e"
+        "Location": "/v19.0/dialog/oauth?client_id=123456&display=popup&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=email&state=1cc264e0db020bfe4358c9db2144aca5a63c940779621a7d"
       }
     },
     {
@@ -38,9 +38,9 @@
     },
     {
       "status": 302,
-      "body": "Redirecting to https://www.facebook.com/v19.0/dialog/oauth?client_id=123456&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=email&state=9944677262fd64f7a1c0ff4f1d580efcfd6cb8a05f972f74...",
+      "body": "Redirecting to https://www.facebook.com/v19.0/dialog/oauth?client_id=123456&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=email&state=69a112069ad485aa6c64bd41c7633d17948bd3bc8c2a60c5...",
       "headers": {
-        "Location": "/v19.0/dialog/oauth?client_id=123456&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=email&state=9944677262fd64f7a1c0ff4f1d580efcfd6cb8a05f972f74"
+        "Location": "/v19.0/dialog/oauth?client_id=123456&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Ffacebook%2Fcallback&response_type=code&scope=email&state=69a112069ad485aa6c64bd41c7633d17948bd3bc8c2a60c5"
       }
     },
     {
@@ -73,9 +73,9 @@
             }
           },
           "user_id": null,
-          "last_used": "2026-11-22T00:39:39.408992",
-          "created_at": "2026-11-22T00:39:39.410052",
-          "updated_at": "2026-11-22T00:39:39.410052",
+          "last_used": "2026-11-22T04:58:25.150431",
+          "created_at": "2026-11-22T04:58:25.151606",
+          "updated_at": "2026-11-22T04:58:25.151606",
           "credentials": {
             "token": "fb-token-1",
             "expires": false
@@ -123,7 +123,7 @@
   ],
   "recorded_from": {
     "case": "d4e7233ff4804854c2727aea7de59049eb9630054c4f204a8c84633009d331fd",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

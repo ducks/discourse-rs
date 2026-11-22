@@ -2,81 +2,10 @@
   "name": "periodical_scores_recent",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:22:51.707143",
-  "transaction_started_at": "2026-11-22T01:22:51.085124",
+  "started_at": "2026-11-22T05:43:08.024293",
+  "transaction_started_at": "2026-11-22T05:43:07.372052",
   "responses": [],
   "changes": {
-    "category_featured_topics": {
-      "inserted": [
-        {
-          "id": 50,
-          "rank": 0,
-          "topic_id": 37,
-          "created_at": "2026-11-22T01:22:51.718032",
-          "updated_at": "2026-11-22T01:22:51.718032",
-          "category_id": 2
-        },
-        {
-          "id": 51,
-          "rank": 0,
-          "topic_id": 5,
-          "created_at": "2026-11-22T01:22:51.73233",
-          "updated_at": "2026-11-22T01:22:51.73233",
-          "category_id": 4
-        },
-        {
-          "id": 52,
-          "rank": 1,
-          "topic_id": 35,
-          "created_at": "2026-11-22T01:22:51.73315",
-          "updated_at": "2026-11-22T01:22:51.73315",
-          "category_id": 4
-        },
-        {
-          "id": 53,
-          "rank": 2,
-          "topic_id": 41,
-          "created_at": "2026-11-22T01:22:51.733949",
-          "updated_at": "2026-11-22T01:22:51.733949",
-          "category_id": 4
-        },
-        {
-          "id": 54,
-          "rank": 3,
-          "topic_id": 38,
-          "created_at": "2026-11-22T01:22:51.734632",
-          "updated_at": "2026-11-22T01:22:51.734632",
-          "category_id": 4
-        }
-      ],
-      "deleted": [
-        {
-          "id": 46,
-          "rank": 0,
-          "topic_id": 5,
-          "created_at": "2026-11-21T23:56:45.953064",
-          "updated_at": "2026-11-21T23:56:45.953064",
-          "category_id": 4
-        },
-        {
-          "id": 48,
-          "rank": 2,
-          "topic_id": 38,
-          "created_at": "2026-11-21T23:56:45.954559",
-          "updated_at": "2026-11-21T23:56:45.954559",
-          "category_id": 4
-        },
-        {
-          "id": 49,
-          "rank": 3,
-          "topic_id": 35,
-          "created_at": "2026-11-21T23:56:45.956119",
-          "updated_at": "2026-11-21T23:56:45.956119",
-          "category_id": 4
-        }
-      ],
-      "updated": []
-    },
     "posts": {
       "inserted": [],
       "deleted": [],
@@ -3360,7 +3289,7 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-11-22T00:22:51.085124",
+            "bumped_at": "2026-11-22T04:43:07.372052",
             "pinned_at": null,
             "created_at": "2026-11-21T23:56:44.408368",
             "deleted_at": null,
@@ -3412,7 +3341,7 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-11-22T00:22:51.085124",
+            "bumped_at": "2026-11-22T04:43:07.372052",
             "pinned_at": null,
             "created_at": "2026-11-21T23:56:44.408368",
             "deleted_at": null,
@@ -3641,9 +3570,7 @@
     }
   },
   "jobs": [],
-  "next_ids": {
-    "category_featured_topics": 50
-  },
+  "next_ids": {},
   "setup": [
     "UPDATE topics SET bumped_at = now() - interval '1 hour' WHERE id = 35",
     "UPDATE posts SET reads = 3, like_score = 1 WHERE id = 36",
@@ -3661,7 +3588,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "84dc3e44dad153eef56e0d557e09748b3f0bbf986ba5506f78e0a08f02b18b21",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

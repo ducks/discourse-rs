@@ -30,8 +30,8 @@
       "path": "/admin/customize/watched_words.json"
     }
   ],
-  "started_at": "2026-11-22T02:03:14.188873",
-  "transaction_started_at": "2026-11-22T02:03:13.348214",
+  "started_at": "2026-11-22T06:23:06.736747",
+  "transaction_started_at": "2026-11-22T06:23:05.680629",
   "responses": [
     {
       "status": 200,
@@ -157,8 +157,8 @@
           "name": "pets-corner",
           "slug": "pets-corner",
           "locale": null,
-          "created_at": "2026-11-22T02:03:14.212316",
-          "updated_at": "2026-11-22T02:03:14.212316",
+          "created_at": "2026-11-22T06:23:06.759109",
+          "updated_at": "2026-11-22T06:23:06.759109",
           "description": null,
           "target_tag_id": null,
           "pm_topic_count": 0,
@@ -177,33 +177,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "thpqkSNgCAv8tF7gmangyuA5OcY=",
-            "created_at": "2026-11-22T02:03:13.715198",
-            "rotated_at": "2026-11-22T02:03:13.714251",
-            "updated_at": "2026-11-22T02:03:13.715198",
+            "auth_token": "/k38993SWYjEkyJLFCNIKz08EAQ=",
+            "created_at": "2026-11-22T06:23:06.073815",
+            "rotated_at": "2026-11-22T06:23:06.072857",
+            "updated_at": "2026-11-22T06:23:06.073815",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "thpqkSNgCAv8tF7gmangyuA5OcY=",
+            "prev_auth_token": "/k38993SWYjEkyJLFCNIKz08EAQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T02:03:14.194943",
+            "id": 5,
+            "seen_at": "2026-11-22T06:23:06.743564",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "thpqkSNgCAv8tF7gmangyuA5OcY=",
-            "created_at": "2026-11-22T02:03:13.715198",
-            "rotated_at": "2026-11-22T02:03:13.714251",
-            "updated_at": "2026-11-22T02:03:13.715198",
+            "auth_token": "/k38993SWYjEkyJLFCNIKz08EAQ=",
+            "created_at": "2026-11-22T06:23:06.073815",
+            "rotated_at": "2026-11-22T06:23:06.072857",
+            "updated_at": "2026-11-22T06:23:06.073815",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "thpqkSNgCAv8tF7gmangyuA5OcY=",
+            "prev_auth_token": "/k38993SWYjEkyJLFCNIKz08EAQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -224,10 +224,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-22T02:03:14.269693",
+          "created_at": "2026-11-22T06:23:06.813086",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T02:03:14.269693",
+          "updated_at": "2026-11-22T06:23:06.813086",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -244,8 +244,8 @@
         {
           "id": 1,
           "action": 6,
-          "created_at": "2026-11-22T02:03:14.252068",
-          "updated_at": "2026-11-22T02:03:14.252068"
+          "created_at": "2026-11-22T06:23:06.791301",
+          "updated_at": "2026-11-22T06:23:06.791301"
         }
       ],
       "deleted": [],
@@ -258,8 +258,8 @@
           "html": false,
           "word": "kitten",
           "action": 6,
-          "created_at": "2026-11-22T02:03:14.231517",
-          "updated_at": "2026-11-22T02:03:14.258455",
+          "created_at": "2026-11-22T06:23:06.776108",
+          "updated_at": "2026-11-22T06:23:06.803748",
           "replacement": "howto,guide,pets-corner",
           "case_sensitive": false,
           "watched_word_group_id": 1
@@ -269,8 +269,8 @@
           "html": false,
           "word": "puppy",
           "action": 6,
-          "created_at": "2026-11-22T02:03:14.239785",
-          "updated_at": "2026-11-22T02:03:14.265765",
+          "created_at": "2026-11-22T06:23:06.782548",
+          "updated_at": "2026-11-22T06:23:06.809671",
           "replacement": "howto,guide,pets-corner",
           "case_sensitive": false,
           "watched_word_group_id": 1
@@ -304,7 +304,7 @@
   ],
   "recorded_from": {
     "case": "3e4d6d371bf115edeaf2610e84b3d3975aa76e29d498b74c3547c75e4ae94297",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

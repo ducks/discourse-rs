@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:35:31.777966",
-  "transaction_started_at": "2026-11-22T00:35:30.962975",
+  "started_at": "2026-11-22T04:54:16.203603",
+  "transaction_started_at": "2026-11-22T04:54:15.223124",
   "responses": [
     {
       "status": 200,
@@ -35,8 +35,8 @@
         {
           "id": 1,
           "topic_id": 35,
-          "created_at": "2026-11-22T00:35:31.817044",
-          "updated_at": "2026-11-22T00:35:31.817044",
+          "created_at": "2026-11-22T04:54:16.239244",
+          "updated_at": "2026-11-22T04:54:16.239244",
           "answer_post_id": null,
           "topic_timer_id": null,
           "accepter_user_id": null
@@ -49,8 +49,8 @@
       "inserted": [
         {
           "id": 1,
-          "created_at": "2026-11-22T00:35:31.832903",
-          "updated_at": "2026-11-22T00:35:31.832903",
+          "created_at": "2026-11-22T04:54:16.247601",
+          "updated_at": "2026-11-22T04:54:16.247601",
           "answer_post_id": 36,
           "solved_topic_id": 1,
           "accepter_user_id": 1
@@ -62,39 +62,39 @@
     "notifications": {
       "inserted": [
         {
-          "id": 20,
+          "id": 34,
           "data": "{\"message\":\"solved.accepted_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.title\"}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-22T00:35:31.840534",
-          "updated_at": "2026-11-22T00:35:31.840534",
+          "created_at": "2026-11-22T04:54:16.253255",
+          "updated_at": "2026-11-22T04:54:16.253255",
           "post_number": 2,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 14
         },
         {
-          "id": 21,
+          "id": 35,
           "data": "{\"message\":\"solved.accepted_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.title\"}",
           "read": false,
           "user_id": 2,
           "topic_id": 35,
-          "created_at": "2026-11-22T00:35:31.847272",
-          "updated_at": "2026-11-22T00:35:31.847272",
+          "created_at": "2026-11-22T04:54:16.258567",
+          "updated_at": "2026-11-22T04:54:16.258567",
           "post_number": 2,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 14
         },
         {
-          "id": 22,
+          "id": 36,
           "data": "{\"message\":\"solved.topic_solved_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.topic_solved_title\"}",
           "read": false,
           "user_id": 4,
           "topic_id": 35,
-          "created_at": "2026-11-22T00:35:31.85366",
-          "updated_at": "2026-11-22T00:35:31.85366",
+          "created_at": "2026-11-22T04:54:16.265029",
+          "updated_at": "2026-11-22T04:54:16.265029",
           "post_number": 2,
           "high_priority": false,
           "post_action_id": null,
@@ -108,7 +108,7 @@
       "inserted": [
         {
           "id": 1,
-          "notification_id": 21
+          "notification_id": 35
         }
       ],
       "deleted": [],
@@ -231,8 +231,8 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-11-22T00:35:31.805684",
-          "updated_at": "2026-11-22T00:35:31.805684",
+          "created_at": "2026-11-22T04:54:16.229473",
+          "updated_at": "2026-11-22T04:54:16.229473",
           "action_type": 15,
           "acting_user_id": 1,
           "target_post_id": 36,
@@ -249,33 +249,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "WUVJpP0a8mY7I2nOqPlIl3yqmyY=",
-            "created_at": "2026-11-22T00:35:31.302886",
-            "rotated_at": "2026-11-22T00:35:31.301921",
-            "updated_at": "2026-11-22T00:35:31.302886",
+            "auth_token": "p76ONOl6dxVZuRb/AWkjtMdk8E8=",
+            "created_at": "2026-11-22T04:54:15.721488",
+            "rotated_at": "2026-11-22T04:54:15.720298",
+            "updated_at": "2026-11-22T04:54:15.721488",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "WUVJpP0a8mY7I2nOqPlIl3yqmyY=",
+            "prev_auth_token": "p76ONOl6dxVZuRb/AWkjtMdk8E8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:35:31.787667",
+            "id": 5,
+            "seen_at": "2026-11-22T04:54:16.21312",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "WUVJpP0a8mY7I2nOqPlIl3yqmyY=",
-            "created_at": "2026-11-22T00:35:31.302886",
-            "rotated_at": "2026-11-22T00:35:31.301921",
-            "updated_at": "2026-11-22T00:35:31.302886",
+            "auth_token": "p76ONOl6dxVZuRb/AWkjtMdk8E8=",
+            "created_at": "2026-11-22T04:54:15.721488",
+            "rotated_at": "2026-11-22T04:54:15.720298",
+            "updated_at": "2026-11-22T04:54:15.721488",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "WUVJpP0a8mY7I2nOqPlIl3yqmyY=",
+            "prev_auth_token": "p76ONOl6dxVZuRb/AWkjtMdk8E8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -288,7 +288,7 @@
   "next_ids": {
     "discourse_solved_solved_topics": 1,
     "discourse_solved_topic_answers": 1,
-    "notifications": 20,
+    "notifications": 34,
     "shelved_notifications": 1,
     "user_actions": 65
   },
@@ -301,7 +301,7 @@
   ],
   "recorded_from": {
     "case": "16379d50bdf6da49d40c155b67e64599ce4d96c72da3e43c179f9927553e44a4",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

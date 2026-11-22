@@ -7,8 +7,8 @@
       "path": "/session/current.json"
     }
   ],
-  "started_at": "2026-11-22T02:01:05.623397",
-  "transaction_started_at": "2026-11-22T02:01:04.757677",
+  "started_at": "2026-11-22T06:20:56.534826",
+  "transaction_started_at": "2026-11-22T06:20:55.687946",
   "responses": [
     {
       "status": 200,
@@ -18,9 +18,9 @@
           "username": "user0",
           "name": "User0",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-          "unread_notifications": 2,
+          "unread_notifications": 6,
           "unread_high_priority_notifications": 2,
-          "all_unread_notifications_count": 4,
+          "all_unread_notifications_count": 8,
           "read_first_notification": false,
           "admin": false,
           "notification_channel_position": null,
@@ -58,7 +58,7 @@
           "unseen_reviewable_count": 0,
           "new_personal_messages_notifications_count": 2,
           "read_faq": false,
-          "previous_visit_at": null,
+          "previous_visit_at": "2026-11-21T23:56:57.795Z",
           "seen_notification_id": 0,
           "flair_group_id": null,
           "can_create_topic": true,
@@ -85,14 +85,16 @@
           "draft_count": 0,
           "pending_posts_count": 0,
           "grouped_unread_notifications": {
-            "2": 1,
+            "6": 2,
+            "12": 4,
             "5": 1,
-            "6": 2
+            "2": 1
           },
           "available_notification_types": [
-            2,
+            6,
+            12,
             5,
-            6
+            2
           ],
           "display_sidebar_tags": true,
           "sidebar_tags": [],
@@ -295,33 +297,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "nshOWQKGdQP26P6aODLSwHq42lE=",
-            "created_at": "2026-11-22T02:01:05.13979",
-            "rotated_at": "2026-11-22T02:01:05.138899",
-            "updated_at": "2026-11-22T02:01:05.13979",
+            "auth_token": "1zBeLbCI3CAse+xhQFfHB9xnrsI=",
+            "created_at": "2026-11-22T06:20:56.055622",
+            "rotated_at": "2026-11-22T06:20:56.053964",
+            "updated_at": "2026-11-22T06:20:56.055622",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "nshOWQKGdQP26P6aODLSwHq42lE=",
+            "prev_auth_token": "1zBeLbCI3CAse+xhQFfHB9xnrsI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T02:01:05.631262",
+            "id": 5,
+            "seen_at": "2026-11-22T06:20:56.541108",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "nshOWQKGdQP26P6aODLSwHq42lE=",
-            "created_at": "2026-11-22T02:01:05.13979",
-            "rotated_at": "2026-11-22T02:01:05.138899",
-            "updated_at": "2026-11-22T02:01:05.13979",
+            "auth_token": "1zBeLbCI3CAse+xhQFfHB9xnrsI=",
+            "created_at": "2026-11-22T06:20:56.055622",
+            "rotated_at": "2026-11-22T06:20:56.053964",
+            "updated_at": "2026-11-22T06:20:56.055622",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "nshOWQKGdQP26P6aODLSwHq42lE=",
+            "prev_auth_token": "1zBeLbCI3CAse+xhQFfHB9xnrsI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -337,7 +339,7 @@
   },
   "recorded_from": {
     "case": "83d6ab3382a7a427366e469a381f2526626a2710f9fe9ff68232f0be91772dfc",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -15,8 +15,8 @@
       "path": "/search/query.json?term=fixture%20in%3Apolls"
     }
   ],
-  "started_at": "2026-11-22T01:25:45.172947",
-  "transaction_started_at": "2026-11-22T01:25:44.175631",
+  "started_at": "2026-11-22T05:46:03.682712",
+  "transaction_started_at": "2026-11-22T05:46:02.641957",
   "responses": [
     {
       "status": 200,
@@ -31,7 +31,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "fixture status:solved",
-          "search_log_id": 1,
+          "search_log_id": 19,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -57,7 +57,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "fixture min_vote_count:1",
-          "search_log_id": 2,
+          "search_log_id": 20,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -83,7 +83,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "fixture in:polls",
-          "search_log_id": 3,
+          "search_log_id": 21,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -101,11 +101,11 @@
     "search_logs": {
       "inserted": [
         {
-          "id": 1,
+          "id": 19,
           "term": "fixture status:solved",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:45.187301",
+          "created_at": "2026-11-22T05:46:03.699689",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -115,11 +115,11 @@
           "search_result_type": null
         },
         {
-          "id": 2,
+          "id": 20,
           "term": "fixture min_vote_count:1",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:45.224031",
+          "created_at": "2026-11-22T05:46:03.738047",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -129,11 +129,11 @@
           "search_result_type": null
         },
         {
-          "id": 3,
+          "id": 21,
           "term": "fixture in:polls",
           "crawler": false,
           "user_id": 3,
-          "created_at": "2026-11-22T01:25:45.258192",
+          "created_at": "2026-11-22T05:46:03.772844",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -152,33 +152,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "g5+La2hwA8v7HCU9cSZjgggdxhQ=",
-            "created_at": "2026-11-22T01:25:44.523521",
-            "rotated_at": "2026-11-22T01:25:44.522714",
-            "updated_at": "2026-11-22T01:25:44.523521",
+            "auth_token": "jjG7ugQTeVFq3CJSPl33+xp0Tng=",
+            "created_at": "2026-11-22T05:46:03.022009",
+            "rotated_at": "2026-11-22T05:46:03.021167",
+            "updated_at": "2026-11-22T05:46:03.022009",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "g5+La2hwA8v7HCU9cSZjgggdxhQ=",
+            "prev_auth_token": "jjG7ugQTeVFq3CJSPl33+xp0Tng=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T01:25:45.179861",
+            "id": 5,
+            "seen_at": "2026-11-22T05:46:03.690553",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "g5+La2hwA8v7HCU9cSZjgggdxhQ=",
-            "created_at": "2026-11-22T01:25:44.523521",
-            "rotated_at": "2026-11-22T01:25:44.522714",
-            "updated_at": "2026-11-22T01:25:44.523521",
+            "auth_token": "jjG7ugQTeVFq3CJSPl33+xp0Tng=",
+            "created_at": "2026-11-22T05:46:03.022009",
+            "rotated_at": "2026-11-22T05:46:03.021167",
+            "updated_at": "2026-11-22T05:46:03.022009",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "g5+La2hwA8v7HCU9cSZjgggdxhQ=",
+            "prev_auth_token": "jjG7ugQTeVFq3CJSPl33+xp0Tng=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -189,7 +189,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "search_logs": 1
+    "search_logs": 19
   },
   "settings": {
     "solved_enabled": false,
@@ -198,7 +198,7 @@
   },
   "recorded_from": {
     "case": "e1c8b0cb5ca273647760be7694ad1669d7420ab3d17d0b07630691f94c6f45a6",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

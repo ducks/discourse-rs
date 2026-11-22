@@ -16,8 +16,8 @@
       "path": "/admin/config/emoji.json"
     }
   ],
-  "started_at": "2026-11-22T00:38:36.478857",
-  "transaction_started_at": "2026-11-22T00:38:34.292199",
+  "started_at": "2026-11-22T04:57:21.305609",
+  "transaction_started_at": "2026-11-22T04:57:19.271492",
   "responses": [
     {
       "status": 200,
@@ -48,8 +48,8 @@
           "group": null,
           "user_id": 1,
           "upload_id": 36,
-          "created_at": "2026-11-22T00:38:36.548315",
-          "updated_at": "2026-11-22T00:38:36.548315"
+          "created_at": "2026-11-22T04:57:21.460215",
+          "updated_at": "2026-11-22T04:57:21.460215"
         }
       ],
       "deleted": [],
@@ -61,8 +61,8 @@
           "id": 38,
           "target_id": 1,
           "upload_id": 36,
-          "created_at": "2026-11-22T00:38:36.550203",
-          "updated_at": "2026-11-22T00:38:36.550212",
+          "created_at": "2026-11-22T04:57:21.462229",
+          "updated_at": "2026-11-22T04:57:21.462238",
           "target_type": "CustomEmoji"
         }
       ],
@@ -84,8 +84,8 @@
           "animated": true,
           "filesize": 93,
           "extension": "gif",
-          "created_at": "2026-11-22T00:38:36.530846",
-          "updated_at": "2026-11-22T00:38:36.535275",
+          "created_at": "2026-11-22T04:57:21.397493",
+          "updated_at": "2026-11-22T04:57:21.4136",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": "FF0000",
@@ -107,33 +107,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "MivG+b6FN8zv8KWDrmQaxDv9FKY=",
-            "created_at": "2026-11-22T00:38:35.27481",
-            "rotated_at": "2026-11-22T00:38:35.27136",
-            "updated_at": "2026-11-22T00:38:35.27481",
+            "auth_token": "zzgyZr7ukJrbtmAGDZ7qeAz5Nts=",
+            "created_at": "2026-11-22T04:57:20.225745",
+            "rotated_at": "2026-11-22T04:57:20.221324",
+            "updated_at": "2026-11-22T04:57:20.225745",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "MivG+b6FN8zv8KWDrmQaxDv9FKY=",
+            "prev_auth_token": "zzgyZr7ukJrbtmAGDZ7qeAz5Nts=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:38:36.488595",
+            "id": 5,
+            "seen_at": "2026-11-22T04:57:21.32277",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "MivG+b6FN8zv8KWDrmQaxDv9FKY=",
-            "created_at": "2026-11-22T00:38:35.27481",
-            "rotated_at": "2026-11-22T00:38:35.27136",
-            "updated_at": "2026-11-22T00:38:35.27481",
+            "auth_token": "zzgyZr7ukJrbtmAGDZ7qeAz5Nts=",
+            "created_at": "2026-11-22T04:57:20.225745",
+            "rotated_at": "2026-11-22T04:57:20.221324",
+            "updated_at": "2026-11-22T04:57:20.225745",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "MivG+b6FN8zv8KWDrmQaxDv9FKY=",
+            "prev_auth_token": "zzgyZr7ukJrbtmAGDZ7qeAz5Nts=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -154,10 +154,10 @@
           "topic_id": null,
           "new_value": "animated",
           "admin_only": true,
-          "created_at": "2026-11-22T00:38:36.5595",
+          "created_at": "2026-11-22T04:57:21.472891",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:38:36.5595",
+          "updated_at": "2026-11-22T04:57:21.472891",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -175,7 +175,7 @@
           "id": 36,
           "user_id": 1,
           "upload_id": 36,
-          "created_at": "2026-11-22T00:38:36.541475"
+          "created_at": "2026-11-22T04:57:21.434733"
         }
       ],
       "deleted": [],
@@ -192,7 +192,7 @@
   },
   "recorded_from": {
     "case": "922709f11017c8abe98304cf87ef21dd05edd1202902e55334d6a17bc1b96984",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

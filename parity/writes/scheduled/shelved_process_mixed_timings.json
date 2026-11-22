@@ -2,8 +2,8 @@
   "name": "shelved_process_mixed_timings",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:23:23.522005",
-  "transaction_started_at": "2026-11-22T01:23:22.902001",
+  "started_at": "2026-11-22T05:43:40.287134",
+  "transaction_started_at": "2026-11-22T05:43:39.458899",
   "responses": [],
   "changes": {
     "do_not_disturb_timings": {
@@ -11,10 +11,10 @@
       "deleted": [
         {
           "id": 1,
-          "ends_at": "2026-11-22T01:13:22.902001",
+          "ends_at": "2026-11-22T05:33:39.458899",
           "user_id": 3,
           "scheduled": false,
-          "starts_at": "2026-11-21T23:23:22.902001"
+          "starts_at": "2026-11-22T03:43:39.458899"
         }
       ],
       "updated": []
@@ -69,7 +69,7 @@
   ],
   "recorded_from": {
     "case": "57ab6f0386fbfb77e57b32cfaff3a8efd709d18495f3b9a7218cea989d0537e0",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -7,8 +7,8 @@
       "path": "/chat/api/me/channels.json"
     }
   ],
-  "started_at": "2026-11-22T00:25:03.157744",
-  "transaction_started_at": "2026-11-22T00:25:02.342529",
+  "started_at": "2026-11-22T04:43:54.684978",
+  "transaction_started_at": "2026-11-22T04:43:53.652377",
   "responses": [
     {
       "status": 200,
@@ -112,7 +112,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-11-22T00:25:03+00:00",
+              "created_at": "2026-11-22T04:43:54+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -219,7 +219,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-11-22T00:25:03+00:00",
+              "created_at": "2026-11-22T04:43:54+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -262,7 +262,7 @@
               "notification_level": "always",
               "chat_channel_id": 3,
               "last_read_message_id": null,
-              "last_viewed_at": "2026-11-21T22:25:02.342Z",
+              "last_viewed_at": "2026-11-22T02:43:53.652Z",
               "last_viewed_pins_at": null,
               "starred": false,
               "has_unseen_pins": false
@@ -288,7 +288,7 @@
               "id": null,
               "message": null,
               "cooked": null,
-              "created_at": "2026-11-22T00:25:03+00:00",
+              "created_at": "2026-11-22T04:43:54+00:00",
               "excerpt": null,
               "deleted_at": null,
               "deleted_by_id": null,
@@ -347,33 +347,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "oxQ6YaFfQSsToZw7/SiMWWYYaB8=",
-            "created_at": "2026-11-22T00:25:02.664027",
-            "rotated_at": "2026-11-22T00:25:02.663149",
-            "updated_at": "2026-11-22T00:25:02.664027",
+            "auth_token": "VnZdNXCoQEc7bVg8C+ftt717/78=",
+            "created_at": "2026-11-22T04:43:53.989407",
+            "rotated_at": "2026-11-22T04:43:53.988521",
+            "updated_at": "2026-11-22T04:43:53.989407",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "oxQ6YaFfQSsToZw7/SiMWWYYaB8=",
+            "prev_auth_token": "VnZdNXCoQEc7bVg8C+ftt717/78=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:25:03.16511",
+            "id": 5,
+            "seen_at": "2026-11-22T04:43:54.694211",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "oxQ6YaFfQSsToZw7/SiMWWYYaB8=",
-            "created_at": "2026-11-22T00:25:02.664027",
-            "rotated_at": "2026-11-22T00:25:02.663149",
-            "updated_at": "2026-11-22T00:25:02.664027",
+            "auth_token": "VnZdNXCoQEc7bVg8C+ftt717/78=",
+            "created_at": "2026-11-22T04:43:53.989407",
+            "rotated_at": "2026-11-22T04:43:53.988521",
+            "updated_at": "2026-11-22T04:43:53.989407",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "oxQ6YaFfQSsToZw7/SiMWWYYaB8=",
+            "prev_auth_token": "VnZdNXCoQEc7bVg8C+ftt717/78=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -395,7 +395,7 @@
   ],
   "recorded_from": {
     "case": "0d78d16606e77b379c082fab1ed661a9a365e5728f6135353bdb9a00b704cf0e",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

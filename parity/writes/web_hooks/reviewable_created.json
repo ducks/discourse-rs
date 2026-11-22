@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T02:04:55.590185",
-  "transaction_started_at": "2026-11-22T02:04:54.749198",
+  "started_at": "2026-11-22T06:24:48.476384",
+  "transaction_started_at": "2026-11-22T06:24:47.552161",
   "responses": [
     {
       "status": 200,
@@ -100,9 +100,9 @@
           "post_id": 52,
           "user_id": 3,
           "agreed_at": null,
-          "created_at": "2026-11-22T02:04:55.608463",
+          "created_at": "2026-11-22T06:24:48.492111",
           "deleted_at": null,
-          "updated_at": "2026-11-22T02:04:55.615686",
+          "updated_at": "2026-11-22T06:24:48.499425",
           "deferred_at": null,
           "agreed_by_id": null,
           "disagreed_at": null,
@@ -242,8 +242,8 @@
           "id": 1,
           "edited": null,
           "status": 0,
-          "created_at": "2026-11-22T02:04:55.641526",
-          "updated_at": "2026-11-22T02:04:55.641526",
+          "created_at": "2026-11-22T06:24:48.524476",
+          "updated_at": "2026-11-22T06:24:48.524476",
           "created_by_id": 3,
           "reviewable_id": 1,
           "reviewable_history_type": 0
@@ -261,8 +261,8 @@
           "status": 0,
           "context": null,
           "user_id": 3,
-          "created_at": "2026-11-22T02:04:55.608463",
-          "updated_at": "2026-11-22T02:04:55.667843",
+          "created_at": "2026-11-22T06:24:48.492111",
+          "updated_at": "2026-11-22T06:24:48.549901",
           "reviewed_at": null,
           "meta_topic_id": null,
           "reviewable_id": 1,
@@ -288,13 +288,13 @@
           "version": 0,
           "topic_id": 35,
           "target_id": 52,
-          "created_at": "2026-11-22T02:04:55.636804",
-          "updated_at": "2026-11-22T02:04:55.670575",
+          "created_at": "2026-11-22T06:24:48.519373",
+          "updated_at": "2026-11-22T06:24:48.552568",
           "category_id": 4,
           "target_type": "Post",
           "type_source": "core",
           "force_review": false,
-          "latest_score": "2026-11-22T02:04:55.608463",
+          "latest_score": "2026-11-22T06:24:48.492111",
           "created_by_id": 3,
           "reject_reason": null,
           "potential_spam": false,
@@ -384,7 +384,7 @@
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T02:04:55.67365",
+            "updated_at": "2026-11-22T06:24:48.555525",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -425,33 +425,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "QdelbksoY9WZRWsx4PprUbZeisU=",
-            "created_at": "2026-11-22T02:04:55.103805",
-            "rotated_at": "2026-11-22T02:04:55.102873",
-            "updated_at": "2026-11-22T02:04:55.103805",
+            "auth_token": "pqePVtYFYxHTbYeTI85CaiTDu7A=",
+            "created_at": "2026-11-22T06:24:47.961159",
+            "rotated_at": "2026-11-22T06:24:47.960004",
+            "updated_at": "2026-11-22T06:24:47.961159",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "QdelbksoY9WZRWsx4PprUbZeisU=",
+            "prev_auth_token": "pqePVtYFYxHTbYeTI85CaiTDu7A=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T02:04:55.59658",
+            "id": 5,
+            "seen_at": "2026-11-22T06:24:48.482529",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "QdelbksoY9WZRWsx4PprUbZeisU=",
-            "created_at": "2026-11-22T02:04:55.103805",
-            "rotated_at": "2026-11-22T02:04:55.102873",
-            "updated_at": "2026-11-22T02:04:55.103805",
+            "auth_token": "pqePVtYFYxHTbYeTI85CaiTDu7A=",
+            "created_at": "2026-11-22T06:24:47.961159",
+            "rotated_at": "2026-11-22T06:24:47.960004",
+            "updated_at": "2026-11-22T06:24:47.961159",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "QdelbksoY9WZRWsx4PprUbZeisU=",
+            "prev_auth_token": "pqePVtYFYxHTbYeTI85CaiTDu7A=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -477,7 +477,7 @@
           2
         ],
         "id": 1,
-        "payload": "{\"id\":1,\"type\":\"ReviewableFlaggedPost\",\"type_source\":\"core\",\"topic_id\":35,\"topic_url\":\"http://localhost:3042/t/parity-fixture-replies-and-posters/35\",\"target_type\":\"Post\",\"target_id\":52,\"target_url\":\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/5\",\"target_created_at\":\"2026-11-21T23:56:51.452Z\",\"topic_tags\":[{\"id\":2,\"name\":\"guide\",\"slug\":\"guide\"}],\"category_id\":4,\"created_at\":\"2026-11-22T02:04:55.636Z\",\"can_edit\":false,\"score\":0.0,\"version\":0,\"target_created_by_trust_level\":1,\"created_from_flag\":true,\"status\":0,\"approval_style\":false,\"cooked\":\"\\u003cp\\u003eReply from user0 mentioning \\u003ca class=\\\"mention\\\" href=\\\"/u/user1\\\"\\u003e@user1\\u003c/a\\u003e so a mention notification exists.\\u003c/p\\u003e\",\"raw\":\"Reply from user0 mentioning @user1 so a mention notification exists.\",\"reply_count\":0,\"post_updated_at\":\"2026-11-21T23:56:51.452Z\",\"post_version\":1,\"post_id\":52,\"target_created_by_id\":2,\"created_by_id\":3,\"editable_fields\":[],\"reviewable_score_ids\":[],\"bundled_action_ids\":[\"1-agree\",\"1-disagree\"],\"reviewable_note_ids\":[],\"reviewable_history_ids\":[1],\"author_penalties\":[]}",
+        "payload": "{\"id\":1,\"type\":\"ReviewableFlaggedPost\",\"type_source\":\"core\",\"topic_id\":35,\"topic_url\":\"http://localhost:3042/t/parity-fixture-replies-and-posters/35\",\"target_type\":\"Post\",\"target_id\":52,\"target_url\":\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/5\",\"target_created_at\":\"2026-11-21T23:56:51.452Z\",\"topic_tags\":[{\"id\":2,\"name\":\"guide\",\"slug\":\"guide\"}],\"category_id\":4,\"created_at\":\"2026-11-22T06:24:48.519Z\",\"can_edit\":false,\"score\":0.0,\"version\":0,\"target_created_by_trust_level\":1,\"created_from_flag\":true,\"status\":0,\"approval_style\":false,\"cooked\":\"\\u003cp\\u003eReply from user0 mentioning \\u003ca class=\\\"mention\\\" href=\\\"/u/user1\\\"\\u003e@user1\\u003c/a\\u003e so a mention notification exists.\\u003c/p\\u003e\",\"raw\":\"Reply from user0 mentioning @user1 so a mention notification exists.\",\"reply_count\":0,\"post_updated_at\":\"2026-11-21T23:56:51.452Z\",\"post_version\":1,\"post_id\":52,\"target_created_by_id\":2,\"created_by_id\":3,\"editable_fields\":[],\"reviewable_score_ids\":[],\"bundled_action_ids\":[\"1-agree\",\"1-disagree\"],\"reviewable_note_ids\":[],\"reviewable_history_ids\":[1],\"author_penalties\":[]}",
         "web_hook_id": 9001,
         "event_name": "reviewable_created",
         "event_type": "reviewable"
@@ -503,7 +503,7 @@
           2
         ],
         "id": 1,
-        "payload": "{\"id\":1,\"type\":\"ReviewableFlaggedPost\",\"type_source\":\"core\",\"topic_id\":35,\"topic_url\":\"http://localhost:3042/t/parity-fixture-replies-and-posters/35\",\"target_type\":\"Post\",\"target_id\":52,\"target_url\":\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/5\",\"target_created_at\":\"2026-11-21T23:56:51.452Z\",\"topic_tags\":[{\"id\":2,\"name\":\"guide\",\"slug\":\"guide\"}],\"category_id\":4,\"created_at\":\"2026-11-22T02:04:55.636Z\",\"can_edit\":false,\"score\":3.0,\"version\":0,\"target_created_by_trust_level\":1,\"created_from_flag\":true,\"status\":0,\"approval_style\":false,\"cooked\":\"\\u003cp\\u003eReply from user0 mentioning \\u003ca class=\\\"mention\\\" href=\\\"/u/user1\\\"\\u003e@user1\\u003c/a\\u003e so a mention notification exists.\\u003c/p\\u003e\",\"raw\":\"Reply from user0 mentioning @user1 so a mention notification exists.\",\"reply_count\":0,\"post_updated_at\":\"2026-11-21T23:56:51.452Z\",\"post_version\":1,\"post_id\":52,\"target_created_by_id\":2,\"created_by_id\":3,\"editable_fields\":[],\"reviewable_score_ids\":[1],\"bundled_action_ids\":[\"1-agree\",\"1-disagree\"],\"reviewable_note_ids\":[],\"reviewable_history_ids\":[1],\"author_penalties\":[]}",
+        "payload": "{\"id\":1,\"type\":\"ReviewableFlaggedPost\",\"type_source\":\"core\",\"topic_id\":35,\"topic_url\":\"http://localhost:3042/t/parity-fixture-replies-and-posters/35\",\"target_type\":\"Post\",\"target_id\":52,\"target_url\":\"http://localhost:3042/t/parity-fixture-replies-and-posters/35/5\",\"target_created_at\":\"2026-11-21T23:56:51.452Z\",\"topic_tags\":[{\"id\":2,\"name\":\"guide\",\"slug\":\"guide\"}],\"category_id\":4,\"created_at\":\"2026-11-22T06:24:48.519Z\",\"can_edit\":false,\"score\":3.0,\"version\":0,\"target_created_by_trust_level\":1,\"created_from_flag\":true,\"status\":0,\"approval_style\":false,\"cooked\":\"\\u003cp\\u003eReply from user0 mentioning \\u003ca class=\\\"mention\\\" href=\\\"/u/user1\\\"\\u003e@user1\\u003c/a\\u003e so a mention notification exists.\\u003c/p\\u003e\",\"raw\":\"Reply from user0 mentioning @user1 so a mention notification exists.\",\"reply_count\":0,\"post_updated_at\":\"2026-11-21T23:56:51.452Z\",\"post_version\":1,\"post_id\":52,\"target_created_by_id\":2,\"created_by_id\":3,\"editable_fields\":[],\"reviewable_score_ids\":[1],\"bundled_action_ids\":[\"1-agree\",\"1-disagree\"],\"reviewable_note_ids\":[],\"reviewable_history_ids\":[1],\"author_penalties\":[]}",
         "web_hook_id": 9001,
         "event_name": "reviewable_score_updated",
         "event_type": "reviewable"
@@ -523,7 +523,7 @@
   ],
   "recorded_from": {
     "case": "1a53917066b8e384948643c5054f100e1727bffa229fa737b6dd6c7a52ed2185",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "chat_auto_leave_groups",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:21:14.670617",
-  "transaction_started_at": "2026-11-22T01:21:14.047735",
+  "started_at": "2026-11-22T05:41:29.922513",
+  "transaction_started_at": "2026-11-22T05:41:29.083311",
   "responses": [],
   "changes": {
     "user_chat_channel_memberships": {
@@ -63,10 +63,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T01:21:14.679178",
+          "created_at": "2026-11-22T05:41:29.929314",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T01:21:14.679178",
+          "updated_at": "2026-11-22T05:41:29.929314",
           "category_id": null,
           "custom_type": "chat_auto_remove_membership",
           "reviewable_id": null,
@@ -107,7 +107,7 @@
   ],
   "recorded_from": {
     "case": "c65eec706e2bebc636905a2eb3168c9b5a9e2ba5fd7e5408b16e6bcf23748179",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

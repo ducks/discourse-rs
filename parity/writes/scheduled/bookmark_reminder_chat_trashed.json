@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_chat_trashed",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:20:54.511646",
-  "transaction_started_at": "2026-11-22T01:20:53.926491",
+  "started_at": "2026-11-22T05:41:08.834432",
+  "transaction_started_at": "2026-11-22T05:41:08.223249",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -18,9 +18,9 @@
             "user_id": 3,
             "created_at": "2026-10-02T11:04:00",
             "updated_at": "2026-10-02T11:04:00",
-            "reminder_at": "2026-11-22T01:15:53.926491",
+            "reminder_at": "2026-11-22T05:36:08.223249",
             "bookmarkable_id": 5,
-            "reminder_set_at": "2026-11-21T01:20:53.926491",
+            "reminder_set_at": "2026-11-21T05:41:08.223249",
             "bookmarkable_type": "ChatMessage",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 3
@@ -31,12 +31,12 @@
             "pinned": null,
             "user_id": 3,
             "created_at": "2026-10-02T11:04:00",
-            "updated_at": "2026-11-22T01:20:54.515845",
+            "updated_at": "2026-11-22T05:41:08.838868",
             "reminder_at": null,
             "bookmarkable_id": 5,
             "reminder_set_at": null,
             "bookmarkable_type": "ChatMessage",
-            "reminder_last_sent_at": "2026-11-22T01:20:54.515045",
+            "reminder_last_sent_at": "2026-11-22T05:41:08.837988",
             "auto_delete_preference": 3
           }
         }
@@ -67,7 +67,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "5ba50c82590591f683323ebc792567136dfc2e7e57b42e56d26f4e0df4ac96aa",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -29,8 +29,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:06:15.643723",
-  "transaction_started_at": "2026-11-22T00:06:14.739267",
+  "started_at": "2026-11-22T04:24:29.274322",
+  "transaction_started_at": "2026-11-22T04:24:28.399881",
   "responses": [
     {
       "status": 200,
@@ -696,7 +696,7 @@
               "storage": {
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 17457254400,
+                  "free_bytes": 13347381248,
                   "remote": false
                 }
               },
@@ -782,7 +782,26 @@
             }
           }
         ],
-        "problems": []
+        "problems": [
+          {
+            "id": 1,
+            "priority": "low",
+            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
+            "identifier": "force_https"
+          },
+          {
+            "id": 2,
+            "priority": "low",
+            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
+            "identifier": "host_names"
+          },
+          {
+            "id": 3,
+            "priority": "low",
+            "message": "Your server is running in development mode.",
+            "identifier": "rails_env"
+          }
+        ]
       }
     },
     {
@@ -880,33 +899,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "XH2lf7NkSpqeGGVsYXHzvF8CJYY=",
-            "created_at": "2026-11-22T00:06:15.026959",
-            "rotated_at": "2026-11-22T00:06:15.026161",
-            "updated_at": "2026-11-22T00:06:15.026959",
+            "auth_token": "v2qrEmgQjuGvYdurbIjytNi9uTQ=",
+            "created_at": "2026-11-22T04:24:28.715627",
+            "rotated_at": "2026-11-22T04:24:28.714262",
+            "updated_at": "2026-11-22T04:24:28.715627",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "XH2lf7NkSpqeGGVsYXHzvF8CJYY=",
+            "prev_auth_token": "v2qrEmgQjuGvYdurbIjytNi9uTQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:06:15.649342",
+            "id": 5,
+            "seen_at": "2026-11-22T04:24:29.280743",
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "XH2lf7NkSpqeGGVsYXHzvF8CJYY=",
-            "created_at": "2026-11-22T00:06:15.026959",
-            "rotated_at": "2026-11-22T00:06:15.026161",
-            "updated_at": "2026-11-22T00:06:15.026959",
+            "auth_token": "v2qrEmgQjuGvYdurbIjytNi9uTQ=",
+            "created_at": "2026-11-22T04:24:28.715627",
+            "rotated_at": "2026-11-22T04:24:28.714262",
+            "updated_at": "2026-11-22T04:24:28.715627",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "XH2lf7NkSpqeGGVsYXHzvF8CJYY=",
+            "prev_auth_token": "v2qrEmgQjuGvYdurbIjytNi9uTQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -939,7 +958,7 @@
   ],
   "recorded_from": {
     "case": "4a4dc15fb1ba496317b13f7bd7d61fb7ceddf9ffa4c2cfb7c9eea8d64b94cdb8",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

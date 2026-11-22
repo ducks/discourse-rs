@@ -31,8 +31,8 @@
       "path": "/search/query.json?term=in%3Areplies%20%40user1&search_context%5Btype%5D=topic&search_context%5Bid%5D=35"
     }
   ],
-  "started_at": "2026-11-22T01:25:34.37266",
-  "transaction_started_at": "2026-11-22T01:25:33.565315",
+  "started_at": "2026-11-22T05:45:53.282212",
+  "transaction_started_at": "2026-11-22T05:45:52.500074",
   "responses": [
     {
       "status": 200,
@@ -47,7 +47,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "in:whispers",
-          "search_log_id": 1,
+          "search_log_id": 19,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -73,7 +73,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "reply in:whisper",
-          "search_log_id": 2,
+          "search_log_id": 20,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -140,7 +140,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "unlisted include:unlisted",
-          "search_log_id": 3,
+          "search_log_id": 21,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -381,7 +381,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "fixture include:invisible",
-          "search_log_id": 4,
+          "search_log_id": 22,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -535,7 +535,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "in:posted in:all-posts",
-          "search_log_id": 5,
+          "search_log_id": 23,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -611,7 +611,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "in:first",
-          "search_log_id": 6,
+          "search_log_id": 24,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -685,7 +685,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "in:replies @user1",
-          "search_log_id": 7,
+          "search_log_id": 25,
           "more_full_page_results": null,
           "can_create_topic": true,
           "error": null,
@@ -705,11 +705,11 @@
     "search_logs": {
       "inserted": [
         {
-          "id": 1,
+          "id": 19,
           "term": "in:whispers",
           "crawler": false,
           "user_id": 1,
-          "created_at": "2026-11-22T01:25:34.3871",
+          "created_at": "2026-11-22T05:45:53.295929",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -719,11 +719,11 @@
           "search_result_type": null
         },
         {
-          "id": 2,
+          "id": 20,
           "term": "reply in:whisper",
           "crawler": false,
           "user_id": 1,
-          "created_at": "2026-11-22T01:25:34.411317",
+          "created_at": "2026-11-22T05:45:53.318533",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -733,11 +733,11 @@
           "search_result_type": null
         },
         {
-          "id": 3,
+          "id": 21,
           "term": "unlisted include:unlisted",
           "crawler": false,
           "user_id": 1,
-          "created_at": "2026-11-22T01:25:34.443763",
+          "created_at": "2026-11-22T05:45:53.344401",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -747,11 +747,11 @@
           "search_result_type": null
         },
         {
-          "id": 4,
+          "id": 22,
           "term": "fixture include:invisible",
           "crawler": false,
           "user_id": 1,
-          "created_at": "2026-11-22T01:25:34.529662",
+          "created_at": "2026-11-22T05:45:53.426864",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -761,11 +761,11 @@
           "search_result_type": null
         },
         {
-          "id": 5,
+          "id": 23,
           "term": "in:posted in:all-posts",
           "crawler": false,
           "user_id": 1,
-          "created_at": "2026-11-22T01:25:34.591541",
+          "created_at": "2026-11-22T05:45:53.485239",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -775,11 +775,11 @@
           "search_result_type": null
         },
         {
-          "id": 6,
+          "id": 24,
           "term": "in:first",
           "crawler": false,
           "user_id": 1,
-          "created_at": "2026-11-22T01:25:34.6348",
+          "created_at": "2026-11-22T05:45:53.525518",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -789,11 +789,11 @@
           "search_result_type": null
         },
         {
-          "id": 7,
+          "id": 25,
           "term": "in:replies @user1",
           "crawler": false,
           "user_id": 1,
-          "created_at": "2026-11-22T01:25:34.666536",
+          "created_at": "2026-11-22T05:45:53.561081",
           "ip_address": null,
           "session_id": null,
           "user_agent": null,
@@ -1136,33 +1136,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "b09vA0Yua0oDj0P05jXqLW9Otk4=",
-            "created_at": "2026-11-22T01:25:33.933419",
-            "rotated_at": "2026-11-22T01:25:33.932549",
-            "updated_at": "2026-11-22T01:25:33.933419",
+            "auth_token": "YkheiBpsjsbsdyshUaoXLt1rvAQ=",
+            "created_at": "2026-11-22T05:45:52.850886",
+            "rotated_at": "2026-11-22T05:45:52.850155",
+            "updated_at": "2026-11-22T05:45:52.850886",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "b09vA0Yua0oDj0P05jXqLW9Otk4=",
+            "prev_auth_token": "YkheiBpsjsbsdyshUaoXLt1rvAQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T01:25:34.37931",
+            "id": 5,
+            "seen_at": "2026-11-22T05:45:53.289283",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "b09vA0Yua0oDj0P05jXqLW9Otk4=",
-            "created_at": "2026-11-22T01:25:33.933419",
-            "rotated_at": "2026-11-22T01:25:33.932549",
-            "updated_at": "2026-11-22T01:25:33.933419",
+            "auth_token": "YkheiBpsjsbsdyshUaoXLt1rvAQ=",
+            "created_at": "2026-11-22T05:45:52.850886",
+            "rotated_at": "2026-11-22T05:45:52.850155",
+            "updated_at": "2026-11-22T05:45:52.850886",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "b09vA0Yua0oDj0P05jXqLW9Otk4=",
+            "prev_auth_token": "YkheiBpsjsbsdyshUaoXLt1rvAQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1173,14 +1173,14 @@
   },
   "jobs": [],
   "next_ids": {
-    "search_logs": 1
+    "search_logs": 19
   },
   "setup": [
     "UPDATE posts SET post_type = 4 WHERE id = 38"
   ],
   "recorded_from": {
     "case": "ca9169009b3887a6868fbe930c6e93ed662612c3ea787939849feea5c8120acc",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

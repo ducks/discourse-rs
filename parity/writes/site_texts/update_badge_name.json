@@ -27,8 +27,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T01:32:11.716997",
-  "transaction_started_at": "2026-11-22T01:32:10.884815",
+  "started_at": "2026-11-22T05:52:33.246592",
+  "transaction_started_at": "2026-11-22T05:52:32.404853",
   "responses": [
     {
       "status": 200,
@@ -61,7 +61,7 @@
           "id": 11,
           "name": "Liked once",
           "description": "Liked a post",
-          "grant_count": 0,
+          "grant_count": 2,
           "allow_title": false,
           "multiple_grant": false,
           "icon": "heart",
@@ -104,8 +104,8 @@
           "value": "Liked once",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-11-22T01:32:11.732475",
-          "updated_at": "2026-11-22T01:32:11.732475",
+          "created_at": "2026-11-22T05:52:33.264361",
+          "updated_at": "2026-11-22T05:52:33.264361",
           "translation_key": "badges.first_like.name",
           "original_translation": "First Like"
         },
@@ -114,8 +114,8 @@
           "value": "Liked a post once",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-11-22T01:32:11.852253",
-          "updated_at": "2026-11-22T01:32:11.852253",
+          "created_at": "2026-11-22T05:52:33.37701",
+          "updated_at": "2026-11-22T05:52:33.37701",
           "translation_key": "badges.first_like.description",
           "original_translation": "Liked a post"
         }
@@ -129,33 +129,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "B5ManXXYWdb9zN9w/rg3EJJwkm4=",
-            "created_at": "2026-11-22T01:32:11.244877",
-            "rotated_at": "2026-11-22T01:32:11.243917",
-            "updated_at": "2026-11-22T01:32:11.244877",
+            "auth_token": "p4nAbEOiSw53F0M3/+d+7O03ios=",
+            "created_at": "2026-11-22T05:52:32.759811",
+            "rotated_at": "2026-11-22T05:52:32.758505",
+            "updated_at": "2026-11-22T05:52:32.759811",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "B5ManXXYWdb9zN9w/rg3EJJwkm4=",
+            "prev_auth_token": "p4nAbEOiSw53F0M3/+d+7O03ios=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T01:32:11.722481",
+            "id": 5,
+            "seen_at": "2026-11-22T05:52:33.253303",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "B5ManXXYWdb9zN9w/rg3EJJwkm4=",
-            "created_at": "2026-11-22T01:32:11.244877",
-            "rotated_at": "2026-11-22T01:32:11.243917",
-            "updated_at": "2026-11-22T01:32:11.244877",
+            "auth_token": "p4nAbEOiSw53F0M3/+d+7O03ios=",
+            "created_at": "2026-11-22T05:52:32.759811",
+            "rotated_at": "2026-11-22T05:52:32.758505",
+            "updated_at": "2026-11-22T05:52:32.759811",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "B5ManXXYWdb9zN9w/rg3EJJwkm4=",
+            "prev_auth_token": "p4nAbEOiSw53F0M3/+d+7O03ios=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -176,10 +176,10 @@
           "topic_id": null,
           "new_value": "Liked once",
           "admin_only": true,
-          "created_at": "2026-11-22T01:32:11.735245",
+          "created_at": "2026-11-22T05:52:33.267309",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T01:32:11.735245",
+          "updated_at": "2026-11-22T05:52:33.267309",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -198,10 +198,10 @@
           "topic_id": null,
           "new_value": "Liked a post once",
           "admin_only": true,
-          "created_at": "2026-11-22T01:32:11.85662",
+          "created_at": "2026-11-22T05:52:33.380686",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T01:32:11.85662",
+          "updated_at": "2026-11-22T05:52:33.380686",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -230,7 +230,7 @@
   },
   "recorded_from": {
     "case": "3202217417a48853d020b74730538b4437c6cdc9792fff059a74001aa15c0aaa",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

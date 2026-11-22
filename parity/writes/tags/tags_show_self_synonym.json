@@ -7,8 +7,8 @@
       "path": "/tag/howto/l/top.json?period=daily"
     }
   ],
-  "started_at": "2026-11-22T01:37:10.019283",
-  "transaction_started_at": "2026-11-22T01:37:09.406958",
+  "started_at": "2026-11-22T05:57:15.431575",
+  "transaction_started_at": "2026-11-22T05:57:14.808116",
   "responses": [
     {
       "status": 200,
@@ -52,7 +52,7 @@
   ],
   "recorded_from": {
     "case": "a5a3571edf6e62e441133c4174a0914e72d1b5c61b4cf5a6cea0c23fbaa10061",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

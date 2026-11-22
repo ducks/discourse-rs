@@ -15,14 +15,14 @@
       "path": "/session/current.json"
     }
   ],
-  "started_at": "2026-11-22T00:39:55.730389",
-  "transaction_started_at": "2026-11-22T00:39:55.093226",
+  "started_at": "2026-11-22T04:58:41.638497",
+  "transaction_started_at": "2026-11-22T04:58:40.984232",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=072451439f1a3b519a77039f47b21bcbd98deee3652493c7...",
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=17a3928f38d5cf45c467e34e7332027c02f5db510cc13492...",
       "headers": {
-        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=072451439f1a3b519a77039f47b21bcbd98deee3652493c7"
+        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=17a3928f38d5cf45c467e34e7332027c02f5db510cc13492"
       }
     },
     {
@@ -50,9 +50,9 @@
           },
           "extra": {},
           "user_id": 1,
-          "last_used": "2026-11-22T00:39:55.793805",
-          "created_at": "2026-11-22T00:39:55.794873",
-          "updated_at": "2026-11-22T00:39:55.794873",
+          "last_used": "2026-11-22T04:58:41.736274",
+          "created_at": "2026-11-22T04:58:41.737315",
+          "updated_at": "2026-11-22T04:58:41.737315",
           "credentials": {
             "token": "access-9",
             "expires": false
@@ -88,7 +88,7 @@
             "updated_at": "2026-11-21T23:56:45.584857",
             "approved_at": "2026-11-03T05:07:59.903079",
             "trust_level": 4,
-            "last_seen_at": "2026-11-21T23:56:57.944136",
+            "last_seen_at": "2026-11-22T04:14:24.970474",
             "suspended_at": null,
             "date_of_birth": null,
             "first_seen_at": "2026-11-21T23:56:57.944136",
@@ -100,7 +100,7 @@
             "username_lower": "admin",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": null,
+            "previous_visit_at": "2026-11-21T23:56:57.944136",
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -125,10 +125,10 @@
             "created_at": "2026-11-03T05:07:59.531425",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-22T00:39:55.807005",
+            "updated_at": "2026-11-22T04:58:41.750985",
             "approved_at": "2026-11-03T05:07:59.903079",
             "trust_level": 4,
-            "last_seen_at": "2026-11-21T23:56:57.944136",
+            "last_seen_at": "2026-11-22T04:14:24.970474",
             "suspended_at": null,
             "date_of_birth": null,
             "first_seen_at": "2026-11-21T23:56:57.944136",
@@ -140,7 +140,7 @@
             "username_lower": "admin",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": null,
+            "previous_visit_at": "2026-11-21T23:56:57.944136",
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -199,7 +199,7 @@
   ],
   "recorded_from": {
     "case": "bdd5cd977287935171dfdcbeab59da626f07b0cdbcafffe27f00e2f385515be8",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

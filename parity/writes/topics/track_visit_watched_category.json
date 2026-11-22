@@ -7,8 +7,8 @@
       "path": "/t/37.json?track_visit=true"
     }
   ],
-  "started_at": "2026-11-22T01:45:51.730058",
-  "transaction_started_at": "2026-11-22T01:45:50.909083",
+  "started_at": "2026-11-22T06:06:02.494888",
+  "transaction_started_at": "2026-11-22T06:06:01.668582",
   "responses": [
     {
       "status": 200,
@@ -413,54 +413,6 @@
                 }
               }
             ]
-          },
-          {
-            "fancy_title": "Welcome to Discourse! :wave:",
-            "id": 5,
-            "title": "Welcome to Discourse! :wave:",
-            "slug": "welcome-to-discourse",
-            "posts_count": 1,
-            "reply_count": 0,
-            "highest_post_number": 1,
-            "image_url": null,
-            "created_at": "2026-11-03T05:07:24.494Z",
-            "last_posted_at": "2026-11-03T05:07:24.525Z",
-            "bumped": true,
-            "bumped_at": "2026-11-03T05:07:24.525Z",
-            "archetype": "regular",
-            "unseen": false,
-            "pinned": true,
-            "unpinned": null,
-            "excerpt": "We are so glad you joined us. \nHere are some things you can do to get started: \n:speaking_head: Introduce yourself by adding your picture and information about yourself and your interests to your profile. What is one thi&hellip;",
-            "visible": true,
-            "closed": false,
-            "archived": false,
-            "bookmarked": null,
-            "liked": null,
-            "unicode_title": "Welcome to Discourse! 👋",
-            "tags": [],
-            "tags_descriptions": {},
-            "like_count": 0,
-            "views": 0,
-            "category_id": 4,
-            "featured_link": null,
-            "op_like_count": 0,
-            "has_accepted_answer": false,
-            "posters": [
-              {
-                "extras": "latest single",
-                "description": "Original Poster, Most Recent Poster",
-                "user": {
-                  "id": -1,
-                  "username": "system",
-                  "name": "system",
-                  "avatar_template": "/images/discourse-logo-sketch-small.png",
-                  "admin": true,
-                  "moderator": true,
-                  "trust_level": 4
-                }
-              }
-            ]
           }
         ],
         "tags": [],
@@ -601,15 +553,15 @@
           "topic_id": 37,
           "bookmarked": false,
           "last_posted_at": null,
-          "last_visited_at": "2026-11-22T01:45:52.182301",
-          "first_visited_at": "2026-11-22T01:45:52.182301",
+          "last_visited_at": "2026-11-22T06:06:02.913963",
+          "first_visited_at": "2026-11-22T06:06:02.913963",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": null,
           "notifications_reason_id": 6,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-11-22T01:45:52.183693"
+          "notifications_changed_at": "2026-11-22T06:06:02.915068"
         }
       ],
       "deleted": [],
@@ -839,33 +791,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "di1UB+CRlJzP861NeI1kzbAkRGc=",
-            "created_at": "2026-11-22T01:45:51.289367",
-            "rotated_at": "2026-11-22T01:45:51.2884",
-            "updated_at": "2026-11-22T01:45:51.289367",
+            "auth_token": "hziuNoP72nZICqyKe2hnTg8zz2E=",
+            "created_at": "2026-11-22T06:06:02.041863",
+            "rotated_at": "2026-11-22T06:06:02.040939",
+            "updated_at": "2026-11-22T06:06:02.041863",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "di1UB+CRlJzP861NeI1kzbAkRGc=",
+            "prev_auth_token": "hziuNoP72nZICqyKe2hnTg8zz2E=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T01:45:51.736925",
+            "id": 5,
+            "seen_at": "2026-11-22T06:06:02.502409",
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "di1UB+CRlJzP861NeI1kzbAkRGc=",
-            "created_at": "2026-11-22T01:45:51.289367",
-            "rotated_at": "2026-11-22T01:45:51.2884",
-            "updated_at": "2026-11-22T01:45:51.289367",
+            "auth_token": "hziuNoP72nZICqyKe2hnTg8zz2E=",
+            "created_at": "2026-11-22T06:06:02.041863",
+            "rotated_at": "2026-11-22T06:06:02.040939",
+            "updated_at": "2026-11-22T06:06:02.041863",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "di1UB+CRlJzP861NeI1kzbAkRGc=",
+            "prev_auth_token": "hziuNoP72nZICqyKe2hnTg8zz2E=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -892,7 +844,7 @@
   ],
   "recorded_from": {
     "case": "f843d6e80fc4adf557d2fa1f56168f41820cb473bee05dc628e4fa7edb73ec45",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

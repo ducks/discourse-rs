@@ -73,8 +73,8 @@
       "path": "/u/second_factors.json"
     }
   ],
-  "started_at": "2026-11-22T01:58:03.216474",
-  "transaction_started_at": "2026-11-22T01:58:02.376463",
+  "started_at": "2026-11-22T06:17:49.888829",
+  "transaction_started_at": "2026-11-22T06:17:49.030496",
   "responses": [
     {
       "status": 200,
@@ -157,33 +157,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "9OorYyhXS4t/WdYrrDnph7xafkg=",
-            "created_at": "2026-11-22T01:58:02.735286",
-            "rotated_at": "2026-11-22T01:58:02.7343",
-            "updated_at": "2026-11-22T01:58:02.735286",
+            "auth_token": "fpgWP6ivF84vz373/FXzZvWDu6k=",
+            "created_at": "2026-11-22T06:17:49.406049",
+            "rotated_at": "2026-11-22T06:17:49.405065",
+            "updated_at": "2026-11-22T06:17:49.406049",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "9OorYyhXS4t/WdYrrDnph7xafkg=",
+            "prev_auth_token": "fpgWP6ivF84vz373/FXzZvWDu6k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T01:58:03.222877",
+            "id": 5,
+            "seen_at": "2026-11-22T06:17:49.89503",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "9OorYyhXS4t/WdYrrDnph7xafkg=",
-            "created_at": "2026-11-22T01:58:02.735286",
-            "rotated_at": "2026-11-22T01:58:02.7343",
-            "updated_at": "2026-11-22T01:58:02.735286",
+            "auth_token": "fpgWP6ivF84vz373/FXzZvWDu6k=",
+            "created_at": "2026-11-22T06:17:49.406049",
+            "rotated_at": "2026-11-22T06:17:49.405065",
+            "updated_at": "2026-11-22T06:17:49.406049",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "9OorYyhXS4t/WdYrrDnph7xafkg=",
+            "prev_auth_token": "fpgWP6ivF84vz373/FXzZvWDu6k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -200,9 +200,9 @@
           "enabled": true,
           "user_id": 3,
           "last_used": null,
-          "created_at": "2026-11-21T01:58:02.376463",
+          "created_at": "2026-11-21T06:17:49.030496",
           "public_key": "pQECAyYgASFYIL6Fv+pMgBYuo9Oc9a5tXYDRKePWbLmGdEZ306255gzKIlggrG8Cd3mAXgMUrepAK5YGLpe1z0Yzs1F5GsOnTqrIlv0=",
-          "updated_at": "2026-11-21T01:58:02.376463",
+          "updated_at": "2026-11-21T06:17:49.030496",
           "factor_type": 1,
           "credential_id": "HnvCSIVp71NZzPqvyaaJgIkmZQfBVuIHDYQmGSq7CsE="
         }
@@ -215,9 +215,9 @@
             "enabled": true,
             "user_id": 3,
             "last_used": null,
-            "created_at": "2026-11-21T01:58:02.376463",
+            "created_at": "2026-11-21T06:17:49.030496",
             "public_key": "pQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=",
-            "updated_at": "2026-11-21T01:58:02.376463",
+            "updated_at": "2026-11-21T06:17:49.030496",
             "factor_type": 0,
             "credential_id": "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
           },
@@ -227,9 +227,9 @@
             "enabled": false,
             "user_id": 3,
             "last_used": null,
-            "created_at": "2026-11-21T01:58:02.376463",
+            "created_at": "2026-11-21T06:17:49.030496",
             "public_key": "pQECAyYgASFYIJfWkffoqSQ/0aS6uQa3BgZ1jJd+nJ8Y9v5QoUk//TDlIlgg/bHd+npwRm6gPaRa0DLHgV+SrPjDXI69XfUExuEnLso=",
-            "updated_at": "2026-11-22T01:58:03.38043",
+            "updated_at": "2026-11-22T06:17:50.050604",
             "factor_type": 0,
             "credential_id": "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
           }
@@ -246,7 +246,7 @@
   ],
   "recorded_from": {
     "case": "b55dd42e91d08a5718e342e2cff2535221a858c86e645fcb5808d41eb7f0ab46",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

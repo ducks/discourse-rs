@@ -2,8 +2,8 @@
   "name": "user_visit_rollups_initial",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:24:00.712567",
-  "transaction_started_at": "2026-11-22T01:24:00.072499",
+  "started_at": "2026-11-22T05:44:18.287062",
+  "transaction_started_at": "2026-11-22T05:44:17.634005",
   "responses": [],
   "changes": {
     "user_visit_daily_rollups": {
@@ -31,6 +31,12 @@
           "dau": 4,
           "mau": 4,
           "date": "2026-11-21"
+        },
+        {
+          "id": 5,
+          "dau": 3,
+          "mau": 4,
+          "date": "2026-11-22"
         }
       ],
       "deleted": [],
@@ -54,7 +60,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "37970b819e108061f51e4b0540b38892d6b6965e8cefb3f9ca4f99b2f14d234a",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

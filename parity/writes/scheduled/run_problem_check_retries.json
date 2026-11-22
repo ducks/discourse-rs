@@ -2,14 +2,14 @@
   "name": "run_problem_check_retries",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:23:10.34294",
-  "transaction_started_at": "2026-11-22T01:23:09.705076",
+  "started_at": "2026-11-22T05:43:26.788794",
+  "transaction_started_at": "2026-11-22T05:43:26.147561",
   "responses": [],
   "changes": {
     "admin_notices": {
       "inserted": [
         {
-          "id": 1,
+          "id": 4,
           "details": {
             "count": 2,
             "target": "__NULL__",
@@ -17,9 +17,9 @@
           },
           "subject": 0,
           "priority": 0,
-          "created_at": "2026-11-22T01:23:10.354452",
+          "created_at": "2026-11-22T05:43:26.800055",
           "identifier": "email_sending_failures",
-          "updated_at": "2026-11-22T01:23:10.354452"
+          "updated_at": "2026-11-22T05:43:26.800055"
         }
       ],
       "deleted": [],
@@ -28,7 +28,7 @@
     "problem_check_trackers": {
       "inserted": [
         {
-          "id": 25,
+          "id": 77,
           "blips": 1,
           "target": "__NULL__",
           "details": {
@@ -37,9 +37,9 @@
           },
           "identifier": "email_sending_failures",
           "ignored_at": null,
-          "last_run_at": "2026-11-22T01:23:10.351575",
-          "next_run_at": "2026-11-22T02:23:10.348686",
-          "last_problem_at": "2026-11-22T01:23:10.351575",
+          "last_run_at": "2026-11-22T05:43:26.797289",
+          "next_run_at": "2026-11-22T06:43:26.794678",
+          "last_problem_at": "2026-11-22T05:43:26.797289",
           "last_success_at": null
         }
       ],
@@ -49,8 +49,8 @@
   },
   "jobs": [],
   "next_ids": {
-    "admin_notices": 1,
-    "problem_check_trackers": 25
+    "admin_notices": 4,
+    "problem_check_trackers": 77
   },
   "setup": [
     "DELETE FROM problem_check_trackers",
@@ -85,7 +85,7 @@
   ],
   "recorded_from": {
     "case": "d36c2db7559b8d67144243ca8b47582725539c7058a8dc04b5c5624d82c681a5",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

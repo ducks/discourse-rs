@@ -70,8 +70,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:05:13.725421",
-  "transaction_started_at": "2026-11-22T00:05:12.960423",
+  "started_at": "2026-11-22T04:23:25.095419",
+  "transaction_started_at": "2026-11-22T04:23:24.330301",
   "responses": [
     {
       "status": 200,
@@ -104,92 +104,92 @@
     "site_settings": {
       "inserted": [
         {
-          "id": 46,
-          "name": "about_page_extra_groups_order",
-          "value": "order of creation",
-          "data_type": 7,
-          "created_at": "2026-11-22T00:05:13.967558",
-          "updated_at": "2026-11-22T00:05:13.967558"
-        },
-        {
-          "id": 47,
-          "name": "about_page_extra_groups_show_description",
-          "value": "t",
-          "data_type": 5,
-          "created_at": "2026-11-22T00:05:13.975858",
-          "updated_at": "2026-11-22T00:05:13.975858"
-        },
-        {
           "id": 37,
           "name": "contact_email",
           "value": "contact@example.com",
           "data_type": 14,
-          "created_at": "2026-11-22T00:05:13.741271",
-          "updated_at": "2026-11-22T00:05:13.741271"
+          "created_at": "2026-11-22T04:23:25.110308",
+          "updated_at": "2026-11-22T04:23:25.110308"
         },
         {
           "id": 38,
           "name": "contact_url",
           "value": "https://example.com/contact",
           "data_type": 1,
-          "created_at": "2026-11-22T00:05:13.745444",
-          "updated_at": "2026-11-22T00:05:13.745444"
+          "created_at": "2026-11-22T04:23:25.115021",
+          "updated_at": "2026-11-22T04:23:25.115021"
         },
         {
           "id": 39,
           "name": "site_contact_username",
           "value": "admin",
           "data_type": 15,
-          "created_at": "2026-11-22T00:05:13.750674",
-          "updated_at": "2026-11-22T00:05:13.750674"
+          "created_at": "2026-11-22T04:23:25.119889",
+          "updated_at": "2026-11-22T04:23:25.119889"
         },
         {
           "id": 40,
           "name": "site_contact_group_name",
           "value": "3",
           "data_type": 19,
-          "created_at": "2026-11-22T00:05:13.757026",
-          "updated_at": "2026-11-22T00:05:13.757026"
+          "created_at": "2026-11-22T04:23:25.125723",
+          "updated_at": "2026-11-22T04:23:25.125723"
         },
         {
           "id": 41,
           "name": "community_owner",
           "value": "Jake",
           "data_type": 1,
-          "created_at": "2026-11-22T00:05:13.760721",
-          "updated_at": "2026-11-22T00:05:13.760721"
+          "created_at": "2026-11-22T04:23:25.129727",
+          "updated_at": "2026-11-22T04:23:25.129727"
         },
         {
           "id": 42,
           "name": "company_name",
           "value": "Ducks Inc",
           "data_type": 1,
-          "created_at": "2026-11-22T00:05:13.870446",
-          "updated_at": "2026-11-22T00:05:13.870446"
+          "created_at": "2026-11-22T04:23:25.211865",
+          "updated_at": "2026-11-22T04:23:25.211865"
         },
         {
           "id": 43,
           "name": "company_url",
           "value": "https://ducks.example",
           "data_type": 1,
-          "created_at": "2026-11-22T00:05:13.882289",
-          "updated_at": "2026-11-22T00:05:13.882289"
+          "created_at": "2026-11-22T04:23:25.216292",
+          "updated_at": "2026-11-22T04:23:25.216292"
         },
         {
           "id": 44,
           "name": "about_page_extra_groups",
           "value": "1|3",
           "data_type": 20,
-          "created_at": "2026-11-22T00:05:13.943263",
-          "updated_at": "2026-11-22T00:05:13.943263"
+          "created_at": "2026-11-22T04:23:25.243014",
+          "updated_at": "2026-11-22T04:23:25.243014"
         },
         {
           "id": 45,
           "name": "about_page_extra_groups_initial_members",
           "value": "4",
           "data_type": 3,
-          "created_at": "2026-11-22T00:05:13.956877",
-          "updated_at": "2026-11-22T00:05:13.956877"
+          "created_at": "2026-11-22T04:23:25.247815",
+          "updated_at": "2026-11-22T04:23:25.247815"
+        },
+        {
+          "id": 46,
+          "name": "about_page_extra_groups_order",
+          "value": "order of creation",
+          "data_type": 7,
+          "created_at": "2026-11-22T04:23:25.252478",
+          "updated_at": "2026-11-22T04:23:25.252478"
+        },
+        {
+          "id": 47,
+          "name": "about_page_extra_groups_show_description",
+          "value": "t",
+          "data_type": 5,
+          "created_at": "2026-11-22T04:23:25.256205",
+          "updated_at": "2026-11-22T04:23:25.256205"
         }
       ],
       "deleted": [],
@@ -201,33 +201,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1JA+10H90ZzpOarhty9M79WvUN0=",
-            "created_at": "2026-11-22T00:05:13.25835",
-            "rotated_at": "2026-11-22T00:05:13.257526",
-            "updated_at": "2026-11-22T00:05:13.25835",
+            "auth_token": "Q738EBeeNnso0wUVYAXZAwgKJ7U=",
+            "created_at": "2026-11-22T04:23:24.6171",
+            "rotated_at": "2026-11-22T04:23:24.616342",
+            "updated_at": "2026-11-22T04:23:24.6171",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "1JA+10H90ZzpOarhty9M79WvUN0=",
+            "prev_auth_token": "Q738EBeeNnso0wUVYAXZAwgKJ7U=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:05:13.732352",
+            "id": 5,
+            "seen_at": "2026-11-22T04:23:25.101092",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1JA+10H90ZzpOarhty9M79WvUN0=",
-            "created_at": "2026-11-22T00:05:13.25835",
-            "rotated_at": "2026-11-22T00:05:13.257526",
-            "updated_at": "2026-11-22T00:05:13.25835",
+            "auth_token": "Q738EBeeNnso0wUVYAXZAwgKJ7U=",
+            "created_at": "2026-11-22T04:23:24.6171",
+            "rotated_at": "2026-11-22T04:23:24.616342",
+            "updated_at": "2026-11-22T04:23:24.6171",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "1JA+10H90ZzpOarhty9M79WvUN0=",
+            "prev_auth_token": "Q738EBeeNnso0wUVYAXZAwgKJ7U=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -248,10 +248,10 @@
           "topic_id": null,
           "new_value": "contact@example.com",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.743229",
+          "created_at": "2026-11-22T04:23:25.112269",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.743229",
+          "updated_at": "2026-11-22T04:23:25.112269",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -270,10 +270,10 @@
           "topic_id": null,
           "new_value": "https://example.com/contact",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.747059",
+          "created_at": "2026-11-22T04:23:25.116517",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.747059",
+          "updated_at": "2026-11-22T04:23:25.116517",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -292,10 +292,10 @@
           "topic_id": null,
           "new_value": "admin",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.751947",
+          "created_at": "2026-11-22T04:23:25.121378",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.751947",
+          "updated_at": "2026-11-22T04:23:25.121378",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -314,10 +314,10 @@
           "topic_id": null,
           "new_value": "3",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.758658",
+          "created_at": "2026-11-22T04:23:25.127525",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.758658",
+          "updated_at": "2026-11-22T04:23:25.127525",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -336,10 +336,10 @@
           "topic_id": null,
           "new_value": "Ducks Inc",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.876053",
+          "created_at": "2026-11-22T04:23:25.213669",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.876053",
+          "updated_at": "2026-11-22T04:23:25.213669",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -358,10 +358,10 @@
           "topic_id": null,
           "new_value": "https://ducks.example",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.886809",
+          "created_at": "2026-11-22T04:23:25.218019",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.886809",
+          "updated_at": "2026-11-22T04:23:25.218019",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -380,10 +380,10 @@
           "topic_id": null,
           "new_value": "1|3",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.948512",
+          "created_at": "2026-11-22T04:23:25.245377",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.948512",
+          "updated_at": "2026-11-22T04:23:25.245377",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -402,10 +402,10 @@
           "topic_id": null,
           "new_value": "4",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.960612",
+          "created_at": "2026-11-22T04:23:25.249638",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.960612",
+          "updated_at": "2026-11-22T04:23:25.249638",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -424,10 +424,10 @@
           "topic_id": null,
           "new_value": "order of creation",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.971842",
+          "created_at": "2026-11-22T04:23:25.254014",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.971842",
+          "updated_at": "2026-11-22T04:23:25.254014",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -446,10 +446,10 @@
           "topic_id": null,
           "new_value": "true",
           "admin_only": true,
-          "created_at": "2026-11-22T00:05:13.978676",
+          "created_at": "2026-11-22T04:23:25.258712",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T00:05:13.978676",
+          "updated_at": "2026-11-22T04:23:25.258712",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -469,7 +469,7 @@
   },
   "recorded_from": {
     "case": "f97c790fddbd14e84fcf2ce2702244f05d0d7b1af6b762f865c04c2eecff08ce",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

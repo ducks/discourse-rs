@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_delete",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:20:56.415631",
-  "transaction_started_at": "2026-11-22T01:20:55.814189",
+  "started_at": "2026-11-22T05:41:10.926824",
+  "transaction_started_at": "2026-11-22T05:41:10.164984",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -16,9 +16,9 @@
           "user_id": 3,
           "created_at": "2026-11-21T23:56:54.662129",
           "updated_at": "2026-11-21T23:56:54.662129",
-          "reminder_at": "2026-11-22T01:15:55.814189",
+          "reminder_at": "2026-11-22T05:36:10.164984",
           "bookmarkable_id": 36,
-          "reminder_set_at": "2026-11-21T01:20:55.814189",
+          "reminder_set_at": "2026-11-21T05:41:10.164984",
           "bookmarkable_type": "Post",
           "reminder_last_sent_at": null,
           "auto_delete_preference": 1
@@ -29,13 +29,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 20,
+          "id": 34,
           "data": "{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"display_username\":\"user1\",\"bookmark_name\":\"Parity fixture: with a reminder\",\"bookmark_id\":3,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":36}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-22T01:20:56.426489",
-          "updated_at": "2026-11-22T01:20:56.426489",
+          "created_at": "2026-11-22T05:41:10.933573",
+          "updated_at": "2026-11-22T05:41:10.933573",
           "post_number": 2,
           "high_priority": true,
           "post_action_id": null,
@@ -160,7 +160,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 20
+    "notifications": 34
   },
   "setup": [
     "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', auto_delete_preference = 1 WHERE id = 3"
@@ -174,7 +174,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "cea784126d3c1dbf350191d3e4708b73190f580c1b85a0607142e7e9aa28ffe3",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

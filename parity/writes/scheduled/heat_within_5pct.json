@@ -2,8 +2,8 @@
   "name": "heat_within_5pct",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:22:07.602808",
-  "transaction_started_at": "2026-11-22T01:22:06.984902",
+  "started_at": "2026-11-22T05:42:23.446795",
+  "transaction_started_at": "2026-11-22T05:42:22.828928",
   "responses": [],
   "changes": {
     "site_settings": {
@@ -13,16 +13,16 @@
           "name": "topic_views_heat_medium",
           "value": "2300",
           "data_type": 3,
-          "created_at": "2026-11-22T01:22:07.604506",
-          "updated_at": "2026-11-22T01:22:07.604506"
+          "created_at": "2026-11-22T05:42:23.448482",
+          "updated_at": "2026-11-22T05:42:23.448482"
         },
         {
           "id": 39,
           "name": "topic_views_heat_low",
           "value": "1200",
           "data_type": 3,
-          "created_at": "2026-11-22T01:22:07.609401",
-          "updated_at": "2026-11-22T01:22:07.609401"
+          "created_at": "2026-11-22T05:42:23.454108",
+          "updated_at": "2026-11-22T05:42:23.454108"
         }
       ],
       "deleted": [],
@@ -41,10 +41,10 @@
           "topic_id": null,
           "new_value": "2300",
           "admin_only": true,
-          "created_at": "2026-11-22T01:22:07.607059",
+          "created_at": "2026-11-22T05:42:23.451674",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T01:22:07.607059",
+          "updated_at": "2026-11-22T05:42:23.451674",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -63,10 +63,10 @@
           "topic_id": null,
           "new_value": "1200",
           "admin_only": true,
-          "created_at": "2026-11-22T01:22:07.61234",
+          "created_at": "2026-11-22T05:42:23.457965",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T01:22:07.61234",
+          "updated_at": "2026-11-22T05:42:23.457965",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -99,7 +99,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "236e67172eacf1d0ea98e6a8a929b69c15914e03ad3ac304035cd4005cc1a80e",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

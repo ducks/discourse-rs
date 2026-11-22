@@ -15,8 +15,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T02:02:47.7145",
-  "transaction_started_at": "2026-11-22T02:02:46.7581",
+  "started_at": "2026-11-22T06:22:39.985685",
+  "transaction_started_at": "2026-11-22T06:22:38.9915",
   "responses": [
     {
       "status": 200,
@@ -75,33 +75,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "5EtvILndmzB593K6NfUYRxy2hGQ=",
-            "created_at": "2026-11-22T02:02:47.136156",
-            "rotated_at": "2026-11-22T02:02:47.135298",
-            "updated_at": "2026-11-22T02:02:47.136156",
+            "auth_token": "r3OvFFZ6h7Uz4S7C8A9EEi4vNJE=",
+            "created_at": "2026-11-22T06:22:39.364886",
+            "rotated_at": "2026-11-22T06:22:39.363942",
+            "updated_at": "2026-11-22T06:22:39.364886",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "5EtvILndmzB593K6NfUYRxy2hGQ=",
+            "prev_auth_token": "r3OvFFZ6h7Uz4S7C8A9EEi4vNJE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T02:02:47.727291",
+            "id": 5,
+            "seen_at": "2026-11-22T06:22:39.992715",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "5EtvILndmzB593K6NfUYRxy2hGQ=",
-            "created_at": "2026-11-22T02:02:47.136156",
-            "rotated_at": "2026-11-22T02:02:47.135298",
-            "updated_at": "2026-11-22T02:02:47.136156",
+            "auth_token": "r3OvFFZ6h7Uz4S7C8A9EEi4vNJE=",
+            "created_at": "2026-11-22T06:22:39.364886",
+            "rotated_at": "2026-11-22T06:22:39.363942",
+            "updated_at": "2026-11-22T06:22:39.364886",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "5EtvILndmzB593K6NfUYRxy2hGQ=",
+            "prev_auth_token": "r3OvFFZ6h7Uz4S7C8A9EEi4vNJE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -122,10 +122,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-22T02:02:47.83511",
+          "created_at": "2026-11-22T06:22:40.041647",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T02:02:47.83511",
+          "updated_at": "2026-11-22T06:22:40.041647",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -142,8 +142,8 @@
         {
           "id": 1,
           "action": 2,
-          "created_at": "2026-11-22T02:02:47.800332",
-          "updated_at": "2026-11-22T02:02:47.800332"
+          "created_at": "2026-11-22T06:22:40.028917",
+          "updated_at": "2026-11-22T06:22:40.028917"
         }
       ],
       "deleted": [],
@@ -156,8 +156,8 @@
           "html": false,
           "word": "c[a@]t",
           "action": 2,
-          "created_at": "2026-11-22T02:02:47.766213",
-          "updated_at": "2026-11-22T02:02:47.815314",
+          "created_at": "2026-11-22T06:22:40.015714",
+          "updated_at": "2026-11-22T06:22:40.03332",
           "replacement": null,
           "case_sensitive": false,
           "watched_word_group_id": 1
@@ -167,8 +167,8 @@
           "html": false,
           "word": "do+g",
           "action": 2,
-          "created_at": "2026-11-22T02:02:47.783788",
-          "updated_at": "2026-11-22T02:02:47.828542",
+          "created_at": "2026-11-22T06:22:40.022367",
+          "updated_at": "2026-11-22T06:22:40.037994",
           "replacement": null,
           "case_sensitive": false,
           "watched_word_group_id": 1
@@ -189,7 +189,7 @@
   },
   "recorded_from": {
     "case": "a9eb0a72e35eeafd9d98c1f238cbf04de503c4240c01b451e828ccc8604e242b",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "digest_too_soon",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T00:32:55.239976",
-  "transaction_started_at": "2026-11-22T00:32:54.656161",
+  "started_at": "2026-11-22T04:51:36.195058",
+  "transaction_started_at": "2026-11-22T04:51:35.465656",
   "responses": [],
   "changes": {
     "user_stats": {
@@ -21,7 +21,7 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -31,7 +31,7 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": "2026-11-21T23:32:54.656161",
+            "digest_attempted_at": "2026-11-22T03:51:35.465656",
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
             "first_post_created_at": "2026-11-21T23:56:44.45838",
@@ -47,7 +47,7 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -57,7 +57,7 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": "2026-11-22T00:32:55.244184",
+            "digest_attempted_at": "2026-11-22T04:51:36.198322",
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
             "first_post_created_at": "2026-11-21T23:56:44.45838",
@@ -87,7 +87,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "7c15f4b0fbd192d820c5568663249c8acd90615951d067bd8f241b0e82a52ac3",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

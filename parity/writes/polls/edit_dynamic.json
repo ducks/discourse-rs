@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:56:16.207422",
-  "transaction_started_at": "2026-11-22T00:56:15.412483",
+  "started_at": "2026-11-22T05:15:20.24352",
+  "transaction_started_at": "2026-11-22T05:15:19.45667",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
           "post_number": 2,
           "post_type": 1,
           "posts_count": 5,
-          "updated_at": "2026-11-22T00:56:16.315Z",
+          "updated_at": "2026-11-22T05:15:20.362Z",
           "reply_count": 0,
           "reply_to_post_number": null,
           "quote_count": 0,
@@ -164,8 +164,8 @@
           "html": "Yes",
           "digest": "277962ea3b8227e06ed3eb378fbdba0d",
           "poll_id": 9001,
-          "created_at": "2026-11-22T00:56:16.291361",
-          "updated_at": "2026-11-22T00:56:16.291361",
+          "created_at": "2026-11-22T05:15:20.334563",
+          "updated_at": "2026-11-22T05:15:20.334563",
           "anonymous_votes": null
         },
         {
@@ -173,8 +173,8 @@
           "html": "No",
           "digest": "720aa6324194f0ccd395b3cd0ed76f0e",
           "poll_id": 9001,
-          "created_at": "2026-11-22T00:56:16.293155",
-          "updated_at": "2026-11-22T00:56:16.293155",
+          "created_at": "2026-11-22T05:15:20.336236",
+          "updated_at": "2026-11-22T05:15:20.336236",
           "anonymous_votes": null
         }
       ],
@@ -223,8 +223,8 @@
           "post_id": 36,
           "user_id": 3,
           "unlisted": false,
-          "created_at": "2026-11-22T00:56:16.324351",
-          "updated_at": "2026-11-22T00:56:16.324351",
+          "created_at": "2026-11-22T05:15:20.369566",
+          "updated_at": "2026-11-22T05:15:20.369566",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nraw:\n- Reply one from user1, also long enough to pass the minimum length check.\n- |-\n  Dynamic now.\n\n  [poll dynamic=true]\n  * Yes\n  * No\n  [/poll]\ncooked:\n- \"<p>Reply one from user1, also long enough to pass the minimum length check.</p>\"\n- |-\n  <p>Dynamic now.</p>\n  <div class=\"poll\" data-poll-name=\"poll\" data-poll-status=\"open\" data-poll-dynamic=\"true\">\n  <div class=\"poll-container\">\n  <ul>\n  <li data-poll-option-id=\"277962ea3b8227e06ed3eb378fbdba0d\">Yes</li>\n  <li data-poll-option-id=\"720aa6324194f0ccd395b3cd0ed76f0e\">No</li>\n  </ul>\n  </div>\n  <div class=\"poll-info\">\n  <div class=\"poll-info_counts\">\n  <div class=\"poll-info_counts-count\">\n  <span class=\"info-number\">0</span>\n  <span class=\"info-label\">voters</span>\n  </div>\n  </div>\n  </div>\n  </div>\n"
         }
       ],
@@ -326,7 +326,7 @@
             "locale": null,
             "user_id": 3,
             "version": 2,
-            "baked_at": "2026-11-22T00:56:16.315467",
+            "baked_at": "2026-11-22T05:15:20.361917",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
@@ -339,7 +339,7 @@
             "self_edits": 1,
             "sort_order": 2,
             "spam_count": 0,
-            "updated_at": "2026-11-22T00:56:16.315646",
+            "updated_at": "2026-11-22T05:15:20.36212",
             "word_count": 8,
             "action_code": null,
             "cook_method": 1,
@@ -359,7 +359,7 @@
             "last_editor_id": 3,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T00:56:16.226166",
+            "last_version_at": "2026-11-22T05:15:20.267157",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -491,33 +491,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "J/cTlVNZ3e8tcHpOKIprR49KBzM=",
-            "created_at": "2026-11-22T00:56:15.743987",
-            "rotated_at": "2026-11-22T00:56:15.743147",
-            "updated_at": "2026-11-22T00:56:15.743987",
+            "auth_token": "86eqb0N5f2DbLUUtT3tTFxGsQHU=",
+            "created_at": "2026-11-22T05:15:19.774845",
+            "rotated_at": "2026-11-22T05:15:19.774048",
+            "updated_at": "2026-11-22T05:15:19.774845",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "J/cTlVNZ3e8tcHpOKIprR49KBzM=",
+            "prev_auth_token": "86eqb0N5f2DbLUUtT3tTFxGsQHU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:56:16.213998",
+            "id": 5,
+            "seen_at": "2026-11-22T05:15:20.251403",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "J/cTlVNZ3e8tcHpOKIprR49KBzM=",
-            "created_at": "2026-11-22T00:56:15.743987",
-            "rotated_at": "2026-11-22T00:56:15.743147",
-            "updated_at": "2026-11-22T00:56:15.743987",
+            "auth_token": "86eqb0N5f2DbLUUtT3tTFxGsQHU=",
+            "created_at": "2026-11-22T05:15:19.774845",
+            "rotated_at": "2026-11-22T05:15:19.774048",
+            "updated_at": "2026-11-22T05:15:19.774845",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "J/cTlVNZ3e8tcHpOKIprR49KBzM=",
+            "prev_auth_token": "86eqb0N5f2DbLUUtT3tTFxGsQHU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -540,7 +540,7 @@
             "likes_given": 1,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -566,7 +566,7 @@
             "likes_given": 1,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -628,7 +628,7 @@
   ],
   "recorded_from": {
     "case": "10a41fc533f18bdb58fd16c4a3af66190869c6315a631b07068ef5b572753eca",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "category_stats_unchanged",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:21:12.634134",
-  "transaction_started_at": "2026-11-22T01:21:12.055744",
+  "started_at": "2026-11-22T05:41:27.686571",
+  "transaction_started_at": "2026-11-22T05:41:27.00386",
   "responses": [],
   "changes": {
     "categories": {
@@ -96,7 +96,7 @@
             "style_type": 2,
             "text_color": "FFFFFF",
             "topics_day": 1,
-            "updated_at": "2026-11-22T01:21:12.653323",
+            "updated_at": "2026-11-22T05:41:27.748534",
             "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
             "posts_month": 1,
             "topic_count": 1,
@@ -224,7 +224,7 @@
             "style_type": 2,
             "text_color": "FFFFFF",
             "topics_day": 0,
-            "updated_at": "2026-11-22T01:21:12.669234",
+            "updated_at": "2026-11-22T05:41:27.82018",
             "description": "<p>Private category for staff discussions. Topics are only visible to admins and moderators.</p>",
             "posts_month": 3,
             "topic_count": 2,
@@ -352,7 +352,7 @@
             "style_type": 2,
             "text_color": "FFFFFF",
             "topics_day": 2,
-            "updated_at": "2026-11-22T01:21:12.685589",
+            "updated_at": "2026-11-22T05:41:27.873436",
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "posts_month": 7,
             "topic_count": 3,
@@ -480,7 +480,7 @@
             "style_type": 0,
             "text_color": "FFFFFF",
             "topics_day": 1,
-            "updated_at": "2026-11-22T01:21:12.701263",
+            "updated_at": "2026-11-22T05:41:27.893391",
             "description": null,
             "posts_month": 1,
             "topic_count": 1,
@@ -566,7 +566,7 @@
   ],
   "recorded_from": {
     "case": "6a278f05ee6502aa0fedb98da1d593e4f83e00adf8e09b63f42ed63ff95298a7",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

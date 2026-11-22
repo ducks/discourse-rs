@@ -27,8 +27,8 @@
       "path": "/top.json?period=all&state=muted"
     }
   ],
-  "started_at": "2026-11-22T00:50:17.438858",
-  "transaction_started_at": "2026-11-22T00:50:16.533819",
+  "started_at": "2026-11-22T05:09:14.403574",
+  "transaction_started_at": "2026-11-22T05:09:13.607929",
   "responses": [
     {
       "status": 200,
@@ -837,6 +837,25 @@
     {
       "status": 200,
       "body": {
+        "users": [
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "trust_level": 1
+          },
+          {
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "admin": true,
+            "trust_level": 4
+          }
+        ],
+        "primary_groups": [],
+        "flair_groups": [],
         "topic_list": {
           "can_create_topic": true,
           "filter": "hot",
@@ -853,7 +872,75 @@
               "slug": "howto"
             }
           ],
-          "topics": []
+          "topics": [
+            {
+              "fancy_title": "Parity fixture: liked and archived",
+              "id": 41,
+              "title": "Parity fixture: liked and archived",
+              "slug": "parity-fixture-liked-and-archived",
+              "posts_count": 1,
+              "reply_count": 0,
+              "highest_post_number": 1,
+              "image_url": null,
+              "created_at": "2026-11-21T23:56:45.940Z",
+              "last_posted_at": "2026-11-21T23:56:45.971Z",
+              "bumped": true,
+              "bumped_at": "2026-11-21T23:56:45.971Z",
+              "archetype": "regular",
+              "unseen": true,
+              "last_read_post_number": null,
+              "unread": 0,
+              "new_posts": 0,
+              "unread_posts": 0,
+              "pinned": false,
+              "unpinned": null,
+              "visible": true,
+              "closed": false,
+              "archived": true,
+              "notification_level": 0,
+              "bookmarked": false,
+              "liked": false,
+              "tags": [
+                {
+                  "id": 2,
+                  "name": "guide",
+                  "slug": "guide"
+                },
+                {
+                  "id": 1,
+                  "name": "howto",
+                  "slug": "howto"
+                }
+              ],
+              "tags_descriptions": {},
+              "views": 0,
+              "like_count": 1,
+              "has_summary": false,
+              "last_poster_username": "user0",
+              "category_id": 4,
+              "op_like_count": 1,
+              "pinned_globally": false,
+              "featured_link": null,
+              "has_accepted_answer": false,
+              "can_vote": false,
+              "posters": [
+                {
+                  "extras": "latest",
+                  "description": "Original Poster, Most Recent Poster",
+                  "user_id": 2,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                },
+                {
+                  "extras": null,
+                  "description": "Recent Poster",
+                  "user_id": 1,
+                  "primary_group_id": null,
+                  "flair_group_id": null
+                }
+              ]
+            }
+          ]
         }
       }
     },
@@ -1107,33 +1194,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "61bpvOgzZhAqk1UGiLChmW4HcxQ=",
-            "created_at": "2026-11-22T00:50:16.855701",
-            "rotated_at": "2026-11-22T00:50:16.854887",
-            "updated_at": "2026-11-22T00:50:16.855701",
+            "auth_token": "Rx/qGQLfxfMJ1g+cEmhpoKeesyQ=",
+            "created_at": "2026-11-22T05:09:13.946444",
+            "rotated_at": "2026-11-22T05:09:13.944932",
+            "updated_at": "2026-11-22T05:09:13.946444",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "61bpvOgzZhAqk1UGiLChmW4HcxQ=",
+            "prev_auth_token": "Rx/qGQLfxfMJ1g+cEmhpoKeesyQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:50:17.44679",
+            "id": 5,
+            "seen_at": "2026-11-22T05:09:14.410553",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "61bpvOgzZhAqk1UGiLChmW4HcxQ=",
-            "created_at": "2026-11-22T00:50:16.855701",
-            "rotated_at": "2026-11-22T00:50:16.854887",
-            "updated_at": "2026-11-22T00:50:16.855701",
+            "auth_token": "Rx/qGQLfxfMJ1g+cEmhpoKeesyQ=",
+            "created_at": "2026-11-22T05:09:13.946444",
+            "rotated_at": "2026-11-22T05:09:13.944932",
+            "updated_at": "2026-11-22T05:09:13.946444",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "61bpvOgzZhAqk1UGiLChmW4HcxQ=",
+            "prev_auth_token": "Rx/qGQLfxfMJ1g+cEmhpoKeesyQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1146,7 +1233,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "23e1250b24464c0ffbe273e21b2f5ba5178cb11b468ae0f7929c0a585756e4dd",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

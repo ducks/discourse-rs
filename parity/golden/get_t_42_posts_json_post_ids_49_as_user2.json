@@ -1,7 +1,7 @@
 {
   "request": "GET /t/42/posts.json?post_ids[]=49 as=user2",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T02:23:28.874303224+00:00",
+  "recorded_at": "2026-11-22T06:34:27.659868444+00:00",
   "status": 404,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"errors\":[\"The requested URL or resource could not be found.\"],\"error_type\":\"not_found\"}"

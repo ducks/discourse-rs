@@ -2,8 +2,8 @@
   "name": "uploads_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:23:49.005115",
-  "transaction_started_at": "2026-11-22T01:23:48.407341",
+  "started_at": "2026-11-22T05:44:06.184193",
+  "transaction_started_at": "2026-11-22T05:44:05.582047",
   "responses": [],
   "changes": {
     "badges": {
@@ -22,11 +22,11 @@
             "listable": true,
             "created_at": "2026-11-03T05:07:09.727562",
             "show_posts": false,
-            "updated_at": "2026-11-03T05:07:09.727562",
+            "updated_at": "2026-11-22T04:14:25.431519",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
-            "grant_count": 0,
+            "grant_count": 5,
             "target_posts": false,
             "badge_type_id": 3,
             "multiple_grant": false,
@@ -46,11 +46,11 @@
             "listable": true,
             "created_at": "2026-11-03T05:07:09.727562",
             "show_posts": false,
-            "updated_at": "2026-11-03T05:07:09.727562",
+            "updated_at": "2026-11-22T04:14:25.431519",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
-            "grant_count": 0,
+            "grant_count": 5,
             "target_posts": false,
             "badge_type_id": 3,
             "multiple_grant": false,
@@ -71,8 +71,8 @@
           "status": 1,
           "filesize": 10,
           "multipart": false,
-          "created_at": "2026-11-21T23:23:48.407341",
-          "updated_at": "2026-11-22T01:23:48.407341",
+          "created_at": "2026-11-22T03:44:05.582047",
+          "updated_at": "2026-11-22T05:44:05.582047",
           "upload_type": "composer",
           "created_by_id": 3,
           "original_filename": "a.png",
@@ -85,8 +85,8 @@
           "status": 2,
           "filesize": 10,
           "multipart": false,
-          "created_at": "2026-11-21T00:23:48.407341",
-          "updated_at": "2026-11-22T01:23:48.407341",
+          "created_at": "2026-11-21T04:44:05.582047",
+          "updated_at": "2026-11-22T05:44:05.582047",
           "upload_type": "composer",
           "created_by_id": 3,
           "original_filename": "d.png",
@@ -110,8 +110,8 @@
           "filesize": 10,
           "extension": ".png",
           "upload_id": 9606,
-          "created_at": "2026-11-22T01:23:48.407341",
-          "updated_at": "2026-11-22T01:23:48.407341"
+          "created_at": "2026-11-22T05:44:05.582047",
+          "updated_at": "2026-11-22T05:44:05.582047"
         }
       ],
       "updated": []
@@ -132,8 +132,8 @@
           "animated": null,
           "filesize": 100,
           "extension": "png",
-          "created_at": "2026-11-19T01:23:48.407341",
-          "updated_at": "2026-11-19T01:23:48.407341",
+          "created_at": "2026-11-19T05:44:05.582047",
+          "updated_at": "2026-11-19T05:44:05.582047",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -158,8 +158,8 @@
           "animated": null,
           "filesize": 100,
           "extension": "png",
-          "created_at": "2026-11-19T01:23:48.407341",
-          "updated_at": "2026-11-19T01:23:48.407341",
+          "created_at": "2026-11-19T05:44:05.582047",
+          "updated_at": "2026-11-19T05:44:05.582047",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -184,8 +184,8 @@
           "animated": null,
           "filesize": 100,
           "extension": "png",
-          "created_at": "2026-11-19T01:23:48.407341",
-          "updated_at": "2026-11-19T01:23:48.407341",
+          "created_at": "2026-11-19T05:44:05.582047",
+          "updated_at": "2026-11-19T05:44:05.582047",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -271,7 +271,7 @@
           "id": 36,
           "user_id": 3,
           "upload_id": 9606,
-          "created_at": "2026-11-22T01:23:48.407341"
+          "created_at": "2026-11-22T05:44:05.582047"
         }
       ],
       "updated": []
@@ -389,7 +389,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "e5525a4e6bedbcceea3b7ca89abe5b340ba85c29c4b1fdb9041c1cddc3b9078b",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

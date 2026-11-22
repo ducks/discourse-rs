@@ -2,8 +2,8 @@
   "name": "job_close_not_runnable",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T01:47:57.109589",
-  "transaction_started_at": "2026-11-22T01:47:56.497561",
+  "started_at": "2026-11-22T06:08:10.063181",
+  "transaction_started_at": "2026-11-22T06:08:09.272467",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -22,7 +22,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "5c39b59c03aec9e82c8b0ad5ec0a285924bd94d9f9a804fc794a20d8e666a0cb",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

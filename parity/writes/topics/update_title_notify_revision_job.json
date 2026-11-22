@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T01:46:52.765151",
-  "transaction_started_at": "2026-11-22T01:46:51.919593",
+  "started_at": "2026-11-22T06:07:04.178628",
+  "transaction_started_at": "2026-11-22T06:07:03.301397",
   "responses": [
     {
       "status": 200,
@@ -42,26 +42,26 @@
     "notifications": {
       "inserted": [
         {
-          "id": 20,
+          "id": 34,
           "data": "{\"topic_title\":\"Parity fixture: a wiki renamed for its watchers\",\"original_post_id\":35,\"original_post_type\":1,\"original_username\":\"admin\",\"revision_number\":2,\"display_username\":\"admin\",\"display_name\":\"User0\"}",
           "read": false,
           "user_id": 2,
           "topic_id": 35,
-          "created_at": "2026-11-22T01:46:52.932067",
-          "updated_at": "2026-11-22T01:46:52.932067",
+          "created_at": "2026-11-22T06:07:04.348146",
+          "updated_at": "2026-11-22T06:07:04.348146",
           "post_number": 1,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 4
         },
         {
-          "id": 21,
+          "id": 35,
           "data": "{\"topic_title\":\"Parity fixture: a wiki renamed for its watchers\",\"original_post_id\":35,\"original_post_type\":1,\"original_username\":\"admin\",\"revision_number\":2,\"display_username\":\"admin\",\"display_name\":\"User0\"}",
           "read": false,
           "user_id": 5,
           "topic_id": 35,
-          "created_at": "2026-11-22T01:46:52.939428",
-          "updated_at": "2026-11-22T01:46:52.939428",
+          "created_at": "2026-11-22T06:07:04.355125",
+          "updated_at": "2026-11-22T06:07:04.355125",
           "post_number": 1,
           "high_priority": false,
           "post_action_id": null,
@@ -80,8 +80,8 @@
           "post_id": 35,
           "user_id": 1,
           "unlisted": false,
-          "created_at": "2026-11-22T01:46:52.831937",
-          "updated_at": "2026-11-22T01:46:52.831937",
+          "created_at": "2026-11-22T06:07:04.255954",
+          "updated_at": "2026-11-22T06:07:04.255954",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Parity fixture: replies and posters'\n- 'Parity fixture: a wiki renamed for its watchers'\n"
         }
       ],
@@ -268,7 +268,7 @@
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T01:46:52.783068",
+            "updated_at": "2026-11-22T06:07:04.200226",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -288,7 +288,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T01:46:52.780544",
+            "last_version_at": "2026-11-22T06:07:04.198072",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -401,7 +401,7 @@
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T01:46:52.814683",
+            "updated_at": "2026-11-22T06:07:04.234817",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -441,8 +441,8 @@
         {
           "id": 65,
           "user_id": 2,
-          "created_at": "2026-11-22T01:46:52.926867",
-          "updated_at": "2026-11-22T01:46:52.926867",
+          "created_at": "2026-11-22T06:07:04.344169",
+          "updated_at": "2026-11-22T06:07:04.344169",
           "action_type": 11,
           "acting_user_id": 1,
           "target_post_id": 35,
@@ -452,8 +452,8 @@
         {
           "id": 66,
           "user_id": 5,
-          "created_at": "2026-11-22T01:46:52.935725",
-          "updated_at": "2026-11-22T01:46:52.935725",
+          "created_at": "2026-11-22T06:07:04.351956",
+          "updated_at": "2026-11-22T06:07:04.351956",
           "action_type": 11,
           "acting_user_id": 1,
           "target_post_id": 35,
@@ -470,33 +470,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "DEUHVQlVVN0yL0j0hKTgQKWFf80=",
-            "created_at": "2026-11-22T01:46:52.274898",
-            "rotated_at": "2026-11-22T01:46:52.273975",
-            "updated_at": "2026-11-22T01:46:52.274898",
+            "auth_token": "ESWDF6xdBjbEzrFr9PK4+RmzJrs=",
+            "created_at": "2026-11-22T06:07:03.679954",
+            "rotated_at": "2026-11-22T06:07:03.67906",
+            "updated_at": "2026-11-22T06:07:03.679954",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "DEUHVQlVVN0yL0j0hKTgQKWFf80=",
+            "prev_auth_token": "ESWDF6xdBjbEzrFr9PK4+RmzJrs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T01:46:52.771275",
+            "id": 5,
+            "seen_at": "2026-11-22T06:07:04.186647",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "DEUHVQlVVN0yL0j0hKTgQKWFf80=",
-            "created_at": "2026-11-22T01:46:52.274898",
-            "rotated_at": "2026-11-22T01:46:52.273975",
-            "updated_at": "2026-11-22T01:46:52.274898",
+            "auth_token": "ESWDF6xdBjbEzrFr9PK4+RmzJrs=",
+            "created_at": "2026-11-22T06:07:03.679954",
+            "rotated_at": "2026-11-22T06:07:03.67906",
+            "updated_at": "2026-11-22T06:07:03.679954",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "DEUHVQlVVN0yL0j0hKTgQKWFf80=",
+            "prev_auth_token": "ESWDF6xdBjbEzrFr9PK4+RmzJrs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -519,7 +519,7 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
@@ -545,7 +545,7 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 1,
+            "days_visited": 2,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
@@ -606,7 +606,7 @@
   ],
   "next_ids": {
     "draft_sequences": 1,
-    "notifications": 20,
+    "notifications": 34,
     "post_revisions": 1,
     "user_actions": 65
   },
@@ -617,7 +617,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "e7c045fbbae6f6ba6e07e735da31acb4ae5276071428c638677219cb5138b449",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

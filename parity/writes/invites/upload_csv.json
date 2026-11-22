@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:49:23.986075",
-  "transaction_started_at": "2026-11-22T00:49:23.16291",
+  "started_at": "2026-11-22T05:08:20.803382",
+  "transaction_started_at": "2026-11-22T05:08:20.000888",
   "responses": [
     {
       "status": 200,
@@ -33,11 +33,11 @@
           "user_id": null,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-22T00:49:24.16071",
+          "created_at": "2026-11-22T05:08:20.972068",
           "email_type": "invite",
-          "message_id": "36639f5f-c196-4187-9d1f-fd7237d0a555@localhost",
+          "message_id": "5e97365b-d770-461a-aeb7-8b0280c03c6b@localhost",
           "to_address": "bulk1@example.com",
-          "updated_at": "2026-11-22T00:49:24.16071",
+          "updated_at": "2026-11-22T05:08:20.972068",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -53,11 +53,11 @@
           "user_id": null,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-22T00:49:24.190114",
+          "created_at": "2026-11-22T05:08:20.999882",
           "email_type": "invite",
-          "message_id": "5c15966c-f09d-4e20-98bd-2d1b7db3ad37@localhost",
+          "message_id": "40660c2e-b77a-47a1-b513-7d2d1bd441b9@localhost",
           "to_address": "bulk2@example.com",
-          "updated_at": "2026-11-22T00:49:24.190114",
+          "updated_at": "2026-11-22T05:08:20.999882",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -77,9 +77,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-22T00:49:24.033331",
+          "created_at": "2026-11-22T05:08:20.845443",
           "prev_value": null,
-          "updated_at": "2026-11-22T00:49:24.033331",
+          "updated_at": "2026-11-22T05:08:20.845443",
           "acting_user_id": 1,
           "target_user_id": 2
         }
@@ -94,9 +94,9 @@
           "owner": false,
           "user_id": 2,
           "group_id": 9001,
-          "created_at": "2026-11-22T00:49:23.16291",
-          "updated_at": "2026-11-22T00:49:23.16291",
-          "first_unread_pm_at": "2026-11-22T00:49:23.16291",
+          "created_at": "2026-11-22T05:08:20.000888",
+          "updated_at": "2026-11-22T05:08:20.000888",
+          "first_unread_pm_at": "2026-11-22T05:08:20.000888",
           "notification_level": 3
         }
       ],
@@ -119,9 +119,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-02T00:49:23.16291",
+            "created_at": "2026-11-02T05:08:20.000888",
             "flair_icon": null,
-            "updated_at": "2026-11-02T00:49:23.16291",
+            "updated_at": "2026-11-02T05:08:20.000888",
             "user_count": 0,
             "flair_color": null,
             "imap_server": null,
@@ -173,9 +173,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-02T00:49:23.16291",
+            "created_at": "2026-11-02T05:08:20.000888",
             "flair_icon": null,
-            "updated_at": "2026-11-02T00:49:23.16291",
+            "updated_at": "2026-11-02T05:08:20.000888",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -225,15 +225,15 @@
           "id": 1,
           "group_id": 9001,
           "invite_id": 1,
-          "created_at": "2026-11-22T00:49:24.021846",
-          "updated_at": "2026-11-22T00:49:24.021846"
+          "created_at": "2026-11-22T05:08:20.835604",
+          "updated_at": "2026-11-22T05:08:20.835604"
         },
         {
           "id": 2,
           "group_id": 9001,
           "invite_id": 2,
-          "created_at": "2026-11-22T00:49:24.041268",
-          "updated_at": "2026-11-22T00:49:24.041268"
+          "created_at": "2026-11-22T05:08:20.853502",
+          "updated_at": "2026-11-22T05:08:20.853502"
         }
       ],
       "deleted": [],
@@ -247,13 +247,13 @@
           "email": "bulk1@example.com",
           "domain": null,
           "moderator": false,
-          "created_at": "2026-11-22T00:49:24.017011",
+          "created_at": "2026-11-22T05:08:20.830917",
           "deleted_at": null,
-          "expires_at": "2027-02-20T00:49:24.015111",
-          "invite_key": "Z2jVxZV3Xg",
-          "updated_at": "2026-11-22T00:49:24.017011",
+          "expires_at": "2027-02-20T05:08:20.828817",
+          "invite_key": "k36wGCheGD",
+          "updated_at": "2026-11-22T05:08:20.830917",
           "description": null,
-          "email_token": "f6759b9aeb6680871968e4cd7957553a",
+          "email_token": "1056b94d9365fa58ae58324642d0c98c",
           "deleted_by_id": null,
           "invited_by_id": 1,
           "custom_message": null,
@@ -268,13 +268,13 @@
           "email": "bulk2@example.com",
           "domain": null,
           "moderator": false,
-          "created_at": "2026-11-22T00:49:24.039462",
+          "created_at": "2026-11-22T05:08:20.851238",
           "deleted_at": null,
-          "expires_at": "2027-02-20T00:49:24.037597",
-          "invite_key": "v16EP6GqUt",
-          "updated_at": "2026-11-22T00:49:24.039462",
+          "expires_at": "2027-02-20T05:08:20.849231",
+          "invite_key": "VgfftWiY1F",
+          "updated_at": "2026-11-22T05:08:20.851238",
           "description": null,
-          "email_token": "38184bc03d50c3465d75325affe6c778",
+          "email_token": "45723296f5af9beeb5943da7bb0dbc84",
           "deleted_by_id": null,
           "invited_by_id": 1,
           "custom_message": null,
@@ -293,8 +293,8 @@
           "locale": "en",
           "post_id": 53,
           "version": 5,
-          "raw_data": "Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s). Skipped Invites for Emails: user0@example.com Failed Invites for Emails: bad-email Here's the log: [2026-11-22 00:49:24 +0000] Invalid Email 'bad-email [2026-11-22 00:49:24 +0000] Invalid Group 'nogroup' for 'bulk2@example.com' [2026-11-22 00:49:24 +0000] Invalid Topic ID '9999' for 'bulk2@example.com'",
-          "search_data": "'+0000':48,60,72 '-11':43,55,67 '-22':44,56,68 '00':45,57,69 '1':17,23 '2':14,19 '2026':42,54,66 '24':47,59,71 '49':46,58,70 '9999':76 'bad':36,52 'bad-email':35,51 'bulk':1A,8 'bulk2@example.com':65,78 'email':29,34,37,50,53 'error':6A,24 'fail':31 'file':11 'group':62 'id':75 'invalid':49,61,73 'invit':3A,10,15,27,32 'log':41 'mail':16 'nogroup':63 'process':4A,13 'skip':18,26 'topic':74 'user':2A,9 'user0@example.com':30 'warn':20",
+          "raw_data": "Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s). Skipped Invites for Emails: user0@example.com Failed Invites for Emails: bad-email Here's the log: [2026-11-22 05:08:20 +0000] Invalid Email 'bad-email [2026-11-22 05:08:20 +0000] Invalid Group 'nogroup' for 'bulk2@example.com' [2026-11-22 05:08:20 +0000] Invalid Topic ID '9999' for 'bulk2@example.com'",
+          "search_data": "'+0000':48,60,72 '-11':43,55,67 '-22':44,56,68 '05':45,57,69 '08':46,58,70 '1':17,23 '2':14,19 '20':47,59,71 '2026':42,54,66 '9999':76 'bad':36,52 'bad-email':35,51 'bulk':1A,8 'bulk2@example.com':65,78 'email':29,34,37,50,53 'error':6A,24 'fail':31 'file':11 'group':62 'id':75 'invalid':49,61,73 'invit':3A,10,15,27,32 'log':41 'mail':16 'nogroup':63 'process':4A,13 'skip':18,26 'topic':74 'user':2A,9 'user0@example.com':30 'warn':20",
           "private_message": true
         }
       ],
@@ -306,8 +306,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-11-22T00:49:24.107728",
-          "updated_at": "2026-11-22T00:49:24.107728",
+          "created_at": "2026-11-22T05:08:20.919192",
+          "updated_at": "2026-11-22T05:08:20.919192",
           "drafts_saved": 0,
           "writing_device": null,
           "composer_version": null,
@@ -335,29 +335,29 @@
       "inserted": [
         {
           "id": 53,
-          "raw": "Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s).\n\nSkipped Invites for Emails:\n\n``` text\nuser0@example.com\n```\n\nFailed Invites for Emails:\n\n``` text\nbad-email\n```\n\nHere's the log:\n\n``` text\n[2026-11-22 00:49:24 +0000] Invalid Email 'bad-email\n[2026-11-22 00:49:24 +0000] Invalid Group 'nogroup' for 'bulk2@example.com'\n[2026-11-22 00:49:24 +0000] Invalid Topic ID '9999' for 'bulk2@example.com'\n```",
+          "raw": "Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s).\n\nSkipped Invites for Emails:\n\n``` text\nuser0@example.com\n```\n\nFailed Invites for Emails:\n\n``` text\nbad-email\n```\n\nHere's the log:\n\n``` text\n[2026-11-22 05:08:20 +0000] Invalid Email 'bad-email\n[2026-11-22 05:08:20 +0000] Invalid Group 'nogroup' for 'bulk2@example.com'\n[2026-11-22 05:08:20 +0000] Invalid Topic ID '9999' for 'bulk2@example.com'\n```",
           "wiki": false,
           "reads": 1,
           "score": null,
-          "cooked": "<p>Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s).</p>\n<p>Skipped Invites for Emails:</p>\n<pre><code class=\"lang-plaintext\">user0@example.com\n</code></pre>\n<p>Failed Invites for Emails:</p>\n<pre><code class=\"lang-plaintext\">bad-email\n</code></pre>\n<p>Here’s the log:</p>\n<pre><code class=\"lang-plaintext\">[2026-11-22 00:49:24 +0000] Invalid Email 'bad-email\n[2026-11-22 00:49:24 +0000] Invalid Group 'nogroup' for 'bulk2@example.com'\n[2026-11-22 00:49:24 +0000] Invalid Topic ID '9999' for 'bulk2@example.com'\n</code></pre>",
+          "cooked": "<p>Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s).</p>\n<p>Skipped Invites for Emails:</p>\n<pre><code class=\"lang-plaintext\">user0@example.com\n</code></pre>\n<p>Failed Invites for Emails:</p>\n<pre><code class=\"lang-plaintext\">bad-email\n</code></pre>\n<p>Here’s the log:</p>\n<pre><code class=\"lang-plaintext\">[2026-11-22 05:08:20 +0000] Invalid Email 'bad-email\n[2026-11-22 05:08:20 +0000] Invalid Group 'nogroup' for 'bulk2@example.com'\n[2026-11-22 05:08:20 +0000] Invalid Topic ID '9999' for 'bulk2@example.com'\n</code></pre>",
           "hidden": false,
           "locale": null,
           "user_id": -1,
           "version": 1,
-          "baked_at": "2026-11-22T00:49:24.08168",
+          "baked_at": "2026-11-22T05:08:20.886806",
           "topic_id": 45,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-11-22T00:49:24.081708",
+          "created_at": "2026-11-22T05:08:20.886832",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 1,
           "spam_count": 0,
-          "updated_at": "2026-11-22T00:49:24.081708",
+          "updated_at": "2026-11-22T05:08:20.886832",
           "word_count": 79,
           "action_code": null,
           "cook_method": 1,
@@ -377,7 +377,7 @@
           "last_editor_id": -1,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-11-22T00:49:24.106244",
+          "last_version_at": "2026-11-22T05:08:20.916556",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -398,15 +398,15 @@
           "id": 9,
           "user_id": 1,
           "topic_id": 45,
-          "created_at": "2026-11-22T00:49:24.058217",
-          "updated_at": "2026-11-22T00:49:24.058217"
+          "created_at": "2026-11-22T05:08:20.868675",
+          "updated_at": "2026-11-22T05:08:20.868675"
         },
         {
           "id": 10,
           "user_id": -1,
           "topic_id": 45,
-          "created_at": "2026-11-22T00:49:24.059709",
-          "updated_at": "2026-11-22T00:49:24.059709"
+          "created_at": "2026-11-22T05:08:20.869663",
+          "updated_at": "2026-11-22T05:08:20.869663"
         }
       ],
       "deleted": [],
@@ -418,8 +418,8 @@
           "id": 1,
           "topic_id": 35,
           "invite_id": 1,
-          "created_at": "2026-11-22T00:49:24.020205",
-          "updated_at": "2026-11-22T00:49:24.020205"
+          "created_at": "2026-11-22T05:08:20.833596",
+          "updated_at": "2026-11-22T05:08:20.833596"
         }
       ],
       "deleted": [],
@@ -448,15 +448,15 @@
           "topic_id": 45,
           "bookmarked": false,
           "last_posted_at": null,
-          "last_visited_at": "2026-11-22T00:49:24.070435",
-          "first_visited_at": "2026-11-22T00:49:24.070435",
+          "last_visited_at": "2026-11-22T05:08:20.878337",
+          "first_visited_at": "2026-11-22T05:08:20.878337",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": null,
           "notifications_reason_id": 2,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-11-22T00:49:24.069972"
+          "notifications_changed_at": "2026-11-22T05:08:20.87792"
         },
         {
           "id": 55,
@@ -465,16 +465,16 @@
           "user_id": -1,
           "topic_id": 45,
           "bookmarked": false,
-          "last_posted_at": "2026-11-22T00:49:24.110756",
-          "last_visited_at": "2026-11-22T00:49:24.066675",
-          "first_visited_at": "2026-11-22T00:49:24.066675",
+          "last_posted_at": "2026-11-22T05:08:20.922945",
+          "last_visited_at": "2026-11-22T05:08:20.874737",
+          "first_visited_at": "2026-11-22T05:08:20.874737",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": 1,
           "notifications_reason_id": 1,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-11-22T00:49:24.066065"
+          "notifications_changed_at": "2026-11-22T05:08:20.874284"
         }
       ],
       "deleted": [],
@@ -490,19 +490,19 @@
           "views": 0,
           "closed": false,
           "locale": null,
-          "excerpt": "Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s). \nSkipped Invites for Emails: \nuser0@example.com\n\nFailed Invites for Emails: \nbad-email\n\nHere’s the log: \n[2026-11-22 00:&hellip;",
+          "excerpt": "Your bulk user invite file was processed, 2 invites mailed, 1 skipped, 2 warning(s) and 1 error(s). \nSkipped Invites for Emails: \nuser0@example.com\n\nFailed Invites for Emails: \nbad-email\n\nHere’s the log: \n[2026-11-22 05:&hellip;",
           "subtype": "system_message",
           "user_id": -1,
           "visible": true,
           "archived": false,
           "archetype": "private_message",
-          "bumped_at": "2026-11-22T00:49:24.081708",
+          "bumped_at": "2026-11-22T05:08:20.886832",
           "pinned_at": null,
-          "created_at": "2026-11-22T00:49:24.055482",
+          "created_at": "2026-11-22T05:08:20.866104",
           "deleted_at": null,
           "like_count": 0,
           "spam_count": 0,
-          "updated_at": "2026-11-22T00:49:24.114411",
+          "updated_at": "2026-11-22T05:08:20.925835",
           "word_count": 79,
           "category_id": null,
           "external_id": null,
@@ -515,7 +515,7 @@
           "deleted_by_id": null,
           "featured_link": null,
           "bannered_until": null,
-          "last_posted_at": "2026-11-22T00:49:24.081708",
+          "last_posted_at": "2026-11-22T05:08:20.886832",
           "image_upload_id": null,
           "pinned_globally": false,
           "reviewable_score": 0,
@@ -543,8 +543,8 @@
         {
           "id": 65,
           "user_id": -1,
-          "created_at": "2026-11-22T00:49:24.055482",
-          "updated_at": "2026-11-22T00:49:24.075649",
+          "created_at": "2026-11-22T05:08:20.866104",
+          "updated_at": "2026-11-22T05:08:20.881857",
           "action_type": 12,
           "acting_user_id": -1,
           "target_post_id": -1,
@@ -554,8 +554,8 @@
         {
           "id": 66,
           "user_id": 1,
-          "created_at": "2026-11-22T00:49:24.055482",
-          "updated_at": "2026-11-22T00:49:24.078554",
+          "created_at": "2026-11-22T05:08:20.866104",
+          "updated_at": "2026-11-22T05:08:20.884541",
           "action_type": 13,
           "acting_user_id": -1,
           "target_post_id": -1,
@@ -572,33 +572,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 5,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "oBITgCRTdt4TieNDeCrWphf3l7I=",
-            "created_at": "2026-11-22T00:49:23.505005",
-            "rotated_at": "2026-11-22T00:49:23.504175",
-            "updated_at": "2026-11-22T00:49:23.505005",
+            "auth_token": "ezUOlHvrcQPNI18D29VF/ltNXoU=",
+            "created_at": "2026-11-22T05:08:20.330293",
+            "rotated_at": "2026-11-22T05:08:20.329505",
+            "updated_at": "2026-11-22T05:08:20.330293",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "oBITgCRTdt4TieNDeCrWphf3l7I=",
+            "prev_auth_token": "ezUOlHvrcQPNI18D29VF/ltNXoU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-22T00:49:23.995899",
+            "id": 5,
+            "seen_at": "2026-11-22T05:08:20.812681",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "oBITgCRTdt4TieNDeCrWphf3l7I=",
-            "created_at": "2026-11-22T00:49:23.505005",
-            "rotated_at": "2026-11-22T00:49:23.504175",
-            "updated_at": "2026-11-22T00:49:23.505005",
+            "auth_token": "ezUOlHvrcQPNI18D29VF/ltNXoU=",
+            "created_at": "2026-11-22T05:08:20.330293",
+            "rotated_at": "2026-11-22T05:08:20.329505",
+            "updated_at": "2026-11-22T05:08:20.330293",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "oBITgCRTdt4TieNDeCrWphf3l7I=",
+            "prev_auth_token": "ezUOlHvrcQPNI18D29VF/ltNXoU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -722,7 +722,7 @@
         ],
         [
           "Message-ID",
-          "<36639f5f-c196-4187-9d1f-fd7237d0a555@localhost>"
+          "<5e97365b-d770-461a-aeb7-8b0280c03c6b@localhost>"
         ],
         [
           "Subject",
@@ -734,7 +734,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b023c1426469_7fbff384198"
+          "multipart/alternative; boundary=--==_mimepart_6b0278c4ec793_17904f38869c"
         ],
         [
           "Content-Transfer-Encoding",
@@ -753,8 +753,8 @@
           "auto-generated"
         ]
       ],
-      "text": "Admin (admin) invited you to a discussion\n\n> **Parity fixture: replies and posters**\n>\n> First post of a topic with several repliers, long enough to be a real post body for the excerpt.\n\nat\n\n> Discourse -- \n\nIf you're interested, click the link below:\n\nhttp://localhost:3042/invites/Z2jVxZV3Xg\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Admin (admin) invited you to a discussion</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-top:0\"><strong>Parity fixture: replies and posters</strong></p>\n<p style=\"padding:0;margin-bottom:0\">First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>\n</blockquote>\n<p>at</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\">Discourse –</p>\n</blockquote>\n<p>If you’re interested, click the link below:</p>\n<p><a href=\"http://localhost:3042/invites/Z2jVxZV3Xg\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/invites/Z2jVxZV3Xg</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Admin (admin) invited you to a discussion\n\n> **Parity fixture: replies and posters**\n>\n> First post of a topic with several repliers, long enough to be a real post body for the excerpt.\n\nat\n\n> Discourse -- \n\nIf you're interested, click the link below:\n\nhttp://localhost:3042/invites/k36wGCheGD\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Admin (admin) invited you to a discussion</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-top:0\"><strong>Parity fixture: replies and posters</strong></p>\n<p style=\"padding:0;margin-bottom:0\">First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>\n</blockquote>\n<p>at</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\">Discourse –</p>\n</blockquote>\n<p>If you’re interested, click the link below:</p>\n<p><a href=\"http://localhost:3042/invites/k36wGCheGD\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/invites/k36wGCheGD</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     },
     {
       "headers": [
@@ -772,7 +772,7 @@
         ],
         [
           "Message-ID",
-          "<5c15966c-f09d-4e20-98bd-2d1b7db3ad37@localhost>"
+          "<40660c2e-b77a-47a1-b513-7d2d1bd441b9@localhost>"
         ],
         [
           "Subject",
@@ -784,7 +784,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b023c142d8a9_7fbff38420af"
+          "multipart/alternative; boundary=--==_mimepart_6b0278c4f36b7_17904f38870df"
         ],
         [
           "Content-Transfer-Encoding",
@@ -803,13 +803,13 @@
           "auto-generated"
         ]
       ],
-      "text": "Admin (admin) invited you to join\n\n> **Discourse**\n>\n> \n\nIf you're interested, click the link below:\n\nhttp://localhost:3042/invites/v16EP6GqUt\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Admin (admin) invited you to join</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\"><strong>Discourse</strong></p>\n</blockquote>\n<p>If you’re interested, click the link below:</p>\n<p><a href=\"http://localhost:3042/invites/v16EP6GqUt\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/invites/v16EP6GqUt</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Admin (admin) invited you to join\n\n> **Discourse**\n>\n> \n\nIf you're interested, click the link below:\n\nhttp://localhost:3042/invites/VgfftWiY1F\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Admin (admin) invited you to join</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\"><strong>Discourse</strong></p>\n</blockquote>\n<p>If you’re interested, click the link below:</p>\n<p><a href=\"http://localhost:3042/invites/VgfftWiY1F\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/invites/VgfftWiY1F</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "faefa50266ff23fd7f87b507cabe2ce3978efb72941c55ebc34dbfa844e03c28",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

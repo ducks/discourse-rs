@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T00:07:25.476196",
-  "transaction_started_at": "2026-11-22T00:07:24.93518",
+  "started_at": "2026-11-22T04:25:44.494072",
+  "transaction_started_at": "2026-11-22T04:25:43.875995",
   "responses": [
     {
       "status": 200,
@@ -32,11 +32,11 @@
           "user_id": 3,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-22T00:07:25.564132",
+          "created_at": "2026-11-22T04:25:44.578744",
           "email_type": "email_login",
-          "message_id": "826f320e-fbad-4b82-b5eb-8d4b22b74f15@localhost",
+          "message_id": "97776e48-3fc8-4651-966d-27bbaf26253c@localhost",
           "to_address": "user1@example.com",
-          "updated_at": "2026-11-22T00:07:25.564132",
+          "updated_at": "2026-11-22T04:25:44.578744",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -57,9 +57,9 @@
           "expired": false,
           "user_id": 3,
           "confirmed": false,
-          "created_at": "2026-11-22T00:07:25.488755",
-          "token_hash": "88de21f69c71635984de907e653c1580195fbe1b67986d31edf136c5602c16ce",
-          "updated_at": "2026-11-22T00:07:25.488755"
+          "created_at": "2026-11-22T04:25:44.504896",
+          "token_hash": "e18451456ab5df93e25e07cc3eb50ff1e3cf2363f1739eff69ea26b070802549",
+          "updated_at": "2026-11-22T04:25:44.504896"
         }
       ],
       "deleted": [],
@@ -88,7 +88,7 @@
             "updated_at": "2026-11-21T23:56:45.45602",
             "approved_at": null,
             "trust_level": 2,
-            "last_seen_at": "2026-11-21T23:56:57.920623",
+            "last_seen_at": "2026-11-22T04:14:24.947499",
             "suspended_at": null,
             "date_of_birth": null,
             "first_seen_at": "2026-11-21T23:56:57.920623",
@@ -100,7 +100,7 @@
             "username_lower": "user1",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": null,
+            "previous_visit_at": "2026-11-21T23:56:57.920623",
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -128,7 +128,7 @@
             "updated_at": "2026-11-21T23:56:45.45602",
             "approved_at": null,
             "trust_level": 2,
-            "last_seen_at": "2026-11-21T23:56:57.920623",
+            "last_seen_at": "2026-11-22T04:14:24.947499",
             "suspended_at": null,
             "date_of_birth": null,
             "first_seen_at": "2026-11-21T23:56:57.920623",
@@ -138,9 +138,9 @@
             "last_posted_at": "2026-11-21T23:56:45.425465",
             "suspended_till": null,
             "username_lower": "user1",
-            "last_emailed_at": "2026-11-22T00:07:24.93518",
+            "last_emailed_at": "2026-11-22T04:25:43.875995",
             "primary_group_id": null,
-            "previous_visit_at": null,
+            "previous_visit_at": "2026-11-21T23:56:57.920623",
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -160,7 +160,7 @@
       {
         "type": "email_login",
         "user_id": 3,
-        "email_token": "6fc8a55b3411a7bad14ddd61a548b4a9"
+        "email_token": "38fb1c0b2c53e348d68d57de9b191766"
       }
     ]
   ],
@@ -189,7 +189,7 @@
         ],
         [
           "Message-ID",
-          "<826f320e-fbad-4b82-b5eb-8d4b22b74f15@localhost>"
+          "<97776e48-3fc8-4651-966d-27bbaf26253c@localhost>"
         ],
         [
           "Subject",
@@ -201,7 +201,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b02323d890ba_3c14f3863270"
+          "multipart/alternative; boundary=--==_mimepart_6b026ec88c7f0_13631f38-280"
         ],
         [
           "Content-Transfer-Encoding",
@@ -224,13 +224,13 @@
           "auto-generated"
         ]
       ],
-      "text": "Here's your link to log in at [Discourse](http://localhost:3042).\n\nIf you did not request this link, you can safely ignore this email.\n\nClick the following link to log in:\nhttp://localhost:3042/session/email-login/6fc8a55b3411a7bad14ddd61a548b4a9\n",
-      "html": "<html lang=\"en\" xml:lang=\"en\"><head></head><body style=\"line-height:1.4;text-align:left\" dir=\"ltr\"><div class=\"custom-wrap\"><p>Log in via link.</p>\n    \n    <p>Here’s your link to log in at <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a>.</p>\n<p>If you did not request this link, you can safely ignore this email.</p>\n<p>Click the following link to log in:<br>\n<a href=\"http://localhost:3042/session/email-login/6fc8a55b3411a7bad14ddd61a548b4a9\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/session/email-login/6fc8a55b3411a7bad14ddd61a548b4a9</a></p>\n</div><p>footer</p></body></html>"
+      "text": "Here's your link to log in at [Discourse](http://localhost:3042).\n\nIf you did not request this link, you can safely ignore this email.\n\nClick the following link to log in:\nhttp://localhost:3042/session/email-login/38fb1c0b2c53e348d68d57de9b191766\n",
+      "html": "<html lang=\"en\" xml:lang=\"en\"><head></head><body style=\"line-height:1.4;text-align:left\" dir=\"ltr\"><div class=\"custom-wrap\"><p>Log in via link.</p>\n    \n    <p>Here’s your link to log in at <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a>.</p>\n<p>If you did not request this link, you can safely ignore this email.</p>\n<p>Click the following link to log in:<br>\n<a href=\"http://localhost:3042/session/email-login/38fb1c0b2c53e348d68d57de9b191766\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/session/email-login/38fb1c0b2c53e348d68d57de9b191766</a></p>\n</div><p>footer</p></body></html>"
     }
   ],
   "recorded_from": {
     "case": "dd76f89f2f0826bd2fda502e822aae0aa858b494a246a5b083cb5a3e8636370b",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -11,8 +11,8 @@
       "path": "/search.json?q=fixture"
     }
   ],
-  "started_at": "2026-11-22T01:08:04.958959",
-  "transaction_started_at": "2026-11-22T01:08:04.172322",
+  "started_at": "2026-11-22T05:27:13.221188",
+  "transaction_started_at": "2026-11-22T05:27:12.412098",
   "responses": [
     {
       "status": 200,
@@ -202,7 +202,7 @@
           "more_users": null,
           "more_categories": null,
           "term": "fixture",
-          "search_log_id": 1,
+          "search_log_id": 19,
           "more_full_page_results": null,
           "can_create_topic": false,
           "error": null,
@@ -232,11 +232,11 @@
     "search_logs": {
       "inserted": [
         {
-          "id": 1,
+          "id": 19,
           "term": "fixture",
           "crawler": false,
           "user_id": null,
-          "created_at": "2026-11-22T01:08:04.975692",
+          "created_at": "2026-11-22T05:27:13.241565",
           "ip_address": "127.0.0.1",
           "session_id": null,
           "user_agent": null,
@@ -470,7 +470,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "search_logs": 1
+    "search_logs": 19
   },
   "settings": {
     "rate_limit_search_anon_user_per_minute": "1"
@@ -478,7 +478,7 @@
   "rate_limits": true,
   "recorded_from": {
     "case": "61ae98dd93e4a04c02fc10c07cd12dcca19e6ccaf2e4087195a21e07233f0b9b",
-    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }
