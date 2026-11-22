@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:59:28.481051",
-  "transaction_started_at": "2026-11-15T22:59:27.673549",
+  "started_at": "2026-11-22T00:48:28.906004",
+  "transaction_started_at": "2026-11-22T00:48:28.076832",
   "responses": [
     {
       "status": 200,
@@ -32,11 +32,11 @@
           "user_id": null,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-15T22:59:28.550273",
+          "created_at": "2026-11-22T00:48:28.981222",
           "email_type": "invite",
-          "message_id": "e2921254-c1d1-43cf-9e90-6a189dd9ef1b@localhost",
+          "message_id": "21dfc080-fa58-49f3-b9eb-51b01f069295@localhost",
           "to_address": "outsider@example.com",
-          "updated_at": "2026-11-15T22:59:28.550273",
+          "updated_at": "2026-11-22T00:48:28.981222",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -56,13 +56,13 @@
           "email": "outsider@example.com",
           "domain": null,
           "moderator": false,
-          "created_at": "2026-11-15T22:59:28.500815",
+          "created_at": "2026-11-22T00:48:28.928797",
           "deleted_at": null,
-          "expires_at": "2027-02-13T22:59:28.498266",
-          "invite_key": "VNAe2aaNxF",
-          "updated_at": "2026-11-15T22:59:28.500815",
+          "expires_at": "2027-02-20T00:48:28.925575",
+          "invite_key": "XRgoKjTpaJ",
+          "updated_at": "2026-11-22T00:48:28.928797",
           "description": null,
-          "email_token": "023acc7aea10e1d17ef4be97ae5e5714",
+          "email_token": "a390d49ce54595940273f36d1a68231e",
           "deleted_by_id": null,
           "invited_by_id": 1,
           "custom_message": "Have a look",
@@ -81,8 +81,8 @@
           "id": 1,
           "topic_id": 43,
           "invite_id": 1,
-          "created_at": "2026-11-15T22:59:28.505515",
-          "updated_at": "2026-11-15T22:59:28.505515"
+          "created_at": "2026-11-22T00:48:28.933785",
+          "updated_at": "2026-11-22T00:48:28.933785"
         }
       ],
       "deleted": [],
@@ -94,33 +94,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "sxfGq6CTZ4VQg2DJCYOIXBaItGI=",
-            "created_at": "2026-11-15T22:59:27.998335",
-            "rotated_at": "2026-11-15T22:59:27.997518",
-            "updated_at": "2026-11-15T22:59:27.998335",
+            "auth_token": "ScPoAEfKS4KKvNuut1fEPPn7cz0=",
+            "created_at": "2026-11-22T00:48:28.430025",
+            "rotated_at": "2026-11-22T00:48:28.42907",
+            "updated_at": "2026-11-22T00:48:28.430025",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "sxfGq6CTZ4VQg2DJCYOIXBaItGI=",
+            "prev_auth_token": "ScPoAEfKS4KKvNuut1fEPPn7cz0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:59:28.487068",
+            "id": 1,
+            "seen_at": "2026-11-22T00:48:28.914381",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "sxfGq6CTZ4VQg2DJCYOIXBaItGI=",
-            "created_at": "2026-11-15T22:59:27.998335",
-            "rotated_at": "2026-11-15T22:59:27.997518",
-            "updated_at": "2026-11-15T22:59:27.998335",
+            "auth_token": "ScPoAEfKS4KKvNuut1fEPPn7cz0=",
+            "created_at": "2026-11-22T00:48:28.430025",
+            "rotated_at": "2026-11-22T00:48:28.42907",
+            "updated_at": "2026-11-22T00:48:28.430025",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "sxfGq6CTZ4VQg2DJCYOIXBaItGI=",
+            "prev_auth_token": "ScPoAEfKS4KKvNuut1fEPPn7cz0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -161,7 +161,7 @@
         ],
         [
           "Message-ID",
-          "<e2921254-c1d1-43cf-9e90-6a189dd9ef1b@localhost>"
+          "<21dfc080-fa58-49f3-b9eb-51b01f069295@localhost>"
         ],
         [
           "Subject",
@@ -173,7 +173,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6afa39508546f_eed2f385174a"
+          "multipart/alternative; boundary=--==_mimepart_6b023bdceea3f_7fbff38413bd"
         ],
         [
           "Content-Transfer-Encoding",
@@ -192,13 +192,13 @@
           "auto-generated"
         ]
       ],
-      "text": "Admin (admin) invited you to a discussion\n\n> **Parity fixture: PM admin to user1 and user2**\n>\n> A private message from admin to two users, so the list shows three participants.\n\nat\n\n> Discourse -- \n\nWith this note\n\n> Have a look\n\nIf you're interested, click the link below:\n\nhttp://localhost:3042/invites/VNAe2aaNxF\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Admin (admin) invited you to a discussion</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-top:0\"><strong>Parity fixture: PM admin to user1 and user2</strong></p>\n<p style=\"padding:0;margin-bottom:0\">A private message from admin to two users, so the list shows three participants.</p>\n</blockquote>\n<p>at</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\">Discourse –</p>\n</blockquote>\n<p>With this note</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\">Have a look</p>\n</blockquote>\n<p>If you’re interested, click the link below:</p>\n<p><a href=\"http://localhost:3042/invites/VNAe2aaNxF\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/invites/VNAe2aaNxF</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Admin (admin) invited you to a discussion\n\n> **Parity fixture: PM admin to user1 and user2**\n>\n> A private message from admin to two users, so the list shows three participants.\n\nat\n\n> Discourse -- \n\nWith this note\n\n> Have a look\n\nIf you're interested, click the link below:\n\nhttp://localhost:3042/invites/XRgoKjTpaJ\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Admin (admin) invited you to a discussion</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-top:0\"><strong>Parity fixture: PM admin to user1 and user2</strong></p>\n<p style=\"padding:0;margin-bottom:0\">A private message from admin to two users, so the list shows three participants.</p>\n</blockquote>\n<p>at</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\">Discourse –</p>\n</blockquote>\n<p>With this note</p>\n<blockquote style=\"border-left:5px solid #e9e9e9;background-color:#f8f8f8;color:#222222;margin-left:0;padding:12px\">\n<p style=\"padding:0;margin-bottom:0;margin-top:0\">Have a look</p>\n</blockquote>\n<p>If you’re interested, click the link below:</p>\n<p><a href=\"http://localhost:3042/invites/XRgoKjTpaJ\" class=\"onebox\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:none;font-weight:bold;color:#006699\">http://localhost:3042/invites/XRgoKjTpaJ</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "d21dcc0465278a2abfd56f43d25aefb806391db662fee74d7b84539344ecb7f1",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

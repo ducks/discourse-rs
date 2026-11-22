@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:57:04.206589",
-  "transaction_started_at": "2026-11-15T22:57:02.921029",
+  "started_at": "2026-11-22T00:46:10.658684",
+  "transaction_started_at": "2026-11-22T00:46:09.858255",
   "responses": [
     {
       "status": 200,
@@ -28,12 +28,12 @@
           "post_id": null,
           "user_id": null,
           "topic_id": null,
-          "bounce_key": "5e4d7318-c21c-707c-65bc-ccde0aef46bc",
-          "created_at": "2026-11-15T22:57:04.471355",
+          "bounce_key": "e9d0ca1f-dd30-e1f9-3ac9-28e7975b7bcb",
+          "created_at": "2026-11-22T00:46:10.747384",
           "email_type": "email_reject_inactive_user",
-          "message_id": "19578f60-c4e4-47c9-86ca-5dfe1e1894ff@localhost",
+          "message_id": "29e49e2e-5859-4fd6-9883-8db8ebbc9fb5@localhost",
           "to_address": "user0@example.com",
-          "updated_at": "2026-11-15T22:57:04.471355",
+          "updated_at": "2026-11-22T00:46:10.747384",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -58,9 +58,9 @@
           "topic_id": null,
           "imap_sync": null,
           "is_bounce": false,
-          "created_at": "2026-11-15T22:57:04.243521",
+          "created_at": "2026-11-22T00:46:10.677927",
           "message_id": "reject-inactive@mail.example.com",
-          "updated_at": "2026-11-15T22:57:04.476781",
+          "updated_at": "2026-11-22T00:46:10.74924",
           "created_via": 1,
           "cc_addresses": "",
           "from_address": "user0@example.com",
@@ -81,33 +81,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "TQ80/0MubZl3dYYr+kUBMLuiejo=",
-            "created_at": "2026-11-15T22:57:03.325383",
-            "rotated_at": "2026-11-15T22:57:03.324137",
-            "updated_at": "2026-11-15T22:57:03.325383",
+            "auth_token": "dEBz2NIDkN34chEYaDxuBUamrVg=",
+            "created_at": "2026-11-22T00:46:10.195315",
+            "rotated_at": "2026-11-22T00:46:10.194573",
+            "updated_at": "2026-11-22T00:46:10.195315",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "TQ80/0MubZl3dYYr+kUBMLuiejo=",
+            "prev_auth_token": "dEBz2NIDkN34chEYaDxuBUamrVg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:57:04.215357",
+            "id": 1,
+            "seen_at": "2026-11-22T00:46:10.664306",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "TQ80/0MubZl3dYYr+kUBMLuiejo=",
-            "created_at": "2026-11-15T22:57:03.325383",
-            "rotated_at": "2026-11-15T22:57:03.324137",
-            "updated_at": "2026-11-15T22:57:03.325383",
+            "auth_token": "dEBz2NIDkN34chEYaDxuBUamrVg=",
+            "created_at": "2026-11-22T00:46:10.195315",
+            "rotated_at": "2026-11-22T00:46:10.194573",
+            "updated_at": "2026-11-22T00:46:10.195315",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "TQ80/0MubZl3dYYr+kUBMLuiejo=",
+            "prev_auth_token": "dEBz2NIDkN34chEYaDxuBUamrVg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -145,7 +145,7 @@
       "headers": [
         [
           "Return-Path",
-          "replies+verp-5e4d7318c21c707c65bcccde0aef46bc@example.com"
+          "replies+verp-e9d0ca1fdd30e1f93ac928e7975b7bcb@example.com"
         ],
         [
           "From",
@@ -161,7 +161,7 @@
         ],
         [
           "Message-ID",
-          "<19578f60-c4e4-47c9-86ca-5dfe1e1894ff@localhost>"
+          "<29e49e2e-5859-4fd6-9883-8db8ebbc9fb5@localhost>"
         ],
         [
           "Subject",
@@ -173,7 +173,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6afa38c0718c7_ed14f3892e2"
+          "multipart/alternative; boundary=--==_mimepart_6b023b52b5808_7e0ff3858538"
         ],
         [
           "Content-Transfer-Encoding",
@@ -193,12 +193,12 @@
         ]
       ],
       "text": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nYour account associated with this email address is not activated. Please activate your account before sending emails in.\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+0123456789abcdef0123456789abcdef@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+0123456789abcdef0123456789abcdef@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>Your account associated with this email address is not activated. Please activate your account before sending emails in.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+0123456789abcdef0123456789abcdef@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+0123456789abcdef0123456789abcdef@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>Your account associated with this email address is not activated. Please activate your account before sending emails in.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "1893b4a37b77214fd9dafb4a916812838d84b5139a370a34200a128c85082f67",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

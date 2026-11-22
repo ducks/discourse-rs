@@ -2,8 +2,8 @@
   "name": "chat_auto_join_users",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:26:53.72875",
-  "transaction_started_at": "2026-11-15T23:26:53.110148",
+  "started_at": "2026-11-22T01:21:13.776641",
+  "transaction_started_at": "2026-11-22T01:21:12.977895",
   "responses": [],
   "changes": {
     "chat_channels": {
@@ -20,7 +20,7 @@
             "status": 0,
             "created_at": "2026-11-03T05:07:24.951301",
             "deleted_at": null,
-            "updated_at": "2026-11-15T19:40:02.361493",
+            "updated_at": "2026-11-21T23:56:57.976821",
             "user_count": 3,
             "chatable_id": 4,
             "description": null,
@@ -44,7 +44,7 @@
             "status": 0,
             "created_at": "2026-11-03T05:07:24.951301",
             "deleted_at": null,
-            "updated_at": "2026-11-15T23:26:53.75506",
+            "updated_at": "2026-11-22T01:21:13.804996",
             "user_count": 4,
             "chatable_id": 4,
             "description": null,
@@ -71,10 +71,10 @@
           "user_id": 4,
           "following": true,
           "join_mode": 1,
-          "created_at": "2026-11-15T23:26:53.729908",
-          "updated_at": "2026-11-15T23:26:53.729908",
+          "created_at": "2026-11-22T01:21:13.777529",
+          "updated_at": "2026-11-22T01:21:13.777529",
           "muted_until": null,
-          "last_viewed_at": "2026-11-15T23:26:53.110148",
+          "last_viewed_at": "2026-11-22T01:21:12.977895",
           "chat_channel_id": 2,
           "notification_level": 1,
           "last_viewed_pins_at": null,
@@ -112,7 +112,7 @@
   ],
   "recorded_from": {
     "case": "99aacf550576a4f00835ae39ea7c533a97bf1b5e3052cf475d5a1d182d5e68bf",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

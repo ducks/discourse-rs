@@ -14,8 +14,8 @@
       "path": "/session/current.json"
     }
   ],
-  "started_at": "2026-11-15T22:33:18.742307",
-  "transaction_started_at": "2026-11-15T22:33:17.713091",
+  "started_at": "2026-11-22T00:24:45.770975",
+  "transaction_started_at": "2026-11-22T00:24:44.953888",
   "responses": [
     {
       "status": 200,
@@ -31,9 +31,9 @@
           "username": "user1",
           "name": "User1",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-          "unread_notifications": 5,
+          "unread_notifications": 2,
           "unread_high_priority_notifications": 4,
-          "all_unread_notifications_count": 9,
+          "all_unread_notifications_count": 6,
           "read_first_notification": false,
           "admin": false,
           "notification_channel_position": null,
@@ -47,6 +47,7 @@
           "can_send_private_email_messages": false,
           "can_send_private_messages": true,
           "can_upload_avatar": true,
+          "can_embed_media": true,
           "can_edit": true,
           "can_invite_to_forum": true,
           "can_post_anonymously": false,
@@ -105,18 +106,16 @@
           "draft_count": 0,
           "pending_posts_count": 0,
           "grouped_unread_notifications": {
-            "24": 1,
-            "6": 3,
             "1": 1,
-            "12": 3,
-            "5": 1
+            "5": 1,
+            "6": 3,
+            "24": 1
           },
           "available_notification_types": [
-            24,
-            6,
             1,
-            12,
-            5
+            5,
+            6,
+            24
           ],
           "display_sidebar_tags": true,
           "sidebar_tags": [],
@@ -319,33 +318,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "j7HrVubmeiWBdr51wDFmuWtn8a8=",
-            "created_at": "2026-11-15T22:33:18.023843",
-            "rotated_at": "2026-11-15T22:33:18.022847",
-            "updated_at": "2026-11-15T22:33:18.023843",
+            "auth_token": "nPgub3Zt73KTLQpGAdrXguqua5I=",
+            "created_at": "2026-11-22T00:24:45.288303",
+            "rotated_at": "2026-11-22T00:24:45.287402",
+            "updated_at": "2026-11-22T00:24:45.288303",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "j7HrVubmeiWBdr51wDFmuWtn8a8=",
+            "prev_auth_token": "nPgub3Zt73KTLQpGAdrXguqua5I=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:33:18.760546",
+            "id": 1,
+            "seen_at": "2026-11-22T00:24:45.778072",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "j7HrVubmeiWBdr51wDFmuWtn8a8=",
-            "created_at": "2026-11-15T22:33:18.023843",
-            "rotated_at": "2026-11-15T22:33:18.022847",
-            "updated_at": "2026-11-15T22:33:18.023843",
+            "auth_token": "nPgub3Zt73KTLQpGAdrXguqua5I=",
+            "created_at": "2026-11-22T00:24:45.288303",
+            "rotated_at": "2026-11-22T00:24:45.287402",
+            "updated_at": "2026-11-22T00:24:45.288303",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "j7HrVubmeiWBdr51wDFmuWtn8a8=",
+            "prev_auth_token": "nPgub3Zt73KTLQpGAdrXguqua5I=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -547,7 +546,7 @@
   ],
   "recorded_from": {
     "case": "b1c40b62204f603554697293c5858b4de02d2c23ef0c690370c8d360c23520e2",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

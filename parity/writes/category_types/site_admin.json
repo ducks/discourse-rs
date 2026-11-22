@@ -8,8 +8,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-11-15T22:30:36.750684",
-  "transaction_started_at": "2026-11-15T22:30:34.678781",
+  "started_at": "2026-11-22T00:22:08.318177",
+  "transaction_started_at": "2026-11-22T00:22:06.224965",
   "responses": [
     {
       "status": 200,
@@ -496,10 +496,10 @@
         ],
         "can_associate_groups": false,
         "topic_featured_link_allowed_category_ids": [
+          3,
           4,
           2,
-          34,
-          3
+          34
         ],
         "user_themes": [
           {
@@ -839,7 +839,7 @@
             "emoji": "shield",
             "slug": "staff",
             "topic_count": 2,
-            "post_count": 3,
+            "post_count": 0,
             "position": 2,
             "description": "<p>Private category for staff discussions. Topics are only visible to admins and moderators.</p>",
             "description_text": "Private category for staff discussions. Topics are only visible to admins and moderators.",
@@ -909,7 +909,7 @@
             "emoji": "blue_book",
             "slug": "general",
             "topic_count": 3,
-            "post_count": 1,
+            "post_count": 0,
             "position": 3,
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -1155,7 +1155,7 @@
             "slug": "sub-general",
             "topic_count": 1,
             "post_count": 0,
-            "position": 4,
+            "position": 3,
             "description": null,
             "description_text": null,
             "description_excerpt": null,
@@ -2047,33 +2047,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "enGRmxQVdxP7V8fpvav/XxIwtXc=",
-            "created_at": "2026-11-15T22:30:35.63274",
-            "rotated_at": "2026-11-15T22:30:35.628974",
-            "updated_at": "2026-11-15T22:30:35.63274",
+            "auth_token": "jjVOvzbLYIKi+3OYQGuMYYTkP5s=",
+            "created_at": "2026-11-22T00:22:07.172698",
+            "rotated_at": "2026-11-22T00:22:07.169047",
+            "updated_at": "2026-11-22T00:22:07.172698",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "enGRmxQVdxP7V8fpvav/XxIwtXc=",
+            "prev_auth_token": "jjVOvzbLYIKi+3OYQGuMYYTkP5s=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:30:36.775793",
+            "id": 1,
+            "seen_at": "2026-11-22T00:22:08.331341",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "enGRmxQVdxP7V8fpvav/XxIwtXc=",
-            "created_at": "2026-11-15T22:30:35.63274",
-            "rotated_at": "2026-11-15T22:30:35.628974",
-            "updated_at": "2026-11-15T22:30:35.63274",
+            "auth_token": "jjVOvzbLYIKi+3OYQGuMYYTkP5s=",
+            "created_at": "2026-11-22T00:22:07.172698",
+            "rotated_at": "2026-11-22T00:22:07.169047",
+            "updated_at": "2026-11-22T00:22:07.172698",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "enGRmxQVdxP7V8fpvav/XxIwtXc=",
+            "prev_auth_token": "jjVOvzbLYIKi+3OYQGuMYYTkP5s=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -2094,7 +2094,7 @@
   ],
   "recorded_from": {
     "case": "d409c0706ca4ba4547dde6c0a0ca8a7e55d5682a95d6dc24cfd58ca3cad14ea7",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

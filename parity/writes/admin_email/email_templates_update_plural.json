@@ -21,8 +21,8 @@
       "path": "/admin/email/templates/system_messages.pending_users_reminder"
     }
   ],
-  "started_at": "2026-11-15T21:43:18.95311",
-  "transaction_started_at": "2026-11-15T21:43:18.125978",
+  "started_at": "2026-11-22T00:07:45.086372",
+  "transaction_started_at": "2026-11-22T00:07:44.350108",
   "responses": [
     {
       "status": 200,
@@ -733,6 +733,18 @@
             ]
           },
           {
+            "id": "system_messages.moderator_silence",
+            "title": "Moderator silence",
+            "subject": "Your account has been silenced",
+            "body": "Hello,\n\n%{decision}\n\nReason: %{reason}\n\nYou can still read discussions, but you can’t participate in them while your account is silenced.\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "can_revert": false,
+            "interpolation_keys": [
+              "base_url",
+              "decision",
+              "reason"
+            ]
+          },
+          {
             "id": "system_messages.new_user_of_the_month",
             "title": "You're a New User of the Month!",
             "subject": "You're a new user of the month!",
@@ -757,7 +769,7 @@
             "id": "system_messages.post_hidden",
             "title": "Post Hidden",
             "subject": "Post hidden by community flags",
-            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your post was hidden.\n\n<%{base_url}%{url}>\n\n%{flag_reason}\n\nThis post was hidden due to flags from the community, so please consider how you might revise your post to reflect their feedback. **You can edit your post after %{edit_delay} minutes, and it will be automatically unhidden.**\n\nHowever, if the post is hidden by the community a second time, it will remain hidden until handled by staff.\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that [your post](%{base_url}%{url}) was hidden.\n\n%{flag_reason}\n\nThis post was hidden due to flags from the community, so please consider how you might revise your post to reflect their feedback. **You can edit your post after %{edit_delay} minutes, and it will be automatically unhidden.**\n\nHowever, if the post is hidden by the community a second time, it will remain hidden until handled by staff.\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
               "base_url",
@@ -771,7 +783,7 @@
             "id": "system_messages.post_hidden_again",
             "title": "Post Hidden again",
             "subject": "Post hidden by community flags, staff notified",
-            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your post was hidden again.\n\n<%{base_url}%{url}>\n\n%{flag_reason}\n\nThe community flagged this post and now it is hidden. **Because this post has been hidden more than once, your post will now remain hidden until it is handled by a staff member.**\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that [your post](%{base_url}%{url}) was hidden again.\n\n%{flag_reason}\n\nThe community flagged this post and now it is hidden. **Because this post has been hidden more than once, your post will now remain hidden until it is handled by a staff member.**\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
               "base_url",
@@ -784,7 +796,7 @@
             "id": "system_messages.queued_by_staff",
             "title": "Post Needs Approval",
             "subject": "Post hidden by staff, awaiting approval",
-            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your post was hidden.\n\n<%{base_url}%{url}>\n\nYour post will remain hidden until a staff member reviews it.\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that [your post](%{base_url}%{url}) was hidden.\n\nYour post will remain hidden until a staff member reviews it.\n\nFor additional guidance, please refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
               "base_url",
@@ -969,7 +981,7 @@
             "id": "system_messages.user_automatically_silenced_with_reason",
             "title": "User Automatically Silenced",
             "subject": "New user %{username} silenced by community flags",
-            "body": "This is an automated message.\n\nThe new user [%{username}](%{user_url}) was automatically silenced.\n\nReason - %{reason}\n\nPlease [review the flags](%{base_url}/review). If %{username} was incorrectly silenced from posting, click the unsilence button on [the admin page for this user](%{user_url}).\n\nThis threshold can be changed via the `silence_new_user` site settings.\n",
+            "body": "This is an automated message.\n\nThe new user [%{username}](%{user_url}) was automatically silenced.\n\nReason: %{reason}\n\nPlease [review the flags](%{base_url}/review). If %{username} was incorrectly silenced from posting, click the unsilence button on [the admin page for this user](%{user_url}).\n\nThis threshold can be changed via the `silence_new_user` site settings.\n",
             "can_revert": false,
             "interpolation_keys": [
               "base_url",
@@ -1129,37 +1141,10 @@
             ]
           },
           {
-            "id": "user_notifications.account_silenced",
-            "title": "Account Silenced",
-            "subject": "[%{email_prefix}] Your account has been silenced",
-            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been silenced until %{silenced_till}.\n\nReason - %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
-            "can_revert": false,
-            "interpolation_keys": [
-              "base_url",
-              "email_prefix",
-              "reason",
-              "silenced_till",
-              "site_name"
-            ]
-          },
-          {
-            "id": "user_notifications.account_silenced_forever",
-            "title": "Account Silenced",
-            "subject": "[%{email_prefix}] Your account has been silenced",
-            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been silenced.\n\nReason - %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
-            "can_revert": false,
-            "interpolation_keys": [
-              "base_url",
-              "email_prefix",
-              "reason",
-              "site_name"
-            ]
-          },
-          {
             "id": "user_notifications.account_suspended",
             "title": "Account Suspended",
             "subject": "[%{email_prefix}] Your account has been suspended",
-            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been suspended until %{suspended_till}.\n\nReason - %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been suspended until %{suspended_till}.\n\nReason: %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
               "base_url",
@@ -1173,7 +1158,7 @@
             "id": "user_notifications.account_suspended_forever",
             "title": "Account Suspended",
             "subject": "[%{email_prefix}] Your account has been suspended",
-            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been suspended.\n\nReason - %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that your account has been suspended.\n\nReason: %{reason}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
               "base_url",
@@ -1339,9 +1324,11 @@
             "id": "user_notifications.signup_after_reject",
             "title": "Signup After Reject",
             "subject": "You've been rejected on %{site_name}",
-            "body": "A staff member rejected your account on %{site_name}.\n\n%{reject_reason}\n",
+            "body": "Hello,\n\nThis is an automated message from %{site_name} to let you know that a staff member declined your registration.%{reason_line}\n\nFor additional guidance, refer to our [community guidelines](%{base_url}/guidelines).\n",
             "can_revert": false,
             "interpolation_keys": [
+              "base_url",
+              "reason_line",
               "reject_reason",
               "site_name"
             ]
@@ -1998,33 +1985,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Kmz9u/bQRPx4P9+c5LyaNMflQbQ=",
-            "created_at": "2026-11-15T21:43:18.454353",
-            "rotated_at": "2026-11-15T21:43:18.453456",
-            "updated_at": "2026-11-15T21:43:18.454353",
+            "auth_token": "P5JIwEaso9BWCtw+5mM0BKLXhmI=",
+            "created_at": "2026-11-22T00:07:44.63035",
+            "rotated_at": "2026-11-22T00:07:44.629571",
+            "updated_at": "2026-11-22T00:07:44.63035",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Kmz9u/bQRPx4P9+c5LyaNMflQbQ=",
+            "prev_auth_token": "P5JIwEaso9BWCtw+5mM0BKLXhmI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T21:43:18.959885",
+            "id": 1,
+            "seen_at": "2026-11-22T00:07:45.092317",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Kmz9u/bQRPx4P9+c5LyaNMflQbQ=",
-            "created_at": "2026-11-15T21:43:18.454353",
-            "rotated_at": "2026-11-15T21:43:18.453456",
-            "updated_at": "2026-11-15T21:43:18.454353",
+            "auth_token": "P5JIwEaso9BWCtw+5mM0BKLXhmI=",
+            "created_at": "2026-11-22T00:07:44.63035",
+            "rotated_at": "2026-11-22T00:07:44.629571",
+            "updated_at": "2026-11-22T00:07:44.63035",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Kmz9u/bQRPx4P9+c5LyaNMflQbQ=",
+            "prev_auth_token": "P5JIwEaso9BWCtw+5mM0BKLXhmI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -2035,7 +2022,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 72,
           "email": null,
           "action": 29,
           "context": null,
@@ -2045,10 +2032,10 @@
           "topic_id": null,
           "new_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
           "admin_only": true,
-          "created_at": "2026-11-15T21:43:19.072602",
+          "created_at": "2026-11-22T00:07:45.197377",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:43:19.072602",
+          "updated_at": "2026-11-22T00:07:45.197377",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2057,7 +2044,7 @@
           "target_user_id": null
         },
         {
-          "id": 69,
+          "id": 73,
           "email": null,
           "action": 29,
           "context": null,
@@ -2067,10 +2054,10 @@
           "topic_id": null,
           "new_value": "A body",
           "admin_only": true,
-          "created_at": "2026-11-15T21:43:19.07614",
+          "created_at": "2026-11-22T00:07:45.200567",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:43:19.07614",
+          "updated_at": "2026-11-22T00:07:45.200567",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2079,7 +2066,7 @@
           "target_user_id": null
         },
         {
-          "id": 70,
+          "id": 74,
           "email": null,
           "action": 29,
           "context": null,
@@ -2089,10 +2076,10 @@
           "topic_id": null,
           "new_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
           "admin_only": true,
-          "created_at": "2026-11-15T21:43:19.167219",
+          "created_at": "2026-11-22T00:07:45.283273",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:43:19.167219",
+          "updated_at": "2026-11-22T00:07:45.283273",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2101,7 +2088,7 @@
           "target_user_id": null
         },
         {
-          "id": 71,
+          "id": 75,
           "email": null,
           "action": 29,
           "context": null,
@@ -2111,10 +2098,10 @@
           "topic_id": null,
           "new_value": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
           "admin_only": true,
-          "created_at": "2026-11-15T21:43:19.170909",
+          "created_at": "2026-11-22T00:07:45.286489",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:43:19.170909",
+          "updated_at": "2026-11-22T00:07:45.286489",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2129,11 +2116,11 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 68
+    "user_histories": 72
   },
   "recorded_from": {
     "case": "45a55f1a82768e33ce5f41b84f4e983b60ef7a83fb8de21531470dff110f3e6a",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

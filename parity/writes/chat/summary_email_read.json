@@ -2,8 +2,8 @@
   "name": "summary_email_read",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T22:36:37.023941",
-  "transaction_started_at": "2026-11-15T22:36:36.364422",
+  "started_at": "2026-11-22T00:27:56.27912",
+  "transaction_started_at": "2026-11-22T00:27:55.399701",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -28,7 +28,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "1cf886d86aa0992d455e6fa9b43ce564e3d17886112f85aca6d5a53de8671aa9",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

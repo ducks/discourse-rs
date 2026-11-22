@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:33:59.407214",
-  "transaction_started_at": "2026-11-15T22:33:58.539456",
+  "started_at": "2026-11-22T00:25:25.031828",
+  "transaction_started_at": "2026-11-22T00:25:24.200972",
   "responses": [
     {
       "status": 200,
@@ -27,8 +27,8 @@
         {
           "id": 1,
           "user_id": 3,
-          "created_at": "2026-11-15T22:33:59.484807",
-          "updated_at": "2026-11-15T22:33:59.484807",
+          "created_at": "2026-11-22T00:25:25.109433",
+          "updated_at": "2026-11-22T00:25:25.109433",
           "new_message": "edited in the dm",
           "old_message": "earlier in the dm",
           "chat_message_id": 1
@@ -64,9 +64,10 @@
             "user_id": 3,
             "streaming": false,
             "thread_id": null,
-            "created_at": "2026-11-15T22:03:58.539456",
+            "created_at": "2026-11-21T23:55:24.200972",
             "deleted_at": null,
-            "updated_at": "2026-11-15T22:03:58.539456",
+            "updated_at": "2026-11-21T23:55:24.200972",
+            "broadcasted": false,
             "deleted_by_id": null,
             "cooked_version": 1,
             "created_by_sdk": false,
@@ -83,9 +84,10 @@
             "user_id": 3,
             "streaming": false,
             "thread_id": null,
-            "created_at": "2026-11-15T22:03:58.539456",
+            "created_at": "2026-11-21T23:55:24.200972",
             "deleted_at": null,
-            "updated_at": "2026-11-15T22:33:59.48282",
+            "updated_at": "2026-11-22T00:25:25.107065",
+            "broadcasted": false,
             "deleted_by_id": null,
             "cooked_version": 2,
             "created_by_sdk": false,
@@ -102,33 +104,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "wvNbZRVD4FYMvD7rJD46bFYhkOI=",
-            "created_at": "2026-11-15T22:33:58.883057",
-            "rotated_at": "2026-11-15T22:33:58.881947",
-            "updated_at": "2026-11-15T22:33:58.883057",
+            "auth_token": "vDrXX4WoS2XZ4BeyY+/bgXGQb90=",
+            "created_at": "2026-11-22T00:25:24.541411",
+            "rotated_at": "2026-11-22T00:25:24.540523",
+            "updated_at": "2026-11-22T00:25:24.541411",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "wvNbZRVD4FYMvD7rJD46bFYhkOI=",
+            "prev_auth_token": "vDrXX4WoS2XZ4BeyY+/bgXGQb90=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:33:59.413458",
+            "id": 1,
+            "seen_at": "2026-11-22T00:25:25.03959",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "wvNbZRVD4FYMvD7rJD46bFYhkOI=",
-            "created_at": "2026-11-15T22:33:58.883057",
-            "rotated_at": "2026-11-15T22:33:58.881947",
-            "updated_at": "2026-11-15T22:33:58.883057",
+            "auth_token": "vDrXX4WoS2XZ4BeyY+/bgXGQb90=",
+            "created_at": "2026-11-22T00:25:24.541411",
+            "rotated_at": "2026-11-22T00:25:24.540523",
+            "updated_at": "2026-11-22T00:25:24.541411",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "wvNbZRVD4FYMvD7rJD46bFYhkOI=",
+            "prev_auth_token": "vDrXX4WoS2XZ4BeyY+/bgXGQb90=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -142,7 +144,7 @@
       "Jobs::Chat::ProcessMessage",
       {
         "chat_message_id": 1,
-        "edit_timestamp": "2026-11-15T22:33:59.484807Z"
+        "edit_timestamp": "2026-11-22T00:25:25.109433Z"
       }
     ]
   ],
@@ -164,7 +166,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "4858413b091d29507812660cc97c964b5bdbf17ef9951bb9ddb16e23b3b3d91d",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

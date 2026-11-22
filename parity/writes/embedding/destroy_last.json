@@ -11,8 +11,8 @@
       "path": "/admin/customize/embedding.json"
     }
   ],
-  "started_at": "2026-11-16T04:55:00.972743",
-  "transaction_started_at": "2026-11-16T04:55:00.243265",
+  "started_at": "2026-11-22T00:38:05.730813",
+  "transaction_started_at": "2026-11-22T00:38:03.620099",
   "responses": [
     {
       "status": 200,
@@ -60,8 +60,8 @@
           "host": "blog.example.com",
           "user_id": null,
           "class_name": null,
-          "created_at": "2026-11-15T04:55:00.243265",
-          "updated_at": "2026-11-15T04:55:00.243265",
+          "created_at": "2026-11-21T00:38:03.620099",
+          "updated_at": "2026-11-21T00:38:03.620099",
           "category_id": 4,
           "allowed_paths": null
         }
@@ -75,48 +75,48 @@
           "name": "embed_by_username",
           "value": "",
           "data_type": 15,
-          "created_at": "2026-11-16T04:55:00.991877",
-          "updated_at": "2026-11-16T04:55:00.991877"
+          "created_at": "2026-11-22T00:38:05.817458",
+          "updated_at": "2026-11-22T00:38:05.817458"
         },
         {
           "id": 40,
           "name": "embed_title_scrubber",
           "value": "",
           "data_type": 1,
-          "created_at": "2026-11-16T04:55:00.996114",
-          "updated_at": "2026-11-16T04:55:00.996114"
+          "created_at": "2026-11-22T00:38:05.842536",
+          "updated_at": "2026-11-22T00:38:05.842536"
         },
         {
           "id": 41,
           "name": "embed_truncate",
           "value": "t",
           "data_type": 5,
-          "created_at": "2026-11-16T04:55:00.997813",
-          "updated_at": "2026-11-16T04:55:00.997813"
+          "created_at": "2026-11-22T00:38:05.848712",
+          "updated_at": "2026-11-22T00:38:05.848712"
         },
         {
           "id": 42,
           "name": "embed_unlisted",
           "value": "f",
           "data_type": 5,
-          "created_at": "2026-11-16T04:55:00.999526",
-          "updated_at": "2026-11-16T04:55:00.999526"
+          "created_at": "2026-11-22T00:38:05.856471",
+          "updated_at": "2026-11-22T00:38:05.856471"
         },
         {
           "id": 43,
           "name": "allowed_embed_selectors",
           "value": "",
           "data_type": 1,
-          "created_at": "2026-11-16T04:55:01.00121",
-          "updated_at": "2026-11-16T04:55:01.00121"
+          "created_at": "2026-11-22T00:38:05.858937",
+          "updated_at": "2026-11-22T00:38:05.858937"
         },
         {
           "id": 44,
           "name": "blocked_embed_selectors",
           "value": "",
           "data_type": 1,
-          "created_at": "2026-11-16T04:55:01.003022",
-          "updated_at": "2026-11-16T04:55:01.003022"
+          "created_at": "2026-11-22T00:38:05.861267",
+          "updated_at": "2026-11-22T00:38:05.861267"
         }
       ],
       "deleted": [],
@@ -127,16 +127,16 @@
             "name": "embed_post_limit",
             "value": "30",
             "data_type": 3,
-            "created_at": "2026-11-16T04:55:00.243265",
-            "updated_at": "2026-11-16T04:55:00.243265"
+            "created_at": "2026-11-22T00:38:03.620099",
+            "updated_at": "2026-11-22T00:38:03.620099"
           },
           "after": {
             "id": 37,
             "name": "embed_post_limit",
             "value": "100",
             "data_type": 3,
-            "created_at": "2026-11-16T04:55:00.243265",
-            "updated_at": "2026-11-16T04:55:00.993769"
+            "created_at": "2026-11-22T00:38:03.620099",
+            "updated_at": "2026-11-22T00:38:05.827556"
           }
         },
         {
@@ -145,16 +145,16 @@
             "name": "allowed_embed_classnames",
             "value": "x",
             "data_type": 1,
-            "created_at": "2026-11-16T04:55:00.243265",
-            "updated_at": "2026-11-16T04:55:00.243265"
+            "created_at": "2026-11-22T00:38:03.620099",
+            "updated_at": "2026-11-22T00:38:03.620099"
           },
           "after": {
             "id": 38,
             "name": "allowed_embed_classnames",
             "value": "emoji",
             "data_type": 1,
-            "created_at": "2026-11-16T04:55:00.243265",
-            "updated_at": "2026-11-16T04:55:01.00469"
+            "created_at": "2026-11-22T00:38:03.620099",
+            "updated_at": "2026-11-22T00:38:05.863563"
           }
         }
       ]
@@ -165,33 +165,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "V8yA/+7LAAWChV+n/GD70+Vo3VU=",
-            "created_at": "2026-11-16T04:55:00.514611",
-            "rotated_at": "2026-11-16T04:55:00.513637",
-            "updated_at": "2026-11-16T04:55:00.514611",
+            "auth_token": "7OxOM88vN7ZBqPYEp7p9Q6f/ue4=",
+            "created_at": "2026-11-22T00:38:04.603495",
+            "rotated_at": "2026-11-22T00:38:04.599921",
+            "updated_at": "2026-11-22T00:38:04.603495",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "V8yA/+7LAAWChV+n/GD70+Vo3VU=",
+            "prev_auth_token": "7OxOM88vN7ZBqPYEp7p9Q6f/ue4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T04:55:00.977339",
+            "id": 1,
+            "seen_at": "2026-11-22T00:38:05.753074",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "V8yA/+7LAAWChV+n/GD70+Vo3VU=",
-            "created_at": "2026-11-16T04:55:00.514611",
-            "rotated_at": "2026-11-16T04:55:00.513637",
-            "updated_at": "2026-11-16T04:55:00.514611",
+            "auth_token": "7OxOM88vN7ZBqPYEp7p9Q6f/ue4=",
+            "created_at": "2026-11-22T00:38:04.603495",
+            "rotated_at": "2026-11-22T00:38:04.599921",
+            "updated_at": "2026-11-22T00:38:04.603495",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "V8yA/+7LAAWChV+n/GD70+Vo3VU=",
+            "prev_auth_token": "7OxOM88vN7ZBqPYEp7p9Q6f/ue4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -202,7 +202,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 72,
           "email": null,
           "action": 75,
           "context": "host: blog.example.com",
@@ -212,10 +212,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-16T04:55:01.017932",
+          "created_at": "2026-11-22T00:38:05.878895",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-16T04:55:01.017932",
+          "updated_at": "2026-11-22T00:38:05.878895",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -231,7 +231,7 @@
   "jobs": [],
   "next_ids": {
     "site_settings": 39,
-    "user_histories": 68
+    "user_histories": 72
   },
   "setup": [
     "INSERT INTO embeddable_hosts (id, host, category_id, allowed_paths, user_id, created_at, updated_at) VALUES (5, 'blog.example.com', 4, NULL, NULL, now() - interval '1 day', now() - interval '1 day')",
@@ -240,7 +240,7 @@
   ],
   "recorded_from": {
     "case": "ab5b0b4c685877aa84b4f288f42b70796592cecad80343a168f0b7718bac621a",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

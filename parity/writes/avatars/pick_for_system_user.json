@@ -26,8 +26,8 @@
       "path": "/u/discobot.json"
     }
   ],
-  "started_at": "2026-11-15T22:10:02.670896",
-  "transaction_started_at": "2026-11-15T22:09:58.266542",
+  "started_at": "2026-11-22T00:16:53.375209",
+  "transaction_started_at": "2026-11-22T00:16:52.510003",
   "responses": [
     {
       "status": 200,
@@ -80,7 +80,7 @@
           "uploaded_avatar_id": 34,
           "has_title_badges": false,
           "pending_count": 0,
-          "profile_view_count": 2,
+          "profile_view_count": 0,
           "second_factor_enabled": false,
           "can_upload_profile_header": true,
           "can_upload_user_card_background": true,
@@ -178,7 +178,7 @@
               "automatic": true,
               "name": "moderators",
               "display_name": "moderators",
-              "user_count": 1,
+              "user_count": 0,
               "mentionable_level": 0,
               "messageable_level": 99,
               "visibility_level": 1,
@@ -564,7 +564,7 @@
           "uploaded_avatar_id": null,
           "has_title_badges": false,
           "pending_count": 0,
-          "profile_view_count": 1,
+          "profile_view_count": 0,
           "second_factor_enabled": false,
           "can_upload_profile_header": true,
           "can_upload_user_card_background": true,
@@ -967,8 +967,8 @@
           "name": "use_site_small_logo_as_system_avatar",
           "value": "f",
           "data_type": 5,
-          "created_at": "2026-11-15T22:10:02.808823",
-          "updated_at": "2026-11-15T22:10:02.808823"
+          "created_at": "2026-11-22T00:16:53.402023",
+          "updated_at": "2026-11-22T00:16:53.402023"
         }
       ],
       "deleted": [],
@@ -981,8 +981,8 @@
           "id": 37,
           "target_id": -2,
           "upload_id": 35,
-          "created_at": "2026-11-15T19:18:16.251613",
-          "updated_at": "2026-11-15T19:18:16.251704",
+          "created_at": "2026-11-21T23:55:43.077884",
+          "updated_at": "2026-11-21T23:55:43.077948",
           "target_type": "User"
         }
       ],
@@ -994,33 +994,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "3J/IoF+LBkgBTP9Z23KYtqCIZBE=",
-            "created_at": "2026-11-15T22:09:59.994204",
-            "rotated_at": "2026-11-15T22:09:59.989333",
-            "updated_at": "2026-11-15T22:09:59.994204",
+            "auth_token": "+9KjM/V9u8t8eWeDE7i4LQdEjFc=",
+            "created_at": "2026-11-22T00:16:52.868735",
+            "rotated_at": "2026-11-22T00:16:52.867836",
+            "updated_at": "2026-11-22T00:16:52.868735",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "3J/IoF+LBkgBTP9Z23KYtqCIZBE=",
+            "prev_auth_token": "+9KjM/V9u8t8eWeDE7i4LQdEjFc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:10:02.697607",
+            "id": 1,
+            "seen_at": "2026-11-22T00:16:53.382149",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "3J/IoF+LBkgBTP9Z23KYtqCIZBE=",
-            "created_at": "2026-11-15T22:09:59.994204",
-            "rotated_at": "2026-11-15T22:09:59.989333",
-            "updated_at": "2026-11-15T22:09:59.994204",
+            "auth_token": "+9KjM/V9u8t8eWeDE7i4LQdEjFc=",
+            "created_at": "2026-11-22T00:16:52.868735",
+            "rotated_at": "2026-11-22T00:16:52.867836",
+            "updated_at": "2026-11-22T00:16:52.868735",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "3J/IoF+LBkgBTP9Z23KYtqCIZBE=",
+            "prev_auth_token": "+9KjM/V9u8t8eWeDE7i4LQdEjFc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1031,16 +1031,16 @@
     "user_profile_views": {
       "inserted": [
         {
-          "id": 10,
+          "id": 1,
           "user_id": 1,
-          "viewed_at": "2026-11-15T22:10:03.549208",
+          "viewed_at": "2026-11-22T00:16:53.562152",
           "ip_address": null,
           "user_profile_id": -1
         },
         {
-          "id": 11,
+          "id": 2,
           "user_id": 1,
-          "viewed_at": "2026-11-15T22:10:04.137757",
+          "viewed_at": "2026-11-22T00:16:53.694421",
           "ip_address": null,
           "user_profile_id": -2
         }
@@ -1054,28 +1054,28 @@
       "updated": [
         {
           "before": {
-            "views": 2,
+            "views": 0,
             "bio_raw": null,
             "user_id": -1,
             "website": null,
             "location": null,
             "bio_cooked": null,
             "featured_topic_id": null,
-            "bio_cooked_version": 1,
+            "bio_cooked_version": null,
             "dismissed_banner_key": null,
             "granted_title_badge_id": null,
             "card_background_upload_id": null,
             "profile_background_upload_id": null
           },
           "after": {
-            "views": 3,
+            "views": 1,
             "bio_raw": null,
             "user_id": -1,
             "website": null,
             "location": null,
             "bio_cooked": null,
             "featured_topic_id": null,
-            "bio_cooked_version": 1,
+            "bio_cooked_version": null,
             "dismissed_banner_key": null,
             "granted_title_badge_id": null,
             "card_background_upload_id": null,
@@ -1084,7 +1084,7 @@
         },
         {
           "before": {
-            "views": 1,
+            "views": 0,
             "bio_raw": "Hi, I’m not a real person. I’m a bot that can teach you about this site. To interact with me, send me a message or mention me by name.",
             "user_id": -2,
             "website": null,
@@ -1098,7 +1098,7 @@
             "profile_background_upload_id": null
           },
           "after": {
-            "views": 2,
+            "views": 1,
             "bio_raw": "Hi, I’m not a real person. I’m a bot that can teach you about this site. To interact with me, send me a message or mention me by name.",
             "user_id": -2,
             "website": null,
@@ -1134,7 +1134,7 @@
             "created_at": "2026-11-03T05:07:25.57085",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-15T19:18:16.218684",
+            "updated_at": "2026-11-21T23:55:43.03818",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -1174,7 +1174,7 @@
             "created_at": "2026-11-03T05:07:25.57085",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-15T22:10:03.670338",
+            "updated_at": "2026-11-22T00:16:53.586624",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -1213,11 +1213,11 @@
   ],
   "next_ids": {
     "site_settings": 37,
-    "user_profile_views": 10
+    "user_profile_views": 1
   },
   "recorded_from": {
     "case": "fe007377140801821a4817bde750bd021f5cc0966b15b12ec82d86203656d470",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

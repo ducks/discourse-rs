@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T23:59:14.584129",
-  "transaction_started_at": "2026-11-15T23:59:13.773782",
+  "started_at": "2026-11-22T01:53:45.162111",
+  "transaction_started_at": "2026-11-22T01:53:44.454436",
   "responses": [
     {
       "status": 200,
@@ -21,9 +21,9 @@
           "username": "user1",
           "name": "User1",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-          "unread_notifications": 5,
+          "unread_notifications": 2,
           "unread_high_priority_notifications": 4,
-          "all_unread_notifications_count": 9,
+          "all_unread_notifications_count": 6,
           "read_first_notification": false,
           "admin": false,
           "notification_channel_position": null,
@@ -37,6 +37,7 @@
           "can_send_private_email_messages": false,
           "can_send_private_messages": true,
           "can_upload_avatar": true,
+          "can_embed_media": true,
           "can_edit": true,
           "can_invite_to_forum": true,
           "can_post_anonymously": false,
@@ -95,18 +96,16 @@
           "draft_count": 0,
           "pending_posts_count": 0,
           "grouped_unread_notifications": {
-            "24": 1,
-            "6": 3,
             "1": 1,
-            "12": 3,
-            "5": 1
+            "5": 1,
+            "6": 3,
+            "24": 1
           },
           "available_notification_types": [
-            24,
-            6,
             1,
-            12,
-            5
+            5,
+            6,
+            24
           ],
           "display_sidebar_tags": true,
           "sidebar_tags": [],
@@ -314,11 +313,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-13T23:59:13.773782",
+            "created_at": "2026-11-20T01:53:44.454436",
             "expires_at": null,
             "revoked_at": null,
-            "updated_at": "2026-11-13T23:59:13.773782",
-            "last_used_at": "2026-11-14T23:59:13.773782",
+            "updated_at": "2026-11-20T01:53:44.454436",
+            "last_used_at": "2026-11-21T01:53:44.454436",
             "application_name": null,
             "user_api_key_client_id": 9101
           },
@@ -328,11 +327,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-13T23:59:13.773782",
+            "created_at": "2026-11-20T01:53:44.454436",
             "expires_at": null,
             "revoked_at": null,
-            "updated_at": "2026-11-13T23:59:13.773782",
-            "last_used_at": "2026-11-15T23:59:14.592552",
+            "updated_at": "2026-11-20T01:53:44.454436",
+            "last_used_at": "2026-11-22T01:53:45.18035",
             "application_name": null,
             "user_api_key_client_id": 9101
           }
@@ -349,7 +348,7 @@
   ],
   "recorded_from": {
     "case": "a729ee1a98e0170860fa4ae78328f6ed0d31df079c63fcdb19077bae8fe5f4ac",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

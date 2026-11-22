@@ -38,8 +38,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:53:15.555064",
-  "transaction_started_at": "2026-11-15T22:53:14.737147",
+  "started_at": "2026-11-22T00:42:34.523392",
+  "transaction_started_at": "2026-11-22T00:42:33.758341",
   "responses": [
     {
       "status": 200,
@@ -89,9 +89,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-15T22:53:15.583463",
+          "created_at": "2026-11-22T00:42:34.550388",
           "prev_value": null,
-          "updated_at": "2026-11-15T22:53:15.583463",
+          "updated_at": "2026-11-22T00:42:34.550388",
           "acting_user_id": 1,
           "target_user_id": 3
         },
@@ -101,9 +101,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-15T22:53:15.586606",
+          "created_at": "2026-11-22T00:42:34.553097",
           "prev_value": null,
-          "updated_at": "2026-11-15T22:53:15.586606",
+          "updated_at": "2026-11-22T00:42:34.553097",
           "acting_user_id": 1,
           "target_user_id": 4
         },
@@ -113,9 +113,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-15T22:53:15.589653",
+          "created_at": "2026-11-22T00:42:34.555512",
           "prev_value": null,
-          "updated_at": "2026-11-15T22:53:15.589653",
+          "updated_at": "2026-11-22T00:42:34.555512",
           "acting_user_id": 1,
           "target_user_id": 3
         },
@@ -125,9 +125,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-15T22:53:15.61246",
+          "created_at": "2026-11-22T00:42:34.577087",
           "prev_value": null,
-          "updated_at": "2026-11-15T22:53:15.61246",
+          "updated_at": "2026-11-22T00:42:34.577087",
           "acting_user_id": 1,
           "target_user_id": 3
         },
@@ -137,9 +137,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-15T22:53:15.634507",
+          "created_at": "2026-11-22T00:42:34.596361",
           "prev_value": null,
-          "updated_at": "2026-11-15T22:53:15.634507",
+          "updated_at": "2026-11-22T00:42:34.596361",
           "acting_user_id": 1,
           "target_user_id": 4
         },
@@ -149,9 +149,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-15T22:53:15.637614",
+          "created_at": "2026-11-22T00:42:34.598764",
           "prev_value": null,
-          "updated_at": "2026-11-15T22:53:15.637614",
+          "updated_at": "2026-11-22T00:42:34.598764",
           "acting_user_id": 1,
           "target_user_id": 2
         }
@@ -162,13 +162,13 @@
     "group_users": {
       "inserted": [
         {
-          "id": 68,
+          "id": 37,
           "owner": false,
           "user_id": 3,
           "group_id": 9001,
-          "created_at": "2026-11-15T22:53:14.737147",
-          "updated_at": "2026-11-15T22:53:14.737147",
-          "first_unread_pm_at": "2026-11-15T22:53:14.737147",
+          "created_at": "2026-11-22T00:42:33.758341",
+          "updated_at": "2026-11-22T00:42:33.758341",
+          "first_unread_pm_at": "2026-11-22T00:42:33.758341",
           "notification_level": 3
         }
       ],
@@ -297,33 +297,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "foTOlaUrdm48CD8wz8d8V/Dqjog=",
-            "created_at": "2026-11-15T22:53:15.058152",
-            "rotated_at": "2026-11-15T22:53:15.057235",
-            "updated_at": "2026-11-15T22:53:15.058152",
+            "auth_token": "lpYWpuiRklR7sECcbuDBNvMwXaM=",
+            "created_at": "2026-11-22T00:42:34.066469",
+            "rotated_at": "2026-11-22T00:42:34.065421",
+            "updated_at": "2026-11-22T00:42:34.066469",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "foTOlaUrdm48CD8wz8d8V/Dqjog=",
+            "prev_auth_token": "lpYWpuiRklR7sECcbuDBNvMwXaM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:53:15.561279",
+            "id": 1,
+            "seen_at": "2026-11-22T00:42:34.529512",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "foTOlaUrdm48CD8wz8d8V/Dqjog=",
-            "created_at": "2026-11-15T22:53:15.058152",
-            "rotated_at": "2026-11-15T22:53:15.057235",
-            "updated_at": "2026-11-15T22:53:15.058152",
+            "auth_token": "lpYWpuiRklR7sECcbuDBNvMwXaM=",
+            "created_at": "2026-11-22T00:42:34.066469",
+            "rotated_at": "2026-11-22T00:42:34.065421",
+            "updated_at": "2026-11-22T00:42:34.066469",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "foTOlaUrdm48CD8wz8d8V/Dqjog=",
+            "prev_auth_token": "lpYWpuiRklR7sECcbuDBNvMwXaM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -335,7 +335,7 @@
   "jobs": [],
   "next_ids": {
     "group_histories": 1,
-    "group_users": 68
+    "group_users": 37
   },
   "setup": [
     "INSERT INTO groups (id, name, user_count, created_at, updated_at) VALUES (9001, 'testers', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
@@ -343,7 +343,7 @@
   ],
   "recorded_from": {
     "case": "bffab8a5e73565254aef397651153f95eaff3fe2ba1c8202fdd8eb4dd992b72a",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

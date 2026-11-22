@@ -2,14 +2,14 @@
   "name": "run_problem_check_upcoming_change",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:28:51.712326",
-  "transaction_started_at": "2026-11-15T23:28:51.088867",
+  "started_at": "2026-11-22T01:23:13.309425",
+  "transaction_started_at": "2026-11-22T01:23:12.680679",
   "responses": [],
   "changes": {
     "admin_notices": {
       "inserted": [
         {
-          "id": 5,
+          "id": 1,
           "details": {
             "target": "rename_faq_to_guidelines",
             "base_path": "",
@@ -17,9 +17,9 @@
           },
           "subject": 0,
           "priority": 0,
-          "created_at": "2026-11-15T23:28:51.728045",
+          "created_at": "2026-11-22T01:23:13.326296",
           "identifier": "upcoming_change_stable_opted_out",
-          "updated_at": "2026-11-15T23:28:51.728045"
+          "updated_at": "2026-11-22T01:23:13.326296"
         }
       ],
       "deleted": [],
@@ -28,19 +28,19 @@
     "problem_check_trackers": {
       "inserted": [
         {
-          "id": 74,
+          "id": 25,
           "blips": 0,
           "target": "enable_unified_new",
           "details": {},
           "identifier": "upcoming_change_stable_opted_out",
           "ignored_at": null,
-          "last_run_at": "2026-11-15T23:28:51.71642",
-          "next_run_at": "2026-11-16T00:28:51.71394",
+          "last_run_at": "2026-11-22T01:23:13.313871",
+          "next_run_at": "2026-11-22T02:23:13.31145",
           "last_problem_at": null,
-          "last_success_at": "2026-11-15T23:28:51.71642"
+          "last_success_at": "2026-11-22T01:23:13.313871"
         },
         {
-          "id": 77,
+          "id": 28,
           "blips": 1,
           "target": "rename_faq_to_guidelines",
           "details": {
@@ -49,9 +49,9 @@
           },
           "identifier": "upcoming_change_stable_opted_out",
           "ignored_at": null,
-          "last_run_at": "2026-11-15T23:28:51.72574",
-          "next_run_at": "2026-11-16T00:28:51.724079",
-          "last_problem_at": "2026-11-15T23:28:51.72574",
+          "last_run_at": "2026-11-22T01:23:13.323558",
+          "next_run_at": "2026-11-22T02:23:13.321794",
+          "last_problem_at": "2026-11-22T01:23:13.323558",
           "last_success_at": null
         }
       ],
@@ -61,8 +61,8 @@
   },
   "jobs": [],
   "next_ids": {
-    "admin_notices": 5,
-    "problem_check_trackers": 74
+    "admin_notices": 1,
+    "problem_check_trackers": 25
   },
   "settings": {
     "rename_faq_to_guidelines": false
@@ -120,7 +120,7 @@
   ],
   "recorded_from": {
     "case": "e08ea9fe14c7148a4f1f9b7484a50a3109b00eeee3e27adebecb2b813320d331",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "top_refresh_formula",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:29:15.597359",
-  "transaction_started_at": "2026-11-15T23:29:14.977006",
+  "started_at": "2026-11-22T01:23:37.616183",
+  "transaction_started_at": "2026-11-22T01:23:36.96149",
   "responses": [],
   "changes": {
     "top_topics": {
@@ -12,7 +12,7 @@
       "updated": [
         {
           "before": {
-            "id": 4,
+            "id": 5,
             "topic_id": 38,
             "all_score": 0,
             "daily_score": 0,
@@ -42,7 +42,7 @@
             "quarterly_op_likes_count": 0
           },
           "after": {
-            "id": 4,
+            "id": 5,
             "topic_id": 38,
             "all_score": 0,
             "daily_score": 0,
@@ -66,68 +66,6 @@
             "quarterly_likes_count": 0,
             "quarterly_posts_count": 1,
             "quarterly_views_count": 0,
-            "weekly_op_likes_count": 0,
-            "yearly_op_likes_count": 0,
-            "monthly_op_likes_count": 0,
-            "quarterly_op_likes_count": 0
-          }
-        },
-        {
-          "before": {
-            "id": 5,
-            "topic_id": 37,
-            "all_score": 0,
-            "daily_score": 0,
-            "weekly_score": 0,
-            "yearly_score": 0,
-            "monthly_score": 0,
-            "quarterly_score": 0,
-            "daily_likes_count": 0,
-            "daily_posts_count": 1,
-            "daily_views_count": 0,
-            "weekly_likes_count": 0,
-            "weekly_posts_count": 1,
-            "weekly_views_count": 0,
-            "yearly_likes_count": 0,
-            "yearly_posts_count": 1,
-            "yearly_views_count": 0,
-            "monthly_likes_count": 0,
-            "monthly_posts_count": 1,
-            "monthly_views_count": 0,
-            "daily_op_likes_count": 0,
-            "quarterly_likes_count": 0,
-            "quarterly_posts_count": 1,
-            "quarterly_views_count": 0,
-            "weekly_op_likes_count": 0,
-            "yearly_op_likes_count": 0,
-            "monthly_op_likes_count": 0,
-            "quarterly_op_likes_count": 0
-          },
-          "after": {
-            "id": 5,
-            "topic_id": 37,
-            "all_score": 0,
-            "daily_score": 0,
-            "weekly_score": 0,
-            "yearly_score": 0,
-            "monthly_score": 0,
-            "quarterly_score": 0,
-            "daily_likes_count": 0,
-            "daily_posts_count": 1,
-            "daily_views_count": 0,
-            "weekly_likes_count": 0,
-            "weekly_posts_count": 1,
-            "weekly_views_count": 0,
-            "yearly_likes_count": 0,
-            "yearly_posts_count": 1,
-            "yearly_views_count": 1,
-            "monthly_likes_count": 0,
-            "monthly_posts_count": 1,
-            "monthly_views_count": 1,
-            "daily_op_likes_count": 0,
-            "quarterly_likes_count": 0,
-            "quarterly_posts_count": 1,
-            "quarterly_views_count": 1,
             "weekly_op_likes_count": 0,
             "yearly_op_likes_count": 0,
             "monthly_op_likes_count": 0,
@@ -195,6 +133,68 @@
             "monthly_op_likes_count": 3,
             "quarterly_op_likes_count": 3
           }
+        },
+        {
+          "before": {
+            "id": 4,
+            "topic_id": 37,
+            "all_score": 0,
+            "daily_score": 0,
+            "weekly_score": 0,
+            "yearly_score": 0,
+            "monthly_score": 0,
+            "quarterly_score": 0,
+            "daily_likes_count": 0,
+            "daily_posts_count": 1,
+            "daily_views_count": 0,
+            "weekly_likes_count": 0,
+            "weekly_posts_count": 1,
+            "weekly_views_count": 0,
+            "yearly_likes_count": 0,
+            "yearly_posts_count": 1,
+            "yearly_views_count": 0,
+            "monthly_likes_count": 0,
+            "monthly_posts_count": 1,
+            "monthly_views_count": 0,
+            "daily_op_likes_count": 0,
+            "quarterly_likes_count": 0,
+            "quarterly_posts_count": 1,
+            "quarterly_views_count": 0,
+            "weekly_op_likes_count": 0,
+            "yearly_op_likes_count": 0,
+            "monthly_op_likes_count": 0,
+            "quarterly_op_likes_count": 0
+          },
+          "after": {
+            "id": 4,
+            "topic_id": 37,
+            "all_score": 0,
+            "daily_score": 0,
+            "weekly_score": 0,
+            "yearly_score": 0,
+            "monthly_score": 0,
+            "quarterly_score": 0,
+            "daily_likes_count": 0,
+            "daily_posts_count": 1,
+            "daily_views_count": 0,
+            "weekly_likes_count": 0,
+            "weekly_posts_count": 1,
+            "weekly_views_count": 0,
+            "yearly_likes_count": 0,
+            "yearly_posts_count": 1,
+            "yearly_views_count": 1,
+            "monthly_likes_count": 0,
+            "monthly_posts_count": 1,
+            "monthly_views_count": 1,
+            "daily_op_likes_count": 0,
+            "quarterly_likes_count": 0,
+            "quarterly_posts_count": 1,
+            "quarterly_views_count": 1,
+            "weekly_op_likes_count": 0,
+            "yearly_op_likes_count": 0,
+            "monthly_op_likes_count": 0,
+            "quarterly_op_likes_count": 0
+          }
         }
       ]
     }
@@ -222,7 +222,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "4c3e16961b2ce4699d34ad8cb21c5f7ae8381c6a2ebde823588916ba9921b54e",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -7,8 +7,8 @@
       "path": "/site.json"
     }
   ],
-  "started_at": "2026-11-16T00:07:40.659508",
-  "transaction_started_at": "2026-11-16T00:07:40.016001",
+  "started_at": "2026-11-22T02:02:44.969346",
+  "transaction_started_at": "2026-11-22T02:02:44.1824",
   "responses": [
     {
       "status": 200,
@@ -393,10 +393,10 @@
           }
         ],
         "topic_featured_link_allowed_category_ids": [
+          3,
           4,
           2,
-          34,
-          3
+          34
         ],
         "user_themes": [
           {
@@ -603,7 +603,7 @@
             "emoji": "blue_book",
             "slug": "general",
             "topic_count": 3,
-            "post_count": 1,
+            "post_count": 0,
             "position": 3,
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -674,7 +674,7 @@
             "slug": "sub-general",
             "topic_count": 1,
             "post_count": 0,
-            "position": 4,
+            "position": 3,
             "description": null,
             "description_text": null,
             "description_excerpt": null,
@@ -1012,7 +1012,7 @@
   ],
   "recorded_from": {
     "case": "d1be83e54688c1198d9383fe24613e0dfa26656cf33611c993d11cd5b3f634bc",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

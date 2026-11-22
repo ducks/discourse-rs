@@ -2,8 +2,8 @@
   "name": "deliver_skipped",
   "user": "admin",
   "requests": [],
-  "started_at": "2026-11-16T00:09:14.866111",
-  "transaction_started_at": "2026-11-16T00:09:14.043292",
+  "started_at": "2026-11-22T02:04:19.460173",
+  "transaction_started_at": "2026-11-22T02:04:18.622527",
   "responses": [],
   "changes": {
     "web_hook_events": {
@@ -11,14 +11,14 @@
         {
           "id": 1,
           "status": 200,
-          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"13\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"1\",\"X-Discourse-Event-Type\":\"ping\"}",
+          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"13\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"1\",\"X-Discourse-Event-Type\":\"ping\"}",
           "payload": "{\"ping\":\"OK\"}",
-          "duration": 252,
-          "created_at": "2026-11-16T00:09:14.878403",
-          "updated_at": "2026-11-16T00:09:15.134597",
+          "duration": 31,
+          "created_at": "2026-11-22T02:04:19.471676",
+          "updated_at": "2026-11-22T02:04:19.50622",
           "web_hook_id": 9002,
           "response_body": "ok",
-          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"2\"}"
+          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"2\"}"
         }
       ],
       "deleted": [],
@@ -48,7 +48,7 @@
             "secret": "",
             "status": 1,
             "created_at": "2026-10-01T10:00:00",
-            "updated_at": "2026-11-16T00:09:15.136806",
+            "updated_at": "2026-11-22T02:04:19.507478",
             "payload_url": "http://fixtures.localhost:8099/hook",
             "content_type": 1,
             "wildcard_web_hook": false,
@@ -188,7 +188,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "993dd39fc09c9633d41bf52bd534811b718ba7359162b9a4ee3736986648ac2e",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

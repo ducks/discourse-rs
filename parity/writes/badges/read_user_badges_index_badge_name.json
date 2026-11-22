@@ -7,103 +7,16 @@
       "path": "/user_badges.json?badge_name=Basic%20User&offset=2"
     }
   ],
-  "started_at": "2026-11-15T22:19:45.483965",
-  "transaction_started_at": "2026-11-15T22:19:41.146007",
+  "started_at": "2026-11-22T00:18:39.227021",
+  "transaction_started_at": "2026-11-22T00:18:38.27091",
   "responses": [
     {
       "status": 200,
       "body": {
-        "badges": [
-          {
-            "id": 1,
-            "name": "Basic",
-            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> all essential community functions",
-            "grant_count": 5,
-            "allow_title": false,
-            "multiple_grant": false,
-            "icon": "user",
-            "image_url": null,
-            "listable": true,
-            "enabled": true,
-            "badge_grouping_id": 4,
-            "system": true,
-            "long_description": "This badge is granted when you reach trust level 1. Thanks for sticking around and reading a few topics to learn what our community is about. New user restrictions have been lifted; you’ve been granted all essential community abilities, such as personal messaging, flagging, wiki editing, and the ability to post multiple images and links.\n",
-            "slug": "basic",
-            "manually_grantable": false,
-            "show_in_post_header": false,
-            "badge_type_id": 3
-          }
-        ],
-        "badge_types": [
-          {
-            "id": 3,
-            "name": "Bronze",
-            "sort_order": 7
-          }
-        ],
-        "users": [
-          {
-            "id": 3,
-            "username": "user1",
-            "name": "User1",
-            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-            "trust_level": 2
-          },
-          {
-            "id": -1,
-            "username": "system",
-            "name": "system",
-            "avatar_template": "/images/discourse-logo-sketch-small.png",
-            "admin": true,
-            "moderator": true,
-            "trust_level": 4
-          },
-          {
-            "id": 2,
-            "username": "user0",
-            "name": "User0",
-            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-            "trust_level": 1
-          },
-          {
-            "id": 1,
-            "username": "admin",
-            "name": "Admin",
-            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
-            "admin": true,
-            "moderator": true,
-            "trust_level": 4
-          }
-        ],
         "user_badge_info": {
           "grant_count": null,
           "username": null,
-          "user_badges": [
-            {
-              "id": 3,
-              "granted_at": "2026-11-15T19:18:11.383Z",
-              "created_at": "2026-11-15T19:18:11.383Z",
-              "badge_id": 1,
-              "user_id": 3,
-              "granted_by_id": -1
-            },
-            {
-              "id": 2,
-              "granted_at": "2026-11-15T19:18:11.383Z",
-              "created_at": "2026-11-15T19:18:11.383Z",
-              "badge_id": 1,
-              "user_id": 2,
-              "granted_by_id": -1
-            },
-            {
-              "id": 1,
-              "granted_at": "2026-11-15T19:18:11.383Z",
-              "created_at": "2026-11-15T19:18:11.383Z",
-              "badge_id": 1,
-              "user_id": 1,
-              "granted_by_id": -1
-            }
-          ]
+          "user_badges": []
         }
       }
     }
@@ -115,33 +28,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ci8QmlduXr+SwJqzy13uCkKVcHk=",
-            "created_at": "2026-11-15T22:19:43.005246",
-            "rotated_at": "2026-11-15T22:19:43.001184",
-            "updated_at": "2026-11-15T22:19:43.005246",
+            "auth_token": "EiU6z3TCyNoY+hV46067N4DCOFQ=",
+            "created_at": "2026-11-22T00:18:38.774806",
+            "rotated_at": "2026-11-22T00:18:38.773782",
+            "updated_at": "2026-11-22T00:18:38.774806",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ci8QmlduXr+SwJqzy13uCkKVcHk=",
+            "prev_auth_token": "EiU6z3TCyNoY+hV46067N4DCOFQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:19:45.513787",
+            "id": 1,
+            "seen_at": "2026-11-22T00:18:39.233668",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ci8QmlduXr+SwJqzy13uCkKVcHk=",
-            "created_at": "2026-11-15T22:19:43.005246",
-            "rotated_at": "2026-11-15T22:19:43.001184",
-            "updated_at": "2026-11-15T22:19:43.005246",
+            "auth_token": "EiU6z3TCyNoY+hV46067N4DCOFQ=",
+            "created_at": "2026-11-22T00:18:38.774806",
+            "rotated_at": "2026-11-22T00:18:38.773782",
+            "updated_at": "2026-11-22T00:18:38.774806",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ci8QmlduXr+SwJqzy13uCkKVcHk=",
+            "prev_auth_token": "EiU6z3TCyNoY+hV46067N4DCOFQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -160,7 +73,7 @@
   ],
   "recorded_from": {
     "case": "48881b2521654cb54d962dc79879411c6d11dd092e433e7fafa6a053255cc6e4",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

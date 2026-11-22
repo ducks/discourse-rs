@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:57:05.745546",
-  "transaction_started_at": "2026-11-15T22:57:04.866149",
+  "started_at": "2026-11-22T00:46:11.744775",
+  "transaction_started_at": "2026-11-22T00:46:10.963529",
   "responses": [
     {
       "status": 200,
@@ -28,12 +28,12 @@
           "post_id": null,
           "user_id": null,
           "topic_id": null,
-          "bounce_key": "b1f2e8e2-d44f-adfe-d9a2-1bf76604ac67",
-          "created_at": "2026-11-15T22:57:05.803301",
+          "bounce_key": "94b5ed3a-6e1c-58b1-25ea-a103fcf0a2ed",
+          "created_at": "2026-11-22T00:46:11.799968",
           "email_type": "email_reject_invalid_post_specified",
-          "message_id": "14d2938e-4d05-4f92-9fbb-36eb1274d358@localhost",
+          "message_id": "cadbcf2b-fecf-4afd-ad08-ad41eb9ccc8b@localhost",
           "to_address": "user0@example.com",
-          "updated_at": "2026-11-15T22:57:05.803301",
+          "updated_at": "2026-11-22T00:46:11.799968",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -51,33 +51,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "oi+JCitFqRS/OQvci7LxknhYcQo=",
-            "created_at": "2026-11-15T22:57:05.202738",
-            "rotated_at": "2026-11-15T22:57:05.201804",
-            "updated_at": "2026-11-15T22:57:05.202738",
+            "auth_token": "eT94Mg8L2Qox5VmTLepCQf88boc=",
+            "created_at": "2026-11-22T00:46:11.271236",
+            "rotated_at": "2026-11-22T00:46:11.270103",
+            "updated_at": "2026-11-22T00:46:11.271236",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "oi+JCitFqRS/OQvci7LxknhYcQo=",
+            "prev_auth_token": "eT94Mg8L2Qox5VmTLepCQf88boc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:57:05.750546",
+            "id": 1,
+            "seen_at": "2026-11-22T00:46:11.750429",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "oi+JCitFqRS/OQvci7LxknhYcQo=",
-            "created_at": "2026-11-15T22:57:05.202738",
-            "rotated_at": "2026-11-15T22:57:05.201804",
-            "updated_at": "2026-11-15T22:57:05.202738",
+            "auth_token": "eT94Mg8L2Qox5VmTLepCQf88boc=",
+            "created_at": "2026-11-22T00:46:11.271236",
+            "rotated_at": "2026-11-22T00:46:11.270103",
+            "updated_at": "2026-11-22T00:46:11.271236",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "oi+JCitFqRS/OQvci7LxknhYcQo=",
+            "prev_auth_token": "eT94Mg8L2Qox5VmTLepCQf88boc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -113,7 +113,7 @@
       "headers": [
         [
           "Return-Path",
-          "replies+verp-b1f2e8e2d44fadfed9a21bf76604ac67@example.com"
+          "replies+verp-94b5ed3a6e1c58b125eaa103fcf0a2ed@example.com"
         ],
         [
           "From",
@@ -129,7 +129,7 @@
         ],
         [
           "Message-ID",
-          "<14d2938e-4d05-4f92-9fbb-36eb1274d358@localhost>"
+          "<cadbcf2b-fecf-4afd-ad08-ad41eb9ccc8b@localhost>"
         ],
         [
           "Subject",
@@ -141,7 +141,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6afa38c1c3325_ed14f38930"
+          "multipart/alternative; boundary=--==_mimepart_6b023b53c27d8_7e0ff385861c"
         ],
         [
           "Content-Transfer-Encoding",
@@ -161,12 +161,12 @@
         ]
       ],
       "text": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nReason:\n\nNo post creation date found. Is the e-mail missing a Date: header?\n\nIf you can correct the problem, please try again.\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+0123456789abcdef0123456789abcdef@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+0123456789abcdef0123456789abcdef@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>Reason:</p>\n<p>No post creation date found. Is the e-mail missing a Date: header?</p>\n<p>If you can correct the problem, please try again.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+0123456789abcdef0123456789abcdef@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+0123456789abcdef0123456789abcdef@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>Reason:</p>\n<p>No post creation date found. Is the e-mail missing a Date: header?</p>\n<p>If you can correct the problem, please try again.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "e6d4b68f898c9ad84ebf5b032a72fb4cd564ea9f3ab6e2e3a4eea05f6bdc2569",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

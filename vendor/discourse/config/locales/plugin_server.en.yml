@@ -191,23 +191,26 @@ en:
 
 --- # plugins/blog/config/locales/server.en.yml
 en:
+  dashboard:
+    problem:
+      blog_not_ready: "The blog cannot publish articles. %{reason} <a href='%{base_path}/admin/site_settings/category/all_results?filter=%{setting}'>Review the setting</a>"
+      blog_not_ready_without_setting: "The blog cannot publish articles. %{reason}"
   site_settings:
-    blog_contributor_groups: Groups that can write and submit their own blog drafts. Also grant these groups access to the private drafts category. This does not grant forum staff privileges.
-    blog_editor_groups: Groups that can edit and submit any blog draft they can see. Also grant access to the private drafts category. Publication requires the publisher role.
-    blog_publisher_groups: Groups that can approve, publish, withdraw, and schedule blog revisions they can see. Publishers may approve their own work. Also grant access to the private drafts category and permission to create topics in the public blog category. Administrators always retain access.
-    blog_enabled: "A blog built on your community. Write and review articles with your editorial team, publish them under /blog with their own design, and let readers discuss each article in a linked topic. Configure the blog and drafts categories after enabling it."
+    blog_contributor_groups: Groups that can write and submit their own blog drafts. These groups can see the private drafts category. This does not grant forum staff privileges.
+    blog_editor_groups: Groups that can edit and submit any blog draft they can see. These groups can see the private drafts category. Publication requires the publisher role.
+    blog_publisher_groups: Groups that can approve, publish, withdraw, and schedule blog revisions they can see. Publishers may approve their own work. These groups can see the private drafts category and start topics in the public blog category. Administrators always retain access.
+    blog_enabled: "A blog built on your community. Write and review articles with your editorial team, publish them under /blog with their own design, and let readers discuss each article in a linked topic."
     blog_url:
       Serve the blog from its own HTTPS origin, without a trailing slash
       or path, instead of /blog on this site. It must differ from the discussion hostname. Configure this hostname
       as an alias of this site at the proxy and database connection.
     blog_category:
-      The single public category whose explicitly published
-      topics appear on the blog. Subcategories are not included. A topic is never
-      published merely by being in this category.
+      The public category that holds a discussion for each published article.
+      Leave it empty to have a category created when the first article is published.
+      Subcategories are not included. A topic is never published merely by being in this category.
     blog_drafts_category:
-      A separate private category for editorial drafts.
-      Restrict membership to editors. Publishing copies only the approved article into a separate discussion in {{setting:blog_category}}. Editorial topics and replies stay private.
-      Upload URLs are not private when secure uploads are disabled.
+      The private category for editorial drafts. It is created and managed by the blog,
+      and only the blog role groups can see it. Upload URLs are not private when secure uploads are disabled.
     blog_title:
       The blog name displayed in navigation, page titles, and
       feeds.
@@ -223,6 +226,11 @@ en:
     blog_posts_per_page:
       Number of articles shown on each homepage or archive
       page.
+    keywords:
+      blog_about: "about page"
+      blog_description: "tagline"
+      blog_path_format: "address format|custom format"
+      blog_title: "blog name"
   activerecord:
     attributes:
       blog/publication:
@@ -295,15 +303,27 @@ en:
     join_community: Join the community
     not_found_title: This page is not available
     not_found_body: It may have moved, returned to drafts, or not been published yet.
+    categories:
+      public: Blog
+      public_description: Discussions of published blog articles. Each article gets a topic here when it is published, and anyone can reply.
+      drafts: Blog drafts
+      drafts_description: Drafts of blog articles, managed by the blog. Only the blog contributor, editor and publisher groups can see this category, and other groups added to it are removed. Change those groups in the blog settings.
     errors:
       private_site:
         The blog requires a public site with secure uploads disabled.
         Draft text stays private, but uploaded files are not access-controlled without
         secure uploads.
       anonymous_uploads: "The blog requires anonymous upload downloads. Disable prevent_anons_from_downloading_files before publishing or sharing reviews."
-      category: Choose one public Blog category in the blog site settings.
-      drafts_category:
-        Choose a separate private drafts category accessible only to configured editorial groups or staff, distinct from the core shared drafts category.
+      category: The blog category must be public. Choose a public category in the blog settings, or clear the setting to have one created when the first article is published.
+      category_unavailable: The public blog category could not be created. Try again, or choose one in the blog settings.
+      drafts_category_unavailable: The private drafts category could not be prepared. Try again.
+      drafts_category_public: The blog drafts category is open to everyone, so editorial work is paused. Remove the “everyone” group in that category's security settings.
+      blog_fixed: An article stays on the blog it was published on.
+      path_format_blog_slug: "Every article address would start with “%{slug}”, which is the address of another blog. Choose a different format."
+      blog_slug_reserved: That address is used by the blog itself. Choose another one.
+      blog_slug_taken: An article on the main blog already starts with that address. Choose another one.
+      blog_url_forum_host: A blog's own domain must differ from the community's.
+      category_name_taken: "A category named “%{name}” already exists, so the blog cannot create its own. Choose the public blog category in the blog settings."
       published_page:
         Unpublish this topic from page publishing before publishing
         it on the blog.
@@ -425,6 +445,7 @@ en:
     chat_separate_sidebar_mode: "Show separate sidebar modes for forum and chat."
     chat_enabled: "Enable chat."
     chat_pinned_messages: "Enable pinned messages in chat channels."
+    chat_thread_improvements: "Enable direct replies to specific messages within chat threads, and allow broadcasting thread replies back to the channel."
     enable_public_channels: "Enable public channels based on categories."
     chat_allowed_groups: "Users in these groups can chat, except anonymous users who can only view chat when added to this setting. Adding anonymous users also lets search engines index public channels. Note that admins and moderators can always access chat."
     chat_channel_retention_days: "Chat messages in regular channels will be retained for this many days. Set to '0' to retain messages forever. When anonymous users can view chat, deleted messages also drop out of search engine results over time, so short retention limits how much chat history can be found through search."
@@ -546,6 +567,7 @@ en:
       original_message_not_found: "The ancestor of the message you are replying to cannot be found or has been deleted."
       thread_invalid_for_channel: "Thread is not part of the provided channel."
       thread_does_not_match_parent: "Thread does not match parent message."
+      broadcast_not_allowed: "This message cannot be shown in the channel."
       invalid_direct_message: "You are not allowed to create this direct message."
       pin_limit_reached: "This channel has reached the maximum number of pinned messages (%{limit})."
       message_already_pinned: "This message is already pinned."
@@ -1079,9 +1101,7 @@ en:
           body: |
             Hi @%{username},
 
-            Your post in “%{topic_title}” was temporarily removed and placed in our review queue for a moderator to look at. If approved, it will be restored automatically.
-
-            Reference: %{post_url}
+            Your post in “%{topic_title}” was temporarily removed and placed in our review queue for a moderator to look at. If approved, it will be restored automatically and you can [view your post](%{base_url}%{post_url}) again.
       llm_report:
         title: Periodic report using AI
         description: "Periodic report based on a large language model"
@@ -1226,6 +1246,9 @@ en:
     ai_discord_allowed_guilds: "Discord guilds (servers) where the bot is allowed to search"
 
     ai_translation_enabled: "Enable the AI translation feature"
+    ai_reviewable_action_suggestions_enabled: "Generate action suggestions for new review queue items."
+    ai_reviewable_action_decision_model: "Send new pending review items, including flagged private content, to this decision model for action suggestions. Leave blank to disable."
+    ai_reviewable_action_min_confidence: "Minimum confidence required to save a suggested review action, from 0 to 1."
     ai_dsa_classification_decision_model: "Choose the model used to suggest community rules and categories during DSA classification. Leave blank to disable suggestions."
     ai_translation_locale_detector_decision_model: "Decision model that detects the language of content before it is translated. Content in a language it cannot place confidently is left to the locale detector agent. Leave blank to detect every language with the agent."
     ai_translation_category_scope: "Choose which categories AI translation can use. Include and exclude options use {{setting:ai_translation_categories}}. Personal messages are controlled by {{setting:ai_translation_personal_messages}}."
@@ -1238,6 +1261,28 @@ en:
     ai_usage_rollup_after_days: "Number of days to keep per-request AI usage stats before rolling them into daily aggregates. Set to 0 to disable rollups."
     ai_audit_logs_detailed_retention_days: "Keep raw AI request and response payloads for this many days. Set to 0 to keep payloads until the summary log is deleted. Raw payloads can contain private or sensitive content. Cleanup continues while the AI plugin is disabled."
     ai_audit_logs_purge_after_days: "Keep AI API audit log summaries for this many days before deleting the entire log. Set to 0 to keep summaries forever. Cleanup continues while the AI plugin is disabled."
+
+    keywords:
+      ai_default_llm_model: "default language model"
+      ai_discord_search_enabled: "discord integration"
+      ai_embeddings_semantic_quick_search_enabled: "ai results in quick search"
+      ai_embeddings_semantic_search_enabled: "ai search results"
+      ai_embeddings_semantic_search_use_hyde: "better search queries (hyde)"
+      ai_helper_automatic_chat_thread_title: "chat thread titles"
+      ai_sentiment_backfill_post_max_age_days: "post age limit (days)"
+      ai_sentiment_emotion_classification_strategy: "backend"
+      ai_sentiment_sentiment_classification_strategy: "backend"
+      ai_summarization_enabled: "summaries"
+      ai_summary_gists_enabled: "topic list's short summaries"
+      ai_translation_backfill_hourly_rate: "existing content per hour"
+      ai_translation_backfill_start_date: "translate existing content since"
+      ai_translation_categories: "selected categories"
+      ai_translation_include_bot_content: "translate content written by bots"
+      ai_translation_locale_detector_agent: "language detection agent"
+      ai_translation_locale_detector_decision_model: "language detection decision model"
+      ai_translation_post_raw_translator_agent: "post translation agent"
+      ai_translation_short_text_translator_agent: "short text translation agent"
+      ai_translation_topic_title_translator_agent: "topic title translation agent"
 
   reviewables:
     reasons:
@@ -1367,6 +1412,13 @@ en:
     multiple_models: "Multiple models"
 
     discourse_workflows:
+      ai_tool:
+        errors:
+          unavailable: "The selected AI tool is not available for workflow execution."
+          invalid_arguments: "The AI tool arguments are invalid"
+          invalid_schema: "The tool returned an argument schema that cannot be resolved."
+          llm_not_found: "The selected language model was not found."
+          failed: "The AI tool failed."
       ai_agent:
         errors:
           invalid_mode: "'%{mode}' is not a supported AI agent execution mode."
@@ -1455,6 +1507,15 @@ en:
         invalid_header_value: "Invalid MCP header value"
         invalid_annotated_argument: "Invalid MCP annotated tool argument"
         timeout: "The MCP server request timed out."
+        connection_failed: "The connection to the MCP server failed. If this was a write operation, check whether it completed before retrying."
+        connection_blocked: "The MCP server address resolves to a private or otherwise disallowed network address."
+        dns_lookup_failed: "The MCP server hostname could not be resolved."
+        reconnect_required: "This MCP connection needs an administrator to reconnect it."
+        too_many_tool_pages: "The MCP server returned more than %{max} pages of tools."
+        tool_catalog_too_large: "The MCP server tool catalog exceeded %{max} bytes."
+        too_many_tools: "The MCP server advertised more than %{max} tools."
+        repeated_tool_list_cursor: "The MCP server repeated a tool list pagination cursor."
+        failure_limit: "Repeated MCP failures stopped further calls for this turn. Explain the error and the unfinished work; do not claim success or retry again."
         oauth_authorization_required: "OAuth authorization is required before this MCP server can be used. Connect it to %{issuer} from the admin UI."
         oauth_discovery_failed: "Unable to discover OAuth authorization details for this MCP server."
         oauth_discovery_failed_with_status: "OAuth discovery failed with status %{status}."
@@ -1660,6 +1721,9 @@ en:
         revert_appearance_title: "Switch back from: %{name}"
         revert_appearance_details: "Restores how the site looked before %{name} went live."
         revert_appearance_question: "Do you want to switch back?"
+        install_theme_title: "Install theme: %{name}"
+        install_theme_details: "%{description} Installs it from %{remote_url}, which Discourse maintains, without making it the default theme, so you can preview it first. It runs its own code and brings its own layout and palettes."
+        install_theme_question: "Do you want to install this theme?"
         topic_status_label: "Changing status:"
         topic_visibility_label: "Changing visibility:"
         topic_solution_label: "Changing solution:"
@@ -1951,6 +2015,7 @@ en:
           help: "Lets the model write and run Python code in the provider's sandbox, when the agent is forced to a supported Gemini LLM."
       tool_summary:
         theme_app_handoff: "Checking how to build themes with an AI app"
+        install_popular_theme: "Install theme"
         enable_mcp_theme_access: "Let AI apps build themes"
         load_discourse_website_page: "Load Discourse website page"
         read_artifact: "Read a web artifact"
@@ -2019,6 +2084,7 @@ en:
         researcher_dry_run: "Preparing research"
       tool_help:
         theme_app_handoff: "Explain how to build themes with an AI app through the MCP server"
+        install_popular_theme: "Install a ready-made theme maintained by Discourse without making it live"
         enable_mcp_theme_access: "Let AI apps build themes through the MCP server"
         load_discourse_website_page: "Load a named page from the official Discourse website"
         read_artifact: "Read a web artifact using the AI Bot"
@@ -2418,6 +2484,12 @@ en:
       not_allowed: "Only administrators can change how the site looks."
       unavailable: "Changing how the site looks isn't available here."
       themes_unavailable: "Creating new themes isn't available on this site. I can change the current theme's colors and fonts instead."
+      styles_unavailable: "Styles beyond colors and fonts aren't available on this site. I can change the current theme's colors and fonts instead."
+      styles_failed: "I couldn't write styles that pass the theme's safety checks. Ask the administrator to describe the change differently, or offer to build it with their own AI app."
+      more_styles: "More style changes"
+      theme_changed: "This theme has been changed since it was saved, so I can't make it live. Make it the default in Admin > Appearance > Themes instead, or ask me for a new version."
+      new_version_target: "A new version of %{name}, saved as a draft until it's made live. The current version is kept so you can switch back."
+      styles_unsupported: "These styles can't make that change: %{requests}. Offer to build it with the administrator's own AI app instead."
       name_required: "Give the palettes or theme a short name."
       brand_color_required: "Give a brand color, or the website to take colors from."
       invalid_color: "Use hex colors, such as #635bff. These aren't valid: %{colors}"
@@ -2438,9 +2510,15 @@ en:
       not_live: "That appearance change isn't live."
       cannot_restore: "What that change replaced no longer exists, so the site can't switch back to it."
       failed: "The change couldn't be made."
+      installed: "Installed without making it the default theme. Share the preview link, then ask whether to make it live."
+      install_failed: "The theme couldn't be installed. Try again later, or install it from Admin > Appearance > Themes."
+      not_popular: "That isn't one of the ready-made themes I can install."
+      already_installed: "%{name} is already installed. It can be made the default theme in Admin > Appearance > Themes."
+      theme_already_installed: "That theme is already installed. It can be made the default theme in Admin > Appearance > Themes."
+      theme_repo_not_allowed: "This site can't install that theme."
       saved: "Saved without changing the site. Share the preview link, then ask whether to make it live. Fonts change when it goes live."
-      live: "%{name} is live."
-      switched_back: "Switched back from %{name}."
+      live: "%{name} is live. Tell the administrator to refresh the page to see it, since pages already open keep the old look until they reload."
+      switched_back: "Switched back from %{name}. Tell the administrator to refresh the page to see it, since pages already open keep the old look until they reload."
       palettes_target: "New palettes for the current theme, %{theme}"
       existing_palettes_target: "The %{palette} palettes, the closest of the ones %{theme} can use"
       already_closest: "%{theme} already uses %{palette}, the closest of the palettes it can use, so its colors don't need to change. Fonts can still change through the base_font and heading_font settings."
@@ -3008,6 +3086,7 @@ en:
   dashboard:
     problem:
       channel_errors: "Some chat integration channels have errors. Visit <a href='%{base_path}/admin/plugins/discourse-chat-integration'>the chat integration section</a> to find out more."
+      telegram_webhook_secret_missing: "Telegram slash commands stopped working because the Telegram access token changed or chat integration was disabled. Disable the Telegram provider and set it up again in <a href='%{base_path}/admin/plugins/discourse-chat-integration'>the chat integration section</a>."
 
   discourse_automation:
     scriptables:
@@ -5038,6 +5117,9 @@ en:
         execution_failed: "Called workflow finished with status '%{status}'."
         execution_failed_with_error: "Called workflow finished with status '%{status}': %{error}"
         payload_too_large: "Workflow call payload exceeds the maximum size of %{max} bytes."
+      badge:
+        reason_id_requires_prefix: "Use post:%{id} for a post ID or topic:%{id} for a topic ID."
+        reason_id_not_found: "No post was found for %{reference}."
     post:
       destroy_context: "Deleted by a workflow"
     flag_post:
@@ -5150,6 +5232,8 @@ en:
 --- # plugins/live/config/locales/server.en.yml
 en:
   site_settings:
+    live_file_transfer_max_size_mb: "Maximum size per live-room file in MiB (1 MiB = 1,048,576 bytes), from 1 to 102400 (100 GiB). Default: 100 MiB. Temporary receive disk reservations are limited to twice this value, including files awaiting deletion; browser storage quotas still apply. The streaming window remains 256 KiB. Requires {{setting:live_enabled}} and sender access through {{setting:live_file_transfer_allowed_groups}}."
+    live_file_transfer_allowed_groups: "Groups that can send files in peer-to-peer live rooms, up to {{setting:live_file_transfer_max_size_mb}}. Empty disables all file transfers. Senders also need access through {{setting:live_allowed_groups}}; anyone in the same mesh room can receive files. Recipients must accept and explicitly save files. Files are encrypted in transit (TURN may relay traffic), are not uploaded to Discourse, and are not scanned for viruses. Not available in LiveKit rooms."
     live_verbose_logging: "Log Live diagnostic information and warnings in server logs and browser consoles. Disabled by default. Logs exclude credentials, transcripts, signaling payloads, and raw error details."
     live_enabled: "Live brings integrated voice and video rooms to Discourse, with screen sharing, background blur, noise suppression, live subtitles, direct calls, room chat, and group-based permissions. Members can keep browsing while they talk, with no external app required."
     live_allowed_groups: "Groups that can access live rooms."
@@ -5217,6 +5301,7 @@ en:
       watercooler_description: "Join for casual drop-in voice chats with other community members."
     chat:
       default_thread_title: "Voice chat in %{room}"
+      default_attachment_opener: "In %{room}"
       default_thread_opener: "In %{room} - %{message}"
     onebox:
       inline_to_room: "Live: %{room_name}"

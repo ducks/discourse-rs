@@ -18,6 +18,10 @@ en:
     discourse_automation:
       title: Automation
       table_title: Automations
+      workflows_notice:
+        title: "Automations is a legacy product; we recommend using Workflows instead."
+        description: "Workflows is our new builder with a visual drag-and-drop canvas for building complex, multi-step automations."
+        action: Go to Workflows
       create: Add automation
       update: Update automation
       back: Back
@@ -549,6 +553,7 @@ en:
         retry_reference: Reload authoring reference
         working_preview_hint: Preview your unsaved changes without saving or activating them. Changing the page or sample article updates the preview.
         preview_article_unavailable: Article previews need a published article.
+        preview_page_unavailable: Page previews need a published standalone page.
         preview_page: Page to preview
         preview_home: Homepage
         preview_archive: Archive
@@ -560,6 +565,7 @@ en:
         template_layout: Site layout
         template_index: Homepage and archive
         template_article: Article
+        template_page: Standalone page
         template_about: About page
         template_not_found: Not found page
         code_warning:
@@ -706,13 +712,14 @@ en:
           cover: cover image
           co_authors: co-authors
           featured: featured flag
+          page: standalone page
           tags: tags
           published_at: publication date
         show_diff: Show diff
         hide_diff: Hide diff
         diff_error: The change is too large to show as a diff. Use Preview instead.
         settings: Article settings
-        settings_hint: Path, excerpt, cover, search, co-authors, date, featured
+        settings_hint: Path, excerpt, cover, search, co-authors, date, featured, page
         feedback:
           none: No private feedback yet
           show: Show feedback
@@ -784,30 +791,36 @@ en:
       editor_title: Blog editor
       editor_description: Drafts stay private until you publish them. Edit an article to publish, schedule, or correct it.
       editor_table:
-        article: Article
+        blog: Blog
         edit: Edit
         status: Status
         published: Published
         replies: Replies
+        title: Title
         edits_pending: Edits pending
         edits_need_approval: Edits need approval
         more_actions: More actions
+        page: Page
         preview_changes: Preview changes
         view_on_blog: View on blog
       new_draft: New draft
       settings: Configure blog settings
-      all: All articles
+      all: All
+      all_blogs: All blogs
       drafts: Drafts
       published: Published
       visit_blog: Visit blog
       public_discussion: Public discussion
       not_published: Not on the blog
+      pages: Pages
       preview: Preview
       load_more: Load more
       unpublish_confirm:
         Remove this article from the blog? The topic and its replies
         will remain public in the community. Existing copies in feeds and search engines
         cannot be recalled.
+      blog_field: Blog
+      blog_field_hint: Until it is first published, an article can move to another blog.
       path: Article path
       path_hint:
         Start with / and use lowercase letters, numbers, hyphens, and optional
@@ -829,6 +842,10 @@ en:
       cover_alt: Cover image alt text
       cover_alt_hint:
         Describes the cover image for people who can't see it.
+      page: Standalone page
+      page_hint:
+        For pages like About, Contact or Privacy. Left out of the article lists
+        and the feed, and shown without a byline, date, tags or discussion.
       co_authors: Co-authors
       co_authors_hint:
         Credited beside the author in the byline, and listed on their own
@@ -1116,6 +1133,7 @@ en:
           other: "%{formatted_number} chat messages"
 
     chat:
+      new_chat: "New chat"
       homepage_option: "Chat channel"
       edit_category:
         tab_title: "Chat"
@@ -1157,6 +1175,10 @@ en:
       no_pinned_messages: "No pinned messages in this channel."
       pin_message: "Pin message"
       unpin_message: "Unpin message"
+      broadcast_to_channel: "Send to #%{channelName}"
+      remove_broadcast_from_channel: "Remove from #%{channelName}"
+      broadcast_to_dm: "Also send in main DM"
+      remove_broadcast_from_dm: "Remove from main DM"
       pinned: "Pinned"
       browse_all_channels: "Browse all channels"
       see_in: "See in"
@@ -1661,6 +1683,8 @@ en:
         bold_text: "strong text"
         code_text: "code text"
         send: "Send"
+        broadcast_label: "Also send to #%{channelName}"
+        broadcast_label_dm: "Also send in main DM"
 
       quote:
         original_channel: 'Originally sent in <a href="%{channelLink}">%{channel}</a>'
@@ -1725,6 +1749,7 @@ en:
         short_title: Search
         title: Search chat
         aria_label: "Switch to chat search"
+        channel_aria_label: "Search this channel"
         no_results: "No results found"
         sort:
           relevance: "Relevance"
@@ -1861,20 +1886,6 @@ en:
       anonymous_flagging:
         description: "To report illegal content, please contact <a href='mailto:%{email}?subject=Illegal content: %{channel_title}&body=This chat message %{url} contains illegal content.'>%{email}</a>"
 
-      emoji_picker:
-        favorites: "Frequently used"
-        smileys_&_emotion: "Smileys and emotion"
-        objects: "Objects"
-        people_&_body: "People and body"
-        travel_&_places: "Travel and places"
-        animals_&_nature: "Animals and nature"
-        food_&_drink: "Food and drink"
-        activities: "Activities"
-        flags: "Flags"
-        symbols: "Symbols"
-        search_placeholder: "Search by emoji name and alias..."
-        no_results: "No results"
-
       thread:
         title: "Title"
         view_thread: View thread
@@ -1882,6 +1893,8 @@ en:
           one: "%{count} reply"
           other: "%{count} replies"
         label: Thread
+        broadcast_also_sent_to: "Sent to"
+        broadcast_sent_from_thread: "Sent from thread"
         close: "Close Thread"
         original_message:
           started_by: "Started by"
@@ -2245,6 +2258,7 @@ en:
             coverage: "%{count} of %{total} questions analyzed"
           questions: "Questions asked"
           askers: "Users asking"
+          cache_hits: "Cached answers returned"
           latency: "Answer latency"
           latency_tooltip: "Average time from when the server accepts a query until it sends the first answer update, including queue time. This excludes network delivery time to the user."
           seconds: "%{seconds} s"
@@ -2313,10 +2327,14 @@ en:
         requires_ai_translation: "Requires AI translation to be configured"
       nodes:
         "action:ai_agent": "AI Agent"
+        "action:ai_tool": "AI Tool"
+        "action:mcp_tool": "MCP Tool"
         "action:classify": "Classify"
         "trigger:post_locale_detected": "Post language detected"
       node_descriptions:
         "action:ai_agent": "Run an AI agent to process data or generate content"
+        "action:ai_tool": "Run an AI tool once for each input item"
+        "action:mcp_tool": "Call a tool on a configured MCP server"
         "action:classify": "Ask a decision model questions about each item"
         "trigger:post_locale_detected": "Fires when the language of a new or edited post is detected"
     discourse_automation:
@@ -2498,8 +2516,10 @@ en:
 
     discourse_ai:
       title: "AI"
+      apply_review_suggestion: "Apply AI suggestion: %{action}"
       dsa_classification:
         suggest: "Suggest with AI"
+        suggested_by_ai: "Suggested by AI"
         updated: "Classification updated"
         no_suggestion: "The AI could not suggest a classification"
       copied: "Copied"
@@ -2540,6 +2560,29 @@ en:
           upload_ids_tooltip: "Optional upload IDs to attach to the prompt. Every upload must reach the model or the node fails: images need vision on the agent and the LLM, documents need their file type enabled on the LLM."
           upload_ids_placeholder: "={{ $json.post.upload_ids }}"
           select_agent: "Select an agent..."
+        ai_tool:
+          tool_ref: "Tool"
+          llm_model_id: "LLM model"
+          arguments: "Arguments"
+          loading_arguments: "Loading tool arguments…"
+          list_item: "List item"
+          add_list_item: "Add item"
+          remove_list_item: "Remove item"
+          invalid_json: "Fix or revert the JSON before executing this step."
+          revert_json: "Revert JSON edit"
+          json_arguments: "Arguments as JSON"
+          json_arguments_description: "Enter this tool’s arguments as a JSON object, using the exact keys listed below."
+          invalid_arguments: "The saved arguments are not an object. Clear them to edit individual arguments."
+          clear_arguments: "Clear arguments"
+          stale_argument: "Saved argument “%{name}” is not in the tool’s current signature."
+          remove_argument: "Remove argument"
+          true_value: "True"
+          false_value: "False"
+        mcp_tool:
+          mcp_server_id: "MCP server"
+          mcp_server_id_description: "Arguments are sent to this server using its configured credentials, if any."
+          tool_name: "Tool"
+          arguments: "Arguments"
         classify:
           decision_model_id: "Decision model"
           text: "Text"
@@ -2773,6 +2816,15 @@ en:
             enabled_features: "Enabled Features"
             automation: "Automation"
             agents: "Agents"
+
+        review_queue:
+          name: "Review queue suggestions"
+          description: "Uses a decision model to suggest staff actions for new review items"
+          add_model: "Add a decision model"
+          no_models: "Add a decision model to start generating review queue suggestions."
+          reviewable_action: "Suggest a review action"
+          setting_groups:
+            settings: "Settings"
 
         image_caption:
           name: "Image Caption"
@@ -4100,8 +4152,9 @@ en:
 
       ai_bot:
         title: "AI bot"
-        agent: "Agent:"
-        llm: "Model:"
+        agent_menu_heading: "Agent"
+        model_menu_heading: "Language model"
+        manage_language_models: "Manage language models"
         pm_warning: "AI chatbot messages are monitored regularly by moderators."
         cancel_streaming: "Stop reply"
         try_again: "Try again"
@@ -4174,13 +4227,15 @@ en:
           mixtral-8x7B-Instruct-V0:
             "1": "Mixtral-8x7B V0.1"
         conversations:
+          tab_label: "AI"
+          new_conversation: "New AI conversation"
           homepage_option: "AI bot conversations"
           preview:
             title: "Log in to ask a question"
             body: "Get answers from AI, and keep your conversations here to come back to later."
           header: "What can I help with?"
           submit: "Submit question"
-          disclaimer: "Generative AI can make mistakes. Verify important information."
+          disclaimer: "AI can make mistakes. Verify important information."
           placeholder: "Ask a question..."
           new: "New Question"
           min_input_length_message:
@@ -4254,6 +4309,8 @@ en:
           one: "%{count} reply"
           other: "%{count} replies"
         answer_label: "AI answer"
+        cached_answer: "From your previous search (%{age})"
+        refresh_answer: "Generate fresh answer"
         follow_up_label: "Ask a follow-up question"
         follow_up_placeholder: "Ask a follow-up…"
         ask: "Ask"
@@ -4265,6 +4322,7 @@ en:
           topics: "Topics"
           this_topic: "This topic"
           messages: "Messages"
+          answer_ready: "Answer ready"
           no_answer: "No AI answer found"
         no_keyword_matches: "No keyword matches found."
         no_answer: "AI couldn’t find a clear answer. %{askLink}"
@@ -5121,6 +5179,7 @@ en:
       undo: "Discard changes"
       delete: "Delete"
       delete_confirm: "Are you sure you want to delete this query?"
+      delete_success: "Query deleted"
       recover: "Undelete query"
       dashboard:
         add: "Add to dashboard"
@@ -7869,7 +7928,7 @@ en:
       unpublished_changes_confirmation: "This workflow has unpublished changes. If you leave now, those changes will stay in draft and won't run until you publish them."
       keep_editing: "Keep editing"
       name: "Name"
-      creator: "Creator"
+      creator: "Created by"
       last_update: "Last update"
       last_run: "Last run"
       status: "Status"
@@ -8218,6 +8277,9 @@ en:
         confirmation_message: "Confirmation message"
         confirmation_message_placeholder: "Are you sure?"
         confirmation_default_message: "Are you sure?"
+        starting: "Starting workflow…"
+        rate_limited: "This workflow is being run too often. Try again shortly."
+        error: "The workflow did not finish. If the problem persists, contact a site administrator."
       composer_paused:
         fire_on: "Fire on"
         fire_on_pause: "Typing pause"
@@ -8243,6 +8305,9 @@ en:
         title_placeholder: "Title shown at the top of the modal"
         body: "Body"
         body_placeholder: "Message shown to the user..."
+        body_format: "Body format"
+        body_format_plain_text: "Plain text"
+        body_format_markdown: "Markdown"
         buttons: "Buttons"
         add_button: "Add button"
         label: "Label"
@@ -8374,6 +8439,8 @@ en:
         include_extensions_external_ids: "External ids"
         include_extensions_emails: "Emails"
         include_extensions_ips: "IP addresses and locations"
+        custom_field_names: "Include custom fields"
+        custom_field_names_placeholder: "Select custom fields"
         actor_username: "Performed by user"
       badge:
         operation: "Operation"
@@ -8383,6 +8450,8 @@ en:
         username: "User"
         badge_id: "Badge"
         badge_id_placeholder: "Select a badge"
+        reason: "Reason"
+        reason_tooltip: "Use post:123 for a post ID or topic:123 for a topic ID. In expression mode, put the prefix before the expression."
         actor_username: "Performed by user"
       send_personal_message:
         recipient_usernames: "Recipients"
@@ -8809,6 +8878,10 @@ en:
         changes_silenced: "Silenced"
         changes_unsilenced: "Unsilenced"
       post_created:
+        post_type: "Post type"
+        post_type_description: "Choose whether regular posts or whispers should trigger the workflow"
+        post_type_regular: "Regular posts"
+        post_type_whisper: "Whispers"
         topic_type: "Topic type"
         topic_type_description: "Choose whether topics, personal messages, or both should trigger the workflow"
         topic_type_all: "All"
@@ -9294,7 +9367,7 @@ en:
         key_invalid: "Must start with a letter or underscore and contain only letters, numbers, and underscores"
         value: "Value"
         value_placeholder: "Variable value"
-        creator: "Creator"
+        creator: "Created by"
         no_variables: "No variables defined yet"
         delete_confirm: "Are you sure you want to delete the variable \"%{key}\"?"
         empty_title: "%{username}, let's set up a variable"
@@ -9477,6 +9550,51 @@ en:
 en:
   js:
     live:
+      file_transfer:
+        send: "Send file…"
+        choose: "Choose file"
+        title: "File transfers"
+        collapse: "Collapse"
+        expand: "Expand"
+        pending_count:
+          one: "%{count} pending offer"
+          other: "%{count} pending offers"
+        incoming: "From %{username}"
+        outgoing: "To %{username}"
+        user: "User #%{id}"
+        room: "Room #%{id}"
+        accept: "Accept"
+        reject: "Reject"
+        cancel: "Cancel"
+        save: "Save file"
+        dismiss: "Dismiss"
+        dismiss_finished: "Dismiss finished"
+        size_limit: "Maximum file size: %{limit} MiB."
+        too_large: "Files must be %{limit} MiB or smaller."
+        not_authorized: "You can't send this type of file. Allowed types: %{extensions}."
+        allowed_types: "Allowed file types: %{extensions}."
+        send_failed: "The file could not be sent. Try again."
+        save_failed: "The file could not be saved. Try again."
+        storage_unavailable: "This browser cannot receive files because private temporary file storage is unavailable. Try another supported browser."
+        storage_insufficient: "There is not enough browser storage available to receive this file. Free up space or dismiss other file transfers, then ask the sender to try again."
+        storage_failed: "The file could not be written to temporary storage. Check available disk space and try again."
+        storage_budget_exceeded: "You have too many received files waiting. Save or dismiss some, then ask the sender to try again."
+        peer_disconnected: "The connection to the other person was lost."
+        timed_out: "The transfer stopped responding and was cancelled."
+        invalid_data: "The transfer was stopped because it received unexpected data."
+        channel_unavailable: "The connection is too busy right now. Try again shortly."
+        rate_limited: "You're sending files too quickly. Wait a minute and try again."
+        too_large_for_app: "Files this large can't be saved in the mobile app. Open Discourse in a browser to receive it."
+        safety: "Only accept files from people you trust. Files are not scanned for viruses."
+        status:
+          pending: "Awaiting your acceptance"
+          waiting: "Waiting for acceptance"
+          initializing: "Preparing temporary storage"
+          transferring: "Transferring"
+          completed: "Completed"
+          rejected: "Rejected"
+          cancelled: "Cancelled"
+          failed: "Failed"
       about:
         participants:
           one: "%{formatted_number} person joined voice chats"
@@ -9554,15 +9672,16 @@ en:
           other: "Show %{count} more participants"
         overflow_count: "+%{count}"
       chat:
+        retry: "Retry loading conversation"
         title: "Chat"
         open: "Open chat"
         close: "Close chat"
         unavailable_title: "Zoinks!"
         unavailable: "Chat is unavailable right now."
+        disabled_for_group_call: "Chat is disabled for calls with more than two people. Your direct messages remain private."
         empty_title: "No chat yet"
         empty_body: "Send a message to get the conversation started."
         composer_placeholder: "Message the room…"
-        send: "Send"
         open_in_chat: "Open in chat"
         back_to_live_room: "Back to live room"
       video:
@@ -9903,7 +10022,7 @@ en:
         invited: "Agent invited. It will appear when LiveKit connects it. This can take about a minute."
       admin:
         title: "Live"
-        dashboard_title: "Dashboard"
+        reports_title: "Reports"
         recordings_title: "Recordings"
         recordings:
           webhook_config_hint: "No LiveKit webhooks have been received recently. Configure a webhook in LiveKit pointing to %{webhook_url}. Use the same API key configured in the live livekit api key site setting and include egress_ended events so recording statuses and download notifications update when recordings finish."
@@ -10359,6 +10478,22 @@ en:
           title: "Font System"
         colors:
           title: "Colors"
+        design_variables:
+          title: "Design variables"
+          description: "The design variables core defines, read from its compiled CSS, and which ones typed theme styles such as the Admin Assistant's may change."
+          filter_placeholder: "Filter by name, type or default"
+          name: "Variable"
+          type: "Type"
+          default: "Default"
+          theme_styles: "Theme styles"
+          scoped: "Set on %{selectors}"
+          editable: "Can change"
+          length_bounds: "%{min}px to %{max}px"
+          not_editable: "Can't change: %{reason}"
+          palette_variables:
+            one: "%{count} palette variable"
+            other: "%{count} palette variables"
+          palette_description: "These come from the site's color palettes. Theme styles can use them but never set them."
         dialog:
           title: "Dialog"
         drag_and_drop:

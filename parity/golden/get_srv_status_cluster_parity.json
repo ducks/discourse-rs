@@ -1,7 +1,7 @@
 {
   "request": "GET /srv/status?cluster=parity",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-15T21:21:15.781864744+00:00",
+  "recorded_at": "2026-11-22T02:16:17.597957141+00:00",
   "status": 500,
   "content_type": "text/plain; charset=utf-8",
   "body": "cluster name not configured"

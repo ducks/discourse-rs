@@ -2,8 +2,8 @@
   "name": "cleanup_problem_check_trackers",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:27:01.829673",
-  "transaction_started_at": "2026-11-15T23:27:01.255502",
+  "started_at": "2026-11-22T01:21:21.811428",
+  "transaction_started_at": "2026-11-22T01:21:21.199007",
   "responses": [],
   "changes": {
     "admin_notices": {
@@ -17,9 +17,9 @@
           },
           "subject": 0,
           "priority": 0,
-          "created_at": "2026-11-15T22:27:01.255502",
+          "created_at": "2026-11-22T00:21:21.199007",
           "identifier": "gone_check",
-          "updated_at": "2026-11-15T22:27:01.255502"
+          "updated_at": "2026-11-22T00:21:21.199007"
         },
         {
           "id": 9102,
@@ -30,9 +30,9 @@
           },
           "subject": 0,
           "priority": 0,
-          "created_at": "2026-11-15T22:27:01.255502",
+          "created_at": "2026-11-22T00:21:21.199007",
           "identifier": "upcoming_change_stable_opted_out",
-          "updated_at": "2026-11-15T22:27:01.255502"
+          "updated_at": "2026-11-22T00:21:21.199007"
         },
         {
           "id": 9103,
@@ -41,9 +41,9 @@
           },
           "subject": 0,
           "priority": 0,
-          "created_at": "2026-11-15T22:27:01.255502",
+          "created_at": "2026-11-22T00:21:21.199007",
           "identifier": "other_gone",
-          "updated_at": "2026-11-15T22:27:01.255502"
+          "updated_at": "2026-11-22T00:21:21.199007"
         }
       ],
       "updated": []
@@ -58,9 +58,9 @@
           "details": {},
           "identifier": "gone_check",
           "ignored_at": null,
-          "last_run_at": "2026-11-15T22:27:01.255502",
+          "last_run_at": "2026-11-22T00:21:21.199007",
           "next_run_at": null,
-          "last_problem_at": "2026-11-15T22:27:01.255502",
+          "last_problem_at": "2026-11-22T00:21:21.199007",
           "last_success_at": null
         },
         {
@@ -73,9 +73,9 @@
           },
           "identifier": "upcoming_change_stable_opted_out",
           "ignored_at": null,
-          "last_run_at": "2026-11-15T22:27:01.255502",
+          "last_run_at": "2026-11-22T00:21:21.199007",
           "next_run_at": null,
-          "last_problem_at": "2026-11-15T22:27:01.255502",
+          "last_problem_at": "2026-11-22T00:21:21.199007",
           "last_success_at": null
         }
       ],
@@ -98,7 +98,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "10ff5e107d77af05aae79b4d181a948ef6a4a9302a476c2f1ed0b4ab1d3892f4",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

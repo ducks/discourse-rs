@@ -14,8 +14,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:57:14.212556",
-  "transaction_started_at": "2026-11-15T22:57:13.452993",
+  "started_at": "2026-11-22T00:46:18.253814",
+  "transaction_started_at": "2026-11-22T00:46:17.69442",
   "responses": [
     {
       "status": 200,
@@ -33,10 +33,10 @@
             "hidden": false,
             "user_id": null,
             "key_hash": "488906ff6edba14d0fc10aa1df12fd1e2385f5a65f5d4300b6bfff8f5eef6b4d",
-            "created_at": "2026-11-15T22:57:13.452993",
+            "created_at": "2026-11-22T00:46:17.69442",
             "revoked_at": null,
             "scope_mode": 2,
-            "updated_at": "2026-11-15T22:57:13.452993",
+            "updated_at": "2026-11-22T00:46:17.69442",
             "allowed_ips": null,
             "description": "mail-receiver",
             "last_used_at": null,
@@ -48,169 +48,61 @@
             "hidden": false,
             "user_id": null,
             "key_hash": "488906ff6edba14d0fc10aa1df12fd1e2385f5a65f5d4300b6bfff8f5eef6b4d",
-            "created_at": "2026-11-15T22:57:13.452993",
+            "created_at": "2026-11-22T00:46:17.69442",
             "revoked_at": null,
             "scope_mode": 2,
-            "updated_at": "2026-11-15T22:57:13.452993",
+            "updated_at": "2026-11-22T00:46:17.69442",
             "allowed_ips": null,
             "description": "mail-receiver",
-            "last_used_at": "2026-11-15T22:57:14.433074",
+            "last_used_at": "2026-11-22T00:46:18.539796",
             "created_by_id": 1,
             "truncated_key": "mail"
           }
         }
       ]
     },
-    "categories": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
+    "email_logs": {
+      "inserted": [
         {
-          "before": {
-            "id": 4,
-            "icon": null,
-            "name": "General",
-            "slug": "general",
-            "color": "25AAE2",
-            "emoji": "blue_book",
-            "locale": null,
-            "user_id": -1,
-            "email_in": null,
-            "position": 3,
-            "topic_id": 3,
-            "posts_day": 0,
-            "created_at": "2026-11-03T05:07:13.024318",
-            "name_lower": "general",
-            "post_count": 1,
-            "posts_week": 0,
-            "posts_year": 1,
-            "sort_order": null,
-            "style_type": 2,
-            "text_color": "FFFFFF",
-            "topics_day": 0,
-            "updated_at": "2026-11-15T19:19:55.139326",
-            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
-            "posts_month": 1,
-            "topic_count": 3,
-            "topics_week": 0,
-            "topics_year": 1,
-            "allow_badges": true,
-            "default_view": null,
-            "topics_month": 1,
-            "latest_post_id": 52,
-            "sort_ascending": null,
-            "topic_template": null,
-            "all_topics_wiki": false,
-            "latest_topic_id": 41,
-            "read_restricted": false,
-            "search_priority": 0,
-            "auto_close_hours": null,
-            "read_only_banner": null,
-            "uploaded_logo_id": null,
-            "allow_global_tags": false,
-            "contains_messages": null,
-            "default_top_period": "all",
-            "mailinglist_mirror": false,
-            "parent_category_id": null,
-            "default_list_filter": "all",
-            "num_featured_topics": 3,
-            "minimum_required_tags": 0,
-            "show_subcategory_list": false,
-            "uploaded_logo_dark_id": null,
-            "reviewable_by_group_id": null,
-            "subcategory_list_style": "rows_with_featured_topics",
-            "uploaded_background_id": null,
-            "topic_title_placeholder": null,
-            "email_in_allow_strangers": false,
-            "default_slow_mode_seconds": null,
-            "topic_featured_link_allowed": true,
-            "uploaded_background_dark_id": null,
-            "auto_close_based_on_last_post": false,
-            "navigate_to_first_post_after_read": false,
-            "allow_unlimited_owner_edits_on_first_post": false
-          },
-          "after": {
-            "id": 4,
-            "icon": null,
-            "name": "General",
-            "slug": "general",
-            "color": "25AAE2",
-            "emoji": "blue_book",
-            "locale": null,
-            "user_id": -1,
-            "email_in": null,
-            "position": 3,
-            "topic_id": 3,
-            "posts_day": 0,
-            "created_at": "2026-11-03T05:07:13.024318",
-            "name_lower": "general",
-            "post_count": 1,
-            "posts_week": 0,
-            "posts_year": 1,
-            "sort_order": null,
-            "style_type": 2,
-            "text_color": "FFFFFF",
-            "topics_day": 0,
-            "updated_at": "2026-11-15T19:19:55.139326",
-            "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
-            "posts_month": 1,
-            "topic_count": 3,
-            "topics_week": 0,
-            "topics_year": 1,
-            "allow_badges": true,
-            "default_view": null,
-            "topics_month": 1,
-            "latest_post_id": 53,
-            "sort_ascending": null,
-            "topic_template": null,
-            "all_topics_wiki": false,
-            "latest_topic_id": 41,
-            "read_restricted": false,
-            "search_priority": 0,
-            "auto_close_hours": null,
-            "read_only_banner": null,
-            "uploaded_logo_id": null,
-            "allow_global_tags": false,
-            "contains_messages": null,
-            "default_top_period": "all",
-            "mailinglist_mirror": false,
-            "parent_category_id": null,
-            "default_list_filter": "all",
-            "num_featured_topics": 3,
-            "minimum_required_tags": 0,
-            "show_subcategory_list": false,
-            "uploaded_logo_dark_id": null,
-            "reviewable_by_group_id": null,
-            "subcategory_list_style": "rows_with_featured_topics",
-            "uploaded_background_id": null,
-            "topic_title_placeholder": null,
-            "email_in_allow_strangers": false,
-            "default_slow_mode_seconds": null,
-            "topic_featured_link_allowed": true,
-            "uploaded_background_dark_id": null,
-            "auto_close_based_on_last_post": false,
-            "navigate_to_first_post_after_read": false,
-            "allow_unlimited_owner_edits_on_first_post": false
-          }
+          "id": 1,
+          "raw": null,
+          "bounced": false,
+          "post_id": null,
+          "user_id": null,
+          "topic_id": null,
+          "bounce_key": "e5bbb835-5fbb-f227-4a59-f5cef47b29be",
+          "created_at": "2026-11-22T00:46:18.617016",
+          "email_type": "email_reject_reply_not_allowed",
+          "message_id": "d04ae570-d6fb-4202-bc36-ba1dff527b1b@localhost",
+          "to_address": "user0@example.com",
+          "updated_at": "2026-11-22T00:46:18.617016",
+          "cc_user_ids": null,
+          "cc_addresses": null,
+          "bcc_addresses": null,
+          "smtp_group_id": null,
+          "bounce_error_code": null,
+          "smtp_transaction_response": null
         }
-      ]
+      ],
+      "deleted": [],
+      "updated": []
     },
     "incoming_emails": {
       "inserted": [
         {
           "id": 1,
           "raw": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <reply-by-email-1@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\r\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\r\n> The post being replied to, quoted by the mail client.\r\n",
-          "error": null,
-          "post_id": 53,
+          "error": "Email::Receiver::ReplyNotAllowedError",
+          "post_id": null,
           "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
           "user_id": 2,
           "imap_uid": null,
-          "topic_id": 35,
+          "topic_id": null,
           "imap_sync": null,
           "is_bounce": false,
-          "created_at": "2026-11-15T22:57:14.439154",
+          "created_at": "2026-11-22T00:46:18.546147",
           "message_id": "reply-by-email-1@mail.example.com",
-          "updated_at": "2026-11-15T22:57:14.439154",
+          "updated_at": "2026-11-22T00:46:18.6194",
           "created_via": 1,
           "cc_addresses": "",
           "from_address": "user0@example.com",
@@ -219,548 +111,11 @@
           "imap_group_id": null,
           "imap_uid_validity": null,
           "is_auto_generated": false,
-          "rejection_message": null
+          "rejection_message": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nYou don't have permissions to reply to the topic. If you believe this is an error, [contact a staff member](http://localhost:3042/about).\n"
         }
       ],
       "deleted": [],
       "updated": []
-    },
-    "post_replies": {
-      "inserted": [
-        {
-          "post_id": 38,
-          "created_at": "2026-11-15T22:57:14.572126",
-          "updated_at": "2026-11-15T22:57:14.572126",
-          "reply_post_id": 53
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
-    "post_stats": {
-      "inserted": [
-        {
-          "id": 52,
-          "post_id": 53,
-          "created_at": "2026-11-15T22:57:14.545024",
-          "updated_at": "2026-11-15T22:57:14.545024",
-          "drafts_saved": 0,
-          "writing_device": null,
-          "composer_version": null,
-          "typing_duration_msecs": 0,
-          "writing_device_user_agent": null,
-          "composer_open_duration_msecs": 0
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
-    "post_timings": {
-      "inserted": [
-        {
-          "msecs": 5000,
-          "user_id": 2,
-          "topic_id": 35,
-          "post_number": 6
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
-    "posts": {
-      "inserted": [
-        {
-          "id": 53,
-          "raw": "This is my reply by email, long enough to be a post on its own.",
-          "wiki": false,
-          "reads": 1,
-          "score": null,
-          "cooked": "<p>This is my reply by email, long enough to be a post on its own.</p>",
-          "hidden": false,
-          "locale": null,
-          "user_id": 2,
-          "version": 1,
-          "baked_at": "2026-11-15T22:57:14.527085",
-          "topic_id": 35,
-          "hidden_at": null,
-          "post_type": 1,
-          "raw_email": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <reply-by-email-1@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nThis is my reply by email, long enough to be a post on its own.\r\n\r\nOn Wed, Sep 30, 2026 at 9:00 AM Admin <noreply@unconfigured.discourse.org> wrote:\r\n> The post being replied to, quoted by the mail client.\r\n",
-          "via_email": true,
-          "created_at": "2026-11-15T22:57:14.48386",
-          "deleted_at": null,
-          "like_count": 0,
-          "like_score": 0,
-          "self_edits": 0,
-          "sort_order": 6,
-          "spam_count": 0,
-          "updated_at": "2026-11-15T22:57:14.581163",
-          "word_count": 15,
-          "action_code": null,
-          "cook_method": 1,
-          "edit_reason": null,
-          "post_number": 6,
-          "quote_count": 0,
-          "reply_count": 0,
-          "locked_by_id": null,
-          "percent_rank": 1,
-          "reply_quoted": false,
-          "user_deleted": false,
-          "baked_version": 2,
-          "deleted_by_id": null,
-          "illegal_count": 0,
-          "qa_vote_count": 0,
-          "bookmark_count": 0,
-          "last_editor_id": 2,
-          "public_version": 1,
-          "image_upload_id": null,
-          "last_version_at": "2026-11-15T22:57:14.542715",
-          "off_topic_count": 0,
-          "hidden_reason_id": null,
-          "reply_to_user_id": 1,
-          "notify_user_count": 0,
-          "inappropriate_count": 0,
-          "incoming_link_count": 0,
-          "outbound_message_id": "reply-by-email-1@mail.example.com",
-          "reply_to_post_number": 4,
-          "notify_moderators_count": 0
-        }
-      ],
-      "deleted": [],
-      "updated": [
-        {
-          "before": {
-            "id": 38,
-            "raw": "Reply three from admin, also long enough to pass the minimum length check.",
-            "wiki": false,
-            "reads": 1,
-            "score": 0.2,
-            "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>",
-            "hidden": false,
-            "locale": null,
-            "user_id": 1,
-            "version": 1,
-            "baked_at": "2026-11-15T19:19:54.283593",
-            "topic_id": 35,
-            "hidden_at": null,
-            "post_type": 1,
-            "raw_email": null,
-            "via_email": false,
-            "created_at": "2026-11-15T19:19:54.283624",
-            "deleted_at": null,
-            "like_count": 0,
-            "like_score": 0,
-            "self_edits": 0,
-            "sort_order": 4,
-            "spam_count": 0,
-            "updated_at": "2026-11-15T19:19:54.283624",
-            "word_count": 13,
-            "action_code": null,
-            "cook_method": 1,
-            "edit_reason": null,
-            "post_number": 4,
-            "quote_count": 0,
-            "reply_count": 0,
-            "locked_by_id": null,
-            "percent_rank": 0.25,
-            "reply_quoted": false,
-            "user_deleted": false,
-            "baked_version": 2,
-            "deleted_by_id": null,
-            "illegal_count": 0,
-            "qa_vote_count": 0,
-            "bookmark_count": 0,
-            "last_editor_id": 1,
-            "public_version": 1,
-            "image_upload_id": null,
-            "last_version_at": "2026-11-15T19:19:54.302082",
-            "off_topic_count": 0,
-            "hidden_reason_id": null,
-            "reply_to_user_id": null,
-            "notify_user_count": 0,
-            "inappropriate_count": 0,
-            "incoming_link_count": 0,
-            "outbound_message_id": "discourse/post/38@localhost",
-            "reply_to_post_number": null,
-            "notify_moderators_count": 0
-          },
-          "after": {
-            "id": 38,
-            "raw": "Reply three from admin, also long enough to pass the minimum length check.",
-            "wiki": false,
-            "reads": 1,
-            "score": 0.2,
-            "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>",
-            "hidden": false,
-            "locale": null,
-            "user_id": 1,
-            "version": 1,
-            "baked_at": "2026-11-15T19:19:54.283593",
-            "topic_id": 35,
-            "hidden_at": null,
-            "post_type": 1,
-            "raw_email": null,
-            "via_email": false,
-            "created_at": "2026-11-15T19:19:54.283624",
-            "deleted_at": null,
-            "like_count": 0,
-            "like_score": 0,
-            "self_edits": 0,
-            "sort_order": 4,
-            "spam_count": 0,
-            "updated_at": "2026-11-15T19:19:54.283624",
-            "word_count": 13,
-            "action_code": null,
-            "cook_method": 1,
-            "edit_reason": null,
-            "post_number": 4,
-            "quote_count": 0,
-            "reply_count": 1,
-            "locked_by_id": null,
-            "percent_rank": 0.25,
-            "reply_quoted": false,
-            "user_deleted": false,
-            "baked_version": 2,
-            "deleted_by_id": null,
-            "illegal_count": 0,
-            "qa_vote_count": 0,
-            "bookmark_count": 0,
-            "last_editor_id": 1,
-            "public_version": 1,
-            "image_upload_id": null,
-            "last_version_at": "2026-11-15T19:19:54.302082",
-            "off_topic_count": 0,
-            "hidden_reason_id": null,
-            "reply_to_user_id": null,
-            "notify_user_count": 0,
-            "inappropriate_count": 0,
-            "incoming_link_count": 0,
-            "outbound_message_id": "discourse/post/38@localhost",
-            "reply_to_post_number": null,
-            "notify_moderators_count": 0
-          }
-        }
-      ]
-    },
-    "topic_users": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
-        {
-          "before": {
-            "id": 34,
-            "liked": true,
-            "posted": true,
-            "user_id": 2,
-            "topic_id": 35,
-            "bookmarked": false,
-            "last_posted_at": "2026-11-15T19:20:01.289469",
-            "last_visited_at": "2026-11-15T19:19:53.941158",
-            "first_visited_at": "2026-11-15T19:19:53.941158",
-            "cleared_pinned_at": null,
-            "notification_level": 3,
-            "total_msecs_viewed": 0,
-            "last_read_post_number": 5,
-            "notifications_reason_id": 1,
-            "last_emailed_post_number": 3,
-            "notifications_changed_at": "2026-11-15T19:19:53.940277"
-          },
-          "after": {
-            "id": 34,
-            "liked": true,
-            "posted": true,
-            "user_id": 2,
-            "topic_id": 35,
-            "bookmarked": false,
-            "last_posted_at": "2026-11-15T22:57:14.553835",
-            "last_visited_at": "2026-11-15T19:19:53.941158",
-            "first_visited_at": "2026-11-15T19:19:53.941158",
-            "cleared_pinned_at": null,
-            "notification_level": 3,
-            "total_msecs_viewed": 0,
-            "last_read_post_number": 6,
-            "notifications_reason_id": 1,
-            "last_emailed_post_number": 3,
-            "notifications_changed_at": "2026-11-15T19:19:53.940277"
-          }
-        }
-      ]
-    },
-    "topics": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
-        {
-          "before": {
-            "id": 35,
-            "slug": "parity-fixture-replies-and-posters",
-            "score": 3.1999999999999997,
-            "title": "Parity fixture: replies and posters",
-            "views": 0,
-            "closed": false,
-            "locale": null,
-            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-            "subtype": null,
-            "user_id": 2,
-            "visible": true,
-            "archived": false,
-            "archetype": "regular",
-            "bumped_at": "2026-11-15T19:20:01.206739",
-            "pinned_at": null,
-            "created_at": "2026-11-15T19:19:53.917926",
-            "deleted_at": null,
-            "like_count": 1,
-            "spam_count": 0,
-            "updated_at": "2026-11-15T19:20:01.293353",
-            "word_count": 68,
-            "category_id": 4,
-            "external_id": null,
-            "fancy_title": "Parity fixture: replies and posters",
-            "has_summary": false,
-            "posts_count": 5,
-            "reply_count": 0,
-            "percent_rank": 1,
-            "pinned_until": null,
-            "deleted_by_id": null,
-            "featured_link": null,
-            "bannered_until": null,
-            "last_posted_at": "2026-11-15T19:20:01.206739",
-            "image_upload_id": null,
-            "pinned_globally": false,
-            "reviewable_score": 0,
-            "featured_user1_id": 3,
-            "featured_user2_id": null,
-            "featured_user3_id": 1,
-            "featured_user4_id": 4,
-            "last_post_user_id": 2,
-            "participant_count": 4,
-            "slow_mode_seconds": 0,
-            "og_image_upload_id": null,
-            "highest_post_number": 5,
-            "incoming_link_count": 0,
-            "visibility_reason_id": null,
-            "moderator_posts_count": 0,
-            "notify_moderators_count": 0,
-            "highest_staff_post_number": 5
-          },
-          "after": {
-            "id": 35,
-            "slug": "parity-fixture-replies-and-posters",
-            "score": 3.1999999999999997,
-            "title": "Parity fixture: replies and posters",
-            "views": 0,
-            "closed": false,
-            "locale": null,
-            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-            "subtype": null,
-            "user_id": 2,
-            "visible": true,
-            "archived": false,
-            "archetype": "regular",
-            "bumped_at": "2026-11-15T22:57:14.48386",
-            "pinned_at": null,
-            "created_at": "2026-11-15T19:19:53.917926",
-            "deleted_at": null,
-            "like_count": 1,
-            "spam_count": 0,
-            "updated_at": "2026-11-15T22:57:14.558125",
-            "word_count": 83,
-            "category_id": 4,
-            "external_id": null,
-            "fancy_title": "Parity fixture: replies and posters",
-            "has_summary": false,
-            "posts_count": 6,
-            "reply_count": 1,
-            "percent_rank": 1,
-            "pinned_until": null,
-            "deleted_by_id": null,
-            "featured_link": null,
-            "bannered_until": null,
-            "last_posted_at": "2026-11-15T22:57:14.48386",
-            "image_upload_id": null,
-            "pinned_globally": false,
-            "reviewable_score": 0,
-            "featured_user1_id": 3,
-            "featured_user2_id": null,
-            "featured_user3_id": 1,
-            "featured_user4_id": 4,
-            "last_post_user_id": 2,
-            "participant_count": 4,
-            "slow_mode_seconds": 0,
-            "og_image_upload_id": null,
-            "highest_post_number": 6,
-            "incoming_link_count": 0,
-            "visibility_reason_id": null,
-            "moderator_posts_count": 0,
-            "notify_moderators_count": 0,
-            "highest_staff_post_number": 6
-          }
-        }
-      ]
-    },
-    "user_actions": {
-      "inserted": [
-        {
-          "id": 65,
-          "user_id": 2,
-          "created_at": "2026-11-15T22:57:14.48386",
-          "updated_at": "2026-11-15T22:57:14.547043",
-          "action_type": 5,
-          "acting_user_id": 2,
-          "target_post_id": 53,
-          "target_user_id": null,
-          "target_topic_id": 35
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
-    "user_stats": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
-        {
-          "before": {
-            "user_id": 2,
-            "read_faq": null,
-            "new_since": "2026-11-03T05:08:00.230026",
-            "time_read": 0,
-            "post_count": 1,
-            "draft_count": 0,
-            "likes_given": 1,
-            "topic_count": 2,
-            "bounce_score": 0,
-            "days_visited": 1,
-            "flags_agreed": 0,
-            "flags_ignored": 0,
-            "likes_received": 1,
-            "topics_entered": 0,
-            "first_unread_at": "2026-11-03T05:08:00.103863",
-            "flags_disagreed": 0,
-            "post_edits_count": null,
-            "posts_read_count": 3,
-            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": null,
-            "pending_posts_count": 0,
-            "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-15T19:19:53.957314",
-            "reset_bounce_score_after": null
-          },
-          "after": {
-            "user_id": 2,
-            "read_faq": null,
-            "new_since": "2026-11-03T05:08:00.230026",
-            "time_read": 0,
-            "post_count": 2,
-            "draft_count": 0,
-            "likes_given": 1,
-            "topic_count": 2,
-            "bounce_score": 0,
-            "days_visited": 1,
-            "flags_agreed": 0,
-            "flags_ignored": 0,
-            "likes_received": 1,
-            "topics_entered": 0,
-            "first_unread_at": "2026-11-03T05:08:00.103863",
-            "flags_disagreed": 0,
-            "post_edits_count": null,
-            "posts_read_count": 4,
-            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": null,
-            "pending_posts_count": 0,
-            "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-15T19:19:53.957314",
-            "reset_bounce_score_after": null
-          }
-        }
-      ]
-    },
-    "users": {
-      "inserted": [],
-      "deleted": [],
-      "updated": [
-        {
-          "before": {
-            "id": 2,
-            "name": "User0",
-            "admin": false,
-            "title": null,
-            "views": 0,
-            "active": true,
-            "locale": null,
-            "staged": false,
-            "approved": false,
-            "username": "user0",
-            "moderator": false,
-            "created_at": "2026-11-03T05:08:00.105147",
-            "flag_level": 0,
-            "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-15T19:20:01.297303",
-            "approved_at": null,
-            "trust_level": 1,
-            "last_seen_at": "2026-11-15T19:40:02.187657",
-            "suspended_at": null,
-            "date_of_birth": null,
-            "first_seen_at": "2026-11-15T19:40:02.187657",
-            "silenced_till": null,
-            "approved_by_id": null,
-            "flair_group_id": null,
-            "last_posted_at": "2026-11-15T19:20:01.206739",
-            "suspended_till": null,
-            "username_lower": "user0",
-            "last_emailed_at": null,
-            "primary_group_id": null,
-            "previous_visit_at": null,
-            "secure_identifier": null,
-            "uploaded_avatar_id": null,
-            "seen_notification_id": 0,
-            "last_seen_reviewable_id": null,
-            "registration_ip_address": null,
-            "required_fields_version": null,
-            "group_locked_trust_level": null,
-            "manual_locked_trust_level": null
-          },
-          "after": {
-            "id": 2,
-            "name": "User0",
-            "admin": false,
-            "title": null,
-            "views": 0,
-            "active": true,
-            "locale": null,
-            "staged": false,
-            "approved": false,
-            "username": "user0",
-            "moderator": false,
-            "created_at": "2026-11-03T05:08:00.105147",
-            "flag_level": 0,
-            "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-15T22:57:14.562314",
-            "approved_at": null,
-            "trust_level": 1,
-            "last_seen_at": "2026-11-15T19:40:02.187657",
-            "suspended_at": null,
-            "date_of_birth": null,
-            "first_seen_at": "2026-11-15T19:40:02.187657",
-            "silenced_till": null,
-            "approved_by_id": null,
-            "flair_group_id": null,
-            "last_posted_at": "2026-11-15T22:57:14.48386",
-            "suspended_till": null,
-            "username_lower": "user0",
-            "last_emailed_at": null,
-            "primary_group_id": null,
-            "previous_visit_at": null,
-            "secure_identifier": null,
-            "uploaded_avatar_id": null,
-            "seen_notification_id": 0,
-            "last_seen_reviewable_id": null,
-            "registration_ip_address": null,
-            "required_fields_version": null,
-            "group_locked_trust_level": null,
-            "manual_locked_trust_level": null
-          }
-        }
-      ]
     }
   },
   "jobs": [
@@ -774,10 +129,8 @@
     ]
   ],
   "next_ids": {
-    "incoming_emails": 1,
-    "post_stats": 52,
-    "posts": 53,
-    "user_actions": 65
+    "email_logs": 1,
+    "incoming_emails": 1
   },
   "settings": {
     "reply_by_email_address": "replies+%{reply_key}@example.com",
@@ -789,55 +142,66 @@
     "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, description, key_hash, truncated_key, scope_mode, revoked_at) VALUES (9002, NULL, 1, now(), now(), 'mail-receiver', encode(sha256(convert_to('mail-receiver-key-9002', 'UTF8')), 'hex'), 'mail', 2, NULL)",
     "INSERT INTO api_key_scopes (id, api_key_id, resource, action, created_at, updated_at) VALUES (9002, 9002, 'email', 'receive_emails', now(), now())"
   ],
-  "jobs_from_jobs": [
-    [
-      "post_alert",
-      {
-        "post_id": 53,
-        "new_record": true,
-        "options": null
-      }
-    ],
-    [
-      "feature_topic_users",
-      {
-        "topic_id": 35
-      }
-    ],
-    [
-      "process_post",
-      {
-        "bypass_bump": false,
-        "cooking_options": null,
-        "new_post": true,
-        "post_id": 53,
-        "skip_pull_hotlinked_images": false
-      }
-    ],
-    [
-      "post_update_topic_tracking_state",
-      {
-        "post_id": 53
-      }
-    ],
-    [
-      "notify_mailing_list_subscribers in 600s",
-      {
-        "post_id": 53
-      }
-    ],
-    [
-      "bot_input",
-      {
-        "user_id": 2,
-        "post_id": 53,
-        "input": "reply"
-      }
-    ]
+  "jobs_from_jobs": [],
+  "emails": [
+    {
+      "headers": [
+        [
+          "Return-Path",
+          "replies+verp-e5bbb8355fbbf2274a59f5cef47b29be@example.com"
+        ],
+        [
+          "From",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"Discourse\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user0@example.com"
+        ],
+        [
+          "Message-ID",
+          "<d04ae570-d6fb-4202-bc36-ba1dff527b1b@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] Email issue -- Reply Not Allowed"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6b023b5a95d2d_7e0ff385929c"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ]
+      ],
+      "text": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nYou don't have permissions to reply to the topic. If you believe this is an error, [contact a staff member](http://localhost:3042/about).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+0123456789abcdef0123456789abcdef@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+0123456789abcdef0123456789abcdef@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>You don’t have permissions to reply to the topic. If you believe this is an error, <a href=\"http://localhost:3042/about\" style=\"text-decoration:none;font-weight:bold;color:#006699\">contact a staff member</a>.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    }
   ],
   "recorded_from": {
     "case": "41930d6b2af09c3f9fc25503db5a26c62e3d9f8a23bf1e7003804ae34dc1da6b",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

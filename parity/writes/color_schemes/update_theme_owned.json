@@ -66,8 +66,8 @@
       "path": "/admin/color_schemes/3.json"
     }
   ],
-  "started_at": "2026-11-15T22:41:47.344281",
-  "transaction_started_at": "2026-11-15T22:41:46.531649",
+  "started_at": "2026-11-22T00:32:05.63963",
+  "transaction_started_at": "2026-11-22T00:32:04.874117",
   "responses": [
     {
       "status": 200,
@@ -480,104 +480,104 @@
           "id": 325,
           "hex": "1a1a1a",
           "name": "primary",
-          "created_at": "2026-11-15T22:41:48.80599",
-          "updated_at": "2026-11-15T22:41:48.80599",
+          "created_at": "2026-11-22T00:32:07.092271",
+          "updated_at": "2026-11-22T00:32:07.092271",
           "color_scheme_id": 19
         },
         {
           "id": 326,
           "hex": "ffffff",
           "name": "secondary",
-          "created_at": "2026-11-15T22:41:48.807142",
-          "updated_at": "2026-11-15T22:41:48.807142",
+          "created_at": "2026-11-22T00:32:07.093367",
+          "updated_at": "2026-11-22T00:32:07.093367",
           "color_scheme_id": 19
         },
         {
           "id": 327,
           "hex": "1f7bc1",
           "name": "tertiary",
-          "created_at": "2026-11-15T22:41:48.808114",
-          "updated_at": "2026-11-15T22:41:48.808114",
+          "created_at": "2026-11-22T00:32:07.094398",
+          "updated_at": "2026-11-22T00:32:07.094398",
           "color_scheme_id": 19
         },
         {
           "id": 328,
           "hex": "e45735",
           "name": "quaternary",
-          "created_at": "2026-11-15T22:41:48.809309",
-          "updated_at": "2026-11-15T22:41:48.809309",
+          "created_at": "2026-11-22T00:32:07.095672",
+          "updated_at": "2026-11-22T00:32:07.095672",
           "color_scheme_id": 19
         },
         {
           "id": 329,
           "hex": "ffffff",
           "name": "header_background",
-          "created_at": "2026-11-15T22:41:48.810353",
-          "updated_at": "2026-11-15T22:41:48.810353",
+          "created_at": "2026-11-22T00:32:07.096746",
+          "updated_at": "2026-11-22T00:32:07.096746",
           "color_scheme_id": 19
         },
         {
           "id": 330,
           "hex": "1a1a1a",
           "name": "header_primary",
-          "created_at": "2026-11-15T22:41:48.811367",
-          "updated_at": "2026-11-15T22:41:48.811367",
+          "created_at": "2026-11-22T00:32:07.09775",
+          "updated_at": "2026-11-22T00:32:07.09775",
           "color_scheme_id": 19
         },
         {
           "id": 331,
           "hex": "ffff4d",
           "name": "highlight",
-          "created_at": "2026-11-15T22:41:48.812493",
-          "updated_at": "2026-11-15T22:41:48.812493",
+          "created_at": "2026-11-22T00:32:07.098838",
+          "updated_at": "2026-11-22T00:32:07.098838",
           "color_scheme_id": 19
         },
         {
           "id": 332,
           "hex": "c7e3ff",
           "name": "selected",
-          "created_at": "2026-11-15T22:41:48.813559",
-          "updated_at": "2026-11-15T22:41:48.813559",
+          "created_at": "2026-11-22T00:32:07.099996",
+          "updated_at": "2026-11-22T00:32:07.099996",
           "color_scheme_id": 19
         },
         {
           "id": 333,
           "hex": "d6ebff",
           "name": "hover",
-          "created_at": "2026-11-15T22:41:48.815009",
-          "updated_at": "2026-11-15T22:41:48.815009",
+          "created_at": "2026-11-22T00:32:07.101579",
+          "updated_at": "2026-11-22T00:32:07.101579",
           "color_scheme_id": 19
         },
         {
           "id": 334,
           "hex": "c80001",
           "name": "danger",
-          "created_at": "2026-11-15T22:41:48.815989",
-          "updated_at": "2026-11-15T22:41:48.815989",
+          "created_at": "2026-11-22T00:32:07.102525",
+          "updated_at": "2026-11-22T00:32:07.102525",
           "color_scheme_id": 19
         },
         {
           "id": 335,
           "hex": "090",
           "name": "success",
-          "created_at": "2026-11-15T22:41:48.817087",
-          "updated_at": "2026-11-15T22:41:48.817087",
+          "created_at": "2026-11-22T00:32:07.103768",
+          "updated_at": "2026-11-22T00:32:07.103768",
           "color_scheme_id": 19
         },
         {
           "id": 336,
           "hex": "fa6c8d",
           "name": "love",
-          "created_at": "2026-11-15T22:41:48.818229",
-          "updated_at": "2026-11-15T22:41:48.818229",
+          "created_at": "2026-11-22T00:32:07.104857",
+          "updated_at": "2026-11-22T00:32:07.104857",
           "color_scheme_id": 19
         },
         {
           "id": 337,
           "hex": "1f7bc1",
           "name": "tertiary-med-or-tertiary",
-          "created_at": "2026-11-15T22:41:48.819229",
-          "updated_at": "2026-11-15T22:41:48.819229",
+          "created_at": "2026-11-22T00:32:07.107163",
+          "updated_at": "2026-11-22T00:32:07.107163",
           "color_scheme_id": 19
         }
       ],
@@ -597,7 +597,7 @@
             "hex": "123456",
             "name": "primary",
             "created_at": "2026-11-03T05:07:14.624",
-            "updated_at": "2026-11-15T22:41:48.828701",
+            "updated_at": "2026-11-22T00:32:07.113426",
             "color_scheme_id": 3
           }
         },
@@ -615,7 +615,7 @@
             "hex": "fefefe",
             "name": "secondary",
             "created_at": "2026-11-03T05:07:14.625547",
-            "updated_at": "2026-11-15T22:41:48.917528",
+            "updated_at": "2026-11-22T00:32:07.189172",
             "color_scheme_id": 3
           }
         }
@@ -628,8 +628,8 @@
           "name": "Royal",
           "version": 1,
           "theme_id": -2,
-          "created_at": "2026-11-15T22:41:48.804545",
-          "updated_at": "2026-11-15T22:41:48.804545",
+          "created_at": "2026-11-22T00:32:07.091065",
+          "updated_at": "2026-11-22T00:32:07.091065",
           "via_wizard": false,
           "remote_copy": true,
           "base_scheme_id": null,
@@ -657,7 +657,7 @@
             "version": 4,
             "theme_id": -2,
             "created_at": "2026-11-03T05:07:14.622576",
-            "updated_at": "2026-11-15T22:41:48.919393",
+            "updated_at": "2026-11-22T00:32:07.190356",
             "via_wizard": false,
             "remote_copy": false,
             "base_scheme_id": 19,
@@ -672,33 +672,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "San3ibU/eEcmWhvEe2jfMOJfYVw=",
-            "created_at": "2026-11-15T22:41:46.844763",
-            "rotated_at": "2026-11-15T22:41:46.843826",
-            "updated_at": "2026-11-15T22:41:46.844763",
+            "auth_token": "J9FLh9jawEC9woqVFFG7nJzJAgg=",
+            "created_at": "2026-11-22T00:32:05.184159",
+            "rotated_at": "2026-11-22T00:32:05.183315",
+            "updated_at": "2026-11-22T00:32:05.184159",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "San3ibU/eEcmWhvEe2jfMOJfYVw=",
+            "prev_auth_token": "J9FLh9jawEC9woqVFFG7nJzJAgg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:41:47.348821",
+            "id": 1,
+            "seen_at": "2026-11-22T00:32:05.645677",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "San3ibU/eEcmWhvEe2jfMOJfYVw=",
-            "created_at": "2026-11-15T22:41:46.844763",
-            "rotated_at": "2026-11-15T22:41:46.843826",
-            "updated_at": "2026-11-15T22:41:46.844763",
+            "auth_token": "J9FLh9jawEC9woqVFFG7nJzJAgg=",
+            "created_at": "2026-11-22T00:32:05.184159",
+            "rotated_at": "2026-11-22T00:32:05.183315",
+            "updated_at": "2026-11-22T00:32:05.184159",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "San3ibU/eEcmWhvEe2jfMOJfYVw=",
+            "prev_auth_token": "J9FLh9jawEC9woqVFFG7nJzJAgg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -714,7 +714,7 @@
   },
   "recorded_from": {
     "case": "81e79a2109cbb4984038b7fd6d275889df1c51f403cc21ae5faa4492fba2c6f2",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

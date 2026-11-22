@@ -28,8 +28,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:43:44.447891",
-  "transaction_started_at": "2026-11-15T22:43:43.78295",
+  "started_at": "2026-11-22T00:34:00.640892",
+  "transaction_started_at": "2026-11-22T00:34:00.030427",
   "responses": [
     {
       "status": 302,
@@ -42,7 +42,7 @@
       "status": 302,
       "body": "",
       "headers": {
-        "Location": "/sso?sso=bm9uY2U9OTcwYmIzMGM3ODBjYzZiNTRmNjBkYmVmOTU3YmJmMDMmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=ed9c226f7f8c0bf7a53445dd35208b39bf3a6e7be79473406e5df93dee295d2b"
+        "Location": "/sso?sso=bm9uY2U9YzBiY2EyMjkwMDQwMTgxNTJhMzk4Mjk0OWRiMzg5NWUmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=d3595ab6a400fbd673e38d812579fe68296997a6e9a0cded094d0e5886c98111"
       }
     },
     {
@@ -59,10 +59,10 @@
         {
           "id": 1,
           "user_id": 5,
-          "created_at": "2026-11-15T22:43:44.549219",
-          "updated_at": "2026-11-15T22:43:44.549219",
+          "created_at": "2026-11-22T00:34:00.727963",
+          "updated_at": "2026-11-22T00:34:00.727963",
           "external_id": "ext-user3-gate",
-          "last_payload": "email=user3%40example.com&external_id=ext-user3-gate&nonce=970bb30c780cc6b54f60dbef957bbf03&username=user3",
+          "last_payload": "email=user3%40example.com&external_id=ext-user3-gate&nonce=c0bca229004018152a3982949db3895e&username=user3",
           "external_name": null,
           "external_email": "user3@example.com",
           "external_username": "user3",
@@ -82,10 +82,10 @@
           "action": "generate",
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "ia63pX9IOc3ABZCbJqMPt0a2fxQ=",
-          "created_at": "2026-11-15T22:43:44.576424",
+          "auth_token": "O/F1x55JDmgbLWdaFxhIUXpCrh8=",
+          "created_at": "2026-11-22T00:34:00.749671",
           "user_agent": null,
-          "user_auth_token_id": 14
+          "user_auth_token_id": 1
         }
       ],
       "deleted": [],
@@ -94,17 +94,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 14,
+          "id": 1,
           "seen_at": null,
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "ia63pX9IOc3ABZCbJqMPt0a2fxQ=",
-          "created_at": "2026-11-15T22:43:44.572429",
-          "rotated_at": "2026-11-15T22:43:44.571348",
-          "updated_at": "2026-11-15T22:43:44.572429",
+          "auth_token": "O/F1x55JDmgbLWdaFxhIUXpCrh8=",
+          "created_at": "2026-11-22T00:34:00.747418",
+          "rotated_at": "2026-11-22T00:34:00.746641",
+          "updated_at": "2026-11-22T00:34:00.747418",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "ia63pX9IOc3ABZCbJqMPt0a2fxQ=",
+          "prev_auth_token": "O/F1x55JDmgbLWdaFxhIUXpCrh8=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": false,
           "impersonation_expires_at": null
@@ -173,7 +173,7 @@
             "created_at": "2026-11-03T05:08:00.934987",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-15T22:43:44.562428",
+            "updated_at": "2026-11-22T00:34:00.73895",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -206,7 +206,7 @@
   "next_ids": {
     "single_sign_on_records": 1,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 14
+    "user_auth_tokens": 1
   },
   "settings": {
     "discourse_connect_url": "https://idp.example.com/sso",
@@ -219,7 +219,7 @@
   ],
   "recorded_from": {
     "case": "a579baaea8ff8f75a0b79acbf292143ac7587548f7a1dea63f07d3445558108e",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

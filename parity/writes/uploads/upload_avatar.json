@@ -13,8 +13,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T23:57:32.716624",
-  "transaction_started_at": "2026-11-15T23:57:31.256415",
+  "started_at": "2026-11-22T01:52:01.552428",
+  "transaction_started_at": "2026-11-22T01:52:00.020283",
   "responses": [
     {
       "status": 200,
@@ -41,62 +41,6 @@
     "optimized_images": {
       "inserted": [
         {
-          "id": 46,
-          "url": "/uploads/default/optimized/1X/fc0fb5da9fe7e6045901b911b0b3072efdcb82ae_2_24x24.png",
-          "etag": null,
-          "sha1": "aacc1dc1754d23b6ca6849aa648cb66eb5a56251",
-          "width": 24,
-          "height": 24,
-          "version": 2,
-          "filesize": 1196,
-          "extension": ".png",
-          "upload_id": 36,
-          "created_at": "2026-11-15T23:57:33.334318",
-          "updated_at": "2026-11-15T23:57:33.337571"
-        },
-        {
-          "id": 47,
-          "url": "/uploads/default/optimized/1X/fc0fb5da9fe7e6045901b911b0b3072efdcb82ae_2_48x48.png",
-          "etag": null,
-          "sha1": "464247fccf55147ae4c5e8c4fbf9f653c09cab26",
-          "width": 48,
-          "height": 48,
-          "version": 2,
-          "filesize": 2597,
-          "extension": ".png",
-          "upload_id": 36,
-          "created_at": "2026-11-15T23:57:33.380212",
-          "updated_at": "2026-11-15T23:57:33.383259"
-        },
-        {
-          "id": 48,
-          "url": "/uploads/default/optimized/1X/fc0fb5da9fe7e6045901b911b0b3072efdcb82ae_2_72x72.png",
-          "etag": null,
-          "sha1": "d9630bd167ad45640a28de1508ffaefacd3c3645",
-          "width": 72,
-          "height": 72,
-          "version": 2,
-          "filesize": 3855,
-          "extension": ".png",
-          "upload_id": 36,
-          "created_at": "2026-11-15T23:57:33.434178",
-          "updated_at": "2026-11-15T23:57:33.437013"
-        },
-        {
-          "id": 49,
-          "url": "/uploads/default/optimized/1X/fc0fb5da9fe7e6045901b911b0b3072efdcb82ae_2_96x96.png",
-          "etag": null,
-          "sha1": "68b8109f17c277bfeb5ada21297a8a6ca2714795",
-          "width": 96,
-          "height": 96,
-          "version": 2,
-          "filesize": 5506,
-          "extension": ".png",
-          "upload_id": 36,
-          "created_at": "2026-11-15T23:57:33.492621",
-          "updated_at": "2026-11-15T23:57:33.495497"
-        },
-        {
           "id": 50,
           "url": "/uploads/default/optimized/1X/fc0fb5da9fe7e6045901b911b0b3072efdcb82ae_2_144x144.png",
           "etag": null,
@@ -107,8 +51,8 @@
           "filesize": 10050,
           "extension": ".png",
           "upload_id": 36,
-          "created_at": "2026-11-15T23:57:33.581256",
-          "updated_at": "2026-11-15T23:57:33.584084"
+          "created_at": "2026-11-22T01:52:02.472366",
+          "updated_at": "2026-11-22T01:52:02.48027"
         },
         {
           "id": 51,
@@ -121,8 +65,64 @@
           "filesize": 38869,
           "extension": ".png",
           "upload_id": 36,
-          "created_at": "2026-11-15T23:57:34.059008",
-          "updated_at": "2026-11-15T23:57:34.062722"
+          "created_at": "2026-11-22T01:52:02.953986",
+          "updated_at": "2026-11-22T01:52:02.96369"
+        },
+        {
+          "id": 46,
+          "url": "/uploads/default/optimized/1X/fc0fb5da9fe7e6045901b911b0b3072efdcb82ae_2_24x24.png",
+          "etag": null,
+          "sha1": "aacc1dc1754d23b6ca6849aa648cb66eb5a56251",
+          "width": 24,
+          "height": 24,
+          "version": 2,
+          "filesize": 1196,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-11-22T01:52:02.210798",
+          "updated_at": "2026-11-22T01:52:02.214087"
+        },
+        {
+          "id": 47,
+          "url": "/uploads/default/optimized/1X/fc0fb5da9fe7e6045901b911b0b3072efdcb82ae_2_48x48.png",
+          "etag": null,
+          "sha1": "464247fccf55147ae4c5e8c4fbf9f653c09cab26",
+          "width": 48,
+          "height": 48,
+          "version": 2,
+          "filesize": 2597,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-11-22T01:52:02.255984",
+          "updated_at": "2026-11-22T01:52:02.258747"
+        },
+        {
+          "id": 48,
+          "url": "/uploads/default/optimized/1X/fc0fb5da9fe7e6045901b911b0b3072efdcb82ae_2_72x72.png",
+          "etag": null,
+          "sha1": "d9630bd167ad45640a28de1508ffaefacd3c3645",
+          "width": 72,
+          "height": 72,
+          "version": 2,
+          "filesize": 3855,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-11-22T01:52:02.322267",
+          "updated_at": "2026-11-22T01:52:02.325414"
+        },
+        {
+          "id": 49,
+          "url": "/uploads/default/optimized/1X/fc0fb5da9fe7e6045901b911b0b3072efdcb82ae_2_96x96.png",
+          "etag": null,
+          "sha1": "68b8109f17c277bfeb5ada21297a8a6ca2714795",
+          "width": 96,
+          "height": 96,
+          "version": 2,
+          "filesize": 5506,
+          "extension": ".png",
+          "upload_id": 36,
+          "created_at": "2026-11-22T01:52:02.384941",
+          "updated_at": "2026-11-22T01:52:02.38832"
         }
       ],
       "deleted": [],
@@ -143,8 +143,8 @@
           "animated": false,
           "filesize": 38869,
           "extension": "png",
-          "created_at": "2026-11-15T23:57:33.274138",
-          "updated_at": "2026-11-15T23:57:33.277791",
+          "created_at": "2026-11-22T01:52:02.14979",
+          "updated_at": "2026-11-22T01:52:02.155361",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": "365152",
@@ -166,33 +166,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 5,
             "client_ip": "127.0.0.1",
-            "auth_token": "dgzFPKJ8EDSFfHubaIHEnArUPSA=",
-            "created_at": "2026-11-15T23:57:31.651631",
-            "rotated_at": "2026-11-15T23:57:31.647683",
-            "updated_at": "2026-11-15T23:57:31.651631",
+            "auth_token": "Y+HM0hBcmqgkfa0T5zbUG+A0jdo=",
+            "created_at": "2026-11-22T01:52:00.556623",
+            "rotated_at": "2026-11-22T01:52:00.553009",
+            "updated_at": "2026-11-22T01:52:00.556623",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "dgzFPKJ8EDSFfHubaIHEnArUPSA=",
+            "prev_auth_token": "Y+HM0hBcmqgkfa0T5zbUG+A0jdo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:57:32.724575",
+            "id": 1,
+            "seen_at": "2026-11-22T01:52:01.559887",
             "user_id": 5,
             "client_ip": "127.0.0.1",
-            "auth_token": "dgzFPKJ8EDSFfHubaIHEnArUPSA=",
-            "created_at": "2026-11-15T23:57:31.651631",
-            "rotated_at": "2026-11-15T23:57:31.647683",
-            "updated_at": "2026-11-15T23:57:31.651631",
+            "auth_token": "Y+HM0hBcmqgkfa0T5zbUG+A0jdo=",
+            "created_at": "2026-11-22T01:52:00.556623",
+            "rotated_at": "2026-11-22T01:52:00.553009",
+            "updated_at": "2026-11-22T01:52:00.556623",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "dgzFPKJ8EDSFfHubaIHEnArUPSA=",
+            "prev_auth_token": "Y+HM0hBcmqgkfa0T5zbUG+A0jdo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -206,7 +206,7 @@
           "id": 36,
           "user_id": 5,
           "upload_id": 36,
-          "created_at": "2026-11-15T23:57:33.283674"
+          "created_at": "2026-11-22T01:52:02.16128"
         }
       ],
       "deleted": [],
@@ -229,7 +229,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "1fc356b2ca92d940ee4bed9507722ac19667602a0358973bc960375f18c0a7df",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

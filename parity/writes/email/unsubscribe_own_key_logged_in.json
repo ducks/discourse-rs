@@ -11,12 +11,12 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:48:04.856329",
-  "transaction_started_at": "2026-11-15T22:48:04.09662",
+  "started_at": "2026-11-22T00:37:24.175024",
+  "transaction_started_at": "2026-11-22T00:37:23.395822",
   "responses": [
     {
       "status": 200,
-      "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Discourse</title>\n  <meta name=\"description\" content=\"\">\n  <meta name=\"generator\" content=\"Discourse 2026.11.0-latest.1 - https://github.com/discourse/discourse version 9daeae2a745b73533215775ebf132191ca4c5056\">\n<link rel=\"icon\" type=\"image/png\" href=\"http://localhost:3042/uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_32x32.png\">\n<link rel=\"apple-touch-icon\" type=\"image/png\" href=\"http://localhost:3042/uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_180x180.png\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: light)\" content=\"#fff\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: dark)\" content=\"#111111\">\n\n<meta name=\"color-scheme\" content=\"light dark\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover\">\n<link rel=\"canonical\" href=\"http://localhost:3042/email/unsubscribe/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" />\n\n\n  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"http://localhost:3042/opensearch.xml\" title=\"Discourse Search\">\n\n  <link href=\"/stylesheets/color_definitions_light-default_-1_-1_d48430f8830d100f8487351ba858639aa2210b62.css?__ws=localhost\" media=\"(prefers-color-scheme: light)\" rel=\"stylesheet\" class=\"light-scheme\"/><link href=\"/stylesheets/color_definitions_dark_13_-1_4c9b009ef3b199927407cd84b9b4f69aad4cf60d.css?__ws=localhost\" media=\"(prefers-color-scheme: dark)\" rel=\"stylesheet\" class=\"dark-scheme\" data-scheme-id=\"13\"/>\n\n<link href=\"/stylesheets/common_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"common\"  />\n\n\n\n  <link href=\"/stylesheets/boards_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"boards\"  />\n  <link href=\"/stylesheets/chat_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"chat\"  />\n  <link href=\"/stylesheets/checklist_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"checklist\"  />\n  <link href=\"/stylesheets/discourse-details_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-details\"  />\n  <link href=\"/stylesheets/discourse-lazy-videos_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-lazy-videos\"  />\n  <link href=\"/stylesheets/discourse-local-dates_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-local-dates\"  />\n  <link href=\"/stylesheets/discourse-narrative-bot_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-narrative-bot\"  />\n  <link href=\"/stylesheets/discourse-presence_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-presence\"  />\n  <link href=\"/stylesheets/discourse-reactions_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-reactions\"  />\n  <link href=\"/stylesheets/discourse-solved_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved\"  />\n  <link href=\"/stylesheets/discourse-templates_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-templates\"  />\n  <link href=\"/stylesheets/discourse-topic-voting_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-topic-voting\"  />\n  <link href=\"/stylesheets/discourse-workflows_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-workflows\"  />\n  <link href=\"/stylesheets/footnote_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"footnote\"  />\n  <link href=\"/stylesheets/poll_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"poll\"  />\n  <link href=\"/stylesheets/spoiler-alert_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"spoiler-alert\"  />\n  <link href=\"/stylesheets/chat_mobile_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"chat_mobile\"  />\n  <link href=\"/stylesheets/discourse-reactions_mobile_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_mobile\"  />\n  <link href=\"/stylesheets/chat_desktop_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"chat_desktop\"  />\n  <link href=\"/stylesheets/discourse-reactions_desktop_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_desktop\"  />\n  <link href=\"/stylesheets/poll_desktop_8d33fcdc0cb63fa58e36f5288b623ce466505c8a.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"poll_desktop\"  />\n\n  \n  \n  \n\n\n\n  \n\n    \n\n  \n  \n\n    \n\n\n\n\n  <script defer src=\"/assets/js/pageview-de2d5660.js\" data-discourse-entrypoint=\"js/pageview\" nonce=\"BZyr2iefGTj4SUBiRgnRL9d2X\"></script>\n\n</head>\n<body class=\"no-ember \">\n    \n\n    \n\n    \n\n  <section id='main'>\n    \n  <header class=\"d-header\">\n    <div class=\"wrap\">\n      <div class=\"contents clearfix\">\n        <div class=\"title\">\n          <a href=\"/\">\n              <picture>\n                <img src=\"http://localhost:3042/images/discourse-logo-sketch.png\" alt=\"Discourse\" id=\"site-logo\" width=\"1858\" height=\"512\" />\n              </picture>\n          </a>\n        </div>\n        <div class=\"panel clearfix\">\n        </div>\n      </div>\n    </div>\n  </header>\n\n    <div id=\"main-outlet\" class=\"wrap\">\n      <div class='container unsubscribe'>\n    <br/>\n    <h2>Unsubscribe user0@example.com</h2>\n    <br/>\n    <form action=\"/email/unsubscribe/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" accept-charset=\"UTF-8\" method=\"post\">\n\n\n          <p>\n\n            <h3>\n                You are receiving summary emails weekly\n            </h3>\n            <br/>\n\n          <label>Set summary emails frequency to:</label>\n          <select name=\"digest_after_minutes\" id=\"digest_after_minutes\" class=\"combobox\"><option value=\"10080\">weekly</option>\n<option selected=\"selected\" value=\"43200\">every month</option>\n<option value=\"259200\">every six months</option>\n<option value=\"0\">never</option></select>\n          </p>\n\n      \n\n        <p>\n        <label>\n          <input type=\"checkbox\" name=\"unsubscribe_all\" id=\"unsubscribe_all\" value=\"1\" />\n          Don’t send me any mail from Discourse\n        </label>\n        </p>\n\n      <br/>\n      <input type=\"submit\" name=\"commit\" value=\"Save preferences\" class=\"btn btn-danger\" data-disable-with=\"Save preferences\" />\n</form>\n\n\n</div>\n\n    </div>\n  </section>\n\n    \n    \n\n    \n    \n<script async nonce=\"BZyr2iefGTj4SUBiRgnRL9d2X\" type=\"text/javascript\" id=\"mini-profiler\" src=\"/mini-profiler-resources/includes.js?v=0ab236f63a9cce6719807f4cd6470f29\" data-css-url=\"/mini-profiler-resources/includes.css?v=0ab236f63a9cce6719807f4cd6470f29\" data-version=\"0ab236f63a9cce6719807f4cd6470f29\" data-path=\"/mini-profiler-resources/\" data-current-id=\"iqtwt4rpord438a8pklo\" data-ids=\"iqtwt4rpord438a8pklo\" data-horizontal-position=\"right\" data-vertical-position=\"top\" data-trivial=\"false\" data-children=\"false\" data-max-traces=\"100\" data-controls=\"false\" data-total-sql-count=\"false\" data-authorized=\"true\" data-toggle-shortcut=\"alt+p\" data-start-hidden=\"false\" data-collapse-results=\"true\" data-html-container=\"body\" data-hidden-custom-fields=\"\" data-turbo-permanent=\"false\"></script>\n</body>\n</html>\n"
+      "body": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <title>Discourse</title>\n  <meta name=\"description\" content=\"\">\n  <meta name=\"generator\" content=\"Discourse 2026.11.0-latest.2 - https://github.com/discourse/discourse version ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d\">\n<link rel=\"icon\" type=\"image/png\" href=\"http://localhost:3042/uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_32x32.png\">\n<link rel=\"apple-touch-icon\" type=\"image/png\" href=\"http://localhost:3042/uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_180x180.png\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: light)\" content=\"#fff\">\n<meta name=\"theme-color\" media=\"(prefers-color-scheme: dark)\" content=\"#111111\">\n\n<meta name=\"color-scheme\" content=\"light dark\">\n\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, minimum-scale=1.0, viewport-fit=cover\">\n<link rel=\"canonical\" href=\"http://localhost:3042/email/unsubscribe/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" />\n\n\n  <link rel=\"search\" type=\"application/opensearchdescription+xml\" href=\"http://localhost:3042/opensearch.xml\" title=\"Discourse Search\">\n\n  <link href=\"/stylesheets/color_definitions_light-default_-1_-1_bbc8f10021fef1f29ce9c97e30dd8d2c0c898ca4.css?__ws=localhost\" media=\"(prefers-color-scheme: light)\" rel=\"stylesheet\" class=\"light-scheme\"/><link href=\"/stylesheets/color_definitions_dark_13_-1_65efebb60e22bc48444da76e44304c428307df65.css?__ws=localhost\" media=\"(prefers-color-scheme: dark)\" rel=\"stylesheet\" class=\"dark-scheme\" data-scheme-id=\"13\"/>\n\n<link href=\"/stylesheets/common_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"common\"  />\n\n\n\n  <link href=\"/stylesheets/boards_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"boards\"  />\n  <link href=\"/stylesheets/chat_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"chat\"  />\n  <link href=\"/stylesheets/checklist_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"checklist\"  />\n  <link href=\"/stylesheets/discourse-details_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-details\"  />\n  <link href=\"/stylesheets/discourse-lazy-videos_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-lazy-videos\"  />\n  <link href=\"/stylesheets/discourse-local-dates_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-local-dates\"  />\n  <link href=\"/stylesheets/discourse-narrative-bot_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-narrative-bot\"  />\n  <link href=\"/stylesheets/discourse-presence_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-presence\"  />\n  <link href=\"/stylesheets/discourse-reactions_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-reactions\"  />\n  <link href=\"/stylesheets/discourse-solved_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-solved\"  />\n  <link href=\"/stylesheets/discourse-templates_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-templates\"  />\n  <link href=\"/stylesheets/discourse-topic-voting_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-topic-voting\"  />\n  <link href=\"/stylesheets/discourse-workflows_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"discourse-workflows\"  />\n  <link href=\"/stylesheets/footnote_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"footnote\"  />\n  <link href=\"/stylesheets/poll_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"poll\"  />\n  <link href=\"/stylesheets/spoiler-alert_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"all\" rel=\"stylesheet\" data-target=\"spoiler-alert\"  />\n  <link href=\"/stylesheets/chat_mobile_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"chat_mobile\"  />\n  <link href=\"/stylesheets/discourse-reactions_mobile_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"(width < 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_mobile\"  />\n  <link href=\"/stylesheets/chat_desktop_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"chat_desktop\"  />\n  <link href=\"/stylesheets/discourse-reactions_desktop_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"discourse-reactions_desktop\"  />\n  <link href=\"/stylesheets/poll_desktop_d6ee9139a7f068e294db80f8a1f15e600eaa59ce.css?__ws=localhost\" media=\"(width >= 40rem)\" rel=\"stylesheet\" data-target=\"poll_desktop\"  />\n\n  \n  \n  \n\n\n\n  \n\n    \n\n  \n  \n\n    \n\n\n\n\n  <script defer src=\"/assets/js/pageview-de2d5660.js\" data-discourse-entrypoint=\"js/pageview\" nonce=\"NU8PMaeKe1Pn0acD6qYbnLf2C\"></script>\n\n</head>\n<body class=\"no-ember \">\n    \n\n    \n\n    \n\n  <section id='main'>\n    \n  <header class=\"d-header\">\n    <div class=\"wrap\">\n      <div class=\"contents clearfix\">\n        <div class=\"title\">\n          <a href=\"/\">\n              <picture>\n                <img src=\"http://localhost:3042/images/discourse-logo-sketch.png\" alt=\"Discourse\" id=\"site-logo\" width=\"1858\" height=\"512\" />\n              </picture>\n          </a>\n        </div>\n        <div class=\"panel clearfix\">\n        </div>\n      </div>\n    </div>\n  </header>\n\n    <div id=\"main-outlet\" class=\"wrap\">\n      <div class='container unsubscribe'>\n    <br/>\n    <h2>Unsubscribe user0@example.com</h2>\n    <br/>\n    <form action=\"/email/unsubscribe/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" accept-charset=\"UTF-8\" method=\"post\">\n\n\n          <p>\n\n            <h3>\n                You are receiving summary emails weekly\n            </h3>\n            <br/>\n\n          <label>Set summary emails frequency to:</label>\n          <select name=\"digest_after_minutes\" id=\"digest_after_minutes\" class=\"combobox\"><option value=\"10080\">weekly</option>\n<option selected=\"selected\" value=\"43200\">every month</option>\n<option value=\"259200\">every six months</option>\n<option value=\"0\">never</option></select>\n          </p>\n\n      \n\n        <p>\n        <label>\n          <input type=\"checkbox\" name=\"unsubscribe_all\" id=\"unsubscribe_all\" value=\"1\" />\n          Don’t send me any mail from Discourse\n        </label>\n        </p>\n\n      <br/>\n      <input type=\"submit\" name=\"commit\" value=\"Save preferences\" class=\"btn btn-danger\" data-disable-with=\"Save preferences\" />\n</form>\n\n\n</div>\n\n    </div>\n  </section>\n\n    \n    \n\n    \n    \n<script async nonce=\"NU8PMaeKe1Pn0acD6qYbnLf2C\" type=\"text/javascript\" id=\"mini-profiler\" src=\"/mini-profiler-resources/includes.js?v=0ab236f63a9cce6719807f4cd6470f29\" data-css-url=\"/mini-profiler-resources/includes.css?v=0ab236f63a9cce6719807f4cd6470f29\" data-version=\"0ab236f63a9cce6719807f4cd6470f29\" data-path=\"/mini-profiler-resources/\" data-current-id=\"1mpmzh7sryr2vcudbu4b\" data-ids=\"1mpmzh7sryr2vcudbu4b\" data-horizontal-position=\"right\" data-vertical-position=\"top\" data-trivial=\"false\" data-children=\"false\" data-max-traces=\"100\" data-controls=\"false\" data-total-sql-count=\"false\" data-authorized=\"true\" data-toggle-shortcut=\"alt+p\" data-start-hidden=\"false\" data-collapse-results=\"true\" data-html-container=\"body\" data-hidden-custom-fields=\"\" data-turbo-permanent=\"false\"></script>\n</body>\n</html>\n"
     }
   ],
   "changes": {
@@ -26,39 +26,113 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "YS4uOIDZfhfcXqWZ3n8kWTWCQ8c=",
-            "created_at": "2026-11-15T22:48:04.403111",
-            "rotated_at": "2026-11-15T22:48:04.402314",
-            "updated_at": "2026-11-15T22:48:04.403111",
+            "auth_token": "BQFBCVvnaklEQdnDF2fmWvr/l5k=",
+            "created_at": "2026-11-22T00:37:23.723928",
+            "rotated_at": "2026-11-22T00:37:23.722963",
+            "updated_at": "2026-11-22T00:37:23.723928",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "YS4uOIDZfhfcXqWZ3n8kWTWCQ8c=",
+            "prev_auth_token": "BQFBCVvnaklEQdnDF2fmWvr/l5k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:48:04.861901",
+            "id": 1,
+            "seen_at": "2026-11-22T00:37:24.181519",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "YS4uOIDZfhfcXqWZ3n8kWTWCQ8c=",
-            "created_at": "2026-11-15T22:48:04.403111",
-            "rotated_at": "2026-11-15T22:48:04.402314",
-            "updated_at": "2026-11-15T22:48:04.403111",
+            "auth_token": "BQFBCVvnaklEQdnDF2fmWvr/l5k=",
+            "created_at": "2026-11-22T00:37:23.723928",
+            "rotated_at": "2026-11-22T00:37:23.722963",
+            "updated_at": "2026-11-22T00:37:23.723928",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "YS4uOIDZfhfcXqWZ3n8kWTWCQ8c=",
+            "prev_auth_token": "BQFBCVvnaklEQdnDF2fmWvr/l5k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           }
         }
       ]
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:08:00.230026",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-03T05:08:00.103863",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 0,
+            "first_post_created_at": "2026-11-21T23:56:44.45838",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 2,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:08:00.230026",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
+            "bounce_score": 0,
+            "days_visited": 2,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 1,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-03T05:08:00.103863",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 0,
+            "first_post_created_at": "2026-11-21T23:56:44.45838",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "user_visits": {
+      "inserted": [
+        {
+          "id": 4,
+          "mobile": false,
+          "user_id": 2,
+          "time_read": 0,
+          "posts_read": 0,
+          "visited_at": "2026-11-22"
+        }
+      ],
+      "deleted": [],
+      "updated": []
     },
     "users": {
       "inserted": [],
@@ -80,17 +154,17 @@
             "created_at": "2026-11-03T05:08:00.105147",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-15T19:20:01.297303",
+            "updated_at": "2026-11-21T23:56:51.522858",
             "approved_at": null,
             "trust_level": 1,
-            "last_seen_at": "2026-11-15T19:40:02.187657",
+            "last_seen_at": "2026-11-21T23:56:57.795913",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-15T19:40:02.187657",
+            "first_seen_at": "2026-11-21T23:56:57.795913",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-15T19:20:01.206739",
+            "last_posted_at": "2026-11-21T23:56:51.452828",
             "suspended_till": null,
             "username_lower": "user0",
             "last_emailed_at": null,
@@ -120,22 +194,22 @@
             "created_at": "2026-11-03T05:08:00.105147",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-15T19:20:01.297303",
+            "updated_at": "2026-11-21T23:56:51.522858",
             "approved_at": null,
             "trust_level": 1,
-            "last_seen_at": "2026-11-15T22:48:05.421728",
+            "last_seen_at": "2026-11-22T00:37:24.75563",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-15T19:40:02.187657",
+            "first_seen_at": "2026-11-21T23:56:57.795913",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-15T19:20:01.206739",
+            "last_posted_at": "2026-11-21T23:56:51.452828",
             "suspended_till": null,
             "username_lower": "user0",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": "2026-11-15T19:40:02.187657",
+            "previous_visit_at": null,
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -150,7 +224,9 @@
     }
   },
   "jobs": [],
-  "next_ids": {},
+  "next_ids": {
+    "user_visits": 4
+  },
   "setup": [
     "INSERT INTO unsubscribe_keys (key, user_id, unsubscribe_key_type, topic_id, post_id, created_at, updated_at) VALUES ('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', 2, 'digest', NULL, NULL, now(), now())"
   ],
@@ -160,7 +236,7 @@
   ],
   "recorded_from": {
     "case": "85ec2d482520788731a99d1e98266eefd1225847f663d85d03fc71096fa6b038",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

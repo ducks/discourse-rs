@@ -7,8 +7,8 @@
       "path": "/session/current.json"
     }
   ],
-  "started_at": "2026-11-16T00:06:02.855057",
-  "transaction_started_at": "2026-11-16T00:06:01.878981",
+  "started_at": "2026-11-22T02:01:05.623397",
+  "transaction_started_at": "2026-11-22T02:01:04.757677",
   "responses": [
     {
       "status": 200,
@@ -18,9 +18,9 @@
           "username": "user0",
           "name": "User0",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-          "unread_notifications": 6,
-          "unread_high_priority_notifications": 1,
-          "all_unread_notifications_count": 7,
+          "unread_notifications": 2,
+          "unread_high_priority_notifications": 2,
+          "all_unread_notifications_count": 4,
           "read_first_notification": false,
           "admin": false,
           "notification_channel_position": null,
@@ -34,6 +34,7 @@
           "can_send_private_email_messages": false,
           "can_send_private_messages": true,
           "can_upload_avatar": true,
+          "can_embed_media": true,
           "can_edit": true,
           "can_post_anonymously": false,
           "can_ignore_users": false,
@@ -55,7 +56,7 @@
           "is_anonymous": false,
           "reviewable_count": 0,
           "unseen_reviewable_count": 0,
-          "new_personal_messages_notifications_count": 1,
+          "new_personal_messages_notifications_count": 2,
           "read_faq": false,
           "previous_visit_at": null,
           "seen_notification_id": 0,
@@ -84,16 +85,14 @@
           "draft_count": 0,
           "pending_posts_count": 0,
           "grouped_unread_notifications": {
-            "6": 1,
-            "12": 4,
+            "2": 1,
             "5": 1,
-            "2": 1
+            "6": 2
           },
           "available_notification_types": [
-            6,
-            12,
+            2,
             5,
-            2
+            6
           ],
           "display_sidebar_tags": true,
           "sidebar_tags": [],
@@ -296,33 +295,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "6cN09iCOjyD94iUdvZ3CkKC5E/s=",
-            "created_at": "2026-11-16T00:06:02.25597",
-            "rotated_at": "2026-11-16T00:06:02.255002",
-            "updated_at": "2026-11-16T00:06:02.25597",
+            "auth_token": "nshOWQKGdQP26P6aODLSwHq42lE=",
+            "created_at": "2026-11-22T02:01:05.13979",
+            "rotated_at": "2026-11-22T02:01:05.138899",
+            "updated_at": "2026-11-22T02:01:05.13979",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "6cN09iCOjyD94iUdvZ3CkKC5E/s=",
+            "prev_auth_token": "nshOWQKGdQP26P6aODLSwHq42lE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T00:06:02.860858",
+            "id": 1,
+            "seen_at": "2026-11-22T02:01:05.631262",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "6cN09iCOjyD94iUdvZ3CkKC5E/s=",
-            "created_at": "2026-11-16T00:06:02.25597",
-            "rotated_at": "2026-11-16T00:06:02.255002",
-            "updated_at": "2026-11-16T00:06:02.25597",
+            "auth_token": "nshOWQKGdQP26P6aODLSwHq42lE=",
+            "created_at": "2026-11-22T02:01:05.13979",
+            "rotated_at": "2026-11-22T02:01:05.138899",
+            "updated_at": "2026-11-22T02:01:05.13979",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "6cN09iCOjyD94iUdvZ3CkKC5E/s=",
+            "prev_auth_token": "nshOWQKGdQP26P6aODLSwHq42lE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -338,7 +337,7 @@
   },
   "recorded_from": {
     "case": "83d6ab3382a7a427366e469a381f2526626a2710f9fe9ff68232f0be91772dfc",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

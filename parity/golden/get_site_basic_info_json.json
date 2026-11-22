@@ -1,7 +1,7 @@
 {
   "request": "GET /site/basic-info.json",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-15T21:21:17.327351966+00:00",
+  "recorded_at": "2026-11-22T02:16:19.131805187+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"logo_url\":\"http://localhost:3042/images/discourse-logo-sketch.png\",\"logo_small_url\":\"http://localhost:3042/images/discourse-logo-sketch-small.png\",\"apple_touch_icon_url\":\"http://localhost:3042/uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_180x180.png\",\"favicon_url\":\"http://localhost:3042/uploads/default/optimized/1X/_b68166f4bb46bfd2d40d915426ff6a39607e4ea_2_32x32.png\",\"title\":\"Discourse\",\"description\":\"\",\"header_primary_color\":\"333\",\"header_background_color\":\"fff\",\"login_required\":false,\"locale\":\"en\",\"include_in_discourse_discover\":false,\"mobile_logo_url\":\"http://localhost:3042/images/discourse-logo-sketch.png\"}"

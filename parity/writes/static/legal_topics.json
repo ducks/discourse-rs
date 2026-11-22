@@ -15,16 +15,16 @@
       "path": "/guidelines"
     }
   ],
-  "started_at": "2026-11-15T23:39:39.393419",
-  "transaction_started_at": "2026-11-15T23:39:38.519904",
+  "started_at": "2026-11-22T01:34:15.648924",
+  "transaction_started_at": "2026-11-22T01:34:14.783543",
   "responses": [
     {
       "status": 200,
-      "body": "<div itemscope itemtype='http://schema.org/WebPage'>\n  <meta itemprop='lastReviewed' content='2026-11-15'>\n  <ul class='nav-pills' role='navigation' itemscope itemtype='http://schema.org/SiteNavigationElement'>\n      <li class=\"nav-item-about\"><a href=\"/about\">About</a></a></li>\n        <li class='nav-item-guidelines'><a class='' href='/guidelines'>Guidelines</a></li>\n      <li class='nav-item-tos'><a href='/tos' class='active'>Terms of Service</a></li>\n      <li class='nav-item-privacy'><a href='/privacy' class=''>Privacy</a></li>\n  </ul>\n\n    <p><a href='http://localhost:3042/t/parity-fixture-replies-and-posters/35'>\n      <svg class=\"fa d-icon d-icon-pencil svg-icon\" xmlns=\"http://www.w3.org/2000/svg\">\n        <use href=\"#pencil\"></use>\n      </svg>\n      Edit this page\n    </a></p>\n\n  <div itemprop='mainContentOfPage'>\n    <p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>\n  </div>\n</div>\n\n  \n"
+      "body": "<div itemscope itemtype='http://schema.org/WebPage'>\n  <meta itemprop='lastReviewed' content='2026-11-21'>\n  <ul class='nav-pills' role='navigation' itemscope itemtype='http://schema.org/SiteNavigationElement'>\n      <li class=\"nav-item-about\"><a href=\"/about\">About</a></a></li>\n        <li class='nav-item-guidelines'><a class='' href='/guidelines'>Guidelines</a></li>\n      <li class='nav-item-tos'><a href='/tos' class='active'>Terms of Service</a></li>\n      <li class='nav-item-privacy'><a href='/privacy' class=''>Privacy</a></li>\n  </ul>\n\n    <p><a href='http://localhost:3042/t/parity-fixture-replies-and-posters/35'>\n      <svg class=\"fa d-icon d-icon-pencil svg-icon\" xmlns=\"http://www.w3.org/2000/svg\">\n        <use href=\"#pencil\"></use>\n      </svg>\n      Edit this page\n    </a></p>\n\n  <div itemprop='mainContentOfPage'>\n    <p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>\n  </div>\n</div>\n\n  \n"
     },
     {
       "status": 200,
-      "body": "<div itemscope itemtype='http://schema.org/WebPage'>\n  <meta itemprop='lastReviewed' content='2026-11-15'>\n  <ul class='nav-pills' role='navigation' itemscope itemtype='http://schema.org/SiteNavigationElement'>\n      <li class=\"nav-item-about\"><a href=\"/about\">About</a></a></li>\n        <li class='nav-item-guidelines'><a class='' href='/guidelines'>Guidelines</a></li>\n      <li class='nav-item-tos'><a href='/tos' class=''>Terms of Service</a></li>\n      <li class='nav-item-privacy'><a href='/privacy' class='active'>Privacy</a></li>\n  </ul>\n\n    <p><a href='http://localhost:3042/t/parity-fixture-liked-and-archived/41'>\n      <svg class=\"fa d-icon d-icon-pencil svg-icon\" xmlns=\"http://www.w3.org/2000/svg\">\n        <use href=\"#pencil\"></use>\n      </svg>\n      Edit this page\n    </a></p>\n\n  <div itemprop='mainContentOfPage'>\n    <p>An archived topic whose first post got a like, for like_count and op_like_count.</p>\n  </div>\n</div>\n\n  \n"
+      "body": "<div itemscope itemtype='http://schema.org/WebPage'>\n  <meta itemprop='lastReviewed' content='2026-11-21'>\n  <ul class='nav-pills' role='navigation' itemscope itemtype='http://schema.org/SiteNavigationElement'>\n      <li class=\"nav-item-about\"><a href=\"/about\">About</a></a></li>\n        <li class='nav-item-guidelines'><a class='' href='/guidelines'>Guidelines</a></li>\n      <li class='nav-item-tos'><a href='/tos' class=''>Terms of Service</a></li>\n      <li class='nav-item-privacy'><a href='/privacy' class='active'>Privacy</a></li>\n  </ul>\n\n    <p><a href='http://localhost:3042/t/parity-fixture-liked-and-archived/41'>\n      <svg class=\"fa d-icon d-icon-pencil svg-icon\" xmlns=\"http://www.w3.org/2000/svg\">\n        <use href=\"#pencil\"></use>\n      </svg>\n      Edit this page\n    </a></p>\n\n  <div itemprop='mainContentOfPage'>\n    <p>An archived topic whose first post got a like, for like_count and op_like_count.</p>\n  </div>\n</div>\n\n  \n"
     },
     {
       "status": 200,
@@ -38,33 +38,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "7nSyHILGZeU8fzrOp+szEzFapNg=",
-            "created_at": "2026-11-15T23:39:38.879681",
-            "rotated_at": "2026-11-15T23:39:38.87875",
-            "updated_at": "2026-11-15T23:39:38.879681",
+            "auth_token": "NCM8HAD3hYDlH26sz6vYHL3f+Us=",
+            "created_at": "2026-11-22T01:34:15.139101",
+            "rotated_at": "2026-11-22T01:34:15.13835",
+            "updated_at": "2026-11-22T01:34:15.139101",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "7nSyHILGZeU8fzrOp+szEzFapNg=",
+            "prev_auth_token": "NCM8HAD3hYDlH26sz6vYHL3f+Us=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:39:39.400146",
+            "id": 1,
+            "seen_at": "2026-11-22T01:34:15.662154",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "7nSyHILGZeU8fzrOp+szEzFapNg=",
-            "created_at": "2026-11-15T23:39:38.879681",
-            "rotated_at": "2026-11-15T23:39:38.87875",
-            "updated_at": "2026-11-15T23:39:38.879681",
+            "auth_token": "NCM8HAD3hYDlH26sz6vYHL3f+Us=",
+            "created_at": "2026-11-22T01:34:15.139101",
+            "rotated_at": "2026-11-22T01:34:15.13835",
+            "updated_at": "2026-11-22T01:34:15.139101",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "7nSyHILGZeU8fzrOp+szEzFapNg=",
+            "prev_auth_token": "NCM8HAD3hYDlH26sz6vYHL3f+Us=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -81,7 +81,7 @@
   },
   "recorded_from": {
     "case": "2b72d5df0e66b0414369f1fe7913523cdcefcc7dd2f77f79f873911a4016cebf",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -15,8 +15,8 @@
       "path": "/admin/users/list/active.json?show_emails=true"
     }
   ],
-  "started_at": "2026-11-15T22:43:40.528926",
-  "transaction_started_at": "2026-11-15T22:43:38.341886",
+  "started_at": "2026-11-22T00:33:57.064391",
+  "transaction_started_at": "2026-11-22T00:33:54.986473",
   "responses": [
     {
       "status": 200,
@@ -33,7 +33,7 @@
         "created_at": "2026-11-03T05:08:00.661Z",
         "last_seen_age": null,
         "last_emailed_age": null,
-        "created_at_age": 1100139.885510244,
+        "created_at_age": 1625156.422677931,
         "trust_level": 2,
         "manual_locked_trust_level": null,
         "title": null,
@@ -73,9 +73,9 @@
           "silenced": 0,
           "suspended": 0
         },
-        "next_penalty": "2026-11-16T22:43:40.568Z",
+        "next_penalty": "2026-11-23T00:33:57.103Z",
         "primary_group_id": null,
-        "badge_count": 3,
+        "badge_count": 0,
         "warnings_received_count": 0,
         "bounce_score": 0.0,
         "reset_bounce_score_after": null,
@@ -116,6 +116,14 @@
             "reason": "enabled_for_everyone"
           },
           {
+            "name": "chat_thread_improvements",
+            "humanized_name": "Chat thread improvements",
+            "description": "Enable direct replies to specific messages within chat threads, and allow broadcasting thread replies back to the channel.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
+          },
+          {
             "name": "composer_media_optimization_image_convert_enabled",
             "humanized_name": "Composer media optimization image convert enabled",
             "description": "Enables client-side conversion of JXL, HEIC, and animated GIF images before upload. JXL and HEIC are converted to JPEG, animated GIFs larger than the threshold are converted to animated WEBP.",
@@ -150,7 +158,7 @@
           {
             "name": "enable_category_hashtag_cards",
             "humanized_name": "Enable category hashtag cards",
-            "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
+            "description": "Shows a floating category card when a category hashtag is hovered if the user has permission to view that category.",
             "enabled": false,
             "specific_groups": [],
             "reason": "enabled_for_no_one"
@@ -268,6 +276,14 @@
             "reason": "enabled_for_everyone"
           },
           {
+            "name": "enable_new_default_for_hide_suspension_reasons_and_hide_silencing_reasons",
+            "humanized_name": "Enable new default for hide suspension reasons and hide silencing reasons",
+            "description": "We are updating the defaults for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_suspension_reasons\" data-setting-name=\"hide_suspension_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide suspension reasons</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_silencing_reasons\" data-setting-name=\"hide_silencing_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide silencing reasons</a> settings to hide these reasons from public view. If you have previously changed either setting, this change will have no effect on that setting.",
+            "enabled": true,
+            "specific_groups": [],
+            "reason": "enabled_for_everyone"
+          },
+          {
             "name": "enable_new_defaults_for_trust_level_3_requirements",
             "humanized_name": "Enable new defaults for trust level 3 requirements",
             "description": "We have updated the TL3 default requirements so they’re more reasonable for members of large, active communities. If you have previously overridden these settings, this upcoming change will have no effect.",
@@ -287,9 +303,9 @@
             "name": "enable_new_reordering_controls",
             "humanized_name": "Enable new reordering controls",
             "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
-            "enabled": false,
+            "enabled": true,
             "specific_groups": [],
-            "reason": "enabled_for_no_one"
+            "reason": "enabled_for_everyone"
           },
           {
             "name": "enable_simplified_category_creation",
@@ -356,6 +372,14 @@
               "logged_in_users"
             ],
             "reason": "not_in_specific_groups"
+          },
+          {
+            "name": "mobile_footer_navigation",
+            "humanized_name": "Mobile footer navigation",
+            "description": "Replaces the mobile header's menu button with a tab bar at the bottom of the screen. The footer navigation has a tab for each area of the site, a global menu button, and a button for writing new content. Plugins can add their own menu items and secondary menus using a new API.",
+            "enabled": false,
+            "specific_groups": [],
+            "reason": "enabled_for_no_one"
           },
           {
             "name": "modernize_foundation_theme",
@@ -433,8 +457,8 @@
         "single_sign_on_record": {
           "user_id": 4,
           "external_id": "ext-user2-admin",
-          "created_at": "2026-11-13T22:43:38.341Z",
-          "updated_at": "2026-11-13T22:43:38.341Z",
+          "created_at": "2026-11-20T00:33:54.986Z",
+          "updated_at": "2026-11-20T00:33:54.986Z",
           "external_username": "user2",
           "external_name": "User Two",
           "external_avatar_url": "https://idp.example.com/a.png",
@@ -611,13 +635,13 @@
           "secondary_emails": [],
           "active": true,
           "admin": true,
-          "moderator": true,
-          "last_seen_at": "2026-11-15T19:40:02.331Z",
+          "moderator": false,
+          "last_seen_at": "2026-11-21T23:56:57.944Z",
           "last_emailed_at": null,
           "created_at": "2026-11-03T05:07:59.531Z",
-          "last_seen_age": 11018.516656396,
+          "last_seen_age": 2219.282386691,
           "last_emailed_age": null,
-          "created_at_age": 1100141.316401297,
+          "created_at_age": 1625157.695105876,
           "trust_level": 4,
           "manual_locked_trust_level": null,
           "title": null,
@@ -642,12 +666,12 @@
           "active": true,
           "admin": false,
           "moderator": false,
-          "last_seen_at": "2026-11-15T19:40:02.306Z",
+          "last_seen_at": "2026-11-21T23:56:57.920Z",
           "last_emailed_at": null,
           "created_at": "2026-11-03T05:08:00.404Z",
-          "last_seen_age": 11018.543082788,
+          "last_seen_age": 2219.308069047,
           "last_emailed_age": null,
-          "created_at_age": 1100140.445268038,
+          "created_at_age": 1625156.823909577,
           "trust_level": 2,
           "manual_locked_trust_level": null,
           "title": null,
@@ -672,12 +696,12 @@
           "active": true,
           "admin": false,
           "moderator": false,
-          "last_seen_at": "2026-11-15T19:40:02.187Z",
+          "last_seen_at": "2026-11-21T23:56:57.795Z",
           "last_emailed_at": null,
           "created_at": "2026-11-03T05:08:00.105Z",
-          "last_seen_age": 11018.665975121,
+          "last_seen_age": 2219.436151359,
           "last_emailed_age": null,
-          "created_at_age": 1100140.748491864,
+          "created_at_age": 1625157.126922839,
           "trust_level": 1,
           "manual_locked_trust_level": null,
           "title": null,
@@ -707,7 +731,7 @@
           "created_at": "2026-11-03T05:07:25.570Z",
           "last_seen_age": null,
           "last_emailed_age": null,
-          "created_at_age": 1100175.286074465,
+          "created_at_age": 1625191.664611267,
           "trust_level": 4,
           "manual_locked_trust_level": null,
           "title": null,
@@ -737,7 +761,7 @@
           "created_at": "2026-11-03T05:07:10.272Z",
           "last_seen_age": null,
           "last_emailed_age": null,
-          "created_at_age": 1100190.585578509,
+          "created_at_age": 1625206.970615036,
           "trust_level": 4,
           "manual_locked_trust_level": null,
           "title": null,
@@ -767,7 +791,7 @@
           "created_at": "2026-11-03T05:08:00.661Z",
           "last_seen_age": null,
           "last_emailed_age": null,
-          "created_at_age": 1100140.198092373,
+          "created_at_age": 1625156.583133916,
           "trust_level": 2,
           "manual_locked_trust_level": null,
           "title": null,
@@ -797,7 +821,7 @@
           "created_at": "2026-11-03T05:08:00.934Z",
           "last_seen_age": null,
           "last_emailed_age": null,
-          "created_at_age": 1100139.926679534,
+          "created_at_age": 1625156.312253231,
           "trust_level": 4,
           "manual_locked_trust_level": null,
           "title": null,
@@ -822,33 +846,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "05Hfn/OxhZtyGaVci/xIPhXJ90w=",
-            "created_at": "2026-11-15T22:43:39.354241",
-            "rotated_at": "2026-11-15T22:43:39.349637",
-            "updated_at": "2026-11-15T22:43:39.354241",
+            "auth_token": "nB4Y45AXECKopPx53ucNCH94PB0=",
+            "created_at": "2026-11-22T00:33:55.96943",
+            "rotated_at": "2026-11-22T00:33:55.965561",
+            "updated_at": "2026-11-22T00:33:55.96943",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "05Hfn/OxhZtyGaVci/xIPhXJ90w=",
+            "prev_auth_token": "nB4Y45AXECKopPx53ucNCH94PB0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:43:40.537174",
+            "id": 1,
+            "seen_at": "2026-11-22T00:33:57.073974",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "05Hfn/OxhZtyGaVci/xIPhXJ90w=",
-            "created_at": "2026-11-15T22:43:39.354241",
-            "rotated_at": "2026-11-15T22:43:39.349637",
-            "updated_at": "2026-11-15T22:43:39.354241",
+            "auth_token": "nB4Y45AXECKopPx53ucNCH94PB0=",
+            "created_at": "2026-11-22T00:33:55.96943",
+            "rotated_at": "2026-11-22T00:33:55.965561",
+            "updated_at": "2026-11-22T00:33:55.96943",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "05Hfn/OxhZtyGaVci/xIPhXJ90w=",
+            "prev_auth_token": "nB4Y45AXECKopPx53ucNCH94PB0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -859,7 +883,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 72,
           "email": null,
           "action": 16,
           "context": null,
@@ -869,10 +893,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T22:43:40.768886",
+          "created_at": "2026-11-22T00:33:57.174739",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T22:43:40.768886",
+          "updated_at": "2026-11-22T00:33:57.174739",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -881,7 +905,7 @@
           "target_user_id": 4
         },
         {
-          "id": 69,
+          "id": 73,
           "email": null,
           "action": 16,
           "context": "/admin/users/list/active.json",
@@ -891,10 +915,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T22:43:40.840542",
+          "created_at": "2026-11-22T00:33:57.220216",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T22:43:40.840542",
+          "updated_at": "2026-11-22T00:33:57.220216",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -909,7 +933,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 68
+    "user_histories": 72
   },
   "setup": [
     "INSERT INTO single_sign_on_records (id, user_id, external_id, last_payload, created_at, updated_at, external_username, external_email, external_name, external_avatar_url) VALUES (9451, 4, 'ext-user2-admin', 'external_id=ext-user2-admin', now() - interval '2 days', now() - interval '2 days', 'user2', 'user2@example.com', 'User Two', 'https://idp.example.com/a.png')",
@@ -919,7 +943,7 @@
   ],
   "recorded_from": {
     "case": "64b16acc300501fc4d5ea7404033f8419128b196620b58b4de1bda4c124ab022",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

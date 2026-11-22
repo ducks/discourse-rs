@@ -2,24 +2,15 @@
   "name": "browser_pageview_rollups",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:26:47.942272",
-  "transaction_started_at": "2026-11-15T23:26:47.187809",
+  "started_at": "2026-11-22T01:21:08.728827",
+  "transaction_started_at": "2026-11-22T01:21:08.128877",
   "responses": [],
   "changes": {
     "browser_pageview_country_daily_rollups": {
       "inserted": [
         {
           "id": 1,
-          "date": "2026-11-12",
-          "count": 1,
-          "country_code": null,
-          "logged_in_count": 0,
-          "likely_crawler_count": 0,
-          "likely_crawler_logged_in_count": 0
-        },
-        {
-          "id": 2,
-          "date": "2026-11-14",
+          "date": "2026-11-21",
           "count": 2,
           "country_code": "DE",
           "logged_in_count": 0,
@@ -27,8 +18,17 @@
           "likely_crawler_logged_in_count": 0
         },
         {
+          "id": 2,
+          "date": "2026-11-19",
+          "count": 1,
+          "country_code": null,
+          "logged_in_count": 0,
+          "likely_crawler_count": 0,
+          "likely_crawler_logged_in_count": 0
+        },
+        {
           "id": 3,
-          "date": "2026-11-15",
+          "date": "2026-11-21",
           "count": 1,
           "country_code": "US",
           "logged_in_count": 1,
@@ -43,16 +43,7 @@
       "inserted": [
         {
           "id": 1,
-          "date": "2026-11-12",
-          "count": 1,
-          "entry_url": "/",
-          "logged_in_count": 0,
-          "likely_crawler_count": 0,
-          "likely_crawler_logged_in_count": 0
-        },
-        {
-          "id": 2,
-          "date": "2026-11-14",
+          "date": "2026-11-21",
           "count": 1,
           "entry_url": "/latest",
           "logged_in_count": 0,
@@ -60,8 +51,17 @@
           "likely_crawler_logged_in_count": 0
         },
         {
+          "id": 2,
+          "date": "2026-11-19",
+          "count": 1,
+          "entry_url": "/",
+          "logged_in_count": 0,
+          "likely_crawler_count": 0,
+          "likely_crawler_logged_in_count": 0
+        },
+        {
           "id": 3,
-          "date": "2026-11-14",
+          "date": "2026-11-21",
           "count": 1,
           "entry_url": "/t/35",
           "logged_in_count": 0,
@@ -78,6 +78,52 @@
       "updated": [
         {
           "before": {
+            "id": 9003,
+            "asn": null,
+            "url": "/c/general/4",
+            "score": null,
+            "source": 2,
+            "browser": null,
+            "user_id": 2,
+            "language": null,
+            "referrer": "http://localhost/latest",
+            "topic_id": null,
+            "created_at": "2026-11-21T23:21:08.128877",
+            "ip_address": "10.0.0.2",
+            "session_id": "s2",
+            "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+            "country_code": "US",
+            "normalized_url": null,
+            "normalized_language": null,
+            "normalized_referrer": null,
+            "normalized_url_version": null,
+            "normalized_referrer_version": null
+          },
+          "after": {
+            "id": 9003,
+            "asn": null,
+            "url": "/c/general/4",
+            "score": null,
+            "source": 2,
+            "browser": 3,
+            "user_id": 2,
+            "language": null,
+            "referrer": "http://localhost/latest",
+            "topic_id": null,
+            "created_at": "2026-11-21T23:21:08.128877",
+            "ip_address": "10.0.0.2",
+            "session_id": "s2",
+            "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+            "country_code": "US",
+            "normalized_url": "/c/general/4",
+            "normalized_language": null,
+            "normalized_referrer": "localhost/latest",
+            "normalized_url_version": 1,
+            "normalized_referrer_version": 1
+          }
+        },
+        {
+          "before": {
             "id": 9002,
             "asn": null,
             "url": "/latest/",
@@ -88,7 +134,7 @@
             "language": null,
             "referrer": null,
             "topic_id": null,
-            "created_at": "2026-11-14T23:27:47.187809",
+            "created_at": "2026-11-21T01:22:08.128877",
             "ip_address": "10.0.0.1",
             "session_id": "s1",
             "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
@@ -110,7 +156,7 @@
             "language": null,
             "referrer": null,
             "topic_id": null,
-            "created_at": "2026-11-14T23:27:47.187809",
+            "created_at": "2026-11-21T01:22:08.128877",
             "ip_address": "10.0.0.1",
             "session_id": "s1",
             "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
@@ -134,7 +180,7 @@
             "language": null,
             "referrer": "https://www.Google.com/search?q=x&utm_source=y#frag",
             "topic_id": 35,
-            "created_at": "2026-11-14T23:26:47.187809",
+            "created_at": "2026-11-21T01:21:08.128877",
             "ip_address": "10.0.0.1",
             "session_id": "s1",
             "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
@@ -156,7 +202,7 @@
             "language": null,
             "referrer": "https://www.Google.com/search?q=x&utm_source=y#frag",
             "topic_id": 35,
-            "created_at": "2026-11-14T23:26:47.187809",
+            "created_at": "2026-11-21T01:21:08.128877",
             "ip_address": "10.0.0.1",
             "session_id": "s1",
             "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
@@ -164,52 +210,6 @@
             "normalized_url": "/t/35",
             "normalized_language": null,
             "normalized_referrer": "google.com/search?q=x",
-            "normalized_url_version": 1,
-            "normalized_referrer_version": 1
-          }
-        },
-        {
-          "before": {
-            "id": 9003,
-            "asn": null,
-            "url": "/c/general/4",
-            "score": null,
-            "source": 2,
-            "browser": null,
-            "user_id": 2,
-            "language": null,
-            "referrer": "http://localhost/latest",
-            "topic_id": null,
-            "created_at": "2026-11-15T21:26:47.187809",
-            "ip_address": "10.0.0.2",
-            "session_id": "s2",
-            "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-            "country_code": "US",
-            "normalized_url": null,
-            "normalized_language": null,
-            "normalized_referrer": null,
-            "normalized_url_version": null,
-            "normalized_referrer_version": null
-          },
-          "after": {
-            "id": 9003,
-            "asn": null,
-            "url": "/c/general/4",
-            "score": null,
-            "source": 2,
-            "browser": 3,
-            "user_id": 2,
-            "language": null,
-            "referrer": "http://localhost/latest",
-            "topic_id": null,
-            "created_at": "2026-11-15T21:26:47.187809",
-            "ip_address": "10.0.0.2",
-            "session_id": "s2",
-            "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-            "country_code": "US",
-            "normalized_url": "/c/general/4",
-            "normalized_language": null,
-            "normalized_referrer": "localhost/latest",
             "normalized_url_version": 1,
             "normalized_referrer_version": 1
           }
@@ -226,7 +226,7 @@
             "language": null,
             "referrer": "https://news.example.com:8443/a/b/?ref_src=z&k=1",
             "topic_id": null,
-            "created_at": "2026-11-12T23:26:47.187809",
+            "created_at": "2026-11-19T01:21:08.128877",
             "ip_address": "10.0.0.3",
             "session_id": "s3",
             "user_agent": "curl/8.0",
@@ -248,7 +248,7 @@
             "language": null,
             "referrer": "https://news.example.com:8443/a/b/?ref_src=z&k=1",
             "topic_id": null,
-            "created_at": "2026-11-12T23:26:47.187809",
+            "created_at": "2026-11-19T01:21:08.128877",
             "ip_address": "10.0.0.3",
             "session_id": "s3",
             "user_agent": "curl/8.0",
@@ -265,8 +265,8 @@
     "browser_pageview_referrer_daily_rollups": {
       "inserted": [
         {
-          "id": 4,
-          "date": "2026-11-12",
+          "id": 3,
+          "date": "2026-11-19",
           "count": 1,
           "logged_in_count": 0,
           "normalized_referrer": "news.example.com/a/b?k=1",
@@ -274,8 +274,8 @@
           "likely_crawler_logged_in_count": 0
         },
         {
-          "id": 5,
-          "date": "2026-11-14",
+          "id": 4,
+          "date": "2026-11-21",
           "count": 1,
           "logged_in_count": 0,
           "normalized_referrer": "google.com/search?q=x",
@@ -283,20 +283,20 @@
           "likely_crawler_logged_in_count": 0
         },
         {
-          "id": 6,
-          "date": "2026-11-14",
+          "id": 5,
+          "date": "2026-11-21",
           "count": 1,
-          "logged_in_count": 0,
-          "normalized_referrer": null,
+          "logged_in_count": 1,
+          "normalized_referrer": "localhost/latest",
           "likely_crawler_count": 0,
           "likely_crawler_logged_in_count": 0
         },
         {
-          "id": 7,
-          "date": "2026-11-15",
+          "id": 6,
+          "date": "2026-11-21",
           "count": 1,
-          "logged_in_count": 1,
-          "normalized_referrer": "localhost/latest",
+          "logged_in_count": 0,
+          "normalized_referrer": null,
           "likely_crawler_count": 0,
           "likely_crawler_logged_in_count": 0
         }
@@ -308,7 +308,7 @@
       "inserted": [
         {
           "id": 1,
-          "date": "2026-11-12",
+          "date": "2026-11-19",
           "bounced": 1,
           "sessions": 1,
           "logged_in": false,
@@ -319,7 +319,7 @@
         },
         {
           "id": 2,
-          "date": "2026-11-14",
+          "date": "2026-11-21",
           "bounced": 0,
           "sessions": 1,
           "logged_in": false,
@@ -330,7 +330,7 @@
         },
         {
           "id": 3,
-          "date": "2026-11-15",
+          "date": "2026-11-21",
           "bounced": 1,
           "sessions": 1,
           "logged_in": true,
@@ -364,7 +364,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "f5f01afff0b11eca6d0e819e535604d02ab10e708b30e55415e1d282f6f404e8",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

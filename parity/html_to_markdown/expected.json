@@ -675,6 +675,21 @@
     "receiver": "1. 🍏\n- 🍐"
   },
   {
+    "html": "<ul><li>A<ul><li>B<ul><li>C</li></ul></li></ul></li></ul>",
+    "markdown": "- A\n  - B\n    - C",
+    "receiver": "- A\n  - B\n    - C"
+  },
+  {
+    "html": "<ul><li>A<ul><li>B<ul><li>C<ul><li>D</li></ul></li></ul></li></ul></li></ul>",
+    "markdown": "- A\n  - B\n    - C\n      - D",
+    "receiver": "- A\n  - B\n    - C\n      - D"
+  },
+  {
+    "html": "<ul><li>x",
+    "markdown": "- x",
+    "receiver": "- x"
+  },
+  {
     "html": "supports bare <li>",
     "markdown": "supports bare-",
     "receiver": "supports bare-"

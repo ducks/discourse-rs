@@ -2,33 +2,33 @@
   "name": "category_activity_rollups_initial",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:26:49.793299",
-  "transaction_started_at": "2026-11-15T23:26:49.044557",
+  "started_at": "2026-11-22T01:21:09.814595",
+  "transaction_started_at": "2026-11-22T01:21:09.019841",
   "responses": [],
   "changes": {
     "category_activity_daily_rollups": {
       "inserted": [
         {
           "id": 7,
-          "date": "2026-11-15",
-          "posts": 7,
-          "topics": 3,
+          "date": "2026-11-21",
+          "posts": 2,
+          "topics": 2,
           "page_views": 0,
-          "category_id": 4,
+          "category_id": 34,
           "likely_crawler_page_views": 0
         },
         {
           "id": 8,
           "date": "2026-11-03",
-          "posts": 4,
-          "topics": 3,
+          "posts": 2,
+          "topics": 2,
           "page_views": 0,
-          "category_id": 3,
+          "category_id": 4,
           "likely_crawler_page_views": 0
         },
         {
           "id": 9,
-          "date": "2026-11-15",
+          "date": "2026-11-21",
           "posts": 1,
           "topics": 1,
           "page_views": 0,
@@ -38,6 +38,15 @@
         {
           "id": 10,
           "date": "2026-11-03",
+          "posts": 4,
+          "topics": 3,
+          "page_views": 0,
+          "category_id": 3,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 11,
+          "date": "2026-11-03",
           "posts": 1,
           "topics": 1,
           "page_views": 0,
@@ -45,21 +54,12 @@
           "likely_crawler_page_views": 0
         },
         {
-          "id": 11,
-          "date": "2026-11-03",
-          "posts": 2,
-          "topics": 2,
+          "id": 12,
+          "date": "2026-11-21",
+          "posts": 7,
+          "topics": 3,
           "page_views": 0,
           "category_id": 4,
-          "likely_crawler_page_views": 0
-        },
-        {
-          "id": 12,
-          "date": "2026-11-15",
-          "posts": 2,
-          "topics": 2,
-          "page_views": 0,
-          "category_id": 34,
           "likely_crawler_page_views": 0
         }
       ],
@@ -83,7 +83,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "c8ee989baff3cbb777d7eed29e77d789eb446387a34531cb567542089306cc51",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

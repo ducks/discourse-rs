@@ -72,8 +72,8 @@
       "path": "/admin/mcp/access.json"
     }
   ],
-  "started_at": "2026-11-15T21:45:18.810423",
-  "transaction_started_at": "2026-11-15T21:45:16.622722",
+  "started_at": "2026-11-22T00:09:42.607399",
+  "transaction_started_at": "2026-11-22T00:09:40.401126",
   "responses": [
     {
       "status": 200,
@@ -102,6 +102,7 @@
           "mcp:profile:read",
           "mcp:profile:write",
           "mcp:reports:read",
+          "mcp:repository:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
           "mcp:tag-groups:read",
@@ -109,7 +110,9 @@
           "mcp:themes:read",
           "mcp:themes:write",
           "mcp:users:read",
-          "mcp:users:write"
+          "mcp:users:write",
+          "mcp:webhooks:read",
+          "mcp:webhooks:write"
         ],
         "primitives": [
           {
@@ -230,7 +233,7 @@
             "identifier": "discourse_create_post",
             "kind": "tool",
             "title": "Create post",
-            "description": "Creates a reply in a topic as the authenticated user.",
+            "description": "Creates a reply in a topic as the authenticated user. When the site holds the reply for review, queued is true and the post ID is null. Do not submit a queued reply again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -278,7 +281,7 @@
             "identifier": "discourse_create_theme",
             "kind": "tool",
             "title": "Create theme",
-            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "description": "Creates theme metadata or a component. For additive styling use component:true, then attach with update_theme parent_theme_ids; enabled alone does not apply it. Standalone themes do not affect the default theme unless made default or selected by a user. For inline CSS/JavaScript prefer creating without fields, then discourse_set_theme_code using the returned code_revision. theme_fields is an advanced file/asset interface; do not invent upload IDs.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -294,7 +297,7 @@
             "identifier": "discourse_create_topic",
             "kind": "tool",
             "title": "Create topic",
-            "description": "Creates a topic as the authenticated user.",
+            "description": "Creates a topic as the authenticated user. When the site holds the topic for review, queued is true and the IDs are null. Do not submit a queued topic again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -315,6 +318,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_webhook",
+            "field_name": "primitive_tool_3fe39d9bf0f64a51",
+            "identifier": "discourse_create_webhook",
+            "kind": "tool",
+            "title": "Create webhook",
+            "description": "Creates an administrator-only webhook, inactive with TLS verification enabled by default. Requires confirm_external_delivery=true. Activation, wildcard subscriptions, HTTP destinations, and disabling TLS verification each need their corresponding explicit confirmation. Select active event type IDs from the live catalog; wildcard and explicit event subscriptions cannot be combined.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -411,6 +430,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_webhook",
+            "field_name": "primitive_tool_11ec513fb21d7764",
+            "identifier": "discourse_delete_webhook",
+            "kind": "tool",
+            "title": "Delete webhook",
+            "description": "Deletes an administrator-only webhook and its delivery history. Requires confirm_delete=true and the current destination fingerprint. This cannot be undone.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -689,6 +724,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_get_webhook",
+            "field_name": "primitive_tool_769d3371b49349df",
+            "identifier": "discourse_get_webhook",
+            "kind": "tool",
+            "title": "Get webhook",
+            "description": "Reads safe webhook configuration for administrators. Returns destination origin and fingerprint, never the complete URL or signing secret. Relationship IDs are capped at 100 and report truncation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_handle_group_membership_request",
             "field_name": "primitive_tool_266723c0794ce65d",
             "identifier": "discourse_handle_group_membership_request",
@@ -747,6 +798,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_authoring_guides",
+            "field_name": "primitive_tool_868fbfe1674f55fa",
+            "identifier": "discourse_list_authoring_guides",
+            "kind": "tool",
+            "title": "List authoring guides",
+            "description": "Lists the local repository's authoring skills with descriptions and readable paths. Before authoring themes, styles, JavaScript, or other site code, find relevant skills here and read them with discourse_read_authoring_guide. Administrator only; requires the repository documentation to be installed.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1009,6 +1076,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_webhook_events",
+            "field_name": "primitive_tool_c9f60136e69a63e4",
+            "identifier": "discourse_list_webhook_events",
+            "kind": "tool",
+            "title": "List webhook events",
+            "description": "Lists administrator-only delivery history, newest first. Headers and bodies are omitted by default. include_content requires confirm_sensitive_content=true and mcp:private-messages:read because delivery bodies may contain private messages. Returns bounded JSON previews with current-configuration credential filtering; other sensitive forum or destination data may remain. Non-JSON and oversized bodies are omitted. content_limit bounds each preview.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_webhooks",
+            "field_name": "primitive_tool_4a16022a056ef79b",
+            "identifier": "discourse_list_webhooks",
+            "kind": "tool",
+            "title": "List webhooks",
+            "description": "Lists administrator-only webhook configurations, ordered by ID. Destination paths, queries, URL credentials, and signing secrets are omitted. Use the returned destination fingerprint for mutations. Relationship ID lists are capped at 100 and report truncation. include_catalog returns available event types and content types.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_manage_group_members",
             "field_name": "primitive_tool_b408514c90dfb6da",
             "identifier": "discourse_manage_group_members",
@@ -1105,6 +1204,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_ping_webhook",
+            "field_name": "primitive_tool_f1c79a3726911b19",
+            "identifier": "discourse_ping_webhook",
+            "kind": "tool",
+            "title": "Ping webhook",
+            "description": "Queues a ping using the existing webhook delivery job and retry behavior, including for an inactive webhook. Requires confirm_external_request=true and the current destination fingerprint. Enqueue success does not mean delivery succeeded; inspect delivery history for the outcome.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_post_set_deleted",
             "field_name": "primitive_tool_2c45fb72f4491f0d",
             "identifier": "discourse_post_set_deleted",
@@ -1131,6 +1246,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_authoring_guide",
+            "field_name": "primitive_tool_8307fe84fd9c4018",
+            "identifier": "discourse_read_authoring_guide",
+            "kind": "tool",
+            "title": "Read authoring guide",
+            "description": "Reads a bounded page of a local Markdown skill, companion reference, or developer guide under .skills/ or docs/developer-guides/, including untracked guides. Unlike source tools, guides do not require Git tracking. Paths are repository-relative; resolve links relative to the document's directory. Follow next_line for more. These are authoring instructions, not proof of installed runtime behavior. Local CLI commands described in guides are not available through this tool; report verification limits honestly. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1169,6 +1300,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_read_source",
+            "field_name": "primitive_tool_127569327976a08f",
+            "identifier": "discourse_read_source",
+            "kind": "tool",
+            "title": "Read source",
+            "description": "Reads a bounded page of a tracked code/documentation file from the site's core repository. Files are limited to 2 MiB; pages are limited to 256 KiB and 400 lines. Defaults to the reported Git revision with a commit-pinned GitHub reference. Optional working_tree mode is explicitly local, may differ from loaded processes, and has no matching public permalink. This is not shell access. Separate plugin checkouts and private configuration are unavailable. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_read_topic",
             "field_name": "primitive_tool_21c0b87c308eb6a8",
             "identifier": "discourse_read_topic",
@@ -1195,6 +1342,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_redeliver_webhook_event",
+            "field_name": "primitive_tool_9c3157beaa1ef26d",
+            "identifier": "discourse_redeliver_webhook_event",
+            "kind": "tool",
+            "title": "Redeliver webhook event",
+            "description": "Makes one administrator-authorized redelivery attempt using the original stored headers and payload and the existing outbound SSRF protection. Requires confirm_redelivery=true, the current destination fingerprint, and expected_event_status. The event must belong to this webhook and must not be a ping or already queued for redelivery. May send private forum data to an external destination; no bulk redelivery or automatic retry is performed. In-progress native attempts block overlapping calls. A call after completion is a new attempt, so do not retry automatically after a timeout.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1281,6 +1444,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_source",
+            "field_name": "primitive_tool_3d394f488f186583",
+            "identifier": "discourse_search_source",
+            "kind": "tool",
+            "title": "Search source",
+            "description": "Searches tracked source files for a literal string, with bounded results and line numbers. Defaults to the site's reported Git revision. Use discourse_read_source for surrounding code; choose working_tree explicitly to inspect local edits. Broad queries may require narrowing. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_search_tag_groups",
             "field_name": "primitive_tool_51456312005b67e5",
             "identifier": "discourse_search_tag_groups",
@@ -1297,6 +1476,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_set_theme_code",
+            "field_name": "primitive_tool_ab9f6f39378230ea",
+            "identifier": "discourse_set_theme_code",
+            "kind": "tool",
+            "title": "Set theme code",
+            "description": "Preferred tool for inline theme code. First get_theme and copy code_revision into expected_code_revision. Supply plain css and/or javascript strings; no field arrays, upload IDs, or numeric types. CSS replaces common/common.scss; JavaScript replaces javascripts/discourse/api-initializers/mcp-theme-code.js and should import { apiInitializer } from discourse/lib/api and export default apiInitializer((api) => { ... }). Each input accepts at most 65,536 characters. Omitted inputs remain unchanged; empty strings remove these managed files. Does not attach/enable a component. Checks compilation and rejects a code revision that has changed since your read. The revision check coordinates edits through this tool; it does not prevent concurrent edits through other interfaces. Read the returned verification; saved code is not browser-verified.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_closed",
+            "field_name": "primitive_tool_e96092d35a90ffe6",
+            "identifier": "discourse_set_topic_closed",
+            "kind": "tool",
+            "title": "Close or reopen topic",
+            "description": "Closes a topic with closed=true or reopens it with closed=false. Uses normal topic moderation permissions, status-change posts, timers, and staff logging. Returns persisted closed and archived state. Does not change archived status. Use this tool, not update_topic, to close or reopen topics.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_pin",
+            "field_name": "primitive_tool_2714996c2f191b95",
+            "identifier": "discourse_set_topic_pin",
+            "kind": "tool",
+            "title": "Set topic pin",
+            "description": "Pins a topic in its category, pins it globally, or unpins it. Uses normal topic pin permissions and status-change behavior. Category/global pins remain until unpinned; this replaces any existing pin expiration. Returns persisted pin state. Use this tool rather than update_topic for pinning.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_silence_user",
+            "field_name": "primitive_tool_abd8a3b5b6a5d1a5",
+            "identifier": "discourse_silence_user",
+            "kind": "tool",
+            "title": "Silence user",
+            "description": "Silences a user for the requested duration, restricting posting while preserving login. Requires staff permissions, explicit confirmation, duration and reason. Uses standard silence audit/notification behavior without deleting posts; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -1307,6 +1550,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_source_version",
+            "field_name": "primitive_tool_214decf2cde5b8f0",
+            "identifier": "discourse_source_version",
+            "kind": "tool",
+            "title": "Source version",
+            "description": "Reports the site's version, reported Git revision, local checkout revision, and whether tracked files have local edits. Use before inspecting source. Committed source is pinned to the reported revision, not latest main; this does not prove every running process has reloaded local changes. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_suspend_user",
+            "field_name": "primitive_tool_40a228545813f188",
+            "identifier": "discourse_suspend_user",
+            "kind": "tool",
+            "title": "Suspend user",
+            "description": "Suspends a user, blocking login until the requested duration ends. Requires staff permissions, explicit confirmation, duration and reason. Does not deactivate the account or delete posts. Uses standard suspension audit/notification behavior; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1371,6 +1646,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsilence_user",
+            "field_name": "primitive_tool_067d1f2dcfb29b1d",
+            "identifier": "discourse_unsilence_user",
+            "kind": "tool",
+            "title": "Unsilence user",
+            "description": "Removes the user's silence using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsuspend_user",
+            "field_name": "primitive_tool_98b590157a227398",
+            "identifier": "discourse_unsuspend_user",
+            "kind": "tool",
+            "title": "Unsuspend user",
+            "description": "Removes the user's suspension using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1462,7 +1769,7 @@
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
-            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "description": "Updates theme metadata, component relationships, or advanced files/assets when the authenticated user may edit it. Set component:true to convert an existing non-default theme in place, preserving its ID and code; conversion removes incompatible relationships and resets palette/user-selectability. Attach components using parent_theme_ids (full replacement list); child_theme_ids also replaces the full list, so preserve existing components. enabled alone does not attach a component. Prefer discourse_set_theme_code for inline CSS/JavaScript; it chooses canonical paths and checks revision and compilation.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -1510,7 +1817,7 @@
             "identifier": "discourse_update_topic",
             "kind": "tool",
             "title": "Update topic",
-            "description": "Updates fields on a topic when the user may edit it.",
+            "description": "Updates title, category, tags, or featured link when the user may edit the topic. Omit unchanged fields. To close or reopen, use discourse_set_topic_closed; to pin or unpin, use discourse_set_topic_pin.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -1531,6 +1838,22 @@
             "risk": "write",
             "required_scopes": [
               "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_webhook",
+            "field_name": "primitive_tool_c7e2e02dcd6be2b7",
+            "identifier": "discourse_update_webhook",
+            "kind": "tool",
+            "title": "Update webhook",
+            "description": "Partially updates an administrator-only webhook after checking its current destination fingerprint and active state. Requires confirm_update=true. Omitted fields are preserved. Relationship arrays replace their complete selections and require confirm_scope_replacement=true when changed. Clearing the signing secret requires confirm_clear_secret=true. Retargeting an active hook also requires confirm_external_delivery=true. Risky configuration changes require the same confirmations as creation. Clearing relationship arrays removes those delivery filters.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1676,6 +1999,7 @@
               "mcp:profile:read",
               "mcp:profile:write",
               "mcp:reports:read",
+              "mcp:repository:read",
               "mcp:site-settings:read",
               "mcp:site-settings:write",
               "mcp:tag-groups:read",
@@ -1683,7 +2007,9 @@
               "mcp:themes:read",
               "mcp:themes:write",
               "mcp:users:read",
-              "mcp:users:write"
+              "mcp:users:write",
+              "mcp:webhooks:read",
+              "mcp:webhooks:write"
             ],
             "pre_registered": true,
             "deletable": false
@@ -1729,6 +2055,7 @@
           "mcp:profile:read",
           "mcp:profile:write",
           "mcp:reports:read",
+          "mcp:repository:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
           "mcp:tag-groups:read",
@@ -1736,7 +2063,9 @@
           "mcp:themes:read",
           "mcp:themes:write",
           "mcp:users:read",
-          "mcp:users:write"
+          "mcp:users:write",
+          "mcp:webhooks:read",
+          "mcp:webhooks:write"
         ],
         "primitives": [
           {
@@ -1857,7 +2186,7 @@
             "identifier": "discourse_create_post",
             "kind": "tool",
             "title": "Create post",
-            "description": "Creates a reply in a topic as the authenticated user.",
+            "description": "Creates a reply in a topic as the authenticated user. When the site holds the reply for review, queued is true and the post ID is null. Do not submit a queued reply again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -1905,7 +2234,7 @@
             "identifier": "discourse_create_theme",
             "kind": "tool",
             "title": "Create theme",
-            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "description": "Creates theme metadata or a component. For additive styling use component:true, then attach with update_theme parent_theme_ids; enabled alone does not apply it. Standalone themes do not affect the default theme unless made default or selected by a user. For inline CSS/JavaScript prefer creating without fields, then discourse_set_theme_code using the returned code_revision. theme_fields is an advanced file/asset interface; do not invent upload IDs.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -1921,7 +2250,7 @@
             "identifier": "discourse_create_topic",
             "kind": "tool",
             "title": "Create topic",
-            "description": "Creates a topic as the authenticated user.",
+            "description": "Creates a topic as the authenticated user. When the site holds the topic for review, queued is true and the IDs are null. Do not submit a queued topic again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -1942,6 +2271,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_webhook",
+            "field_name": "primitive_tool_3fe39d9bf0f64a51",
+            "identifier": "discourse_create_webhook",
+            "kind": "tool",
+            "title": "Create webhook",
+            "description": "Creates an administrator-only webhook, inactive with TLS verification enabled by default. Requires confirm_external_delivery=true. Activation, wildcard subscriptions, HTTP destinations, and disabling TLS verification each need their corresponding explicit confirmation. Select active event type IDs from the live catalog; wildcard and explicit event subscriptions cannot be combined.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2038,6 +2383,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_webhook",
+            "field_name": "primitive_tool_11ec513fb21d7764",
+            "identifier": "discourse_delete_webhook",
+            "kind": "tool",
+            "title": "Delete webhook",
+            "description": "Deletes an administrator-only webhook and its delivery history. Requires confirm_delete=true and the current destination fingerprint. This cannot be undone.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2316,6 +2677,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_get_webhook",
+            "field_name": "primitive_tool_769d3371b49349df",
+            "identifier": "discourse_get_webhook",
+            "kind": "tool",
+            "title": "Get webhook",
+            "description": "Reads safe webhook configuration for administrators. Returns destination origin and fingerprint, never the complete URL or signing secret. Relationship IDs are capped at 100 and report truncation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_handle_group_membership_request",
             "field_name": "primitive_tool_266723c0794ce65d",
             "identifier": "discourse_handle_group_membership_request",
@@ -2374,6 +2751,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_authoring_guides",
+            "field_name": "primitive_tool_868fbfe1674f55fa",
+            "identifier": "discourse_list_authoring_guides",
+            "kind": "tool",
+            "title": "List authoring guides",
+            "description": "Lists the local repository's authoring skills with descriptions and readable paths. Before authoring themes, styles, JavaScript, or other site code, find relevant skills here and read them with discourse_read_authoring_guide. Administrator only; requires the repository documentation to be installed.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2636,6 +3029,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_webhook_events",
+            "field_name": "primitive_tool_c9f60136e69a63e4",
+            "identifier": "discourse_list_webhook_events",
+            "kind": "tool",
+            "title": "List webhook events",
+            "description": "Lists administrator-only delivery history, newest first. Headers and bodies are omitted by default. include_content requires confirm_sensitive_content=true and mcp:private-messages:read because delivery bodies may contain private messages. Returns bounded JSON previews with current-configuration credential filtering; other sensitive forum or destination data may remain. Non-JSON and oversized bodies are omitted. content_limit bounds each preview.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_webhooks",
+            "field_name": "primitive_tool_4a16022a056ef79b",
+            "identifier": "discourse_list_webhooks",
+            "kind": "tool",
+            "title": "List webhooks",
+            "description": "Lists administrator-only webhook configurations, ordered by ID. Destination paths, queries, URL credentials, and signing secrets are omitted. Use the returned destination fingerprint for mutations. Relationship ID lists are capped at 100 and report truncation. include_catalog returns available event types and content types.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_manage_group_members",
             "field_name": "primitive_tool_b408514c90dfb6da",
             "identifier": "discourse_manage_group_members",
@@ -2732,6 +3157,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_ping_webhook",
+            "field_name": "primitive_tool_f1c79a3726911b19",
+            "identifier": "discourse_ping_webhook",
+            "kind": "tool",
+            "title": "Ping webhook",
+            "description": "Queues a ping using the existing webhook delivery job and retry behavior, including for an inactive webhook. Requires confirm_external_request=true and the current destination fingerprint. Enqueue success does not mean delivery succeeded; inspect delivery history for the outcome.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_post_set_deleted",
             "field_name": "primitive_tool_2c45fb72f4491f0d",
             "identifier": "discourse_post_set_deleted",
@@ -2758,6 +3199,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_authoring_guide",
+            "field_name": "primitive_tool_8307fe84fd9c4018",
+            "identifier": "discourse_read_authoring_guide",
+            "kind": "tool",
+            "title": "Read authoring guide",
+            "description": "Reads a bounded page of a local Markdown skill, companion reference, or developer guide under .skills/ or docs/developer-guides/, including untracked guides. Unlike source tools, guides do not require Git tracking. Paths are repository-relative; resolve links relative to the document's directory. Follow next_line for more. These are authoring instructions, not proof of installed runtime behavior. Local CLI commands described in guides are not available through this tool; report verification limits honestly. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2796,6 +3253,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_read_source",
+            "field_name": "primitive_tool_127569327976a08f",
+            "identifier": "discourse_read_source",
+            "kind": "tool",
+            "title": "Read source",
+            "description": "Reads a bounded page of a tracked code/documentation file from the site's core repository. Files are limited to 2 MiB; pages are limited to 256 KiB and 400 lines. Defaults to the reported Git revision with a commit-pinned GitHub reference. Optional working_tree mode is explicitly local, may differ from loaded processes, and has no matching public permalink. This is not shell access. Separate plugin checkouts and private configuration are unavailable. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_read_topic",
             "field_name": "primitive_tool_21c0b87c308eb6a8",
             "identifier": "discourse_read_topic",
@@ -2822,6 +3295,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_redeliver_webhook_event",
+            "field_name": "primitive_tool_9c3157beaa1ef26d",
+            "identifier": "discourse_redeliver_webhook_event",
+            "kind": "tool",
+            "title": "Redeliver webhook event",
+            "description": "Makes one administrator-authorized redelivery attempt using the original stored headers and payload and the existing outbound SSRF protection. Requires confirm_redelivery=true, the current destination fingerprint, and expected_event_status. The event must belong to this webhook and must not be a ping or already queued for redelivery. May send private forum data to an external destination; no bulk redelivery or automatic retry is performed. In-progress native attempts block overlapping calls. A call after completion is a new attempt, so do not retry automatically after a timeout.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2908,6 +3397,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_source",
+            "field_name": "primitive_tool_3d394f488f186583",
+            "identifier": "discourse_search_source",
+            "kind": "tool",
+            "title": "Search source",
+            "description": "Searches tracked source files for a literal string, with bounded results and line numbers. Defaults to the site's reported Git revision. Use discourse_read_source for surrounding code; choose working_tree explicitly to inspect local edits. Broad queries may require narrowing. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_search_tag_groups",
             "field_name": "primitive_tool_51456312005b67e5",
             "identifier": "discourse_search_tag_groups",
@@ -2924,6 +3429,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_set_theme_code",
+            "field_name": "primitive_tool_ab9f6f39378230ea",
+            "identifier": "discourse_set_theme_code",
+            "kind": "tool",
+            "title": "Set theme code",
+            "description": "Preferred tool for inline theme code. First get_theme and copy code_revision into expected_code_revision. Supply plain css and/or javascript strings; no field arrays, upload IDs, or numeric types. CSS replaces common/common.scss; JavaScript replaces javascripts/discourse/api-initializers/mcp-theme-code.js and should import { apiInitializer } from discourse/lib/api and export default apiInitializer((api) => { ... }). Each input accepts at most 65,536 characters. Omitted inputs remain unchanged; empty strings remove these managed files. Does not attach/enable a component. Checks compilation and rejects a code revision that has changed since your read. The revision check coordinates edits through this tool; it does not prevent concurrent edits through other interfaces. Read the returned verification; saved code is not browser-verified.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_closed",
+            "field_name": "primitive_tool_e96092d35a90ffe6",
+            "identifier": "discourse_set_topic_closed",
+            "kind": "tool",
+            "title": "Close or reopen topic",
+            "description": "Closes a topic with closed=true or reopens it with closed=false. Uses normal topic moderation permissions, status-change posts, timers, and staff logging. Returns persisted closed and archived state. Does not change archived status. Use this tool, not update_topic, to close or reopen topics.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_pin",
+            "field_name": "primitive_tool_2714996c2f191b95",
+            "identifier": "discourse_set_topic_pin",
+            "kind": "tool",
+            "title": "Set topic pin",
+            "description": "Pins a topic in its category, pins it globally, or unpins it. Uses normal topic pin permissions and status-change behavior. Category/global pins remain until unpinned; this replaces any existing pin expiration. Returns persisted pin state. Use this tool rather than update_topic for pinning.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_silence_user",
+            "field_name": "primitive_tool_abd8a3b5b6a5d1a5",
+            "identifier": "discourse_silence_user",
+            "kind": "tool",
+            "title": "Silence user",
+            "description": "Silences a user for the requested duration, restricting posting while preserving login. Requires staff permissions, explicit confirmation, duration and reason. Uses standard silence audit/notification behavior without deleting posts; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -2934,6 +3503,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_source_version",
+            "field_name": "primitive_tool_214decf2cde5b8f0",
+            "identifier": "discourse_source_version",
+            "kind": "tool",
+            "title": "Source version",
+            "description": "Reports the site's version, reported Git revision, local checkout revision, and whether tracked files have local edits. Use before inspecting source. Committed source is pinned to the reported revision, not latest main; this does not prove every running process has reloaded local changes. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_suspend_user",
+            "field_name": "primitive_tool_40a228545813f188",
+            "identifier": "discourse_suspend_user",
+            "kind": "tool",
+            "title": "Suspend user",
+            "description": "Suspends a user, blocking login until the requested duration ends. Requires staff permissions, explicit confirmation, duration and reason. Does not deactivate the account or delete posts. Uses standard suspension audit/notification behavior; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2998,6 +3599,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsilence_user",
+            "field_name": "primitive_tool_067d1f2dcfb29b1d",
+            "identifier": "discourse_unsilence_user",
+            "kind": "tool",
+            "title": "Unsilence user",
+            "description": "Removes the user's silence using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsuspend_user",
+            "field_name": "primitive_tool_98b590157a227398",
+            "identifier": "discourse_unsuspend_user",
+            "kind": "tool",
+            "title": "Unsuspend user",
+            "description": "Removes the user's suspension using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3089,7 +3722,7 @@
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
-            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "description": "Updates theme metadata, component relationships, or advanced files/assets when the authenticated user may edit it. Set component:true to convert an existing non-default theme in place, preserving its ID and code; conversion removes incompatible relationships and resets palette/user-selectability. Attach components using parent_theme_ids (full replacement list); child_theme_ids also replaces the full list, so preserve existing components. enabled alone does not attach a component. Prefer discourse_set_theme_code for inline CSS/JavaScript; it chooses canonical paths and checks revision and compilation.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -3137,7 +3770,7 @@
             "identifier": "discourse_update_topic",
             "kind": "tool",
             "title": "Update topic",
-            "description": "Updates fields on a topic when the user may edit it.",
+            "description": "Updates title, category, tags, or featured link when the user may edit the topic. Omit unchanged fields. To close or reopen, use discourse_set_topic_closed; to pin or unpin, use discourse_set_topic_pin.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -3158,6 +3791,22 @@
             "risk": "write",
             "required_scopes": [
               "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_webhook",
+            "field_name": "primitive_tool_c7e2e02dcd6be2b7",
+            "identifier": "discourse_update_webhook",
+            "kind": "tool",
+            "title": "Update webhook",
+            "description": "Partially updates an administrator-only webhook after checking its current destination fingerprint and active state. Requires confirm_update=true. Omitted fields are preserved. Relationship arrays replace their complete selections and require confirm_scope_replacement=true when changed. Clearing the signing secret requires confirm_clear_secret=true. Retargeting an active hook also requires confirm_external_delivery=true. Risky configuration changes require the same confirmations as creation. Clearing relationship arrays removes those delivery filters.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3303,6 +3952,7 @@
               "mcp:profile:read",
               "mcp:profile:write",
               "mcp:reports:read",
+              "mcp:repository:read",
               "mcp:site-settings:read",
               "mcp:site-settings:write",
               "mcp:tag-groups:read",
@@ -3310,7 +3960,9 @@
               "mcp:themes:read",
               "mcp:themes:write",
               "mcp:users:read",
-              "mcp:users:write"
+              "mcp:users:write",
+              "mcp:webhooks:read",
+              "mcp:webhooks:write"
             ],
             "pre_registered": true,
             "deletable": false
@@ -3403,6 +4055,7 @@
           "mcp:profile:read",
           "mcp:profile:write",
           "mcp:reports:read",
+          "mcp:repository:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
           "mcp:tag-groups:read",
@@ -3410,7 +4063,9 @@
           "mcp:themes:read",
           "mcp:themes:write",
           "mcp:users:read",
-          "mcp:users:write"
+          "mcp:users:write",
+          "mcp:webhooks:read",
+          "mcp:webhooks:write"
         ],
         "primitives": [
           {
@@ -3531,7 +4186,7 @@
             "identifier": "discourse_create_post",
             "kind": "tool",
             "title": "Create post",
-            "description": "Creates a reply in a topic as the authenticated user.",
+            "description": "Creates a reply in a topic as the authenticated user. When the site holds the reply for review, queued is true and the post ID is null. Do not submit a queued reply again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -3579,7 +4234,7 @@
             "identifier": "discourse_create_theme",
             "kind": "tool",
             "title": "Create theme",
-            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "description": "Creates theme metadata or a component. For additive styling use component:true, then attach with update_theme parent_theme_ids; enabled alone does not apply it. Standalone themes do not affect the default theme unless made default or selected by a user. For inline CSS/JavaScript prefer creating without fields, then discourse_set_theme_code using the returned code_revision. theme_fields is an advanced file/asset interface; do not invent upload IDs.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -3595,7 +4250,7 @@
             "identifier": "discourse_create_topic",
             "kind": "tool",
             "title": "Create topic",
-            "description": "Creates a topic as the authenticated user.",
+            "description": "Creates a topic as the authenticated user. When the site holds the topic for review, queued is true and the IDs are null. Do not submit a queued topic again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -3616,6 +4271,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_webhook",
+            "field_name": "primitive_tool_3fe39d9bf0f64a51",
+            "identifier": "discourse_create_webhook",
+            "kind": "tool",
+            "title": "Create webhook",
+            "description": "Creates an administrator-only webhook, inactive with TLS verification enabled by default. Requires confirm_external_delivery=true. Activation, wildcard subscriptions, HTTP destinations, and disabling TLS verification each need their corresponding explicit confirmation. Select active event type IDs from the live catalog; wildcard and explicit event subscriptions cannot be combined.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3712,6 +4383,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_webhook",
+            "field_name": "primitive_tool_11ec513fb21d7764",
+            "identifier": "discourse_delete_webhook",
+            "kind": "tool",
+            "title": "Delete webhook",
+            "description": "Deletes an administrator-only webhook and its delivery history. Requires confirm_delete=true and the current destination fingerprint. This cannot be undone.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3990,6 +4677,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_get_webhook",
+            "field_name": "primitive_tool_769d3371b49349df",
+            "identifier": "discourse_get_webhook",
+            "kind": "tool",
+            "title": "Get webhook",
+            "description": "Reads safe webhook configuration for administrators. Returns destination origin and fingerprint, never the complete URL or signing secret. Relationship IDs are capped at 100 and report truncation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_handle_group_membership_request",
             "field_name": "primitive_tool_266723c0794ce65d",
             "identifier": "discourse_handle_group_membership_request",
@@ -4048,6 +4751,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_authoring_guides",
+            "field_name": "primitive_tool_868fbfe1674f55fa",
+            "identifier": "discourse_list_authoring_guides",
+            "kind": "tool",
+            "title": "List authoring guides",
+            "description": "Lists the local repository's authoring skills with descriptions and readable paths. Before authoring themes, styles, JavaScript, or other site code, find relevant skills here and read them with discourse_read_authoring_guide. Administrator only; requires the repository documentation to be installed.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -4310,6 +5029,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_webhook_events",
+            "field_name": "primitive_tool_c9f60136e69a63e4",
+            "identifier": "discourse_list_webhook_events",
+            "kind": "tool",
+            "title": "List webhook events",
+            "description": "Lists administrator-only delivery history, newest first. Headers and bodies are omitted by default. include_content requires confirm_sensitive_content=true and mcp:private-messages:read because delivery bodies may contain private messages. Returns bounded JSON previews with current-configuration credential filtering; other sensitive forum or destination data may remain. Non-JSON and oversized bodies are omitted. content_limit bounds each preview.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_webhooks",
+            "field_name": "primitive_tool_4a16022a056ef79b",
+            "identifier": "discourse_list_webhooks",
+            "kind": "tool",
+            "title": "List webhooks",
+            "description": "Lists administrator-only webhook configurations, ordered by ID. Destination paths, queries, URL credentials, and signing secrets are omitted. Use the returned destination fingerprint for mutations. Relationship ID lists are capped at 100 and report truncation. include_catalog returns available event types and content types.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_manage_group_members",
             "field_name": "primitive_tool_b408514c90dfb6da",
             "identifier": "discourse_manage_group_members",
@@ -4406,6 +5157,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_ping_webhook",
+            "field_name": "primitive_tool_f1c79a3726911b19",
+            "identifier": "discourse_ping_webhook",
+            "kind": "tool",
+            "title": "Ping webhook",
+            "description": "Queues a ping using the existing webhook delivery job and retry behavior, including for an inactive webhook. Requires confirm_external_request=true and the current destination fingerprint. Enqueue success does not mean delivery succeeded; inspect delivery history for the outcome.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_post_set_deleted",
             "field_name": "primitive_tool_2c45fb72f4491f0d",
             "identifier": "discourse_post_set_deleted",
@@ -4432,6 +5199,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_authoring_guide",
+            "field_name": "primitive_tool_8307fe84fd9c4018",
+            "identifier": "discourse_read_authoring_guide",
+            "kind": "tool",
+            "title": "Read authoring guide",
+            "description": "Reads a bounded page of a local Markdown skill, companion reference, or developer guide under .skills/ or docs/developer-guides/, including untracked guides. Unlike source tools, guides do not require Git tracking. Paths are repository-relative; resolve links relative to the document's directory. Follow next_line for more. These are authoring instructions, not proof of installed runtime behavior. Local CLI commands described in guides are not available through this tool; report verification limits honestly. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -4470,6 +5253,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_read_source",
+            "field_name": "primitive_tool_127569327976a08f",
+            "identifier": "discourse_read_source",
+            "kind": "tool",
+            "title": "Read source",
+            "description": "Reads a bounded page of a tracked code/documentation file from the site's core repository. Files are limited to 2 MiB; pages are limited to 256 KiB and 400 lines. Defaults to the reported Git revision with a commit-pinned GitHub reference. Optional working_tree mode is explicitly local, may differ from loaded processes, and has no matching public permalink. This is not shell access. Separate plugin checkouts and private configuration are unavailable. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_read_topic",
             "field_name": "primitive_tool_21c0b87c308eb6a8",
             "identifier": "discourse_read_topic",
@@ -4496,6 +5295,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_redeliver_webhook_event",
+            "field_name": "primitive_tool_9c3157beaa1ef26d",
+            "identifier": "discourse_redeliver_webhook_event",
+            "kind": "tool",
+            "title": "Redeliver webhook event",
+            "description": "Makes one administrator-authorized redelivery attempt using the original stored headers and payload and the existing outbound SSRF protection. Requires confirm_redelivery=true, the current destination fingerprint, and expected_event_status. The event must belong to this webhook and must not be a ping or already queued for redelivery. May send private forum data to an external destination; no bulk redelivery or automatic retry is performed. In-progress native attempts block overlapping calls. A call after completion is a new attempt, so do not retry automatically after a timeout.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -4582,6 +5397,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_source",
+            "field_name": "primitive_tool_3d394f488f186583",
+            "identifier": "discourse_search_source",
+            "kind": "tool",
+            "title": "Search source",
+            "description": "Searches tracked source files for a literal string, with bounded results and line numbers. Defaults to the site's reported Git revision. Use discourse_read_source for surrounding code; choose working_tree explicitly to inspect local edits. Broad queries may require narrowing. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_search_tag_groups",
             "field_name": "primitive_tool_51456312005b67e5",
             "identifier": "discourse_search_tag_groups",
@@ -4598,6 +5429,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_set_theme_code",
+            "field_name": "primitive_tool_ab9f6f39378230ea",
+            "identifier": "discourse_set_theme_code",
+            "kind": "tool",
+            "title": "Set theme code",
+            "description": "Preferred tool for inline theme code. First get_theme and copy code_revision into expected_code_revision. Supply plain css and/or javascript strings; no field arrays, upload IDs, or numeric types. CSS replaces common/common.scss; JavaScript replaces javascripts/discourse/api-initializers/mcp-theme-code.js and should import { apiInitializer } from discourse/lib/api and export default apiInitializer((api) => { ... }). Each input accepts at most 65,536 characters. Omitted inputs remain unchanged; empty strings remove these managed files. Does not attach/enable a component. Checks compilation and rejects a code revision that has changed since your read. The revision check coordinates edits through this tool; it does not prevent concurrent edits through other interfaces. Read the returned verification; saved code is not browser-verified.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_closed",
+            "field_name": "primitive_tool_e96092d35a90ffe6",
+            "identifier": "discourse_set_topic_closed",
+            "kind": "tool",
+            "title": "Close or reopen topic",
+            "description": "Closes a topic with closed=true or reopens it with closed=false. Uses normal topic moderation permissions, status-change posts, timers, and staff logging. Returns persisted closed and archived state. Does not change archived status. Use this tool, not update_topic, to close or reopen topics.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_pin",
+            "field_name": "primitive_tool_2714996c2f191b95",
+            "identifier": "discourse_set_topic_pin",
+            "kind": "tool",
+            "title": "Set topic pin",
+            "description": "Pins a topic in its category, pins it globally, or unpins it. Uses normal topic pin permissions and status-change behavior. Category/global pins remain until unpinned; this replaces any existing pin expiration. Returns persisted pin state. Use this tool rather than update_topic for pinning.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_silence_user",
+            "field_name": "primitive_tool_abd8a3b5b6a5d1a5",
+            "identifier": "discourse_silence_user",
+            "kind": "tool",
+            "title": "Silence user",
+            "description": "Silences a user for the requested duration, restricting posting while preserving login. Requires staff permissions, explicit confirmation, duration and reason. Uses standard silence audit/notification behavior without deleting posts; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -4608,6 +5503,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_source_version",
+            "field_name": "primitive_tool_214decf2cde5b8f0",
+            "identifier": "discourse_source_version",
+            "kind": "tool",
+            "title": "Source version",
+            "description": "Reports the site's version, reported Git revision, local checkout revision, and whether tracked files have local edits. Use before inspecting source. Committed source is pinned to the reported revision, not latest main; this does not prove every running process has reloaded local changes. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_suspend_user",
+            "field_name": "primitive_tool_40a228545813f188",
+            "identifier": "discourse_suspend_user",
+            "kind": "tool",
+            "title": "Suspend user",
+            "description": "Suspends a user, blocking login until the requested duration ends. Requires staff permissions, explicit confirmation, duration and reason. Does not deactivate the account or delete posts. Uses standard suspension audit/notification behavior; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -4672,6 +5599,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsilence_user",
+            "field_name": "primitive_tool_067d1f2dcfb29b1d",
+            "identifier": "discourse_unsilence_user",
+            "kind": "tool",
+            "title": "Unsilence user",
+            "description": "Removes the user's silence using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsuspend_user",
+            "field_name": "primitive_tool_98b590157a227398",
+            "identifier": "discourse_unsuspend_user",
+            "kind": "tool",
+            "title": "Unsuspend user",
+            "description": "Removes the user's suspension using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -4763,7 +5722,7 @@
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
-            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "description": "Updates theme metadata, component relationships, or advanced files/assets when the authenticated user may edit it. Set component:true to convert an existing non-default theme in place, preserving its ID and code; conversion removes incompatible relationships and resets palette/user-selectability. Attach components using parent_theme_ids (full replacement list); child_theme_ids also replaces the full list, so preserve existing components. enabled alone does not attach a component. Prefer discourse_set_theme_code for inline CSS/JavaScript; it chooses canonical paths and checks revision and compilation.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -4811,7 +5770,7 @@
             "identifier": "discourse_update_topic",
             "kind": "tool",
             "title": "Update topic",
-            "description": "Updates fields on a topic when the user may edit it.",
+            "description": "Updates title, category, tags, or featured link when the user may edit the topic. Omit unchanged fields. To close or reopen, use discourse_set_topic_closed; to pin or unpin, use discourse_set_topic_pin.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -4832,6 +5791,22 @@
             "risk": "write",
             "required_scopes": [
               "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_webhook",
+            "field_name": "primitive_tool_c7e2e02dcd6be2b7",
+            "identifier": "discourse_update_webhook",
+            "kind": "tool",
+            "title": "Update webhook",
+            "description": "Partially updates an administrator-only webhook after checking its current destination fingerprint and active state. Requires confirm_update=true. Omitted fields are preserved. Relationship arrays replace their complete selections and require confirm_scope_replacement=true when changed. Clearing the signing secret requires confirm_clear_secret=true. Retargeting an active hook also requires confirm_external_delivery=true. Risky configuration changes require the same confirmations as creation. Clearing relationship arrays removes those delivery filters.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -4991,6 +5966,7 @@
           "mcp:profile:read",
           "mcp:profile:write",
           "mcp:reports:read",
+          "mcp:repository:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
           "mcp:tag-groups:read",
@@ -4998,7 +5974,9 @@
           "mcp:themes:read",
           "mcp:themes:write",
           "mcp:users:read",
-          "mcp:users:write"
+          "mcp:users:write",
+          "mcp:webhooks:read",
+          "mcp:webhooks:write"
         ],
         "primitives": [
           {
@@ -5119,7 +6097,7 @@
             "identifier": "discourse_create_post",
             "kind": "tool",
             "title": "Create post",
-            "description": "Creates a reply in a topic as the authenticated user.",
+            "description": "Creates a reply in a topic as the authenticated user. When the site holds the reply for review, queued is true and the post ID is null. Do not submit a queued reply again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -5167,7 +6145,7 @@
             "identifier": "discourse_create_theme",
             "kind": "tool",
             "title": "Create theme",
-            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "description": "Creates theme metadata or a component. For additive styling use component:true, then attach with update_theme parent_theme_ids; enabled alone does not apply it. Standalone themes do not affect the default theme unless made default or selected by a user. For inline CSS/JavaScript prefer creating without fields, then discourse_set_theme_code using the returned code_revision. theme_fields is an advanced file/asset interface; do not invent upload IDs.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -5183,7 +6161,7 @@
             "identifier": "discourse_create_topic",
             "kind": "tool",
             "title": "Create topic",
-            "description": "Creates a topic as the authenticated user.",
+            "description": "Creates a topic as the authenticated user. When the site holds the topic for review, queued is true and the IDs are null. Do not submit a queued topic again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -5204,6 +6182,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_webhook",
+            "field_name": "primitive_tool_3fe39d9bf0f64a51",
+            "identifier": "discourse_create_webhook",
+            "kind": "tool",
+            "title": "Create webhook",
+            "description": "Creates an administrator-only webhook, inactive with TLS verification enabled by default. Requires confirm_external_delivery=true. Activation, wildcard subscriptions, HTTP destinations, and disabling TLS verification each need their corresponding explicit confirmation. Select active event type IDs from the live catalog; wildcard and explicit event subscriptions cannot be combined.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -5300,6 +6294,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_webhook",
+            "field_name": "primitive_tool_11ec513fb21d7764",
+            "identifier": "discourse_delete_webhook",
+            "kind": "tool",
+            "title": "Delete webhook",
+            "description": "Deletes an administrator-only webhook and its delivery history. Requires confirm_delete=true and the current destination fingerprint. This cannot be undone.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -5578,6 +6588,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_get_webhook",
+            "field_name": "primitive_tool_769d3371b49349df",
+            "identifier": "discourse_get_webhook",
+            "kind": "tool",
+            "title": "Get webhook",
+            "description": "Reads safe webhook configuration for administrators. Returns destination origin and fingerprint, never the complete URL or signing secret. Relationship IDs are capped at 100 and report truncation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_handle_group_membership_request",
             "field_name": "primitive_tool_266723c0794ce65d",
             "identifier": "discourse_handle_group_membership_request",
@@ -5636,6 +6662,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_authoring_guides",
+            "field_name": "primitive_tool_868fbfe1674f55fa",
+            "identifier": "discourse_list_authoring_guides",
+            "kind": "tool",
+            "title": "List authoring guides",
+            "description": "Lists the local repository's authoring skills with descriptions and readable paths. Before authoring themes, styles, JavaScript, or other site code, find relevant skills here and read them with discourse_read_authoring_guide. Administrator only; requires the repository documentation to be installed.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -5898,6 +6940,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_webhook_events",
+            "field_name": "primitive_tool_c9f60136e69a63e4",
+            "identifier": "discourse_list_webhook_events",
+            "kind": "tool",
+            "title": "List webhook events",
+            "description": "Lists administrator-only delivery history, newest first. Headers and bodies are omitted by default. include_content requires confirm_sensitive_content=true and mcp:private-messages:read because delivery bodies may contain private messages. Returns bounded JSON previews with current-configuration credential filtering; other sensitive forum or destination data may remain. Non-JSON and oversized bodies are omitted. content_limit bounds each preview.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_webhooks",
+            "field_name": "primitive_tool_4a16022a056ef79b",
+            "identifier": "discourse_list_webhooks",
+            "kind": "tool",
+            "title": "List webhooks",
+            "description": "Lists administrator-only webhook configurations, ordered by ID. Destination paths, queries, URL credentials, and signing secrets are omitted. Use the returned destination fingerprint for mutations. Relationship ID lists are capped at 100 and report truncation. include_catalog returns available event types and content types.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_manage_group_members",
             "field_name": "primitive_tool_b408514c90dfb6da",
             "identifier": "discourse_manage_group_members",
@@ -5994,6 +7068,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_ping_webhook",
+            "field_name": "primitive_tool_f1c79a3726911b19",
+            "identifier": "discourse_ping_webhook",
+            "kind": "tool",
+            "title": "Ping webhook",
+            "description": "Queues a ping using the existing webhook delivery job and retry behavior, including for an inactive webhook. Requires confirm_external_request=true and the current destination fingerprint. Enqueue success does not mean delivery succeeded; inspect delivery history for the outcome.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_post_set_deleted",
             "field_name": "primitive_tool_2c45fb72f4491f0d",
             "identifier": "discourse_post_set_deleted",
@@ -6020,6 +7110,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_authoring_guide",
+            "field_name": "primitive_tool_8307fe84fd9c4018",
+            "identifier": "discourse_read_authoring_guide",
+            "kind": "tool",
+            "title": "Read authoring guide",
+            "description": "Reads a bounded page of a local Markdown skill, companion reference, or developer guide under .skills/ or docs/developer-guides/, including untracked guides. Unlike source tools, guides do not require Git tracking. Paths are repository-relative; resolve links relative to the document's directory. Follow next_line for more. These are authoring instructions, not proof of installed runtime behavior. Local CLI commands described in guides are not available through this tool; report verification limits honestly. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -6058,6 +7164,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_read_source",
+            "field_name": "primitive_tool_127569327976a08f",
+            "identifier": "discourse_read_source",
+            "kind": "tool",
+            "title": "Read source",
+            "description": "Reads a bounded page of a tracked code/documentation file from the site's core repository. Files are limited to 2 MiB; pages are limited to 256 KiB and 400 lines. Defaults to the reported Git revision with a commit-pinned GitHub reference. Optional working_tree mode is explicitly local, may differ from loaded processes, and has no matching public permalink. This is not shell access. Separate plugin checkouts and private configuration are unavailable. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_read_topic",
             "field_name": "primitive_tool_21c0b87c308eb6a8",
             "identifier": "discourse_read_topic",
@@ -6084,6 +7206,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_redeliver_webhook_event",
+            "field_name": "primitive_tool_9c3157beaa1ef26d",
+            "identifier": "discourse_redeliver_webhook_event",
+            "kind": "tool",
+            "title": "Redeliver webhook event",
+            "description": "Makes one administrator-authorized redelivery attempt using the original stored headers and payload and the existing outbound SSRF protection. Requires confirm_redelivery=true, the current destination fingerprint, and expected_event_status. The event must belong to this webhook and must not be a ping or already queued for redelivery. May send private forum data to an external destination; no bulk redelivery or automatic retry is performed. In-progress native attempts block overlapping calls. A call after completion is a new attempt, so do not retry automatically after a timeout.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -6170,6 +7308,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_source",
+            "field_name": "primitive_tool_3d394f488f186583",
+            "identifier": "discourse_search_source",
+            "kind": "tool",
+            "title": "Search source",
+            "description": "Searches tracked source files for a literal string, with bounded results and line numbers. Defaults to the site's reported Git revision. Use discourse_read_source for surrounding code; choose working_tree explicitly to inspect local edits. Broad queries may require narrowing. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_search_tag_groups",
             "field_name": "primitive_tool_51456312005b67e5",
             "identifier": "discourse_search_tag_groups",
@@ -6186,6 +7340,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_set_theme_code",
+            "field_name": "primitive_tool_ab9f6f39378230ea",
+            "identifier": "discourse_set_theme_code",
+            "kind": "tool",
+            "title": "Set theme code",
+            "description": "Preferred tool for inline theme code. First get_theme and copy code_revision into expected_code_revision. Supply plain css and/or javascript strings; no field arrays, upload IDs, or numeric types. CSS replaces common/common.scss; JavaScript replaces javascripts/discourse/api-initializers/mcp-theme-code.js and should import { apiInitializer } from discourse/lib/api and export default apiInitializer((api) => { ... }). Each input accepts at most 65,536 characters. Omitted inputs remain unchanged; empty strings remove these managed files. Does not attach/enable a component. Checks compilation and rejects a code revision that has changed since your read. The revision check coordinates edits through this tool; it does not prevent concurrent edits through other interfaces. Read the returned verification; saved code is not browser-verified.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_closed",
+            "field_name": "primitive_tool_e96092d35a90ffe6",
+            "identifier": "discourse_set_topic_closed",
+            "kind": "tool",
+            "title": "Close or reopen topic",
+            "description": "Closes a topic with closed=true or reopens it with closed=false. Uses normal topic moderation permissions, status-change posts, timers, and staff logging. Returns persisted closed and archived state. Does not change archived status. Use this tool, not update_topic, to close or reopen topics.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_pin",
+            "field_name": "primitive_tool_2714996c2f191b95",
+            "identifier": "discourse_set_topic_pin",
+            "kind": "tool",
+            "title": "Set topic pin",
+            "description": "Pins a topic in its category, pins it globally, or unpins it. Uses normal topic pin permissions and status-change behavior. Category/global pins remain until unpinned; this replaces any existing pin expiration. Returns persisted pin state. Use this tool rather than update_topic for pinning.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_silence_user",
+            "field_name": "primitive_tool_abd8a3b5b6a5d1a5",
+            "identifier": "discourse_silence_user",
+            "kind": "tool",
+            "title": "Silence user",
+            "description": "Silences a user for the requested duration, restricting posting while preserving login. Requires staff permissions, explicit confirmation, duration and reason. Uses standard silence audit/notification behavior without deleting posts; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -6196,6 +7414,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_source_version",
+            "field_name": "primitive_tool_214decf2cde5b8f0",
+            "identifier": "discourse_source_version",
+            "kind": "tool",
+            "title": "Source version",
+            "description": "Reports the site's version, reported Git revision, local checkout revision, and whether tracked files have local edits. Use before inspecting source. Committed source is pinned to the reported revision, not latest main; this does not prove every running process has reloaded local changes. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_suspend_user",
+            "field_name": "primitive_tool_40a228545813f188",
+            "identifier": "discourse_suspend_user",
+            "kind": "tool",
+            "title": "Suspend user",
+            "description": "Suspends a user, blocking login until the requested duration ends. Requires staff permissions, explicit confirmation, duration and reason. Does not deactivate the account or delete posts. Uses standard suspension audit/notification behavior; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -6260,6 +7510,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsilence_user",
+            "field_name": "primitive_tool_067d1f2dcfb29b1d",
+            "identifier": "discourse_unsilence_user",
+            "kind": "tool",
+            "title": "Unsilence user",
+            "description": "Removes the user's silence using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsuspend_user",
+            "field_name": "primitive_tool_98b590157a227398",
+            "identifier": "discourse_unsuspend_user",
+            "kind": "tool",
+            "title": "Unsuspend user",
+            "description": "Removes the user's suspension using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -6351,7 +7633,7 @@
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
-            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "description": "Updates theme metadata, component relationships, or advanced files/assets when the authenticated user may edit it. Set component:true to convert an existing non-default theme in place, preserving its ID and code; conversion removes incompatible relationships and resets palette/user-selectability. Attach components using parent_theme_ids (full replacement list); child_theme_ids also replaces the full list, so preserve existing components. enabled alone does not attach a component. Prefer discourse_set_theme_code for inline CSS/JavaScript; it chooses canonical paths and checks revision and compilation.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -6399,7 +7681,7 @@
             "identifier": "discourse_update_topic",
             "kind": "tool",
             "title": "Update topic",
-            "description": "Updates fields on a topic when the user may edit it.",
+            "description": "Updates title, category, tags, or featured link when the user may edit the topic. Omit unchanged fields. To close or reopen, use discourse_set_topic_closed; to pin or unpin, use discourse_set_topic_pin.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -6420,6 +7702,22 @@
             "risk": "write",
             "required_scopes": [
               "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_webhook",
+            "field_name": "primitive_tool_c7e2e02dcd6be2b7",
+            "identifier": "discourse_update_webhook",
+            "kind": "tool",
+            "title": "Update webhook",
+            "description": "Partially updates an administrator-only webhook after checking its current destination fingerprint and active state. Requires confirm_update=true. Omitted fields are preserved. Relationship arrays replace their complete selections and require confirm_scope_replacement=true when changed. Clearing the signing secret requires confirm_clear_secret=true. Retargeting an active hook also requires confirm_external_delivery=true. Risky configuration changes require the same confirmations as creation. Clearing relationship arrays removes those delivery filters.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -6557,18 +7855,18 @@
     "mcp_group_scopes": {
       "inserted": [
         {
-          "id": 36,
+          "id": 39,
           "scope": "mcp:content:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:19.019404",
-          "updated_at": "2026-11-15T21:45:19.019404"
+          "created_at": "2026-11-22T00:09:42.806372",
+          "updated_at": "2026-11-22T00:09:42.806372"
         },
         {
-          "id": 37,
+          "id": 40,
           "scope": "mcp:profile:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:19.022498",
-          "updated_at": "2026-11-15T21:45:19.022498"
+          "created_at": "2026-11-22T00:09:42.809041",
+          "updated_at": "2026-11-22T00:09:42.809041"
         }
       ],
       "deleted": [],
@@ -6580,33 +7878,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "PuJPOBGMenMnlKi3EiM9RHpcFao=",
-            "created_at": "2026-11-15T21:45:17.630202",
-            "rotated_at": "2026-11-15T21:45:17.626105",
-            "updated_at": "2026-11-15T21:45:17.630202",
+            "auth_token": "QCBl1svDnHTPXu/C09gGh70EFaY=",
+            "created_at": "2026-11-22T00:09:41.386471",
+            "rotated_at": "2026-11-22T00:09:41.381739",
+            "updated_at": "2026-11-22T00:09:41.386471",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "PuJPOBGMenMnlKi3EiM9RHpcFao=",
+            "prev_auth_token": "QCBl1svDnHTPXu/C09gGh70EFaY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T21:45:18.817612",
+            "id": 1,
+            "seen_at": "2026-11-22T00:09:42.614637",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "PuJPOBGMenMnlKi3EiM9RHpcFao=",
-            "created_at": "2026-11-15T21:45:17.630202",
-            "rotated_at": "2026-11-15T21:45:17.626105",
-            "updated_at": "2026-11-15T21:45:17.630202",
+            "auth_token": "QCBl1svDnHTPXu/C09gGh70EFaY=",
+            "created_at": "2026-11-22T00:09:41.386471",
+            "rotated_at": "2026-11-22T00:09:41.381739",
+            "updated_at": "2026-11-22T00:09:41.386471",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "PuJPOBGMenMnlKi3EiM9RHpcFao=",
+            "prev_auth_token": "QCBl1svDnHTPXu/C09gGh70EFaY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -6617,7 +7915,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 72,
           "email": null,
           "action": 23,
           "context": null,
@@ -6627,10 +7925,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T21:45:18.851195",
+          "created_at": "2026-11-22T00:09:42.643004",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:45:18.851195",
+          "updated_at": "2026-11-22T00:09:42.643004",
           "category_id": null,
           "custom_type": "mcp_access_rule_updated",
           "reviewable_id": null,
@@ -6639,7 +7937,7 @@
           "target_user_id": null
         },
         {
-          "id": 69,
+          "id": 73,
           "email": null,
           "action": 23,
           "context": null,
@@ -6649,10 +7947,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T21:45:18.887323",
+          "created_at": "2026-11-22T00:09:42.677907",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:45:18.887323",
+          "updated_at": "2026-11-22T00:09:42.677907",
           "category_id": null,
           "custom_type": "mcp_access_rule_updated",
           "reviewable_id": null,
@@ -6661,7 +7959,7 @@
           "target_user_id": null
         },
         {
-          "id": 70,
+          "id": 74,
           "email": null,
           "action": 23,
           "context": null,
@@ -6671,10 +7969,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T21:45:18.966018",
+          "created_at": "2026-11-22T00:09:42.746263",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:45:18.966018",
+          "updated_at": "2026-11-22T00:09:42.746263",
           "category_id": null,
           "custom_type": "mcp_access_rule_deleted",
           "reviewable_id": null,
@@ -6683,7 +7981,7 @@
           "target_user_id": null
         },
         {
-          "id": 71,
+          "id": 75,
           "email": null,
           "action": 23,
           "context": null,
@@ -6693,10 +7991,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T21:45:19.023839",
+          "created_at": "2026-11-22T00:09:42.810069",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:45:19.023839",
+          "updated_at": "2026-11-22T00:09:42.810069",
           "category_id": null,
           "custom_type": "mcp_access_rule_updated",
           "reviewable_id": null,
@@ -6712,11 +8010,11 @@
   "jobs": [],
   "next_ids": {
     "mcp_group_scopes": 1,
-    "user_histories": 68
+    "user_histories": 72
   },
   "recorded_from": {
     "case": "16b6206591365425c2d30afe6d519bae7e416ebac721bc0e47a2a11b61b14111",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

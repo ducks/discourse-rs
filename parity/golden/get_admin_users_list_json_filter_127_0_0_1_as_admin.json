@@ -1,8 +1,8 @@
 {
   "request": "GET /admin/users/list.json?filter=127.0.0.1 as=admin",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-15T21:28:07.073902985+00:00",
+  "recorded_at": "2026-11-22T02:23:08.632327432+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
-  "body": "[{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"email\":\"admin@example.com\",\"secondary_emails\":[],\"active\":true,\"admin\":true,\"moderator\":true,\"last_seen_at\":\"2026-11-15T19:40:02.331Z\",\"last_emailed_at\":null,\"created_at\":\"2026-11-03T05:07:59.531Z\",\"last_seen_age\":6484.740288596,\"last_emailed_age\":null,\"created_at_age\":1095607.54002985,\"trust_level\":4,\"manual_locked_trust_level\":null,\"title\":null,\"time_read\":0,\"staged\":false,\"can_be_deleted\":false,\"can_be_suspended\":false,\"silence_reason\":null,\"suspend_reason\":null,\"days_visited\":1,\"posts_read_count\":6,\"topics_entered\":0,\"post_count\":1}]"
+  "body": "[{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"email\":\"admin@example.com\",\"secondary_emails\":[],\"active\":true,\"admin\":true,\"moderator\":false,\"last_seen_at\":\"2026-11-21T23:56:57.944Z\",\"last_emailed_at\":null,\"created_at\":\"2026-11-03T05:07:59.531Z\",\"last_seen_age\":8770.686003904,\"last_emailed_age\":null,\"created_at_age\":1631709.098721947,\"trust_level\":4,\"manual_locked_trust_level\":null,\"title\":null,\"time_read\":0,\"staged\":false,\"can_be_deleted\":false,\"can_be_suspended\":false,\"silence_reason\":null,\"suspend_reason\":null,\"days_visited\":1,\"posts_read_count\":6,\"topics_entered\":0,\"post_count\":1}]"
 }

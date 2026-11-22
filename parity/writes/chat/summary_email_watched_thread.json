@@ -2,8 +2,8 @@
   "name": "summary_email_watched_thread",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T22:36:39.733189",
-  "transaction_started_at": "2026-11-15T22:36:39.093048",
+  "started_at": "2026-11-22T00:27:58.881648",
+  "transaction_started_at": "2026-11-22T00:27:58.295834",
   "responses": [],
   "changes": {
     "email_logs": {
@@ -16,11 +16,11 @@
           "user_id": 2,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-15T22:36:39.762941",
+          "created_at": "2026-11-22T00:27:58.912268",
           "email_type": "chat_summary",
-          "message_id": "1039340c-2e2a-49d6-9a7c-86171806ab34@localhost",
+          "message_id": "f3104c6e-202c-4fc3-8eaf-b5b8d02ffaf8@localhost",
           "to_address": "user0@example.com",
-          "updated_at": "2026-11-15T22:36:39.762941",
+          "updated_at": "2026-11-22T00:27:58.912268",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -41,8 +41,8 @@
             "id": 1,
             "user_id": 2,
             "thread_id": 1,
-            "created_at": "2026-11-15T21:56:39.093048",
-            "updated_at": "2026-11-15T21:56:39.093048",
+            "created_at": "2026-11-21T23:47:58.295834",
+            "updated_at": "2026-11-21T23:47:58.295834",
             "notification_level": 3,
             "last_read_message_id": null,
             "thread_title_prompt_seen": false,
@@ -52,8 +52,8 @@
             "id": 1,
             "user_id": 2,
             "thread_id": 1,
-            "created_at": "2026-11-15T21:56:39.093048",
-            "updated_at": "2026-11-15T21:56:39.093048",
+            "created_at": "2026-11-21T23:47:58.295834",
+            "updated_at": "2026-11-21T23:47:58.295834",
             "notification_level": 3,
             "last_read_message_id": null,
             "thread_title_prompt_seen": false,
@@ -82,17 +82,17 @@
             "created_at": "2026-11-03T05:08:00.105147",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-15T19:20:01.297303",
+            "updated_at": "2026-11-21T23:56:51.522858",
             "approved_at": null,
             "trust_level": 1,
-            "last_seen_at": "2026-11-15T21:36:39.093048",
+            "last_seen_at": "2026-11-21T23:27:58.295834",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-15T19:40:02.187657",
+            "first_seen_at": "2026-11-21T23:56:57.795913",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-15T19:20:01.206739",
+            "last_posted_at": "2026-11-21T23:56:51.452828",
             "suspended_till": null,
             "username_lower": "user0",
             "last_emailed_at": null,
@@ -122,20 +122,20 @@
             "created_at": "2026-11-03T05:08:00.105147",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-15T19:20:01.297303",
+            "updated_at": "2026-11-21T23:56:51.522858",
             "approved_at": null,
             "trust_level": 1,
-            "last_seen_at": "2026-11-15T21:36:39.093048",
+            "last_seen_at": "2026-11-21T23:27:58.295834",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-15T19:40:02.187657",
+            "first_seen_at": "2026-11-21T23:56:57.795913",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-15T19:20:01.206739",
+            "last_posted_at": "2026-11-21T23:56:51.452828",
             "suspended_till": null,
             "username_lower": "user0",
-            "last_emailed_at": "2026-11-15T22:36:39.093048",
+            "last_emailed_at": "2026-11-22T00:27:58.295834",
             "primary_group_id": null,
             "previous_visit_at": null,
             "secure_identifier": null,
@@ -205,7 +205,7 @@
         ],
         [
           "Message-ID",
-          "<1039340c-2e2a-49d6-9a7c-86171806ab34@localhost>"
+          "<f3104c6e-202c-4fc3-8eaf-b5b8d02ffaf8@localhost>"
         ],
         [
           "Subject",
@@ -217,7 +217,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=\"--==_mimepart_6afa33f7b8d0d_c4dff3846476\"; charset=UTF-8"
+          "multipart/alternative; boundary=\"--==_mimepart_6b02370edd137_553cf3817579\"; charset=UTF-8"
         ],
         [
           "Content-Transfer-Encoding",
@@ -237,12 +237,12 @@
         ]
       ],
       "text": "You have new chat messages\n[View 3 messages][2]\n       This chat summary is sent from [Discourse][1] when you are away. Change your [chat email preference][3].\n[1]: http://localhost:3042/\n[2]: http://localhost:3042/chat\n[3]: http://localhost:3042/my/preferences/emails\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    <div class=\"summary-email\" style=\"-moz-box-sizing:border-box;-ms-text-size-adjust:100%;-webkit-box-sizing:border-box;-webkit-text-size-adjust:100%;box-sizing:border-box;color:#0a0a0a;font-family:Arial,sans-serif;font-size:14px;font-weight:400;line-height:1.3;margin:0;min-width:100%;padding:0;width:100%\">\n  <table class=\"chat-summary-header text-header with-dir\" style=\"text-align:left;background-color:#fff;width:100%;min-width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"header\">\n    <tbody><tr>\n      <td align=\"center\" style=\"text-align:center;padding:20px 0;font-family:Arial,sans-serif\">\n        <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#333;font-size:22px\">\n            <img src=\"http://localhost:3042/images/discourse-logo-sketch.png\" height=\"40\" style=\"clear:both;display:block;height:40px;margin:auto;max-width:100%;outline:0;text-decoration:none\" alt=\"Discourse\">\n        </a>\n      </td>\n    </tr>\n    <tr>\n      <td align=\"center\" style=\"font-weight:bold;font-size:22px;color:#333\">\n        You have new chat messages\n      </td>\n    </tr>\n  </tbody></table>\n\n</div>\n\n<table class=\"summary-footer with-dir\" style=\"text-align:left;margin-top:2em;width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"text-color\">\n  <tbody><tr>\n    <td align=\"center\">\n         This chat summary is sent from <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a> when you are away. Change your <a href=\"http://localhost:3042/my/preferences/emails\" style=\"text-decoration:none;font-weight:bold;color:#006699\">chat email preference</a>.\n    </td>\n  </tr>\n</tbody></table>\n\n    \n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    <div class=\"summary-email\" style=\"-moz-box-sizing:border-box;-ms-text-size-adjust:100%;-webkit-box-sizing:border-box;-webkit-text-size-adjust:100%;box-sizing:border-box;color:#0a0a0a;font-family:Arial,sans-serif;font-size:14px;font-weight:400;line-height:1.3;margin:0;min-width:100%;padding:0;width:100%\">\n  <table class=\"chat-summary-header text-header with-dir\" style=\"text-align:left;background-color:#fff;width:100%;min-width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"header\">\n    <tbody><tr>\n      <td align=\"center\" style=\"text-align:center;padding:20px 0;font-family:Arial,sans-serif\">\n        <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#333;font-size:22px\">\n            <img src=\"http://localhost:3042/images/discourse-logo-sketch.png\" height=\"40\" style=\"clear:both;display:block;height:40px;margin:auto;max-width:100%;outline:0;text-decoration:none\" alt=\"Discourse\">\n        </a>\n      </td>\n    </tr>\n    <tr>\n      <td align=\"center\" style=\"font-weight:bold;font-size:22px;color:#333\">\n        You have new chat messages\n      </td>\n    </tr>\n  </tbody></table>\n\n</div>\n\n<table class=\"summary-footer with-dir\" style=\"text-align:left;margin-top:2em;width:100%\" cellspacing=\"0\" cellpadding=\"0\" border=\"0\" dir=\"ltr\" dm=\"text-color\">\n  <tbody><tr>\n    <td align=\"center\">\n         This chat summary is sent from <a href=\"http://localhost:3042\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Discourse</a> when you are away. Change your <a href=\"http://localhost:3042/my/preferences/emails\" style=\"text-decoration:none;font-weight:bold;color:#006699\">chat email preference</a>.\n    </td>\n  </tr>\n</tbody></table>\n\n    \n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "773503995187f8305404c76e009aa299132e25d0963f4e7dd12327a82f3ec68b",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

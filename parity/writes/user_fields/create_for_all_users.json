@@ -20,8 +20,8 @@
       "path": "/u/admin.json"
     }
   ],
-  "started_at": "2026-11-16T00:00:32.0304",
-  "transaction_started_at": "2026-11-16T00:00:31.209639",
+  "started_at": "2026-11-22T01:55:35.780597",
+  "transaction_started_at": "2026-11-22T01:55:34.895438",
   "responses": [
     {
       "status": 200,
@@ -46,128 +46,7 @@
     {
       "status": 200,
       "body": {
-        "user_badges": [
-          {
-            "id": 13,
-            "granted_at": "2026-11-15T19:19:34.285Z",
-            "created_at": "2026-11-15T19:19:34.285Z",
-            "count": 1,
-            "badge_id": 4,
-            "user_id": 1,
-            "granted_by_id": -1
-          },
-          {
-            "id": 6,
-            "granted_at": "2026-11-15T19:18:27.161Z",
-            "created_at": "2026-11-15T19:18:27.161Z",
-            "count": 1,
-            "badge_id": 3,
-            "user_id": 1,
-            "granted_by_id": -1
-          },
-          {
-            "id": 9,
-            "granted_at": "2026-11-15T19:18:38.343Z",
-            "created_at": "2026-11-15T19:18:38.343Z",
-            "count": 1,
-            "badge_id": 2,
-            "user_id": 1,
-            "granted_by_id": -1
-          }
-        ],
-        "badges": [
-          {
-            "id": 4,
-            "name": "Leader",
-            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> global edit, pin, close, archive, split and merge, more likes",
-            "grant_count": 2,
-            "allow_title": true,
-            "multiple_grant": false,
-            "icon": "user",
-            "image_url": null,
-            "listable": true,
-            "enabled": true,
-            "badge_grouping_id": 4,
-            "system": true,
-            "slug": "leader",
-            "manually_grantable": false,
-            "show_in_post_header": false,
-            "badge_type_id": 1
-          },
-          {
-            "id": 3,
-            "name": "Regular",
-            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> recategorize, rename, followed links, wiki, more likes",
-            "grant_count": 3,
-            "allow_title": true,
-            "multiple_grant": false,
-            "icon": "user",
-            "image_url": null,
-            "listable": true,
-            "enabled": true,
-            "badge_grouping_id": 4,
-            "system": true,
-            "slug": "regular",
-            "manually_grantable": false,
-            "show_in_post_header": false,
-            "badge_type_id": 2
-          },
-          {
-            "id": 2,
-            "name": "Member",
-            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> invitations, group messaging, more likes",
-            "grant_count": 4,
-            "allow_title": false,
-            "multiple_grant": false,
-            "icon": "user",
-            "image_url": null,
-            "listable": true,
-            "enabled": true,
-            "badge_grouping_id": 4,
-            "system": true,
-            "slug": "member",
-            "manually_grantable": false,
-            "show_in_post_header": false,
-            "badge_type_id": 3
-          }
-        ],
-        "badge_types": [
-          {
-            "id": 1,
-            "name": "Gold",
-            "sort_order": 9
-          },
-          {
-            "id": 2,
-            "name": "Silver",
-            "sort_order": 8
-          },
-          {
-            "id": 3,
-            "name": "Bronze",
-            "sort_order": 7
-          }
-        ],
-        "users": [
-          {
-            "id": 1,
-            "username": "admin",
-            "name": "Admin",
-            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
-            "admin": true,
-            "moderator": true,
-            "trust_level": 4
-          },
-          {
-            "id": -1,
-            "username": "system",
-            "name": "system",
-            "avatar_template": "/images/discourse-logo-sketch-small.png",
-            "admin": true,
-            "moderator": true,
-            "trust_level": 4
-          }
-        ],
+        "user_badges": [],
         "user": {
           "id": 1,
           "username": "admin",
@@ -176,8 +55,8 @@
           "email": "admin@example.com",
           "secondary_emails": [],
           "unconfirmed_emails": [],
-          "last_posted_at": "2026-11-15T19:19:54.855Z",
-          "last_seen_at": "2026-11-15T19:40:02.331Z",
+          "last_posted_at": "2026-11-21T23:56:45.555Z",
+          "last_seen_at": "2026-11-21T23:56:57.944Z",
           "created_at": "2026-11-03T05:07:59.531Z",
           "ignored": false,
           "muted": false,
@@ -186,10 +65,10 @@
           "can_send_private_messages": true,
           "can_send_private_message_to_user": true,
           "trust_level": 4,
-          "moderator": true,
+          "moderator": false,
           "admin": true,
           "title": null,
-          "badge_count": 4,
+          "badge_count": 0,
           "user_fields": {
             "1": null
           },
@@ -213,9 +92,9 @@
           "can_edit_email": true,
           "can_edit_name": true,
           "uploaded_avatar_id": null,
-          "has_title_badges": true,
+          "has_title_badges": false,
           "pending_count": 0,
-          "profile_view_count": 2,
+          "profile_view_count": 0,
           "second_factor_enabled": false,
           "second_factor_backup_enabled": false,
           "associated_accounts": [],
@@ -254,52 +133,16 @@
           "user_passkeys": [],
           "user_auth_tokens": [
             {
-              "id": 3,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-15T19:35:26.651Z",
-              "seen_at": "2026-11-15T19:35:26.833Z",
-              "is_active": false
-            },
-            {
-              "id": 7,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-15T19:44:29.679Z",
-              "seen_at": "2026-11-15T19:44:29.766Z",
-              "is_active": false
-            },
-            {
-              "id": 14,
+              "id": 1,
               "client_ip": "127.0.0.1",
               "location": "unknown",
               "browser": "Unknown browser",
               "device": "unknown device",
               "os": "unknown operating system",
               "icon": "question",
-              "created_at": "2026-11-16T00:00:31.572Z",
-              "seen_at": "2026-11-16T00:00:32.034Z",
+              "created_at": "2026-11-22T01:55:35.244Z",
+              "seen_at": "2026-11-22T01:55:35.791Z",
               "is_active": true
-            },
-            {
-              "id": 11,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-15T21:23:10.618Z",
-              "seen_at": "2026-11-15T21:23:10.722Z",
-              "is_active": false
             }
           ],
           "user_notification_schedule": {
@@ -329,11 +172,7 @@
           "display_sidebar_tags": true,
           "can_pick_theme_with_custom_homepage": false,
           "accepted_answers": 0,
-          "featured_user_badge_ids": [
-            13,
-            6,
-            9
-          ],
+          "featured_user_badge_ids": [],
           "invited_by": null,
           "groups": [
             {
@@ -361,37 +200,6 @@
               "allow_membership_requests": false,
               "full_name": "Admins",
               "default_notification_level": 3,
-              "membership_request_template": null,
-              "members_visibility_level": 0,
-              "can_see_members": true,
-              "can_admin_group": true,
-              "publish_read_state": false
-            },
-            {
-              "id": 2,
-              "automatic": true,
-              "name": "moderators",
-              "display_name": "moderators",
-              "user_count": 1,
-              "mentionable_level": 0,
-              "messageable_level": 99,
-              "visibility_level": 1,
-              "primary_group": false,
-              "title": null,
-              "grant_trust_level": null,
-              "incoming_email": null,
-              "has_messages": false,
-              "flair_url": null,
-              "flair_bg_color": null,
-              "flair_color": null,
-              "bio_raw": null,
-              "bio_cooked": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
-              "bio_excerpt": "Responsible for responding to flags, moderating discussions, and helping members with their accounts",
-              "public_admission": false,
-              "public_exit": false,
-              "allow_membership_requests": false,
-              "full_name": "Moderators",
-              "default_notification_level": 2,
               "membership_request_template": null,
               "members_visibility_level": 0,
               "can_see_members": true,
@@ -593,12 +401,6 @@
               "owner": false
             },
             {
-              "group_id": 2,
-              "user_id": 1,
-              "notification_level": 2,
-              "owner": false
-            },
-            {
               "group_id": 3,
               "user_id": 1,
               "notification_level": 2,
@@ -720,33 +522,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "SVxtf8VoEStQWIqYMKf3ZDVQx9w=",
-            "created_at": "2026-11-16T00:00:31.572992",
-            "rotated_at": "2026-11-16T00:00:31.572165",
-            "updated_at": "2026-11-16T00:00:31.572992",
+            "auth_token": "VansPE8LHesRd90J2F8cun+kWWk=",
+            "created_at": "2026-11-22T01:55:35.244136",
+            "rotated_at": "2026-11-22T01:55:35.243139",
+            "updated_at": "2026-11-22T01:55:35.244136",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "SVxtf8VoEStQWIqYMKf3ZDVQx9w=",
+            "prev_auth_token": "VansPE8LHesRd90J2F8cun+kWWk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T00:00:32.034345",
+            "id": 1,
+            "seen_at": "2026-11-22T01:55:35.791902",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "SVxtf8VoEStQWIqYMKf3ZDVQx9w=",
-            "created_at": "2026-11-16T00:00:31.572992",
-            "rotated_at": "2026-11-16T00:00:31.572165",
-            "updated_at": "2026-11-16T00:00:31.572992",
+            "auth_token": "VansPE8LHesRd90J2F8cun+kWWk=",
+            "created_at": "2026-11-22T01:55:35.244136",
+            "rotated_at": "2026-11-22T01:55:35.243139",
+            "updated_at": "2026-11-22T01:55:35.244136",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "SVxtf8VoEStQWIqYMKf3ZDVQx9w=",
+            "prev_auth_token": "VansPE8LHesRd90J2F8cun+kWWk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -762,10 +564,10 @@
           "editable": false,
           "position": 1,
           "required": true,
-          "created_at": "2026-11-16T00:00:32.042003",
+          "created_at": "2026-11-22T01:55:35.809743",
           "field_type": null,
           "searchable": false,
-          "updated_at": "2026-11-16T00:00:32.042003",
+          "updated_at": "2026-11-22T01:55:35.809743",
           "description": "Where you work",
           "requirement": 1,
           "external_name": null,
@@ -783,8 +585,8 @@
       "inserted": [
         {
           "id": 1,
-          "created_at": "2026-11-16T00:00:32.044729",
-          "updated_at": "2026-11-16T00:00:32.044729"
+          "created_at": "2026-11-22T01:55:35.813763",
+          "updated_at": "2026-11-22T01:55:35.813763"
         }
       ],
       "deleted": [],
@@ -805,7 +607,7 @@
   },
   "recorded_from": {
     "case": "70c2bcfc44aac6adf4c335c8c2a65bd133cf589bab1e9eec97731f3252f833e8",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

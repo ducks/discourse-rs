@@ -69,8 +69,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T21:45:22.873009",
-  "transaction_started_at": "2026-11-15T21:45:22.060737",
+  "started_at": "2026-11-22T00:09:46.348514",
+  "transaction_started_at": "2026-11-22T00:09:45.575038",
   "responses": [
     {
       "status": 200,
@@ -99,6 +99,7 @@
           "mcp:profile:read",
           "mcp:profile:write",
           "mcp:reports:read",
+          "mcp:repository:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
           "mcp:tag-groups:read",
@@ -106,7 +107,9 @@
           "mcp:themes:read",
           "mcp:themes:write",
           "mcp:users:read",
-          "mcp:users:write"
+          "mcp:users:write",
+          "mcp:webhooks:read",
+          "mcp:webhooks:write"
         ],
         "primitives": [
           {
@@ -227,7 +230,7 @@
             "identifier": "discourse_create_post",
             "kind": "tool",
             "title": "Create post",
-            "description": "Creates a reply in a topic as the authenticated user.",
+            "description": "Creates a reply in a topic as the authenticated user. When the site holds the reply for review, queued is true and the post ID is null. Do not submit a queued reply again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -275,7 +278,7 @@
             "identifier": "discourse_create_theme",
             "kind": "tool",
             "title": "Create theme",
-            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "description": "Creates theme metadata or a component. For additive styling use component:true, then attach with update_theme parent_theme_ids; enabled alone does not apply it. Standalone themes do not affect the default theme unless made default or selected by a user. For inline CSS/JavaScript prefer creating without fields, then discourse_set_theme_code using the returned code_revision. theme_fields is an advanced file/asset interface; do not invent upload IDs.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -291,7 +294,7 @@
             "identifier": "discourse_create_topic",
             "kind": "tool",
             "title": "Create topic",
-            "description": "Creates a topic as the authenticated user.",
+            "description": "Creates a topic as the authenticated user. When the site holds the topic for review, queued is true and the IDs are null. Do not submit a queued topic again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -312,6 +315,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_webhook",
+            "field_name": "primitive_tool_3fe39d9bf0f64a51",
+            "identifier": "discourse_create_webhook",
+            "kind": "tool",
+            "title": "Create webhook",
+            "description": "Creates an administrator-only webhook, inactive with TLS verification enabled by default. Requires confirm_external_delivery=true. Activation, wildcard subscriptions, HTTP destinations, and disabling TLS verification each need their corresponding explicit confirmation. Select active event type IDs from the live catalog; wildcard and explicit event subscriptions cannot be combined.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -408,6 +427,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_webhook",
+            "field_name": "primitive_tool_11ec513fb21d7764",
+            "identifier": "discourse_delete_webhook",
+            "kind": "tool",
+            "title": "Delete webhook",
+            "description": "Deletes an administrator-only webhook and its delivery history. Requires confirm_delete=true and the current destination fingerprint. This cannot be undone.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -686,6 +721,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_get_webhook",
+            "field_name": "primitive_tool_769d3371b49349df",
+            "identifier": "discourse_get_webhook",
+            "kind": "tool",
+            "title": "Get webhook",
+            "description": "Reads safe webhook configuration for administrators. Returns destination origin and fingerprint, never the complete URL or signing secret. Relationship IDs are capped at 100 and report truncation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_handle_group_membership_request",
             "field_name": "primitive_tool_266723c0794ce65d",
             "identifier": "discourse_handle_group_membership_request",
@@ -744,6 +795,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_authoring_guides",
+            "field_name": "primitive_tool_868fbfe1674f55fa",
+            "identifier": "discourse_list_authoring_guides",
+            "kind": "tool",
+            "title": "List authoring guides",
+            "description": "Lists the local repository's authoring skills with descriptions and readable paths. Before authoring themes, styles, JavaScript, or other site code, find relevant skills here and read them with discourse_read_authoring_guide. Administrator only; requires the repository documentation to be installed.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1006,6 +1073,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_webhook_events",
+            "field_name": "primitive_tool_c9f60136e69a63e4",
+            "identifier": "discourse_list_webhook_events",
+            "kind": "tool",
+            "title": "List webhook events",
+            "description": "Lists administrator-only delivery history, newest first. Headers and bodies are omitted by default. include_content requires confirm_sensitive_content=true and mcp:private-messages:read because delivery bodies may contain private messages. Returns bounded JSON previews with current-configuration credential filtering; other sensitive forum or destination data may remain. Non-JSON and oversized bodies are omitted. content_limit bounds each preview.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_webhooks",
+            "field_name": "primitive_tool_4a16022a056ef79b",
+            "identifier": "discourse_list_webhooks",
+            "kind": "tool",
+            "title": "List webhooks",
+            "description": "Lists administrator-only webhook configurations, ordered by ID. Destination paths, queries, URL credentials, and signing secrets are omitted. Use the returned destination fingerprint for mutations. Relationship ID lists are capped at 100 and report truncation. include_catalog returns available event types and content types.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_manage_group_members",
             "field_name": "primitive_tool_b408514c90dfb6da",
             "identifier": "discourse_manage_group_members",
@@ -1102,6 +1201,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_ping_webhook",
+            "field_name": "primitive_tool_f1c79a3726911b19",
+            "identifier": "discourse_ping_webhook",
+            "kind": "tool",
+            "title": "Ping webhook",
+            "description": "Queues a ping using the existing webhook delivery job and retry behavior, including for an inactive webhook. Requires confirm_external_request=true and the current destination fingerprint. Enqueue success does not mean delivery succeeded; inspect delivery history for the outcome.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_post_set_deleted",
             "field_name": "primitive_tool_2c45fb72f4491f0d",
             "identifier": "discourse_post_set_deleted",
@@ -1128,6 +1243,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_authoring_guide",
+            "field_name": "primitive_tool_8307fe84fd9c4018",
+            "identifier": "discourse_read_authoring_guide",
+            "kind": "tool",
+            "title": "Read authoring guide",
+            "description": "Reads a bounded page of a local Markdown skill, companion reference, or developer guide under .skills/ or docs/developer-guides/, including untracked guides. Unlike source tools, guides do not require Git tracking. Paths are repository-relative; resolve links relative to the document's directory. Follow next_line for more. These are authoring instructions, not proof of installed runtime behavior. Local CLI commands described in guides are not available through this tool; report verification limits honestly. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1166,6 +1297,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_read_source",
+            "field_name": "primitive_tool_127569327976a08f",
+            "identifier": "discourse_read_source",
+            "kind": "tool",
+            "title": "Read source",
+            "description": "Reads a bounded page of a tracked code/documentation file from the site's core repository. Files are limited to 2 MiB; pages are limited to 256 KiB and 400 lines. Defaults to the reported Git revision with a commit-pinned GitHub reference. Optional working_tree mode is explicitly local, may differ from loaded processes, and has no matching public permalink. This is not shell access. Separate plugin checkouts and private configuration are unavailable. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_read_topic",
             "field_name": "primitive_tool_21c0b87c308eb6a8",
             "identifier": "discourse_read_topic",
@@ -1192,6 +1339,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_redeliver_webhook_event",
+            "field_name": "primitive_tool_9c3157beaa1ef26d",
+            "identifier": "discourse_redeliver_webhook_event",
+            "kind": "tool",
+            "title": "Redeliver webhook event",
+            "description": "Makes one administrator-authorized redelivery attempt using the original stored headers and payload and the existing outbound SSRF protection. Requires confirm_redelivery=true, the current destination fingerprint, and expected_event_status. The event must belong to this webhook and must not be a ping or already queued for redelivery. May send private forum data to an external destination; no bulk redelivery or automatic retry is performed. In-progress native attempts block overlapping calls. A call after completion is a new attempt, so do not retry automatically after a timeout.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1278,6 +1441,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_source",
+            "field_name": "primitive_tool_3d394f488f186583",
+            "identifier": "discourse_search_source",
+            "kind": "tool",
+            "title": "Search source",
+            "description": "Searches tracked source files for a literal string, with bounded results and line numbers. Defaults to the site's reported Git revision. Use discourse_read_source for surrounding code; choose working_tree explicitly to inspect local edits. Broad queries may require narrowing. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_search_tag_groups",
             "field_name": "primitive_tool_51456312005b67e5",
             "identifier": "discourse_search_tag_groups",
@@ -1294,6 +1473,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_set_theme_code",
+            "field_name": "primitive_tool_ab9f6f39378230ea",
+            "identifier": "discourse_set_theme_code",
+            "kind": "tool",
+            "title": "Set theme code",
+            "description": "Preferred tool for inline theme code. First get_theme and copy code_revision into expected_code_revision. Supply plain css and/or javascript strings; no field arrays, upload IDs, or numeric types. CSS replaces common/common.scss; JavaScript replaces javascripts/discourse/api-initializers/mcp-theme-code.js and should import { apiInitializer } from discourse/lib/api and export default apiInitializer((api) => { ... }). Each input accepts at most 65,536 characters. Omitted inputs remain unchanged; empty strings remove these managed files. Does not attach/enable a component. Checks compilation and rejects a code revision that has changed since your read. The revision check coordinates edits through this tool; it does not prevent concurrent edits through other interfaces. Read the returned verification; saved code is not browser-verified.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_closed",
+            "field_name": "primitive_tool_e96092d35a90ffe6",
+            "identifier": "discourse_set_topic_closed",
+            "kind": "tool",
+            "title": "Close or reopen topic",
+            "description": "Closes a topic with closed=true or reopens it with closed=false. Uses normal topic moderation permissions, status-change posts, timers, and staff logging. Returns persisted closed and archived state. Does not change archived status. Use this tool, not update_topic, to close or reopen topics.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_pin",
+            "field_name": "primitive_tool_2714996c2f191b95",
+            "identifier": "discourse_set_topic_pin",
+            "kind": "tool",
+            "title": "Set topic pin",
+            "description": "Pins a topic in its category, pins it globally, or unpins it. Uses normal topic pin permissions and status-change behavior. Category/global pins remain until unpinned; this replaces any existing pin expiration. Returns persisted pin state. Use this tool rather than update_topic for pinning.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_silence_user",
+            "field_name": "primitive_tool_abd8a3b5b6a5d1a5",
+            "identifier": "discourse_silence_user",
+            "kind": "tool",
+            "title": "Silence user",
+            "description": "Silences a user for the requested duration, restricting posting while preserving login. Requires staff permissions, explicit confirmation, duration and reason. Uses standard silence audit/notification behavior without deleting posts; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -1304,6 +1547,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_source_version",
+            "field_name": "primitive_tool_214decf2cde5b8f0",
+            "identifier": "discourse_source_version",
+            "kind": "tool",
+            "title": "Source version",
+            "description": "Reports the site's version, reported Git revision, local checkout revision, and whether tracked files have local edits. Use before inspecting source. Committed source is pinned to the reported revision, not latest main; this does not prove every running process has reloaded local changes. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_suspend_user",
+            "field_name": "primitive_tool_40a228545813f188",
+            "identifier": "discourse_suspend_user",
+            "kind": "tool",
+            "title": "Suspend user",
+            "description": "Suspends a user, blocking login until the requested duration ends. Requires staff permissions, explicit confirmation, duration and reason. Does not deactivate the account or delete posts. Uses standard suspension audit/notification behavior; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1368,6 +1643,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsilence_user",
+            "field_name": "primitive_tool_067d1f2dcfb29b1d",
+            "identifier": "discourse_unsilence_user",
+            "kind": "tool",
+            "title": "Unsilence user",
+            "description": "Removes the user's silence using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsuspend_user",
+            "field_name": "primitive_tool_98b590157a227398",
+            "identifier": "discourse_unsuspend_user",
+            "kind": "tool",
+            "title": "Unsuspend user",
+            "description": "Removes the user's suspension using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1459,7 +1766,7 @@
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
-            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "description": "Updates theme metadata, component relationships, or advanced files/assets when the authenticated user may edit it. Set component:true to convert an existing non-default theme in place, preserving its ID and code; conversion removes incompatible relationships and resets palette/user-selectability. Attach components using parent_theme_ids (full replacement list); child_theme_ids also replaces the full list, so preserve existing components. enabled alone does not attach a component. Prefer discourse_set_theme_code for inline CSS/JavaScript; it chooses canonical paths and checks revision and compilation.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -1507,7 +1814,7 @@
             "identifier": "discourse_update_topic",
             "kind": "tool",
             "title": "Update topic",
-            "description": "Updates fields on a topic when the user may edit it.",
+            "description": "Updates title, category, tags, or featured link when the user may edit the topic. Omit unchanged fields. To close or reopen, use discourse_set_topic_closed; to pin or unpin, use discourse_set_topic_pin.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -1528,6 +1835,22 @@
             "risk": "write",
             "required_scopes": [
               "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_webhook",
+            "field_name": "primitive_tool_c7e2e02dcd6be2b7",
+            "identifier": "discourse_update_webhook",
+            "kind": "tool",
+            "title": "Update webhook",
+            "description": "Partially updates an administrator-only webhook after checking its current destination fingerprint and active state. Requires confirm_update=true. Omitted fields are preserved. Relationship arrays replace their complete selections and require confirm_scope_replacement=true when changed. Clearing the signing secret requires confirm_clear_secret=true. Retargeting an active hook also requires confirm_external_delivery=true. Risky configuration changes require the same confirmations as creation. Clearing relationship arrays removes those delivery filters.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -1654,13 +1977,13 @@
         "enabled": true,
         "endpoint": "http://localhost:3042/mcp",
         "protocol_version": "2026-07-28",
-        "server_version": "2026.11.0-latest.1",
+        "server_version": "2026.11.0-latest.2",
         "status": "available",
         "catalog": {
           "tools": 2,
           "resources": 0,
           "prompts": 1,
-          "schema_bytes": 1339
+          "schema_bytes": 1828
         },
         "metrics": {
           "approved_oauth_clients": 1,
@@ -1738,7 +2061,7 @@
             "scopes": [
               "mcp:profile:read"
             ],
-            "consented_at": "2026-11-14T21:45:22.060Z",
+            "consented_at": "2026-11-21T00:09:45.575Z",
             "revoked_at": null,
             "last_used_at": null,
             "token_count": 1
@@ -1754,7 +2077,7 @@
               "mcp:profile:read",
               "mcp:themes:write"
             ],
-            "consented_at": "2026-11-14T21:45:22.060Z",
+            "consented_at": "2026-11-21T00:09:45.575Z",
             "revoked_at": null,
             "last_used_at": null,
             "token_count": 0
@@ -1792,6 +2115,7 @@
           "mcp:profile:read",
           "mcp:profile:write",
           "mcp:reports:read",
+          "mcp:repository:read",
           "mcp:site-settings:read",
           "mcp:site-settings:write",
           "mcp:tag-groups:read",
@@ -1799,7 +2123,9 @@
           "mcp:themes:read",
           "mcp:themes:write",
           "mcp:users:read",
-          "mcp:users:write"
+          "mcp:users:write",
+          "mcp:webhooks:read",
+          "mcp:webhooks:write"
         ],
         "primitives": [
           {
@@ -1920,7 +2246,7 @@
             "identifier": "discourse_create_post",
             "kind": "tool",
             "title": "Create post",
-            "description": "Creates a reply in a topic as the authenticated user.",
+            "description": "Creates a reply in a topic as the authenticated user. When the site holds the reply for review, queued is true and the post ID is null. Do not submit a queued reply again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -1968,7 +2294,7 @@
             "identifier": "discourse_create_theme",
             "kind": "tool",
             "title": "Create theme",
-            "description": "Creates a theme or theme component with optional HTML, SCSS, and settings fields.",
+            "description": "Creates theme metadata or a component. For additive styling use component:true, then attach with update_theme parent_theme_ids; enabled alone does not apply it. Standalone themes do not affect the default theme unless made default or selected by a user. For inline CSS/JavaScript prefer creating without fields, then discourse_set_theme_code using the returned code_revision. theme_fields is an advanced file/asset interface; do not invent upload IDs.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -1984,7 +2310,7 @@
             "identifier": "discourse_create_topic",
             "kind": "tool",
             "title": "Create topic",
-            "description": "Creates a topic as the authenticated user.",
+            "description": "Creates a topic as the authenticated user. When the site holds the topic for review, queued is true and the IDs are null. Do not submit a queued topic again.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -2005,6 +2331,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:users:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_create_webhook",
+            "field_name": "primitive_tool_3fe39d9bf0f64a51",
+            "identifier": "discourse_create_webhook",
+            "kind": "tool",
+            "title": "Create webhook",
+            "description": "Creates an administrator-only webhook, inactive with TLS verification enabled by default. Requires confirm_external_delivery=true. Activation, wildcard subscriptions, HTTP destinations, and disabling TLS verification each need their corresponding explicit confirmation. Select active event type IDs from the live catalog; wildcard and explicit event subscriptions cannot be combined.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2101,6 +2443,22 @@
             "risk": "administration",
             "required_scopes": [
               "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_delete_webhook",
+            "field_name": "primitive_tool_11ec513fb21d7764",
+            "identifier": "discourse_delete_webhook",
+            "kind": "tool",
+            "title": "Delete webhook",
+            "description": "Deletes an administrator-only webhook and its delivery history. Requires confirm_delete=true and the current destination fingerprint. This cannot be undone.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2379,6 +2737,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_get_webhook",
+            "field_name": "primitive_tool_769d3371b49349df",
+            "identifier": "discourse_get_webhook",
+            "kind": "tool",
+            "title": "Get webhook",
+            "description": "Reads safe webhook configuration for administrators. Returns destination origin and fingerprint, never the complete URL or signing secret. Relationship IDs are capped at 100 and report truncation.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_handle_group_membership_request",
             "field_name": "primitive_tool_266723c0794ce65d",
             "identifier": "discourse_handle_group_membership_request",
@@ -2437,6 +2811,22 @@
             "risk": "external_side_effect",
             "required_scopes": [
               "mcp:private-messages:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_authoring_guides",
+            "field_name": "primitive_tool_868fbfe1674f55fa",
+            "identifier": "discourse_list_authoring_guides",
+            "kind": "tool",
+            "title": "List authoring guides",
+            "description": "Lists the local repository's authoring skills with descriptions and readable paths. Before authoring themes, styles, JavaScript, or other site code, find relevant skills here and read them with discourse_read_authoring_guide. Administrator only; requires the repository documentation to be installed.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2699,6 +3089,38 @@
             "available": true
           },
           {
+            "id": "tool:discourse_list_webhook_events",
+            "field_name": "primitive_tool_c9f60136e69a63e4",
+            "identifier": "discourse_list_webhook_events",
+            "kind": "tool",
+            "title": "List webhook events",
+            "description": "Lists administrator-only delivery history, newest first. Headers and bodies are omitted by default. include_content requires confirm_sensitive_content=true and mcp:private-messages:read because delivery bodies may contain private messages. Returns bounded JSON previews with current-configuration credential filtering; other sensitive forum or destination data may remain. Non-JSON and oversized bodies are omitted. content_limit bounds each preview.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_list_webhooks",
+            "field_name": "primitive_tool_4a16022a056ef79b",
+            "identifier": "discourse_list_webhooks",
+            "kind": "tool",
+            "title": "List webhooks",
+            "description": "Lists administrator-only webhook configurations, ordered by ID. Destination paths, queries, URL credentials, and signing secrets are omitted. Use the returned destination fingerprint for mutations. Relationship ID lists are capped at 100 and report truncation. include_catalog returns available event types and content types.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_manage_group_members",
             "field_name": "primitive_tool_b408514c90dfb6da",
             "identifier": "discourse_manage_group_members",
@@ -2795,6 +3217,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_ping_webhook",
+            "field_name": "primitive_tool_f1c79a3726911b19",
+            "identifier": "discourse_ping_webhook",
+            "kind": "tool",
+            "title": "Ping webhook",
+            "description": "Queues a ping using the existing webhook delivery job and retry behavior, including for an inactive webhook. Requires confirm_external_request=true and the current destination fingerprint. Enqueue success does not mean delivery succeeded; inspect delivery history for the outcome.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_post_set_deleted",
             "field_name": "primitive_tool_2c45fb72f4491f0d",
             "identifier": "discourse_post_set_deleted",
@@ -2821,6 +3259,22 @@
             "risk": "write",
             "required_scopes": [
               "discourse-reactions:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_read_authoring_guide",
+            "field_name": "primitive_tool_8307fe84fd9c4018",
+            "identifier": "discourse_read_authoring_guide",
+            "kind": "tool",
+            "title": "Read authoring guide",
+            "description": "Reads a bounded page of a local Markdown skill, companion reference, or developer guide under .skills/ or docs/developer-guides/, including untracked guides. Unlike source tools, guides do not require Git tracking. Paths are repository-relative; resolve links relative to the document's directory. Follow next_line for more. These are authoring instructions, not proof of installed runtime behavior. Local CLI commands described in guides are not available through this tool; report verification limits honestly. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2859,6 +3313,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_read_source",
+            "field_name": "primitive_tool_127569327976a08f",
+            "identifier": "discourse_read_source",
+            "kind": "tool",
+            "title": "Read source",
+            "description": "Reads a bounded page of a tracked code/documentation file from the site's core repository. Files are limited to 2 MiB; pages are limited to 256 KiB and 400 lines. Defaults to the reported Git revision with a commit-pinned GitHub reference. Optional working_tree mode is explicitly local, may differ from loaded processes, and has no matching public permalink. This is not shell access. Separate plugin checkouts and private configuration are unavailable. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_read_topic",
             "field_name": "primitive_tool_21c0b87c308eb6a8",
             "identifier": "discourse_read_topic",
@@ -2885,6 +3355,22 @@
             "risk": "read",
             "required_scopes": [
               "mcp:content:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_redeliver_webhook_event",
+            "field_name": "primitive_tool_9c3157beaa1ef26d",
+            "identifier": "discourse_redeliver_webhook_event",
+            "kind": "tool",
+            "title": "Redeliver webhook event",
+            "description": "Makes one administrator-authorized redelivery attempt using the original stored headers and payload and the existing outbound SSRF protection. Requires confirm_redelivery=true, the current destination fingerprint, and expected_event_status. The event must belong to this webhook and must not be a ping or already queued for redelivery. May send private forum data to an external destination; no bulk redelivery or automatic retry is performed. In-progress native attempts block overlapping calls. A call after completion is a new attempt, so do not retry automatically after a timeout.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -2971,6 +3457,22 @@
             "available": true
           },
           {
+            "id": "tool:discourse_search_source",
+            "field_name": "primitive_tool_3d394f488f186583",
+            "identifier": "discourse_search_source",
+            "kind": "tool",
+            "title": "Search source",
+            "description": "Searches tracked source files for a literal string, with bounded results and line numbers. Defaults to the site's reported Git revision. Use discourse_read_source for surrounding code; choose working_tree explicitly to inspect local edits. Broad queries may require narrowing. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_search_tag_groups",
             "field_name": "primitive_tool_51456312005b67e5",
             "identifier": "discourse_search_tag_groups",
@@ -2987,6 +3489,70 @@
             "available": true
           },
           {
+            "id": "tool:discourse_set_theme_code",
+            "field_name": "primitive_tool_ab9f6f39378230ea",
+            "identifier": "discourse_set_theme_code",
+            "kind": "tool",
+            "title": "Set theme code",
+            "description": "Preferred tool for inline theme code. First get_theme and copy code_revision into expected_code_revision. Supply plain css and/or javascript strings; no field arrays, upload IDs, or numeric types. CSS replaces common/common.scss; JavaScript replaces javascripts/discourse/api-initializers/mcp-theme-code.js and should import { apiInitializer } from discourse/lib/api and export default apiInitializer((api) => { ... }). Each input accepts at most 65,536 characters. Omitted inputs remain unchanged; empty strings remove these managed files. Does not attach/enable a component. Checks compilation and rejects a code revision that has changed since your read. The revision check coordinates edits through this tool; it does not prevent concurrent edits through other interfaces. Read the returned verification; saved code is not browser-verified.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:themes:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_closed",
+            "field_name": "primitive_tool_e96092d35a90ffe6",
+            "identifier": "discourse_set_topic_closed",
+            "kind": "tool",
+            "title": "Close or reopen topic",
+            "description": "Closes a topic with closed=true or reopens it with closed=false. Uses normal topic moderation permissions, status-change posts, timers, and staff logging. Returns persisted closed and archived state. Does not change archived status. Use this tool, not update_topic, to close or reopen topics.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_set_topic_pin",
+            "field_name": "primitive_tool_2714996c2f191b95",
+            "identifier": "discourse_set_topic_pin",
+            "kind": "tool",
+            "title": "Set topic pin",
+            "description": "Pins a topic in its category, pins it globally, or unpins it. Uses normal topic pin permissions and status-change behavior. Category/global pins remain until unpinned; this replaces any existing pin expiration. Returns persisted pin state. Use this tool rather than update_topic for pinning.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_silence_user",
+            "field_name": "primitive_tool_abd8a3b5b6a5d1a5",
+            "identifier": "discourse_silence_user",
+            "kind": "tool",
+            "title": "Silence user",
+            "description": "Silences a user for the requested duration, restricting posting while preserving login. Requires staff permissions, explicit confirmation, duration and reason. Uses standard silence audit/notification behavior without deleting posts; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
             "id": "tool:discourse_solved_solution_set",
             "field_name": "primitive_tool_a24a0c1aff488a10",
             "identifier": "discourse_solved_solution_set",
@@ -2997,6 +3563,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-solved:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_source_version",
+            "field_name": "primitive_tool_214decf2cde5b8f0",
+            "identifier": "discourse_source_version",
+            "kind": "tool",
+            "title": "Source version",
+            "description": "Reports the site's version, reported Git revision, local checkout revision, and whether tracked files have local edits. Use before inspecting source. Committed source is pinned to the reported revision, not latest main; this does not prove every running process has reloaded local changes. Administrator only.",
+            "provider": "core",
+            "risk": "read",
+            "required_scopes": [
+              "mcp:repository:read"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_suspend_user",
+            "field_name": "primitive_tool_40a228545813f188",
+            "identifier": "discourse_suspend_user",
+            "kind": "tool",
+            "title": "Suspend user",
+            "description": "Suspends a user, blocking login until the requested duration ends. Requires staff permissions, explicit confirmation, duration and reason. Does not deactivate the account or delete posts. Uses standard suspension audit/notification behavior; independent of reviewable status.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3061,6 +3659,38 @@
             "risk": "write",
             "required_scopes": [
               "discourse-topic-voting:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsilence_user",
+            "field_name": "primitive_tool_067d1f2dcfb29b1d",
+            "identifier": "discourse_unsilence_user",
+            "kind": "tool",
+            "title": "Unsilence user",
+            "description": "Removes the user's silence using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_unsuspend_user",
+            "field_name": "primitive_tool_98b590157a227398",
+            "identifier": "discourse_unsuspend_user",
+            "kind": "tool",
+            "title": "Unsuspend user",
+            "description": "Removes the user's suspension using standard staff permission checks and audit/notification behavior. Requires explicit confirmation. Returns verified current state; already-clear restrictions are a no-op.",
+            "provider": "core",
+            "risk": "moderation",
+            "required_scopes": [
+              "mcp:moderation:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3152,7 +3782,7 @@
             "identifier": "discourse_update_theme",
             "kind": "tool",
             "title": "Update theme",
-            "description": "Updates attributes and fields on a theme when the authenticated user may edit it.",
+            "description": "Updates theme metadata, component relationships, or advanced files/assets when the authenticated user may edit it. Set component:true to convert an existing non-default theme in place, preserving its ID and code; conversion removes incompatible relationships and resets palette/user-selectability. Attach components using parent_theme_ids (full replacement list); child_theme_ids also replaces the full list, so preserve existing components. enabled alone does not attach a component. Prefer discourse_set_theme_code for inline CSS/JavaScript; it chooses canonical paths and checks revision and compilation.",
             "provider": "core",
             "risk": "administration",
             "required_scopes": [
@@ -3200,7 +3830,7 @@
             "identifier": "discourse_update_topic",
             "kind": "tool",
             "title": "Update topic",
-            "description": "Updates fields on a topic when the user may edit it.",
+            "description": "Updates title, category, tags, or featured link when the user may edit the topic. Omit unchanged fields. To close or reopen, use discourse_set_topic_closed; to pin or unpin, use discourse_set_topic_pin.",
             "provider": "core",
             "risk": "write",
             "required_scopes": [
@@ -3221,6 +3851,22 @@
             "risk": "write",
             "required_scopes": [
               "mcp:profile:write"
+            ],
+            "enabled": false,
+            "emergency_blocked": false,
+            "available": true
+          },
+          {
+            "id": "tool:discourse_update_webhook",
+            "field_name": "primitive_tool_c7e2e02dcd6be2b7",
+            "identifier": "discourse_update_webhook",
+            "kind": "tool",
+            "title": "Update webhook",
+            "description": "Partially updates an administrator-only webhook after checking its current destination fingerprint and active state. Requires confirm_update=true. Omitted fields are preserved. Relationship arrays replace their complete selections and require confirm_scope_replacement=true when changed. Clearing the signing secret requires confirm_clear_secret=true. Retargeting an active hook also requires confirm_external_delivery=true. Risky configuration changes require the same confirmations as creation. Clearing relationship arrays removes those delivery filters.",
+            "provider": "core",
+            "risk": "administration",
+            "required_scopes": [
+              "mcp:webhooks:write"
             ],
             "enabled": false,
             "emergency_blocked": false,
@@ -3349,211 +3995,232 @@
           "id": 1,
           "scope": "chat:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 2,
           "scope": "chat:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 3,
           "scope": "discourse-calendar:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 4,
           "scope": "discourse-reactions:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 5,
           "scope": "discourse-solved:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 6,
           "scope": "discourse-topic-voting:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 7,
           "scope": "mcp:categories:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 8,
           "scope": "mcp:categories:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 9,
           "scope": "mcp:content:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 10,
           "scope": "mcp:content:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 11,
           "scope": "mcp:data-explorer:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 12,
           "scope": "mcp:drafts:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 13,
           "scope": "mcp:drafts:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 14,
           "scope": "mcp:groups:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 15,
           "scope": "mcp:groups:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 16,
           "scope": "mcp:moderation:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 17,
           "scope": "mcp:moderation:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 18,
           "scope": "mcp:private-messages:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 19,
           "scope": "mcp:private-messages:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 20,
           "scope": "mcp:profile:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 21,
           "scope": "mcp:profile:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 22,
           "scope": "mcp:reports:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 23,
-          "scope": "mcp:site-settings:read",
+          "scope": "mcp:repository:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 24,
-          "scope": "mcp:site-settings:write",
+          "scope": "mcp:site-settings:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 25,
-          "scope": "mcp:tag-groups:read",
+          "scope": "mcp:site-settings:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 26,
-          "scope": "mcp:tag-groups:write",
+          "scope": "mcp:tag-groups:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 27,
-          "scope": "mcp:themes:read",
+          "scope": "mcp:tag-groups:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 28,
-          "scope": "mcp:themes:write",
+          "scope": "mcp:themes:read",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 29,
-          "scope": "mcp:users:read",
+          "scope": "mcp:themes:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         },
         {
           "id": 30,
+          "scope": "mcp:users:read",
+          "group_id": 1,
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
+        },
+        {
+          "id": 31,
           "scope": "mcp:users:write",
           "group_id": 1,
-          "created_at": "2026-11-15T21:45:23.549465",
-          "updated_at": "2026-11-15T21:45:23.549465"
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
+        },
+        {
+          "id": 32,
+          "scope": "mcp:webhooks:read",
+          "group_id": 1,
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
+        },
+        {
+          "id": 33,
+          "scope": "mcp:webhooks:write",
+          "group_id": 1,
+          "created_at": "2026-11-22T00:09:47.023909",
+          "updated_at": "2026-11-22T00:09:47.023909"
         }
       ],
       "deleted": [],
@@ -3572,11 +4239,11 @@
             ],
             "user_id": 1,
             "resource": "http://localhost/mcp",
-            "created_at": "2026-11-15T21:45:22.060737",
-            "expires_at": "2026-11-15T22:45:22.060737",
+            "created_at": "2026-11-22T00:09:45.575038",
+            "expires_at": "2026-11-22T01:09:45.575038",
             "revoked_at": null,
             "token_hash": "hash-a",
-            "updated_at": "2026-11-15T21:45:22.060737",
+            "updated_at": "2026-11-22T00:09:45.575038",
             "last_used_at": null,
             "grant_version": 1,
             "mcp_oauth_client_id": 501,
@@ -3590,11 +4257,11 @@
             ],
             "user_id": 1,
             "resource": "http://localhost/mcp",
-            "created_at": "2026-11-15T21:45:22.060737",
-            "expires_at": "2026-11-15T22:45:22.060737",
-            "revoked_at": "2026-11-15T21:45:23.387455",
+            "created_at": "2026-11-22T00:09:45.575038",
+            "expires_at": "2026-11-22T01:09:45.575038",
+            "revoked_at": "2026-11-22T00:09:46.747425",
             "token_hash": "hash-a",
-            "updated_at": "2026-11-15T21:45:23.387455",
+            "updated_at": "2026-11-22T00:09:46.747425",
             "last_used_at": null,
             "grant_version": 1,
             "mcp_oauth_client_id": 501,
@@ -3613,10 +4280,10 @@
             "status": "active",
             "user_id": 1,
             "resource": "http://localhost/mcp",
-            "created_at": "2026-11-14T21:45:22.060737",
+            "created_at": "2026-11-21T00:09:45.575038",
             "revoked_at": null,
-            "updated_at": "2026-11-14T21:45:22.060737",
-            "consented_at": "2026-11-14T21:45:22.060737",
+            "updated_at": "2026-11-21T00:09:45.575038",
+            "consented_at": "2026-11-21T00:09:45.575038",
             "grant_version": 1,
             "revoked_reason": null,
             "revoked_by_user_id": null,
@@ -3628,10 +4295,10 @@
             "status": "consent_required",
             "user_id": 1,
             "resource": "http://localhost/mcp",
-            "created_at": "2026-11-14T21:45:22.060737",
+            "created_at": "2026-11-21T00:09:45.575038",
             "revoked_at": null,
-            "updated_at": "2026-11-15T21:45:23.387455",
-            "consented_at": "2026-11-14T21:45:22.060737",
+            "updated_at": "2026-11-22T00:09:46.747425",
+            "consented_at": "2026-11-21T00:09:45.575038",
             "grant_version": 1,
             "revoked_reason": null,
             "revoked_by_user_id": null,
@@ -3647,9 +4314,9 @@
           "id": 2,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.894657",
+          "created_at": "2026-11-22T00:09:46.372344",
           "identifier": "chat_message_create",
-          "updated_at": "2026-11-15T21:45:22.894657",
+          "updated_at": "2026-11-22T00:09:46.372344",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3657,9 +4324,9 @@
           "id": 4,
           "kind": "resource_template",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.902942",
+          "created_at": "2026-11-22T00:09:46.377794",
           "identifier": "discourse.post",
-          "updated_at": "2026-11-15T21:45:22.902942",
+          "updated_at": "2026-11-22T00:09:46.377794",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3667,9 +4334,9 @@
           "id": 5,
           "kind": "prompt",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.906005",
+          "created_at": "2026-11-22T00:09:46.380615",
           "identifier": "discourse.research_topic",
-          "updated_at": "2026-11-15T21:45:22.906005",
+          "updated_at": "2026-11-22T00:09:46.380615",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3677,9 +4344,9 @@
           "id": 6,
           "kind": "resource_template",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.908971",
+          "created_at": "2026-11-22T00:09:46.383316",
           "identifier": "discourse.topic",
-          "updated_at": "2026-11-15T21:45:22.908971",
+          "updated_at": "2026-11-22T00:09:46.383316",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3687,9 +4354,9 @@
           "id": 7,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.912605",
+          "created_at": "2026-11-22T00:09:46.386288",
           "identifier": "discourse_bookmark_list",
-          "updated_at": "2026-11-15T21:45:22.912605",
+          "updated_at": "2026-11-22T00:09:46.386288",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3697,9 +4364,9 @@
           "id": 8,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.915409",
+          "created_at": "2026-11-22T00:09:46.388925",
           "identifier": "discourse_calendar_event_list",
-          "updated_at": "2026-11-15T21:45:22.915409",
+          "updated_at": "2026-11-22T00:09:46.388925",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3707,9 +4374,9 @@
           "id": 9,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.918179",
+          "created_at": "2026-11-22T00:09:46.391529",
           "identifier": "discourse_category_list",
-          "updated_at": "2026-11-15T21:45:22.918179",
+          "updated_at": "2026-11-22T00:09:46.391529",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3717,9 +4384,9 @@
           "id": 10,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.921294",
+          "created_at": "2026-11-22T00:09:46.394173",
           "identifier": "discourse_create_category",
-          "updated_at": "2026-11-15T21:45:22.921294",
+          "updated_at": "2026-11-22T00:09:46.394173",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3727,9 +4394,9 @@
           "id": 11,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.924647",
+          "created_at": "2026-11-22T00:09:46.397024",
           "identifier": "discourse_create_group",
-          "updated_at": "2026-11-15T21:45:22.924647",
+          "updated_at": "2026-11-22T00:09:46.397024",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3737,9 +4404,9 @@
           "id": 12,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.92761",
+          "created_at": "2026-11-22T00:09:46.400076",
           "identifier": "discourse_create_post",
-          "updated_at": "2026-11-15T21:45:22.92761",
+          "updated_at": "2026-11-22T00:09:46.400076",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3747,9 +4414,9 @@
           "id": 13,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.930585",
+          "created_at": "2026-11-22T00:09:46.402731",
           "identifier": "discourse_create_private_message",
-          "updated_at": "2026-11-15T21:45:22.930585",
+          "updated_at": "2026-11-22T00:09:46.402731",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3757,9 +4424,9 @@
           "id": 14,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.934422",
+          "created_at": "2026-11-22T00:09:46.40545",
           "identifier": "discourse_create_tag_group",
-          "updated_at": "2026-11-15T21:45:22.934422",
+          "updated_at": "2026-11-22T00:09:46.40545",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3767,9 +4434,9 @@
           "id": 16,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.941329",
+          "created_at": "2026-11-22T00:09:46.411343",
           "identifier": "discourse_create_topic",
-          "updated_at": "2026-11-15T21:45:22.941329",
+          "updated_at": "2026-11-22T00:09:46.411343",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3777,9 +4444,9 @@
           "id": 17,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.945516",
+          "created_at": "2026-11-22T00:09:46.414576",
           "identifier": "discourse_create_user",
-          "updated_at": "2026-11-15T21:45:22.945516",
+          "updated_at": "2026-11-22T00:09:46.414576",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3787,9 +4454,9 @@
           "id": 18,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.948813",
-          "identifier": "discourse_current_user_get",
-          "updated_at": "2026-11-15T21:45:22.948813",
+          "created_at": "2026-11-22T00:09:46.41771",
+          "identifier": "discourse_create_webhook",
+          "updated_at": "2026-11-22T00:09:46.41771",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3797,9 +4464,9 @@
           "id": 19,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.952261",
-          "identifier": "discourse_delete_category",
-          "updated_at": "2026-11-15T21:45:22.952261",
+          "created_at": "2026-11-22T00:09:46.420922",
+          "identifier": "discourse_current_user_get",
+          "updated_at": "2026-11-22T00:09:46.420922",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3807,9 +4474,9 @@
           "id": 20,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.955445",
-          "identifier": "discourse_delete_draft",
-          "updated_at": "2026-11-15T21:45:22.955445",
+          "created_at": "2026-11-22T00:09:46.423892",
+          "identifier": "discourse_delete_category",
+          "updated_at": "2026-11-22T00:09:46.423892",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3817,9 +4484,9 @@
           "id": 21,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.958592",
-          "identifier": "discourse_delete_group",
-          "updated_at": "2026-11-15T21:45:22.958592",
+          "created_at": "2026-11-22T00:09:46.427152",
+          "identifier": "discourse_delete_draft",
+          "updated_at": "2026-11-22T00:09:46.427152",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3827,9 +4494,9 @@
           "id": 22,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.962246",
-          "identifier": "discourse_delete_tag_group",
-          "updated_at": "2026-11-15T21:45:22.962246",
+          "created_at": "2026-11-22T00:09:46.430663",
+          "identifier": "discourse_delete_group",
+          "updated_at": "2026-11-22T00:09:46.430663",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3837,9 +4504,9 @@
           "id": 23,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.966486",
-          "identifier": "discourse_delete_theme",
-          "updated_at": "2026-11-15T21:45:22.966486",
+          "created_at": "2026-11-22T00:09:46.433207",
+          "identifier": "discourse_delete_tag_group",
+          "updated_at": "2026-11-22T00:09:46.433207",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3847,9 +4514,9 @@
           "id": 24,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.970475",
-          "identifier": "discourse_filter_topics",
-          "updated_at": "2026-11-15T21:45:22.970475",
+          "created_at": "2026-11-22T00:09:46.435763",
+          "identifier": "discourse_delete_theme",
+          "updated_at": "2026-11-22T00:09:46.435763",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3857,9 +4524,9 @@
           "id": 25,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.973813",
-          "identifier": "discourse_get_category",
-          "updated_at": "2026-11-15T21:45:22.973813",
+          "created_at": "2026-11-22T00:09:46.438447",
+          "identifier": "discourse_delete_webhook",
+          "updated_at": "2026-11-22T00:09:46.438447",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3867,9 +4534,9 @@
           "id": 26,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.977198",
-          "identifier": "discourse_get_chat_messages",
-          "updated_at": "2026-11-15T21:45:22.977198",
+          "created_at": "2026-11-22T00:09:46.441271",
+          "identifier": "discourse_filter_topics",
+          "updated_at": "2026-11-22T00:09:46.441271",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3877,9 +4544,9 @@
           "id": 27,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.980785",
-          "identifier": "discourse_get_draft",
-          "updated_at": "2026-11-15T21:45:22.980785",
+          "created_at": "2026-11-22T00:09:46.44442",
+          "identifier": "discourse_get_category",
+          "updated_at": "2026-11-22T00:09:46.44442",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3887,9 +4554,9 @@
           "id": 28,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.985332",
-          "identifier": "discourse_get_group",
-          "updated_at": "2026-11-15T21:45:22.985332",
+          "created_at": "2026-11-22T00:09:46.447017",
+          "identifier": "discourse_get_chat_messages",
+          "updated_at": "2026-11-22T00:09:46.447017",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3897,9 +4564,9 @@
           "id": 29,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.988724",
-          "identifier": "discourse_get_post_replies",
-          "updated_at": "2026-11-15T21:45:22.988724",
+          "created_at": "2026-11-22T00:09:46.449747",
+          "identifier": "discourse_get_draft",
+          "updated_at": "2026-11-22T00:09:46.449747",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3907,9 +4574,9 @@
           "id": 30,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.992315",
-          "identifier": "discourse_get_post_revision",
-          "updated_at": "2026-11-15T21:45:22.992315",
+          "created_at": "2026-11-22T00:09:46.452406",
+          "identifier": "discourse_get_group",
+          "updated_at": "2026-11-22T00:09:46.452406",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3917,9 +4584,9 @@
           "id": 31,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.995683",
-          "identifier": "discourse_get_query",
-          "updated_at": "2026-11-15T21:45:22.995683",
+          "created_at": "2026-11-22T00:09:46.454967",
+          "identifier": "discourse_get_post_replies",
+          "updated_at": "2026-11-22T00:09:46.454967",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3927,9 +4594,9 @@
           "id": 32,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.999614",
-          "identifier": "discourse_get_report",
-          "updated_at": "2026-11-15T21:45:22.999614",
+          "created_at": "2026-11-22T00:09:46.457444",
+          "identifier": "discourse_get_post_revision",
+          "updated_at": "2026-11-22T00:09:46.457444",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3937,9 +4604,9 @@
           "id": 33,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.003104",
-          "identifier": "discourse_get_review_queue_count",
-          "updated_at": "2026-11-15T21:45:23.003104",
+          "created_at": "2026-11-22T00:09:46.45992",
+          "identifier": "discourse_get_query",
+          "updated_at": "2026-11-22T00:09:46.45992",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3947,9 +4614,9 @@
           "id": 34,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.006529",
-          "identifier": "discourse_get_reviewable",
-          "updated_at": "2026-11-15T21:45:23.006529",
+          "created_at": "2026-11-22T00:09:46.462314",
+          "identifier": "discourse_get_report",
+          "updated_at": "2026-11-22T00:09:46.462314",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3957,9 +4624,9 @@
           "id": 35,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.009614",
-          "identifier": "discourse_get_tag_group",
-          "updated_at": "2026-11-15T21:45:23.009614",
+          "created_at": "2026-11-22T00:09:46.465124",
+          "identifier": "discourse_get_review_queue_count",
+          "updated_at": "2026-11-22T00:09:46.465124",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3967,9 +4634,9 @@
           "id": 36,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.01257",
-          "identifier": "discourse_get_theme",
-          "updated_at": "2026-11-15T21:45:23.01257",
+          "created_at": "2026-11-22T00:09:46.467761",
+          "identifier": "discourse_get_reviewable",
+          "updated_at": "2026-11-22T00:09:46.467761",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3977,9 +4644,9 @@
           "id": 37,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.015357",
-          "identifier": "discourse_get_topic_view_stats",
-          "updated_at": "2026-11-15T21:45:23.015357",
+          "created_at": "2026-11-22T00:09:46.47121",
+          "identifier": "discourse_get_tag_group",
+          "updated_at": "2026-11-22T00:09:46.47121",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3987,9 +4654,9 @@
           "id": 38,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.017912",
-          "identifier": "discourse_get_user",
-          "updated_at": "2026-11-15T21:45:23.017912",
+          "created_at": "2026-11-22T00:09:46.473766",
+          "identifier": "discourse_get_theme",
+          "updated_at": "2026-11-22T00:09:46.473766",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -3997,9 +4664,9 @@
           "id": 39,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.02062",
-          "identifier": "discourse_get_user_moderation_summary",
-          "updated_at": "2026-11-15T21:45:23.02062",
+          "created_at": "2026-11-22T00:09:46.476352",
+          "identifier": "discourse_get_topic_view_stats",
+          "updated_at": "2026-11-22T00:09:46.476352",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4007,9 +4674,9 @@
           "id": 40,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.023335",
-          "identifier": "discourse_get_user_summary",
-          "updated_at": "2026-11-15T21:45:23.023335",
+          "created_at": "2026-11-22T00:09:46.479615",
+          "identifier": "discourse_get_user",
+          "updated_at": "2026-11-22T00:09:46.479615",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4017,9 +4684,9 @@
           "id": 41,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.026017",
-          "identifier": "discourse_handle_group_membership_request",
-          "updated_at": "2026-11-15T21:45:23.026017",
+          "created_at": "2026-11-22T00:09:46.482541",
+          "identifier": "discourse_get_user_moderation_summary",
+          "updated_at": "2026-11-22T00:09:46.482541",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4027,9 +4694,9 @@
           "id": 42,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.028825",
-          "identifier": "discourse_install_theme",
-          "updated_at": "2026-11-15T21:45:23.028825",
+          "created_at": "2026-11-22T00:09:46.485118",
+          "identifier": "discourse_get_user_summary",
+          "updated_at": "2026-11-22T00:09:46.485118",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4037,9 +4704,9 @@
           "id": 43,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.03164",
-          "identifier": "discourse_invite_group_members",
-          "updated_at": "2026-11-15T21:45:23.03164",
+          "created_at": "2026-11-22T00:09:46.487757",
+          "identifier": "discourse_get_webhook",
+          "updated_at": "2026-11-22T00:09:46.487757",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4047,9 +4714,9 @@
           "id": 44,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.034552",
-          "identifier": "discourse_invite_to_private_message",
-          "updated_at": "2026-11-15T21:45:23.034552",
+          "created_at": "2026-11-22T00:09:46.490551",
+          "identifier": "discourse_handle_group_membership_request",
+          "updated_at": "2026-11-22T00:09:46.490551",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4057,9 +4724,9 @@
           "id": 45,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.037456",
-          "identifier": "discourse_list_directory_items",
-          "updated_at": "2026-11-15T21:45:23.037456",
+          "created_at": "2026-11-22T00:09:46.493433",
+          "identifier": "discourse_install_theme",
+          "updated_at": "2026-11-22T00:09:46.493433",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4067,9 +4734,9 @@
           "id": 46,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.045769",
-          "identifier": "discourse_list_group_members",
-          "updated_at": "2026-11-15T21:45:23.045769",
+          "created_at": "2026-11-22T00:09:46.497027",
+          "identifier": "discourse_invite_group_members",
+          "updated_at": "2026-11-22T00:09:46.497027",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4077,9 +4744,9 @@
           "id": 47,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.054773",
-          "identifier": "discourse_list_group_membership_requests",
-          "updated_at": "2026-11-15T21:45:23.054773",
+          "created_at": "2026-11-22T00:09:46.499844",
+          "identifier": "discourse_invite_to_private_message",
+          "updated_at": "2026-11-22T00:09:46.499844",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4087,9 +4754,9 @@
           "id": 48,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.065966",
-          "identifier": "discourse_list_group_posts",
-          "updated_at": "2026-11-15T21:45:23.065966",
+          "created_at": "2026-11-22T00:09:46.502512",
+          "identifier": "discourse_list_authoring_guides",
+          "updated_at": "2026-11-22T00:09:46.502512",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4097,9 +4764,9 @@
           "id": 49,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.075457",
-          "identifier": "discourse_list_groups",
-          "updated_at": "2026-11-15T21:45:23.075457",
+          "created_at": "2026-11-22T00:09:46.505222",
+          "identifier": "discourse_list_directory_items",
+          "updated_at": "2026-11-22T00:09:46.505222",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4107,9 +4774,9 @@
           "id": 50,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.087181",
-          "identifier": "discourse_list_latest_posts",
-          "updated_at": "2026-11-15T21:45:23.087181",
+          "created_at": "2026-11-22T00:09:46.507929",
+          "identifier": "discourse_list_group_members",
+          "updated_at": "2026-11-22T00:09:46.507929",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4117,9 +4784,9 @@
           "id": 51,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.100865",
-          "identifier": "discourse_list_private_messages",
-          "updated_at": "2026-11-15T21:45:23.100865",
+          "created_at": "2026-11-22T00:09:46.510724",
+          "identifier": "discourse_list_group_membership_requests",
+          "updated_at": "2026-11-22T00:09:46.510724",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4127,9 +4794,9 @@
           "id": 52,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.123014",
-          "identifier": "discourse_list_reports",
-          "updated_at": "2026-11-15T21:45:23.123014",
+          "created_at": "2026-11-22T00:09:46.513566",
+          "identifier": "discourse_list_group_posts",
+          "updated_at": "2026-11-22T00:09:46.513566",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4137,9 +4804,9 @@
           "id": 53,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.132328",
-          "identifier": "discourse_list_reviewable_topics",
-          "updated_at": "2026-11-15T21:45:23.132328",
+          "created_at": "2026-11-22T00:09:46.516415",
+          "identifier": "discourse_list_groups",
+          "updated_at": "2026-11-22T00:09:46.516415",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4147,9 +4814,9 @@
           "id": 54,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.141448",
-          "identifier": "discourse_list_reviewables",
-          "updated_at": "2026-11-15T21:45:23.141448",
+          "created_at": "2026-11-22T00:09:46.519351",
+          "identifier": "discourse_list_latest_posts",
+          "updated_at": "2026-11-22T00:09:46.519351",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4157,9 +4824,9 @@
           "id": 55,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.150991",
-          "identifier": "discourse_list_site_settings",
-          "updated_at": "2026-11-15T21:45:23.150991",
+          "created_at": "2026-11-22T00:09:46.522159",
+          "identifier": "discourse_list_private_messages",
+          "updated_at": "2026-11-22T00:09:46.522159",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4167,9 +4834,9 @@
           "id": 56,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.160518",
-          "identifier": "discourse_list_tag_groups",
-          "updated_at": "2026-11-15T21:45:23.160518",
+          "created_at": "2026-11-22T00:09:46.52493",
+          "identifier": "discourse_list_reports",
+          "updated_at": "2026-11-22T00:09:46.52493",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4177,9 +4844,9 @@
           "id": 57,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.168399",
-          "identifier": "discourse_list_themes",
-          "updated_at": "2026-11-15T21:45:23.168399",
+          "created_at": "2026-11-22T00:09:46.535607",
+          "identifier": "discourse_list_reviewable_topics",
+          "updated_at": "2026-11-22T00:09:46.535607",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4187,9 +4854,9 @@
           "id": 58,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.17745",
-          "identifier": "discourse_list_user_actions",
-          "updated_at": "2026-11-15T21:45:23.17745",
+          "created_at": "2026-11-22T00:09:46.539868",
+          "identifier": "discourse_list_reviewables",
+          "updated_at": "2026-11-22T00:09:46.539868",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4197,9 +4864,9 @@
           "id": 59,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.186971",
-          "identifier": "discourse_list_user_posts",
-          "updated_at": "2026-11-15T21:45:23.186971",
+          "created_at": "2026-11-22T00:09:46.543329",
+          "identifier": "discourse_list_site_settings",
+          "updated_at": "2026-11-22T00:09:46.543329",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4207,9 +4874,9 @@
           "id": 60,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.194204",
-          "identifier": "discourse_list_users",
-          "updated_at": "2026-11-15T21:45:23.194204",
+          "created_at": "2026-11-22T00:09:46.547096",
+          "identifier": "discourse_list_tag_groups",
+          "updated_at": "2026-11-22T00:09:46.547096",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4217,9 +4884,9 @@
           "id": 61,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.201977",
-          "identifier": "discourse_manage_group_members",
-          "updated_at": "2026-11-15T21:45:23.201977",
+          "created_at": "2026-11-22T00:09:46.550414",
+          "identifier": "discourse_list_themes",
+          "updated_at": "2026-11-22T00:09:46.550414",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4227,9 +4894,9 @@
           "id": 62,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.209145",
-          "identifier": "discourse_manage_group_membership",
-          "updated_at": "2026-11-15T21:45:23.209145",
+          "created_at": "2026-11-22T00:09:46.553659",
+          "identifier": "discourse_list_user_actions",
+          "updated_at": "2026-11-22T00:09:46.553659",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4237,9 +4904,9 @@
           "id": 63,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.214341",
-          "identifier": "discourse_manage_group_owners",
-          "updated_at": "2026-11-15T21:45:23.214341",
+          "created_at": "2026-11-22T00:09:46.556957",
+          "identifier": "discourse_list_user_posts",
+          "updated_at": "2026-11-22T00:09:46.556957",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4247,9 +4914,9 @@
           "id": 64,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.219001",
-          "identifier": "discourse_manage_user_activation",
-          "updated_at": "2026-11-15T21:45:23.219001",
+          "created_at": "2026-11-22T00:09:46.560412",
+          "identifier": "discourse_list_users",
+          "updated_at": "2026-11-22T00:09:46.560412",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4257,9 +4924,9 @@
           "id": 65,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.229709",
-          "identifier": "discourse_notification_list",
-          "updated_at": "2026-11-15T21:45:23.229709",
+          "created_at": "2026-11-22T00:09:46.563516",
+          "identifier": "discourse_list_webhook_events",
+          "updated_at": "2026-11-22T00:09:46.563516",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4267,9 +4934,9 @@
           "id": 66,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.238142",
-          "identifier": "discourse_perform_reviewable_action",
-          "updated_at": "2026-11-15T21:45:23.238142",
+          "created_at": "2026-11-22T00:09:46.56727",
+          "identifier": "discourse_list_webhooks",
+          "updated_at": "2026-11-22T00:09:46.56727",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4277,9 +4944,9 @@
           "id": 67,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.246801",
-          "identifier": "discourse_post_set_deleted",
-          "updated_at": "2026-11-15T21:45:23.246801",
+          "created_at": "2026-11-22T00:09:46.570864",
+          "identifier": "discourse_manage_group_members",
+          "updated_at": "2026-11-22T00:09:46.570864",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4287,9 +4954,9 @@
           "id": 68,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.259609",
-          "identifier": "discourse_reactions_post_reaction_set",
-          "updated_at": "2026-11-15T21:45:23.259609",
+          "created_at": "2026-11-22T00:09:46.574456",
+          "identifier": "discourse_manage_group_membership",
+          "updated_at": "2026-11-22T00:09:46.574456",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4297,9 +4964,9 @@
           "id": 69,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.27419",
-          "identifier": "discourse_read_post",
-          "updated_at": "2026-11-15T21:45:23.27419",
+          "created_at": "2026-11-22T00:09:46.577797",
+          "identifier": "discourse_manage_group_owners",
+          "updated_at": "2026-11-22T00:09:46.577797",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4307,9 +4974,9 @@
           "id": 70,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.282676",
-          "identifier": "discourse_read_private_message",
-          "updated_at": "2026-11-15T21:45:23.282676",
+          "created_at": "2026-11-22T00:09:46.581139",
+          "identifier": "discourse_manage_user_activation",
+          "updated_at": "2026-11-22T00:09:46.581139",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4317,9 +4984,9 @@
           "id": 71,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.286784",
-          "identifier": "discourse_read_topic",
-          "updated_at": "2026-11-15T21:45:23.286784",
+          "created_at": "2026-11-22T00:09:46.584749",
+          "identifier": "discourse_notification_list",
+          "updated_at": "2026-11-22T00:09:46.584749",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4327,9 +4994,9 @@
           "id": 72,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.290468",
-          "identifier": "discourse_read_topic_posts",
-          "updated_at": "2026-11-15T21:45:23.290468",
+          "created_at": "2026-11-22T00:09:46.587978",
+          "identifier": "discourse_perform_reviewable_action",
+          "updated_at": "2026-11-22T00:09:46.587978",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4337,9 +5004,9 @@
           "id": 73,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.294635",
-          "identifier": "discourse_reply_private_message",
-          "updated_at": "2026-11-15T21:45:23.294635",
+          "created_at": "2026-11-22T00:09:46.591056",
+          "identifier": "discourse_ping_webhook",
+          "updated_at": "2026-11-22T00:09:46.591056",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4347,9 +5014,9 @@
           "id": 74,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.298214",
-          "identifier": "discourse_run_query",
-          "updated_at": "2026-11-15T21:45:23.298214",
+          "created_at": "2026-11-22T00:09:46.594471",
+          "identifier": "discourse_post_set_deleted",
+          "updated_at": "2026-11-22T00:09:46.594471",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4357,19 +5024,19 @@
           "id": 75,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.302306",
-          "identifier": "discourse_save_draft",
-          "updated_at": "2026-11-15T21:45:23.302306",
+          "created_at": "2026-11-22T00:09:46.597493",
+          "identifier": "discourse_reactions_post_reaction_set",
+          "updated_at": "2026-11-22T00:09:46.597493",
           "emergency_blocked": false,
           "consent_required_at": null
         },
         {
           "id": 76,
           "kind": "tool",
-          "enabled": true,
-          "created_at": "2026-11-15T21:45:23.306406",
-          "identifier": "discourse_search",
-          "updated_at": "2026-11-15T21:45:23.306406",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.600455",
+          "identifier": "discourse_read_authoring_guide",
+          "updated_at": "2026-11-22T00:09:46.600455",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4377,9 +5044,9 @@
           "id": 77,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.310196",
-          "identifier": "discourse_search_posts",
-          "updated_at": "2026-11-15T21:45:23.310196",
+          "created_at": "2026-11-22T00:09:46.6034",
+          "identifier": "discourse_read_post",
+          "updated_at": "2026-11-22T00:09:46.6034",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4387,9 +5054,9 @@
           "id": 78,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.313658",
-          "identifier": "discourse_search_tag_groups",
-          "updated_at": "2026-11-15T21:45:23.313658",
+          "created_at": "2026-11-22T00:09:46.606299",
+          "identifier": "discourse_read_private_message",
+          "updated_at": "2026-11-22T00:09:46.606299",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4397,9 +5064,9 @@
           "id": 79,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.318118",
-          "identifier": "discourse_solved_solution_set",
-          "updated_at": "2026-11-15T21:45:23.318118",
+          "created_at": "2026-11-22T00:09:46.609422",
+          "identifier": "discourse_read_source",
+          "updated_at": "2026-11-22T00:09:46.609422",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4407,9 +5074,9 @@
           "id": 80,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.322108",
-          "identifier": "discourse_sync_remote_theme",
-          "updated_at": "2026-11-15T21:45:23.322108",
+          "created_at": "2026-11-22T00:09:46.612214",
+          "identifier": "discourse_read_topic",
+          "updated_at": "2026-11-22T00:09:46.612214",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4417,9 +5084,9 @@
           "id": 81,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.325554",
-          "identifier": "discourse_tag_list",
-          "updated_at": "2026-11-15T21:45:23.325554",
+          "created_at": "2026-11-22T00:09:46.615673",
+          "identifier": "discourse_read_topic_posts",
+          "updated_at": "2026-11-22T00:09:46.615673",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4427,9 +5094,9 @@
           "id": 82,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.329005",
-          "identifier": "discourse_topic_list",
-          "updated_at": "2026-11-15T21:45:23.329005",
+          "created_at": "2026-11-22T00:09:46.618918",
+          "identifier": "discourse_redeliver_webhook_event",
+          "updated_at": "2026-11-22T00:09:46.618918",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4437,9 +5104,9 @@
           "id": 83,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.333016",
-          "identifier": "discourse_topic_voting_vote_set",
-          "updated_at": "2026-11-15T21:45:23.333016",
+          "created_at": "2026-11-22T00:09:46.622164",
+          "identifier": "discourse_reply_private_message",
+          "updated_at": "2026-11-22T00:09:46.622164",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4447,9 +5114,9 @@
           "id": 84,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.336748",
-          "identifier": "discourse_update_category",
-          "updated_at": "2026-11-15T21:45:23.336748",
+          "created_at": "2026-11-22T00:09:46.625681",
+          "identifier": "discourse_run_query",
+          "updated_at": "2026-11-22T00:09:46.625681",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4457,19 +5124,19 @@
           "id": 85,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.340277",
-          "identifier": "discourse_update_group",
-          "updated_at": "2026-11-15T21:45:23.340277",
+          "created_at": "2026-11-22T00:09:46.628829",
+          "identifier": "discourse_save_draft",
+          "updated_at": "2026-11-22T00:09:46.628829",
           "emergency_blocked": false,
           "consent_required_at": null
         },
         {
           "id": 86,
           "kind": "tool",
-          "enabled": false,
-          "created_at": "2026-11-15T21:45:23.343711",
-          "identifier": "discourse_update_post",
-          "updated_at": "2026-11-15T21:45:23.343711",
+          "enabled": true,
+          "created_at": "2026-11-22T00:09:46.632098",
+          "identifier": "discourse_search",
+          "updated_at": "2026-11-22T00:09:46.632098",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4477,9 +5144,9 @@
           "id": 87,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.347586",
-          "identifier": "discourse_update_site_setting",
-          "updated_at": "2026-11-15T21:45:23.347586",
+          "created_at": "2026-11-22T00:09:46.635373",
+          "identifier": "discourse_search_posts",
+          "updated_at": "2026-11-22T00:09:46.635373",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4487,9 +5154,9 @@
           "id": 88,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.352592",
-          "identifier": "discourse_update_tag_group",
-          "updated_at": "2026-11-15T21:45:23.352592",
+          "created_at": "2026-11-22T00:09:46.638866",
+          "identifier": "discourse_search_source",
+          "updated_at": "2026-11-22T00:09:46.638866",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4497,9 +5164,9 @@
           "id": 89,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.356684",
-          "identifier": "discourse_update_theme",
-          "updated_at": "2026-11-15T21:45:23.356684",
+          "created_at": "2026-11-22T00:09:46.642685",
+          "identifier": "discourse_search_tag_groups",
+          "updated_at": "2026-11-22T00:09:46.642685",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4507,9 +5174,9 @@
           "id": 90,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.360135",
-          "identifier": "discourse_update_theme_setting",
-          "updated_at": "2026-11-15T21:45:23.360135",
+          "created_at": "2026-11-22T00:09:46.645806",
+          "identifier": "discourse_set_theme_code",
+          "updated_at": "2026-11-22T00:09:46.645806",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4517,9 +5184,9 @@
           "id": 91,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.364192",
-          "identifier": "discourse_update_theme_translations",
-          "updated_at": "2026-11-15T21:45:23.364192",
+          "created_at": "2026-11-22T00:09:46.648753",
+          "identifier": "discourse_set_topic_closed",
+          "updated_at": "2026-11-22T00:09:46.648753",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4527,9 +5194,9 @@
           "id": 92,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.368133",
-          "identifier": "discourse_update_topic",
-          "updated_at": "2026-11-15T21:45:23.368133",
+          "created_at": "2026-11-22T00:09:46.651754",
+          "identifier": "discourse_set_topic_pin",
+          "updated_at": "2026-11-22T00:09:46.651754",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4537,9 +5204,9 @@
           "id": 93,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.371623",
-          "identifier": "discourse_update_user",
-          "updated_at": "2026-11-15T21:45:23.371623",
+          "created_at": "2026-11-22T00:09:46.65564",
+          "identifier": "discourse_silence_user",
+          "updated_at": "2026-11-22T00:09:46.65564",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4547,9 +5214,9 @@
           "id": 94,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.375153",
-          "identifier": "discourse_upload_file",
-          "updated_at": "2026-11-15T21:45:23.375153",
+          "created_at": "2026-11-22T00:09:46.659282",
+          "identifier": "discourse_solved_solution_set",
+          "updated_at": "2026-11-22T00:09:46.659282",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4557,9 +5224,9 @@
           "id": 95,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.378742",
-          "identifier": "discourse_upload_theme_asset",
-          "updated_at": "2026-11-15T21:45:23.378742",
+          "created_at": "2026-11-22T00:09:46.662861",
+          "identifier": "discourse_source_version",
+          "updated_at": "2026-11-22T00:09:46.662861",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4567,9 +5234,209 @@
           "id": 96,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:23.382927",
+          "created_at": "2026-11-22T00:09:46.666654",
+          "identifier": "discourse_suspend_user",
+          "updated_at": "2026-11-22T00:09:46.666654",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 97,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.670426",
+          "identifier": "discourse_sync_remote_theme",
+          "updated_at": "2026-11-22T00:09:46.670426",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 98,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.674458",
+          "identifier": "discourse_tag_list",
+          "updated_at": "2026-11-22T00:09:46.674458",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 99,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.677932",
+          "identifier": "discourse_topic_list",
+          "updated_at": "2026-11-22T00:09:46.677932",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 100,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.682251",
+          "identifier": "discourse_topic_voting_vote_set",
+          "updated_at": "2026-11-22T00:09:46.682251",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 101,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.68554",
+          "identifier": "discourse_unsilence_user",
+          "updated_at": "2026-11-22T00:09:46.68554",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 102,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.688744",
+          "identifier": "discourse_unsuspend_user",
+          "updated_at": "2026-11-22T00:09:46.688744",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 103,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.692175",
+          "identifier": "discourse_update_category",
+          "updated_at": "2026-11-22T00:09:46.692175",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 104,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.695209",
+          "identifier": "discourse_update_group",
+          "updated_at": "2026-11-22T00:09:46.695209",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 105,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.698719",
+          "identifier": "discourse_update_post",
+          "updated_at": "2026-11-22T00:09:46.698719",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 106,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.701761",
+          "identifier": "discourse_update_site_setting",
+          "updated_at": "2026-11-22T00:09:46.701761",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 107,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.704681",
+          "identifier": "discourse_update_tag_group",
+          "updated_at": "2026-11-22T00:09:46.704681",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 108,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.70767",
+          "identifier": "discourse_update_theme",
+          "updated_at": "2026-11-22T00:09:46.70767",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 109,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.710246",
+          "identifier": "discourse_update_theme_setting",
+          "updated_at": "2026-11-22T00:09:46.710246",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 110,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.712799",
+          "identifier": "discourse_update_theme_translations",
+          "updated_at": "2026-11-22T00:09:46.712799",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 111,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.715398",
+          "identifier": "discourse_update_topic",
+          "updated_at": "2026-11-22T00:09:46.715398",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 112,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.718081",
+          "identifier": "discourse_update_user",
+          "updated_at": "2026-11-22T00:09:46.718081",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 113,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.720694",
+          "identifier": "discourse_update_webhook",
+          "updated_at": "2026-11-22T00:09:46.720694",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 114,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.72329",
+          "identifier": "discourse_upload_file",
+          "updated_at": "2026-11-22T00:09:46.72329",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 115,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.729288",
+          "identifier": "discourse_upload_theme_asset",
+          "updated_at": "2026-11-22T00:09:46.729288",
+          "emergency_blocked": false,
+          "consent_required_at": null
+        },
+        {
+          "id": 116,
+          "kind": "tool",
+          "enabled": false,
+          "created_at": "2026-11-22T00:09:46.735735",
           "identifier": "discourse_user_status_set",
-          "updated_at": "2026-11-15T21:45:23.382927",
+          "updated_at": "2026-11-22T00:09:46.735735",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4577,9 +5444,9 @@
           "id": 1,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.891227",
+          "created_at": "2026-11-22T00:09:46.368548",
           "identifier": "chat_channel_list",
-          "updated_at": "2026-11-15T21:45:23.574289",
+          "updated_at": "2026-11-22T00:09:47.049208",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4587,9 +5454,9 @@
           "id": 3,
           "kind": "prompt",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.899432",
+          "created_at": "2026-11-22T00:09:46.375097",
           "identifier": "discourse.draft_reply",
-          "updated_at": "2026-11-15T21:45:23.578108",
+          "updated_at": "2026-11-22T00:09:47.052354",
           "emergency_blocked": false,
           "consent_required_at": null
         },
@@ -4597,11 +5464,11 @@
           "id": 15,
           "kind": "tool",
           "enabled": false,
-          "created_at": "2026-11-15T21:45:22.937853",
+          "created_at": "2026-11-22T00:09:46.408456",
           "identifier": "discourse_create_theme",
-          "updated_at": "2026-11-15T21:45:23.590873",
+          "updated_at": "2026-11-22T00:09:47.065826",
           "emergency_blocked": false,
-          "consent_required_at": "2026-11-15T21:45:23.46698"
+          "consent_required_at": "2026-11-22T00:09:46.903634"
         }
       ],
       "deleted": [],
@@ -4613,33 +5480,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "f5rCS/r+ctDvEzpsups+Ncql1o8=",
-            "created_at": "2026-11-15T21:45:22.364506",
-            "rotated_at": "2026-11-15T21:45:22.363722",
-            "updated_at": "2026-11-15T21:45:22.364506",
+            "auth_token": "Hkni+16fJLo+aQOeMUGDyd9jO68=",
+            "created_at": "2026-11-22T00:09:45.870625",
+            "rotated_at": "2026-11-22T00:09:45.86976",
+            "updated_at": "2026-11-22T00:09:45.870625",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "f5rCS/r+ctDvEzpsups+Ncql1o8=",
+            "prev_auth_token": "Hkni+16fJLo+aQOeMUGDyd9jO68=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T21:45:22.878086",
+            "id": 1,
+            "seen_at": "2026-11-22T00:09:46.354231",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "f5rCS/r+ctDvEzpsups+Ncql1o8=",
-            "created_at": "2026-11-15T21:45:22.364506",
-            "rotated_at": "2026-11-15T21:45:22.363722",
-            "updated_at": "2026-11-15T21:45:22.364506",
+            "auth_token": "Hkni+16fJLo+aQOeMUGDyd9jO68=",
+            "created_at": "2026-11-22T00:09:45.870625",
+            "rotated_at": "2026-11-22T00:09:45.86976",
+            "updated_at": "2026-11-22T00:09:45.870625",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "f5rCS/r+ctDvEzpsups+Ncql1o8=",
+            "prev_auth_token": "Hkni+16fJLo+aQOeMUGDyd9jO68=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -4650,7 +5517,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 72,
           "email": null,
           "action": 23,
           "context": null,
@@ -4660,10 +5527,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T21:45:23.391269",
+          "created_at": "2026-11-22T00:09:46.757518",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:45:23.391269",
+          "updated_at": "2026-11-22T00:09:46.757518",
           "category_id": null,
           "custom_type": "mcp_primitives_updated",
           "reviewable_id": null,
@@ -4672,7 +5539,7 @@
           "target_user_id": null
         },
         {
-          "id": 69,
+          "id": 73,
           "email": null,
           "action": 23,
           "context": null,
@@ -4682,10 +5549,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T21:45:23.443022",
+          "created_at": "2026-11-22T00:09:46.866411",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:45:23.443022",
+          "updated_at": "2026-11-22T00:09:46.866411",
           "category_id": null,
           "custom_type": "mcp_primitive_emergency_block_updated",
           "reviewable_id": null,
@@ -4694,7 +5561,7 @@
           "target_user_id": null
         },
         {
-          "id": 70,
+          "id": 74,
           "email": null,
           "action": 23,
           "context": null,
@@ -4704,10 +5571,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T21:45:23.472215",
+          "created_at": "2026-11-22T00:09:46.924969",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:45:23.472215",
+          "updated_at": "2026-11-22T00:09:46.924969",
           "category_id": null,
           "custom_type": "mcp_primitive_emergency_block_updated",
           "reviewable_id": null,
@@ -4716,7 +5583,7 @@
           "target_user_id": null
         },
         {
-          "id": 71,
+          "id": 75,
           "email": null,
           "action": 23,
           "context": null,
@@ -4726,10 +5593,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T21:45:23.492426",
+          "created_at": "2026-11-22T00:09:46.965479",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:45:23.492426",
+          "updated_at": "2026-11-22T00:09:46.965479",
           "category_id": null,
           "custom_type": "mcp_primitive_emergency_block_updated",
           "reviewable_id": null,
@@ -4738,7 +5605,7 @@
           "target_user_id": null
         },
         {
-          "id": 72,
+          "id": 76,
           "email": null,
           "action": 23,
           "context": null,
@@ -4748,10 +5615,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T21:45:23.687588",
+          "created_at": "2026-11-22T00:09:47.176528",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T21:45:23.687588",
+          "updated_at": "2026-11-22T00:09:47.176528",
           "category_id": null,
           "custom_type": "mcp_primitives_updated",
           "reviewable_id": null,
@@ -4768,7 +5635,7 @@
   "next_ids": {
     "mcp_group_scopes": 1,
     "mcp_primitives": 1,
-    "user_histories": 68
+    "user_histories": 72
   },
   "settings": {
     "mcp_server_enabled": true,
@@ -4782,7 +5649,7 @@
   ],
   "recorded_from": {
     "case": "f7555ccd2adce23294c5394f487f2a67ed45aceeffc5aa7750ee0a9f96ef4127",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

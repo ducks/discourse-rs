@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T23:23:18.572519",
-  "transaction_started_at": "2026-11-15T23:23:17.722084",
+  "started_at": "2026-11-22T01:12:30.806951",
+  "transaction_started_at": "2026-11-22T01:12:29.817254",
   "responses": [
     {
       "status": 200,
@@ -35,8 +35,8 @@
           "id": 1,
           "edited": null,
           "status": 2,
-          "created_at": "2026-11-15T23:23:18.601967",
-          "updated_at": "2026-11-15T23:23:18.601967",
+          "created_at": "2026-11-22T01:12:30.84241",
+          "updated_at": "2026-11-22T01:12:30.84241",
           "created_by_id": 1,
           "reviewable_id": 9311,
           "reviewable_history_type": 1
@@ -76,7 +76,7 @@
             "user_id": -1,
             "created_at": "2026-10-02T10:00:00",
             "updated_at": "2026-10-02T10:00:00",
-            "reviewed_at": "2026-11-15T23:23:18.60535",
+            "reviewed_at": "2026-11-22T01:12:30.847029",
             "meta_topic_id": null,
             "reviewable_id": 9311,
             "reviewed_by_id": 1,
@@ -136,7 +136,7 @@
             "topic_id": 35,
             "target_id": null,
             "created_at": "2026-10-02T10:00:00",
-            "updated_at": "2026-11-15T23:23:18.600543",
+            "updated_at": "2026-11-22T01:12:30.840535",
             "category_id": 4,
             "target_type": null,
             "type_source": "core",
@@ -159,33 +159,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ndV7hiplkNlFMI+ihqmcAQmvDfw=",
-            "created_at": "2026-11-15T23:23:18.077242",
-            "rotated_at": "2026-11-15T23:23:18.076307",
-            "updated_at": "2026-11-15T23:23:18.077242",
+            "auth_token": "hw02uMmh6racpEiBFb3MzyvvnuQ=",
+            "created_at": "2026-11-22T01:12:30.343897",
+            "rotated_at": "2026-11-22T01:12:30.342984",
+            "updated_at": "2026-11-22T01:12:30.343897",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ndV7hiplkNlFMI+ihqmcAQmvDfw=",
+            "prev_auth_token": "hw02uMmh6racpEiBFb3MzyvvnuQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:23:18.577972",
+            "id": 1,
+            "seen_at": "2026-11-22T01:12:30.81289",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ndV7hiplkNlFMI+ihqmcAQmvDfw=",
-            "created_at": "2026-11-15T23:23:18.077242",
-            "rotated_at": "2026-11-15T23:23:18.076307",
-            "updated_at": "2026-11-15T23:23:18.077242",
+            "auth_token": "hw02uMmh6racpEiBFb3MzyvvnuQ=",
+            "created_at": "2026-11-22T01:12:30.343897",
+            "rotated_at": "2026-11-22T01:12:30.342984",
+            "updated_at": "2026-11-22T01:12:30.343897",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ndV7hiplkNlFMI+ihqmcAQmvDfw=",
+            "prev_auth_token": "hw02uMmh6racpEiBFb3MzyvvnuQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -196,20 +196,20 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 72,
           "email": null,
           "action": 64,
           "context": null,
-          "details": "created_at: 2026-10-02 10:00:00 UTC\nrejected_at: 2026-11-15T23:23:18+00:00\nuser: user0 (User0)\ntopic: Parity fixture: replies and posters\nraw: This reply waits for approval in the queue.",
+          "details": "created_at: 2026-10-02 10:00:00 UTC\nrejected_at: 2026-11-22T01:12:30+00:00\nuser: user0 (User0)\ntopic: Parity fixture: replies and posters\nraw: This reply waits for approval in the queue.",
           "post_id": null,
           "subject": null,
           "topic_id": 35,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-15T23:23:18.598139",
+          "created_at": "2026-11-22T01:12:30.837154",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:23:18.598139",
+          "updated_at": "2026-11-22T01:12:30.837154",
           "category_id": 4,
           "custom_type": null,
           "reviewable_id": 9311,
@@ -248,8 +248,8 @@
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
             "digest_attempted_at": null,
             "pending_posts_count": 1,
-            "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-15T19:19:53.957314",
+            "distinct_badge_count": 0,
+            "first_post_created_at": "2026-11-21T23:56:44.45838",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -274,8 +274,8 @@
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
-            "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-15T19:19:53.957314",
+            "distinct_badge_count": 0,
+            "first_post_created_at": "2026-11-21T23:56:44.45838",
             "reset_bounce_score_after": null
           }
         }
@@ -296,7 +296,7 @@
   ],
   "next_ids": {
     "reviewable_histories": 1,
-    "user_histories": 68
+    "user_histories": 72
   },
   "setup": [
     "INSERT INTO reviewables (id, type, type_source, status, created_by_id, reviewable_by_moderator, category_id, topic_id, score, potential_spam, target_id, target_type, target_created_by_id, payload, version, latest_score, force_review, potentially_illegal, created_at, updated_at) VALUES (9311, 'ReviewableQueuedPost', 'core', 0, -1, TRUE, 4, 35, 6, FALSE, NULL, NULL, 2, '{\"raw\": \"This reply waits for approval in the queue.\", \"tags\": null, \"typing_duration_msecs\": 3000, \"composer_open_duration_msecs\": 12000}', 0, '2026-10-02 10:00:00', TRUE, FALSE, '2026-10-02 10:00:00', '2026-10-02 10:00:00')",
@@ -306,7 +306,7 @@
   ],
   "recorded_from": {
     "case": "dabecad8671b02a9303b5c331afc67e4256e2dce6d42085af36fa0a226db8207",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

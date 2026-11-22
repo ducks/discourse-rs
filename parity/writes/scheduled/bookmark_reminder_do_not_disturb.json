@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_do_not_disturb",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:26:38.220696",
-  "transaction_started_at": "2026-11-15T23:26:37.591663",
+  "started_at": "2026-11-22T01:20:59.295955",
+  "transaction_started_at": "2026-11-22T01:20:58.54041",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -16,11 +16,11 @@
             "name": "Parity fixture: with a reminder",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-11-15T19:20:04.835268",
-            "updated_at": "2026-11-15T19:20:04.835268",
-            "reminder_at": "2026-11-15T23:21:37.591663",
+            "created_at": "2026-11-21T23:56:54.662129",
+            "updated_at": "2026-11-21T23:56:54.662129",
+            "reminder_at": "2026-11-22T01:15:58.54041",
             "bookmarkable_id": 36,
-            "reminder_set_at": "2026-11-14T23:26:37.591663",
+            "reminder_set_at": "2026-11-21T01:20:58.54041",
             "bookmarkable_type": "Post",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 0
@@ -30,13 +30,13 @@
             "name": "Parity fixture: with a reminder",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-11-15T19:20:04.835268",
-            "updated_at": "2026-11-15T23:26:38.228985",
-            "reminder_at": "2026-11-15T23:21:37.591663",
+            "created_at": "2026-11-21T23:56:54.662129",
+            "updated_at": "2026-11-22T01:20:59.304426",
+            "reminder_at": "2026-11-22T01:15:58.54041",
             "bookmarkable_id": 36,
             "reminder_set_at": null,
             "bookmarkable_type": "Post",
-            "reminder_last_sent_at": "2026-11-15T23:26:38.228173",
+            "reminder_last_sent_at": "2026-11-22T01:20:59.303657",
             "auto_delete_preference": 0
           }
         }
@@ -45,13 +45,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 30,
+          "id": 20,
           "data": "{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"display_username\":\"user1\",\"bookmark_name\":\"Parity fixture: with a reminder\",\"bookmark_id\":3,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":36}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-15T23:26:38.227376",
-          "updated_at": "2026-11-15T23:26:38.227376",
+          "created_at": "2026-11-22T01:20:59.302879",
+          "updated_at": "2026-11-22T01:20:59.302879",
           "post_number": 2,
           "high_priority": true,
           "post_action_id": null,
@@ -65,16 +65,128 @@
       "inserted": [
         {
           "id": 1,
-          "notification_id": 30
+          "notification_id": 20
         }
       ],
       "deleted": [],
       "updated": []
+    },
+    "topics": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": null,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-11-21T23:56:51.452828",
+            "pinned_at": null,
+            "created_at": "2026-11-21T23:56:44.408368",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-11-21T23:56:51.518343",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": null,
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-11-21T23:56:51.452828",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          },
+          "after": {
+            "id": 35,
+            "slug": "parity-fixture-replies-and-posters",
+            "score": null,
+            "title": "Parity fixture: replies and posters",
+            "views": 0,
+            "closed": false,
+            "locale": null,
+            "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
+            "subtype": null,
+            "user_id": 2,
+            "visible": true,
+            "archived": false,
+            "archetype": "regular",
+            "bumped_at": "2026-11-21T23:56:51.452828",
+            "pinned_at": null,
+            "created_at": "2026-11-21T23:56:44.408368",
+            "deleted_at": null,
+            "like_count": 1,
+            "spam_count": 0,
+            "updated_at": "2026-11-21T23:56:51.518343",
+            "word_count": 68,
+            "category_id": 4,
+            "external_id": null,
+            "fancy_title": "Parity fixture: replies and posters",
+            "has_summary": false,
+            "posts_count": 5,
+            "reply_count": 0,
+            "percent_rank": 1,
+            "pinned_until": null,
+            "deleted_by_id": null,
+            "featured_link": null,
+            "bannered_until": null,
+            "last_posted_at": "2026-11-21T23:56:51.452828",
+            "image_upload_id": null,
+            "pinned_globally": false,
+            "reviewable_score": 0,
+            "featured_user1_id": 3,
+            "featured_user2_id": null,
+            "featured_user3_id": 1,
+            "featured_user4_id": 4,
+            "last_post_user_id": 2,
+            "participant_count": 4,
+            "slow_mode_seconds": 0,
+            "og_image_upload_id": null,
+            "highest_post_number": 5,
+            "incoming_link_count": 0,
+            "visibility_reason_id": null,
+            "moderator_posts_count": 0,
+            "notify_moderators_count": 0,
+            "highest_staff_post_number": 5
+          }
+        }
+      ]
     }
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 30,
+    "notifications": 20,
     "shelved_notifications": 1
   },
   "setup": [
@@ -90,7 +202,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "cef3516fcf5268cb3e414a1a4f3d14ca30494f4606610d4efa289672d485184a",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

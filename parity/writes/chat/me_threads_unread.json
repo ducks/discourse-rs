@@ -11,8 +11,8 @@
       "path": "/chat/api/me/threads.json?limit=1&offset=1"
     }
   ],
-  "started_at": "2026-11-15T22:35:07.643789",
-  "transaction_started_at": "2026-11-15T22:35:06.767185",
+  "started_at": "2026-11-22T00:26:30.58488",
+  "transaction_started_at": "2026-11-22T00:26:29.740808",
   "responses": [
     {
       "status": 200,
@@ -39,7 +39,7 @@
                 "emoji": "blue_book",
                 "slug": "general",
                 "topic_count": 3,
-                "post_count": 1,
+                "post_count": 0,
                 "position": 3,
                 "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
                 "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -97,7 +97,7 @@
                 "id": 4,
                 "message": "channel chatter",
                 "cooked": "<p>channel chatter</p>",
-                "created_at": "2026-11-15T22:05:06Z",
+                "created_at": "2026-11-21T23:56:29Z",
                 "excerpt": "channel chatter",
                 "deleted_at": null,
                 "deleted_by_id": null,
@@ -111,7 +111,7 @@
                 "thread_message_bus_last_id": 0
               }
             },
-            "reply_count": 5,
+            "reply_count": 2,
             "current_user_membership": {
               "notification_level": 2,
               "thread_id": 1,
@@ -119,11 +119,11 @@
               "thread_title_prompt_seen": false
             },
             "preview": {
-              "last_reply_created_at": "2026-11-15T22:00:06Z",
+              "last_reply_created_at": "2026-11-21T23:51:29Z",
               "last_reply_excerpt": "thread reply two",
               "last_reply_id": 3,
               "participant_count": 3,
-              "reply_count": 5,
+              "reply_count": 2,
               "participant_users": [
                 {
                   "id": 2,
@@ -157,7 +157,7 @@
               "id": 1,
               "message": "Hello **world**",
               "cooked": "<p>Hello <strong>world</strong></p>",
-              "created_at": "2026-11-15T21:45:06.767Z",
+              "created_at": "2026-11-21T23:36:29.740Z",
               "excerpt": "Hello world",
               "chat_channel_id": 2,
               "deleted_at": null,
@@ -198,33 +198,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "H/DFcpjLoAj7kEhDvhcQ2Cm9Kls=",
-            "created_at": "2026-11-15T22:35:07.111167",
-            "rotated_at": "2026-11-15T22:35:07.110203",
-            "updated_at": "2026-11-15T22:35:07.111167",
+            "auth_token": "AyWYnGyKiduULPVhtzhDwJPXLRY=",
+            "created_at": "2026-11-22T00:26:30.072203",
+            "rotated_at": "2026-11-22T00:26:30.071315",
+            "updated_at": "2026-11-22T00:26:30.072203",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "H/DFcpjLoAj7kEhDvhcQ2Cm9Kls=",
+            "prev_auth_token": "AyWYnGyKiduULPVhtzhDwJPXLRY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:35:07.652892",
+            "id": 1,
+            "seen_at": "2026-11-22T00:26:30.592822",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "H/DFcpjLoAj7kEhDvhcQ2Cm9Kls=",
-            "created_at": "2026-11-15T22:35:07.111167",
-            "rotated_at": "2026-11-15T22:35:07.110203",
-            "updated_at": "2026-11-15T22:35:07.111167",
+            "auth_token": "AyWYnGyKiduULPVhtzhDwJPXLRY=",
+            "created_at": "2026-11-22T00:26:30.072203",
+            "rotated_at": "2026-11-22T00:26:30.071315",
+            "updated_at": "2026-11-22T00:26:30.072203",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "H/DFcpjLoAj7kEhDvhcQ2Cm9Kls=",
+            "prev_auth_token": "AyWYnGyKiduULPVhtzhDwJPXLRY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -251,7 +251,7 @@
   ],
   "recorded_from": {
     "case": "be76b59030e37d20a06789d02fce6d25ba85d52443f0173baf3649c10f50bfdb",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

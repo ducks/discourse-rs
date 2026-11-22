@@ -11,8 +11,8 @@
       "path": "/admin/dashboard/site-traffic-explorer.json"
     }
   ],
-  "started_at": "2026-11-16T03:28:51.82106",
-  "transaction_started_at": "2026-11-16T03:28:50.97924",
+  "started_at": "2026-11-22T00:06:05.210472",
+  "transaction_started_at": "2026-11-22T00:06:04.432728",
   "responses": [
     {
       "status": 200,
@@ -29,8 +29,8 @@
                   "percent_change": null,
                   "report_type": "signups",
                   "report_query": {
-                    "start_date": "2026-10-17",
-                    "end_date": "2026-11-16"
+                    "start_date": "2026-10-23",
+                    "end_date": "2026-11-22"
                   }
                 },
                 {
@@ -40,8 +40,8 @@
                   "percent_change": null,
                   "report_type": "dau_by_mau",
                   "report_query": {
-                    "start_date": "2026-10-17",
-                    "end_date": "2026-11-16"
+                    "start_date": "2026-10-23",
+                    "end_date": "2026-11-22"
                   }
                 },
                 {
@@ -51,8 +51,8 @@
                   "percent_change": null,
                   "report_type": "new_contributors",
                   "report_query": {
-                    "start_date": "2026-10-17",
-                    "end_date": "2026-11-16"
+                    "start_date": "2026-10-23",
+                    "end_date": "2026-11-22"
                   }
                 }
               ]
@@ -111,30 +111,6 @@
                   "color": "#4B3CE0",
                   "data": [
                     {
-                      "x": "2026-10-18",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-19",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-20",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-21",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-22",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-23",
-                      "y": 0
-                    },
-                    {
                       "x": "2026-10-24",
                       "y": 0
                     },
@@ -228,6 +204,30 @@
                     },
                     {
                       "x": "2026-11-16",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-17",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-18",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-19",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-20",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-21",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-22",
                       "y": 0
                     }
                   ]
@@ -238,30 +238,6 @@
                   "color": "#9C8DEC",
                   "data": [
                     {
-                      "x": "2026-10-18",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-19",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-20",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-21",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-22",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-23",
-                      "y": 0
-                    },
-                    {
                       "x": "2026-10-24",
                       "y": 0
                     },
@@ -355,6 +331,30 @@
                     },
                     {
                       "x": "2026-11-16",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-17",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-18",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-19",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-20",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-21",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-22",
                       "y": 0
                     }
                   ]
@@ -365,30 +365,6 @@
                   "color": "#D5CDF7",
                   "data": [
                     {
-                      "x": "2026-10-18",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-19",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-20",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-21",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-22",
-                      "y": 0
-                    },
-                    {
-                      "x": "2026-10-23",
-                      "y": 0
-                    },
-                    {
                       "x": "2026-10-24",
                       "y": 0
                     },
@@ -482,6 +458,30 @@
                     },
                     {
                       "x": "2026-11-16",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-17",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-18",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-19",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-20",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-21",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-22",
                       "y": 0
                     }
                   ]
@@ -512,8 +512,8 @@
                   "percent_change": null,
                   "report_type": "dau_by_mau",
                   "report_query": {
-                    "start_date": "2026-10-17",
-                    "end_date": "2026-11-16"
+                    "start_date": "2026-10-23",
+                    "end_date": "2026-11-22"
                   }
                 },
                 {
@@ -523,8 +523,8 @@
                   "percent_change": null,
                   "report_type": "daily_engaged_users",
                   "report_query": {
-                    "start_date": "2026-10-17",
-                    "end_date": "2026-11-16"
+                    "start_date": "2026-10-23",
+                    "end_date": "2026-11-22"
                   }
                 },
                 {
@@ -534,8 +534,8 @@
                   "percent_change": null,
                   "report_type": "signups",
                   "report_query": {
-                    "start_date": "2026-10-17",
-                    "end_date": "2026-11-16"
+                    "start_date": "2026-10-23",
+                    "end_date": "2026-11-22"
                   }
                 }
               ],
@@ -665,10 +665,10 @@
                     "share_change_formatted": "+24.14%"
                   },
                   {
-                    "category_id": 34,
-                    "name": "Sub General",
-                    "color": "AB9364",
-                    "slug": "sub-general",
+                    "category_id": 2,
+                    "name": "Site Feedback",
+                    "color": "808281",
+                    "slug": "site-feedback",
                     "topics": 2,
                     "posts": 2,
                     "page_views": 0,
@@ -678,10 +678,10 @@
                     "share_change_formatted": "+13.79%"
                   },
                   {
-                    "category_id": 2,
-                    "name": "Site Feedback",
-                    "color": "808281",
-                    "slug": "site-feedback",
+                    "category_id": 34,
+                    "name": "Sub General",
+                    "color": "AB9364",
+                    "slug": "sub-general",
                     "topics": 2,
                     "posts": 2,
                     "page_views": 0,
@@ -721,9 +721,9 @@
             "id": "system",
             "data": {
               "version": {
-                "installed_version": "2026.11.0-latest.1",
-                "installed_sha": "9daeae2a745b73533215775ebf132191ca4c5056",
-                "installed_describe": "v2026.11.0-latest +576",
+                "installed_version": "2026.11.0-latest.2",
+                "installed_sha": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d",
+                "installed_describe": "v2026.11.0-latest +799",
                 "git_branch": "unknown",
                 "updated_at": null,
                 "version_check_pending": true,
@@ -732,47 +732,22 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 34504568832,
+                  "free_bytes": 17461645312,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 34504568832,
+                  "free_bytes": 17461645312,
                   "remote": false
                 }
               },
-              "discourse_updated_at": "2026-11-13T23:41:32.000+00:00"
+              "discourse_updated_at": "2026-11-21T00:17:23.000+00:00"
             }
           }
         ],
-        "problems": [
-          {
-            "id": 1,
-            "priority": "low",
-            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
-            "identifier": "force_https"
-          },
-          {
-            "id": 2,
-            "priority": "low",
-            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
-            "identifier": "host_names"
-          },
-          {
-            "id": 3,
-            "priority": "low",
-            "message": "Your server is running in development mode.",
-            "identifier": "rails_env"
-          },
-          {
-            "id": 4,
-            "priority": "low",
-            "message": "There are 9 email jobs that failed. Check your app.yml and ensure that the mail server settings are correct. <a href=\"/sidekiq/retries\" target=\"_blank\">See the failed jobs in Sidekiq</a>.",
-            "identifier": "failing_emails"
-          }
-        ],
+        "problems": [],
         "configuration": {
           "sections": [
             {
@@ -820,33 +795,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "2pFOsBoe0tC9XLBmiXdcQ+9+6bk=",
-            "created_at": "2026-11-16T03:28:51.288717",
-            "rotated_at": "2026-11-16T03:28:51.287895",
-            "updated_at": "2026-11-16T03:28:51.288717",
+            "auth_token": "Z6ipEA3c/SPCDlfBeel6cOFG+yI=",
+            "created_at": "2026-11-22T00:06:04.728656",
+            "rotated_at": "2026-11-22T00:06:04.727903",
+            "updated_at": "2026-11-22T00:06:04.728656",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "2pFOsBoe0tC9XLBmiXdcQ+9+6bk=",
+            "prev_auth_token": "Z6ipEA3c/SPCDlfBeel6cOFG+yI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T03:28:51.826527",
+            "id": 1,
+            "seen_at": "2026-11-22T00:06:05.21633",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "2pFOsBoe0tC9XLBmiXdcQ+9+6bk=",
-            "created_at": "2026-11-16T03:28:51.288717",
-            "rotated_at": "2026-11-16T03:28:51.287895",
-            "updated_at": "2026-11-16T03:28:51.288717",
+            "auth_token": "Z6ipEA3c/SPCDlfBeel6cOFG+yI=",
+            "created_at": "2026-11-22T00:06:04.728656",
+            "rotated_at": "2026-11-22T00:06:04.727903",
+            "updated_at": "2026-11-22T00:06:04.728656",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "2pFOsBoe0tC9XLBmiXdcQ+9+6bk=",
+            "prev_auth_token": "Z6ipEA3c/SPCDlfBeel6cOFG+yI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -869,7 +844,7 @@
   },
   "recorded_from": {
     "case": "e60cb69f55bfc9f20a54c375de666d5a08d9e163e5eb5e1db4c191935e60c265",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

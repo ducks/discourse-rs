@@ -2967,49 +2967,17 @@
         "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>"
       },
       "after": {
-        "raw": "Reply three from admin, also long enough to pass the minimum length check.",
-        "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>"
-      },
-      "diff": {
-        "inline": "<div class=\"inline-diff\"><p>Reply <ins>three </ins><del>two </del>from <ins>admin</ins><del>user2</del>, also long enough to pass the minimum length check.</p></div>",
-        "side_by_side": "<div class=\"revision-content --previous\"><p>Reply <del>two </del>from <del>user2</del>, also long enough to pass the minimum length check.</p></div><div class=\"revision-content --current\"><p>Reply <ins>three </ins>from <ins>admin</ins>, also long enough to pass the minimum length check.</p></div>",
-        "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\">Reply <del>two </del>from <del>user2</del>, also long enough to pass the minimum length check.</td><td class=\"--current\">Reply <ins>three </ins>from <ins>admin</ins>, also long enough to pass the minimum length check.</td></tr></table>"
-      }
-    },
-    {
-      "name": "post-38-edited",
-      "before": {
-        "raw": "Reply three from admin, also long enough to pass the minimum length check.",
-        "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>"
-      },
-      "after": {
-        "raw": "Reply three from admin, also long enough to pass a minimum length check!\n\nEdited.",
-        "cooked": "<p>Reply three from admin, also long enough to pass a minimum length check.</p>\n\nEdited."
-      },
-      "diff": {
-        "inline": "<div class=\"inline-diff\"><p>Reply three from admin, also long enough to pass <ins>a </ins><del>the </del>minimum length check.</p></div>",
-        "side_by_side": "<div class=\"revision-content --previous\"><p>Reply three from admin, also long enough to pass <del>the </del>minimum length check.</p></div><div class=\"revision-content --current\"><p>Reply three from admin, also long enough to pass <ins>a </ins>minimum length check.</p></div>",
-        "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\">Reply three from admin, also long enough to pass <del>the </del>minimum length check.</td><td class=\"--current\">Reply three from admin, also long enough to pass <ins>a </ins>minimum length check<ins>!\n\nEdited</ins>.</td></tr></table>"
-      }
-    },
-    {
-      "name": "post-38-post-39",
-      "before": {
-        "raw": "Reply three from admin, also long enough to pass the minimum length check.",
-        "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>"
-      },
-      "after": {
         "raw": "The `download_remote_images_to_local` setting was disabled because the disk space limit at `download_remote_images_threshold` was reached.",
         "cooked": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>"
       },
       "diff": {
-        "inline": "<div class=\"inline-diff\"><p><ins>The </ins><code class=\"diff-ins\"><ins>download_remote_images_to_local</ins></code><del>Reply </del><del>three </del><del>from </del><del>admin</del><del>,</del> <ins>setting </ins><ins>was </ins><ins>disabled </ins><ins>because </ins><del>also </del><del>long </del><del>enough </del><del>to </del><del>pass </del>the <ins>disk </ins><ins>space </ins><ins>limit </ins><ins>at </ins><code class=\"diff-ins\"><ins>download_remote_images_threshold</ins></code><ins> </ins><ins>was </ins><ins>reached</ins><del>minimum </del><del>length </del><del>check</del>.</p></div>",
-        "side_by_side": "<div class=\"revision-content --previous\"><p><del>Reply </del><del>three </del><del>from </del><del>admin</del><del>,</del> <del>also </del><del>long </del><del>enough </del><del>to </del><del>pass </del>the <del>minimum </del><del>length </del><del>check</del>.</p></div><div class=\"revision-content --current\"><p><ins>The </ins><code class=\"diff-ins\"><ins>download_remote_images_to_local</ins></code> <ins>setting </ins><ins>was </ins><ins>disabled </ins><ins>because </ins>the <ins>disk </ins><ins>space </ins><ins>limit </ins><ins>at </ins><code class=\"diff-ins\"><ins>download_remote_images_threshold</ins></code><ins> </ins><ins>was </ins><ins>reached</ins>.</p></div>",
-        "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\"><del>Reply three from admin,</del> <del>also long enough to pass </del>the <del>minimum length check</del>.</td><td class=\"--current\"><ins>The `download_remote_images_to_local`</ins> <ins>setting was disabled because </ins>the <ins>disk space limit at `download_remote_images_threshold` was reached</ins>.</td></tr></table>"
+        "inline": "<div class=\"inline-diff\"><p><ins>The </ins><code class=\"diff-ins\"><ins>download_remote_images_to_local</ins></code><del>Reply </del><del>two </del><del>from </del><del>user2</del><del>,</del> <ins>setting </ins><ins>was </ins><ins>disabled </ins><ins>because </ins><del>also </del><del>long </del><del>enough </del><del>to </del><del>pass </del>the <ins>disk </ins><ins>space </ins><ins>limit </ins><ins>at </ins><code class=\"diff-ins\"><ins>download_remote_images_threshold</ins></code><ins> </ins><ins>was </ins><ins>reached</ins><del>minimum </del><del>length </del><del>check</del>.</p></div>",
+        "side_by_side": "<div class=\"revision-content --previous\"><p><del>Reply </del><del>two </del><del>from </del><del>user2</del><del>,</del> <del>also </del><del>long </del><del>enough </del><del>to </del><del>pass </del>the <del>minimum </del><del>length </del><del>check</del>.</p></div><div class=\"revision-content --current\"><p><ins>The </ins><code class=\"diff-ins\"><ins>download_remote_images_to_local</ins></code> <ins>setting </ins><ins>was </ins><ins>disabled </ins><ins>because </ins>the <ins>disk </ins><ins>space </ins><ins>limit </ins><ins>at </ins><code class=\"diff-ins\"><ins>download_remote_images_threshold</ins></code><ins> </ins><ins>was </ins><ins>reached</ins>.</p></div>",
+        "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\"><del>Reply two from user2,</del> <del>also long enough to pass </del>the <del>minimum length check</del>.</td><td class=\"--current\"><ins>The `download_remote_images_to_local`</ins> <ins>setting was disabled because </ins>the <ins>disk space limit at `download_remote_images_threshold` was reached</ins>.</td></tr></table>"
       }
     },
     {
-      "name": "post-39-edited",
+      "name": "post-38-edited",
       "before": {
         "raw": "The `download_remote_images_to_local` setting was disabled because the disk space limit at `download_remote_images_threshold` was reached.",
         "cooked": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>"
@@ -3025,19 +2993,51 @@
       }
     },
     {
-      "name": "post-39-post-40",
+      "name": "post-38-post-39",
       "before": {
         "raw": "The `download_remote_images_to_local` setting was disabled because the disk space limit at `download_remote_images_threshold` was reached.",
         "cooked": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>"
+      },
+      "after": {
+        "raw": "Reply three from admin, also long enough to pass the minimum length check.",
+        "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>"
+      },
+      "diff": {
+        "inline": "<div class=\"inline-diff\"><p><del>The </del><code class=\"diff-del\"><del>download_remote_images_to_local</del></code><ins>Reply </ins><ins>three </ins><ins>from </ins><ins>admin</ins><ins>,</ins> <del>setting </del><del>was </del><del>disabled </del><del>because </del><ins>also </ins><ins>long </ins><ins>enough </ins><ins>to </ins><ins>pass </ins>the <del>disk </del><del>space </del><del>limit </del><del>at </del><code class=\"diff-del\"><del>download_remote_images_threshold</del></code><del> </del><del>was </del><del>reached</del><ins>minimum </ins><ins>length </ins><ins>check</ins>.</p></div>",
+        "side_by_side": "<div class=\"revision-content --previous\"><p><del>The </del><code class=\"diff-del\"><del>download_remote_images_to_local</del></code> <del>setting </del><del>was </del><del>disabled </del><del>because </del>the <del>disk </del><del>space </del><del>limit </del><del>at </del><code class=\"diff-del\"><del>download_remote_images_threshold</del></code><del> </del><del>was </del><del>reached</del>.</p></div><div class=\"revision-content --current\"><p><ins>Reply </ins><ins>three </ins><ins>from </ins><ins>admin</ins><ins>,</ins> <ins>also </ins><ins>long </ins><ins>enough </ins><ins>to </ins><ins>pass </ins>the <ins>minimum </ins><ins>length </ins><ins>check</ins>.</p></div>",
+        "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\"><del>The `download_remote_images_to_local`</del> <del>setting was disabled because </del>the <del>disk space limit at `download_remote_images_threshold` was reached</del>.</td><td class=\"--current\"><ins>Reply three from admin,</ins> <ins>also long enough to pass </ins>the <ins>minimum length check</ins>.</td></tr></table>"
+      }
+    },
+    {
+      "name": "post-39-edited",
+      "before": {
+        "raw": "Reply three from admin, also long enough to pass the minimum length check.",
+        "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>"
+      },
+      "after": {
+        "raw": "Reply three from admin, also long enough to pass a minimum length check!\n\nEdited.",
+        "cooked": "<p>Reply three from admin, also long enough to pass a minimum length check.</p>\n\nEdited."
+      },
+      "diff": {
+        "inline": "<div class=\"inline-diff\"><p>Reply three from admin, also long enough to pass <ins>a </ins><del>the </del>minimum length check.</p></div>",
+        "side_by_side": "<div class=\"revision-content --previous\"><p>Reply three from admin, also long enough to pass <del>the </del>minimum length check.</p></div><div class=\"revision-content --current\"><p>Reply three from admin, also long enough to pass <ins>a </ins>minimum length check.</p></div>",
+        "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\">Reply three from admin, also long enough to pass <del>the </del>minimum length check.</td><td class=\"--current\">Reply three from admin, also long enough to pass <ins>a </ins>minimum length check<ins>!\n\nEdited</ins>.</td></tr></table>"
+      }
+    },
+    {
+      "name": "post-39-post-40",
+      "before": {
+        "raw": "Reply three from admin, also long enough to pass the minimum length check.",
+        "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>"
       },
       "after": {
         "raw": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
         "cooked": "<p>A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.</p>"
       },
       "diff": {
-        "inline": "<div class=\"inline-diff\"><p><del>The </del><code class=\"diff-del\"><del>download_remote_images_to_local</del></code><ins>A </ins><ins>pinned</ins><ins>,</ins> <del>setting </del><del>was </del><del>disabled </del><del>because </del><ins>closed </ins><ins>topic </ins><ins>in </ins><ins>Site </ins><ins>Feedback </ins><ins>with </ins><ins>an </ins><ins>excerpt </ins><ins>that </ins><ins>should </ins><ins>be </ins><ins>shown </ins><ins>in </ins>the <del>disk </del><del>space </del><del>limit </del><del>at </del><code class=\"diff-del\"><del>download_remote_images_threshold</del></code><del> </del><del>was </del><del>reached</del><ins>list</ins>.</p></div>",
-        "side_by_side": "<div class=\"revision-content --previous\"><p><del>The </del><code class=\"diff-del\"><del>download_remote_images_to_local</del></code> <del>setting </del><del>was </del><del>disabled </del><del>because </del>the <del>disk </del><del>space </del><del>limit </del><del>at </del><code class=\"diff-del\"><del>download_remote_images_threshold</del></code><del> </del><del>was </del><del>reached</del>.</p></div><div class=\"revision-content --current\"><p><ins>A </ins><ins>pinned</ins><ins>,</ins> <ins>closed </ins><ins>topic </ins><ins>in </ins><ins>Site </ins><ins>Feedback </ins><ins>with </ins><ins>an </ins><ins>excerpt </ins><ins>that </ins><ins>should </ins><ins>be </ins><ins>shown </ins><ins>in </ins>the <ins>list</ins>.</p></div>",
-        "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\"><del>The `download_remote_images_to_local`</del> <del>setting was disabled because </del>the <del>disk space limit at `download_remote_images_threshold` was reached</del>.</td><td class=\"--current\"><ins>A pinned,</ins> <ins>closed topic in Site Feedback with an excerpt that should be shown in </ins>the <ins>list</ins>.</td></tr></table>"
+        "inline": "<div class=\"inline-diff\"><p><ins>A </ins><ins>pinned</ins><del>Reply </del><del>three </del><del>from </del><del>admin</del>, <ins>closed </ins><ins>topic </ins><ins>in </ins><ins>Site </ins><ins>Feedback </ins><ins>with </ins><ins>an </ins><ins>excerpt </ins><ins>that </ins><ins>should </ins><ins>be </ins><ins>shown </ins><ins>in </ins><del>also </del><del>long </del><del>enough </del><del>to </del><del>pass </del>the <ins>list</ins><del>minimum </del><del>length </del><del>check</del>.</p></div>",
+        "side_by_side": "<div class=\"revision-content --previous\"><p><del>Reply </del><del>three </del><del>from </del><del>admin</del>, <del>also </del><del>long </del><del>enough </del><del>to </del><del>pass </del>the <del>minimum </del><del>length </del><del>check</del>.</p></div><div class=\"revision-content --current\"><p><ins>A </ins><ins>pinned</ins>, <ins>closed </ins><ins>topic </ins><ins>in </ins><ins>Site </ins><ins>Feedback </ins><ins>with </ins><ins>an </ins><ins>excerpt </ins><ins>that </ins><ins>should </ins><ins>be </ins><ins>shown </ins><ins>in </ins>the <ins>list</ins>.</p></div>",
+        "side_by_side_markdown": "<table class=\"markdown\"><tr><td class=\"--previous\"><del>Reply three from admin</del>, <del>also long enough to pass </del>the <del>minimum length check</del>.</td><td class=\"--current\"><ins>A pinned</ins>, <ins>closed topic in Site Feedback with an excerpt that should be shown in </ins>the <ins>list</ins>.</td></tr></table>"
       }
     },
     {

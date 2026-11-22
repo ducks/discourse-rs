@@ -28,8 +28,8 @@
       }
     }
   ],
-  "started_at": "2026-11-16T03:28:56.711909",
-  "transaction_started_at": "2026-11-16T03:28:55.975561",
+  "started_at": "2026-11-22T00:06:14.402436",
+  "transaction_started_at": "2026-11-22T00:06:13.463714",
   "responses": [
     {
       "status": 200,
@@ -685,9 +685,9 @@
             "id": "system",
             "data": {
               "version": {
-                "installed_version": "2026.11.0-latest.1",
-                "installed_sha": "9daeae2a745b73533215775ebf132191ca4c5056",
-                "installed_describe": "v2026.11.0-latest +576",
+                "installed_version": "2026.11.0-latest.2",
+                "installed_sha": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d",
+                "installed_describe": "v2026.11.0-latest +799",
                 "git_branch": "unknown",
                 "updated_at": null,
                 "version_check_pending": true,
@@ -696,47 +696,22 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 34503225344,
+                  "free_bytes": 17457508352,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 34503225344,
+                  "free_bytes": 17457508352,
                   "remote": false
                 }
               },
-              "discourse_updated_at": "2026-11-13T23:41:32.000+00:00"
+              "discourse_updated_at": "2026-11-21T00:17:23.000+00:00"
             }
           }
         ],
-        "problems": [
-          {
-            "id": 1,
-            "priority": "low",
-            "message": "Your website is using SSL. But `<a href=\"/admin/site_settings/category/all_results?filter=force_https\">force_https</a>` is not yet enabled in your site settings.",
-            "identifier": "force_https"
-          },
-          {
-            "id": 2,
-            "priority": "low",
-            "message": "Your config/database.yml file is using the default localhost hostname. Update it to use your site's hostname.",
-            "identifier": "host_names"
-          },
-          {
-            "id": 3,
-            "priority": "low",
-            "message": "Your server is running in development mode.",
-            "identifier": "rails_env"
-          },
-          {
-            "id": 4,
-            "priority": "low",
-            "message": "There are 9 email jobs that failed. Check your app.yml and ensure that the mail server settings are correct. <a href=\"/sidekiq/retries\" target=\"_blank\">See the failed jobs in Sidekiq</a>.",
-            "identifier": "failing_emails"
-          }
-        ],
+        "problems": [],
         "configuration": {
           "sections": [
             {
@@ -793,33 +768,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "e06q7K8yQmq8fbv0I+xLLgsoNxk=",
-            "created_at": "2026-11-16T03:28:56.254272",
-            "rotated_at": "2026-11-16T03:28:56.253415",
-            "updated_at": "2026-11-16T03:28:56.254272",
+            "auth_token": "uxGEhUoJWVSuKPGh+EgsIoTjD6k=",
+            "created_at": "2026-11-22T00:06:13.922953",
+            "rotated_at": "2026-11-22T00:06:13.920233",
+            "updated_at": "2026-11-22T00:06:13.922953",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "e06q7K8yQmq8fbv0I+xLLgsoNxk=",
+            "prev_auth_token": "uxGEhUoJWVSuKPGh+EgsIoTjD6k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T03:28:56.718025",
+            "id": 1,
+            "seen_at": "2026-11-22T00:06:14.409251",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "e06q7K8yQmq8fbv0I+xLLgsoNxk=",
-            "created_at": "2026-11-16T03:28:56.254272",
-            "rotated_at": "2026-11-16T03:28:56.253415",
-            "updated_at": "2026-11-16T03:28:56.254272",
+            "auth_token": "uxGEhUoJWVSuKPGh+EgsIoTjD6k=",
+            "created_at": "2026-11-22T00:06:13.922953",
+            "rotated_at": "2026-11-22T00:06:13.920233",
+            "updated_at": "2026-11-22T00:06:13.922953",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "e06q7K8yQmq8fbv0I+xLLgsoNxk=",
+            "prev_auth_token": "uxGEhUoJWVSuKPGh+EgsIoTjD6k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -854,7 +829,7 @@
   ],
   "recorded_from": {
     "case": "c62a47752841b5d58b88ea5c254cce1979beebb1952c5214f07709d678c26433",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

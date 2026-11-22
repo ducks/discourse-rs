@@ -7,8 +7,8 @@
       "path": "/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz"
     }
   ],
-  "started_at": "2026-11-15T21:37:58.354271",
-  "transaction_started_at": "2026-11-15T21:37:57.310286",
+  "started_at": "2026-11-22T00:00:54.266891",
+  "transaction_started_at": "2026-11-22T00:00:53.536046",
   "responses": [
     {
       "status": 200,
@@ -26,11 +26,11 @@
           "user_id": null,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-15T21:37:59.561097",
+          "created_at": "2026-11-22T00:00:55.351066",
           "email_type": "download_backup_message",
-          "message_id": "ee0451b5-c662-40fc-9d40-7383e50d0a3d@localhost",
+          "message_id": "bfd172f1-359d-4b25-bea4-6b8682ee9657@localhost",
           "to_address": "admin@example.com",
-          "updated_at": "2026-11-15T21:37:59.561097",
+          "updated_at": "2026-11-22T00:00:55.351066",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -48,33 +48,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "gMSyeUfpQqlWTIyKHMyIaA9iZWQ=",
-            "created_at": "2026-11-15T21:37:57.834322",
-            "rotated_at": "2026-11-15T21:37:57.832938",
-            "updated_at": "2026-11-15T21:37:57.834322",
+            "auth_token": "IHyi+G+u1FyKf5NGSYw/MFAwsK0=",
+            "created_at": "2026-11-22T00:00:53.81713",
+            "rotated_at": "2026-11-22T00:00:53.816204",
+            "updated_at": "2026-11-22T00:00:53.81713",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "gMSyeUfpQqlWTIyKHMyIaA9iZWQ=",
+            "prev_auth_token": "IHyi+G+u1FyKf5NGSYw/MFAwsK0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T21:37:58.359351",
+            "id": 1,
+            "seen_at": "2026-11-22T00:00:54.27177",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "gMSyeUfpQqlWTIyKHMyIaA9iZWQ=",
-            "created_at": "2026-11-15T21:37:57.834322",
-            "rotated_at": "2026-11-15T21:37:57.832938",
-            "updated_at": "2026-11-15T21:37:57.834322",
+            "auth_token": "IHyi+G+u1FyKf5NGSYw/MFAwsK0=",
+            "created_at": "2026-11-22T00:00:53.81713",
+            "rotated_at": "2026-11-22T00:00:53.816204",
+            "updated_at": "2026-11-22T00:00:53.81713",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "gMSyeUfpQqlWTIyKHMyIaA9iZWQ=",
+            "prev_auth_token": "IHyi+G+u1FyKf5NGSYw/MFAwsK0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -116,7 +116,7 @@
         ],
         [
           "Message-ID",
-          "<ee0451b5-c662-40fc-9d40-7383e50d0a3d@localhost>"
+          "<bfd172f1-359d-4b25-bea4-6b8682ee9657@localhost>"
         ],
         [
           "Subject",
@@ -128,7 +128,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6afa263785e16_a534f3822785"
+          "multipart/alternative; boundary=--==_mimepart_6b0230b753444_2f1ff3813737"
         ],
         [
           "Content-Transfer-Encoding",
@@ -147,13 +147,13 @@
           "auto-generated"
         ]
       ],
-      "text": "Here's the [site backup download](http://localhost/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=c284e48f4d1628d0a3b96bad562d3b21) you requested.\n\nWe sent this download link to your validated email address for security reasons.\n\n(If you *didn't* request this download, you should be seriously concerned -- someone has admin access to your site.)\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Here’s the <a href=\"http://localhost/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=c284e48f4d1628d0a3b96bad562d3b21\" style=\"text-decoration:none;font-weight:bold;color:#006699\">site backup download</a> you requested.</p>\n<p>We sent this download link to your validated email address for security reasons.</p>\n<p>(If you <em>didn’t</em> request this download, you should be seriously concerned – someone has admin access to your site.)</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Here's the [site backup download](http://localhost/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=e032f01abce900d3318ce0b94954deb9) you requested.\n\nWe sent this download link to your validated email address for security reasons.\n\n(If you *didn't* request this download, you should be seriously concerned -- someone has admin access to your site.)\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Here’s the <a href=\"http://localhost/admin/backups/discourse-2026-10-01-033000-v20260925054715.tar.gz?token=e032f01abce900d3318ce0b94954deb9\" style=\"text-decoration:none;font-weight:bold;color:#006699\">site backup download</a> you requested.</p>\n<p>We sent this download link to your validated email address for security reasons.</p>\n<p>(If you <em>didn’t</em> request this download, you should be seriously concerned – someone has admin access to your site.)</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "3d90d04446de8a058d8d5c9d9d124d7933a36fcecb293bea4ff41927b7490fe6",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

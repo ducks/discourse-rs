@@ -128,8 +128,8 @@
       "path": "/admin/themes/{{responses.2.body.theme.id}}.json"
     }
   ],
-  "started_at": "2026-11-15T23:44:52.434724",
-  "transaction_started_at": "2026-11-15T23:44:51.629196",
+  "started_at": "2026-11-22T01:39:32.116549",
+  "transaction_started_at": "2026-11-22T01:39:31.347526",
   "responses": [
     {
       "status": 201,
@@ -150,8 +150,8 @@
           "id": 1,
           "name": "Typed settings",
           "description": null,
-          "created_at": "2026-11-15T23:44:52.503Z",
-          "updated_at": "2026-11-15T23:44:52.503Z",
+          "created_at": "2026-11-22T01:39:32.185Z",
+          "updated_at": "2026-11-22T01:39:32.185Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -392,8 +392,8 @@
           "id": 1,
           "name": "Typed settings",
           "description": null,
-          "created_at": "2026-11-15T23:44:52.503Z",
-          "updated_at": "2026-11-15T23:44:52.503Z",
+          "created_at": "2026-11-22T01:39:32.185Z",
+          "updated_at": "2026-11-22T01:39:32.185Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -673,7 +673,7 @@
             "emoji": "blue_book",
             "slug": "general",
             "topic_count": 3,
-            "post_count": 1,
+            "post_count": 0,
             "position": 3,
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -790,8 +790,8 @@
           "id": 1,
           "name": "Typed settings",
           "description": null,
-          "created_at": "2026-11-15T23:44:52.503Z",
-          "updated_at": "2026-11-15T23:44:52.503Z",
+          "created_at": "2026-11-22T01:39:32.185Z",
+          "updated_at": "2026-11-22T01:39:32.185Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -1062,8 +1062,8 @@
           "id": 1,
           "name": "Typed settings",
           "description": null,
-          "created_at": "2026-11-15T23:44:52.503Z",
-          "updated_at": "2026-11-15T23:44:52.503Z",
+          "created_at": "2026-11-22T01:39:32.185Z",
+          "updated_at": "2026-11-22T01:39:32.185Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -1339,8 +1339,8 @@
           "animated": null,
           "filesize": 48867,
           "extension": "png",
-          "created_at": "2026-11-15T23:44:52.450232",
-          "updated_at": "2026-11-15T23:44:52.453466",
+          "created_at": "2026-11-22T01:39:32.133705",
+          "updated_at": "2026-11-22T01:39:32.136768",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -1365,8 +1365,8 @@
           "animated": null,
           "filesize": 44,
           "extension": "gif",
-          "created_at": "2026-11-15T23:44:52.476595",
-          "updated_at": "2026-11-15T23:44:52.480848",
+          "created_at": "2026-11-22T01:39:32.160747",
+          "updated_at": "2026-11-22T01:39:32.164139",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -1388,33 +1388,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "EwLpRY4QJooqVNFZkV3lzjXJWCM=",
-            "created_at": "2026-11-15T23:44:51.979251",
-            "rotated_at": "2026-11-15T23:44:51.978417",
-            "updated_at": "2026-11-15T23:44:51.979251",
+            "auth_token": "UKpjJoErH5AFEH9nRjvx35CU+FY=",
+            "created_at": "2026-11-22T01:39:31.693211",
+            "rotated_at": "2026-11-22T01:39:31.692446",
+            "updated_at": "2026-11-22T01:39:31.693211",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "EwLpRY4QJooqVNFZkV3lzjXJWCM=",
+            "prev_auth_token": "UKpjJoErH5AFEH9nRjvx35CU+FY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:44:52.440402",
+            "id": 1,
+            "seen_at": "2026-11-22T01:39:32.124683",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "EwLpRY4QJooqVNFZkV3lzjXJWCM=",
-            "created_at": "2026-11-15T23:44:51.979251",
-            "rotated_at": "2026-11-15T23:44:51.978417",
-            "updated_at": "2026-11-15T23:44:51.979251",
+            "auth_token": "UKpjJoErH5AFEH9nRjvx35CU+FY=",
+            "created_at": "2026-11-22T01:39:31.693211",
+            "rotated_at": "2026-11-22T01:39:31.692446",
+            "updated_at": "2026-11-22T01:39:31.693211",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "EwLpRY4QJooqVNFZkV3lzjXJWCM=",
+            "prev_auth_token": "UKpjJoErH5AFEH9nRjvx35CU+FY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1425,7 +1425,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 72,
           "email": null,
           "action": 4,
           "context": null,
@@ -1433,12 +1433,12 @@
           "post_id": null,
           "subject": "Typed settings",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Typed settings\",\"description\":null,\"created_at\":\"2026-11-15T23:44:52.503Z\",\"updated_at\":\"2026-11-15T23:44:52.503Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"description\":\"The links\",\"objects_schema\":{\"name\":\"link\",\"identifier\":\"name\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true,\"validations\":{\"max_length\":20}},\"url\":{\"type\":\"string\",\"validations\":{\"url\":true}},\"icon\":{\"type\":\"icon\"},\"image\":{\"type\":\"upload\"},\"category_ids\":{\"type\":\"categories\",\"validations\":{\"max\":2}},\"tags\":{\"type\":\"tags\"},\"weight\":{\"type\":\"integer\",\"validations\":{\"min\":1,\"max\":10}},\"kind\":{\"type\":\"enum\",\"choices\":[\"a\",\"b\"]},\"when\":{\"type\":\"datetime\"},\"topic\":{\"type\":\"topic\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true},\"groups\":{\"type\":\"groups\",\"disallowed_groups\":\"1\"}}}}}}},{\"setting\":\"nav_items\",\"humanized_name\":\"Nav items\",\"type\":\"list\",\"default\":\"a|b\",\"value\":\"a|b\",\"list_type\":\"simple\"},{\"setting\":\"visible_groups\",\"humanized_name\":\"Visible groups\",\"type\":\"list\",\"default\":\"0|1\",\"value\":\"0|1\",\"list_type\":\"group\",\"disallowed_groups\":\"2\",\"resolve_group_membership\":true},{\"setting\":\"logo\",\"humanized_name\":\"Logo\",\"type\":\"upload\",\"default\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"value\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\"},{\"setting\":\"star\",\"humanized_name\":\"Star\",\"type\":\"icon\",\"default\":\"star\",\"value\":\"star\"},{\"setting\":\"config_json\",\"humanized_name\":\"Config JSON\",\"type\":\"string\",\"default\":\"{}\",\"value\":\"{}\",\"textarea\":false,\"json_schema\":{\"type\":\"object\"}},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":5,\"value\":5},{\"setting\":\"ratio\",\"humanized_name\":\"Ratio\",\"type\":\"float\",\"default\":1,\"value\":1.0}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"hero\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/hero.png\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"links:\\n  type: objects\\n  default:\\n    - name: Home\\n      url: /latest\\n  schema:\\n    name: link\\n    identifier: name\\n    properties:\\n      name:\\n        type: string\\n        required: true\\n        validations:\\n          max_length: 20\\n      url:\\n        type: string\\n        validations:\\n          url: true\\n      icon:\\n        type: icon\\n      image:\\n        type: upload\\n      category_ids:\\n        type: categories\\n        validations:\\n          max: 2\\n      tags:\\n        type: tags\\n      weight:\\n        type: integer\\n        validations:\\n          min: 1\\n          max: 10\\n      kind:\\n        type: enum\\n        choices: [a, b]\\n      when:\\n        type: datetime\\n      topic:\\n        type: topic\\n      flag:\\n        type: boolean\\n      children:\\n        type: objects\\n        schema:\\n          name: child\\n          properties:\\n            label:\\n              type: string\\n              required: true\\n            groups:\\n              type: groups\\n              disallowed_groups: \\\"1\\\"\\nnav_items:\\n  type: list\\n  default: \\\"a|b\\\"\\n  list_type: simple\\nvisible_groups:\\n  type: list\\n  list_type: group\\n  default: \\\"0|1\\\"\\n  disallowed_groups: \\\"2\\\"\\n  resolve_group_membership: true\\nlogo:\\n  type: upload\\n  default: hero\\nstar:\\n  type: icon\\n  default: star\\nconfig_json:\\n  type: string\\n  default: \\\"{}\\\"\\n  json_schema: '{\\\"type\\\": \\\"object\\\"}'\\ncount:\\n  type: integer\\n  default: 5\\n  max: 10\\nratio:\\n  type: float\\n  default: 1\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  theme_metadata:\\n    settings:\\n      links:\\n        description: The links\\n        schema:\\n          properties:\\n            name:\\n              label: Name\\n              description: The link's name\\n            children:\\n              schema:\\n                properties:\\n                  label:\\n                    label: Child label\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "new_value": "{\"id\":1,\"name\":\"Typed settings\",\"description\":null,\"created_at\":\"2026-11-22T01:39:32.185Z\",\"updated_at\":\"2026-11-22T01:39:32.185Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"description\":\"The links\",\"objects_schema\":{\"name\":\"link\",\"identifier\":\"name\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true,\"validations\":{\"max_length\":20}},\"url\":{\"type\":\"string\",\"validations\":{\"url\":true}},\"icon\":{\"type\":\"icon\"},\"image\":{\"type\":\"upload\"},\"category_ids\":{\"type\":\"categories\",\"validations\":{\"max\":2}},\"tags\":{\"type\":\"tags\"},\"weight\":{\"type\":\"integer\",\"validations\":{\"min\":1,\"max\":10}},\"kind\":{\"type\":\"enum\",\"choices\":[\"a\",\"b\"]},\"when\":{\"type\":\"datetime\"},\"topic\":{\"type\":\"topic\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true},\"groups\":{\"type\":\"groups\",\"disallowed_groups\":\"1\"}}}}}}},{\"setting\":\"nav_items\",\"humanized_name\":\"Nav items\",\"type\":\"list\",\"default\":\"a|b\",\"value\":\"a|b\",\"list_type\":\"simple\"},{\"setting\":\"visible_groups\",\"humanized_name\":\"Visible groups\",\"type\":\"list\",\"default\":\"0|1\",\"value\":\"0|1\",\"list_type\":\"group\",\"disallowed_groups\":\"2\",\"resolve_group_membership\":true},{\"setting\":\"logo\",\"humanized_name\":\"Logo\",\"type\":\"upload\",\"default\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"value\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\"},{\"setting\":\"star\",\"humanized_name\":\"Star\",\"type\":\"icon\",\"default\":\"star\",\"value\":\"star\"},{\"setting\":\"config_json\",\"humanized_name\":\"Config JSON\",\"type\":\"string\",\"default\":\"{}\",\"value\":\"{}\",\"textarea\":false,\"json_schema\":{\"type\":\"object\"}},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":5,\"value\":5},{\"setting\":\"ratio\",\"humanized_name\":\"Ratio\",\"type\":\"float\",\"default\":1,\"value\":1.0}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"hero\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"small.png\",\"file_path\":\"assets/hero.png\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"links:\\n  type: objects\\n  default:\\n    - name: Home\\n      url: /latest\\n  schema:\\n    name: link\\n    identifier: name\\n    properties:\\n      name:\\n        type: string\\n        required: true\\n        validations:\\n          max_length: 20\\n      url:\\n        type: string\\n        validations:\\n          url: true\\n      icon:\\n        type: icon\\n      image:\\n        type: upload\\n      category_ids:\\n        type: categories\\n        validations:\\n          max: 2\\n      tags:\\n        type: tags\\n      weight:\\n        type: integer\\n        validations:\\n          min: 1\\n          max: 10\\n      kind:\\n        type: enum\\n        choices: [a, b]\\n      when:\\n        type: datetime\\n      topic:\\n        type: topic\\n      flag:\\n        type: boolean\\n      children:\\n        type: objects\\n        schema:\\n          name: child\\n          properties:\\n            label:\\n              type: string\\n              required: true\\n            groups:\\n              type: groups\\n              disallowed_groups: \\\"1\\\"\\nnav_items:\\n  type: list\\n  default: \\\"a|b\\\"\\n  list_type: simple\\nvisible_groups:\\n  type: list\\n  list_type: group\\n  default: \\\"0|1\\\"\\n  disallowed_groups: \\\"2\\\"\\n  resolve_group_membership: true\\nlogo:\\n  type: upload\\n  default: hero\\nstar:\\n  type: icon\\n  default: star\\nconfig_json:\\n  type: string\\n  default: \\\"{}\\\"\\n  json_schema: '{\\\"type\\\": \\\"object\\\"}'\\ncount:\\n  type: integer\\n  default: 5\\n  max: 10\\nratio:\\n  type: float\\n  default: 1\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  theme_metadata:\\n    settings:\\n      links:\\n        description: The links\\n        schema:\\n          properties:\\n            name:\\n              label: Name\\n              description: The link's name\\n            children:\\n              schema:\\n                properties:\\n                  label:\\n                    label: Child label\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:52.65806",
+          "created_at": "2026-11-22T01:39:32.335325",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:52.65806",
+          "updated_at": "2026-11-22T01:39:32.335325",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1447,7 +1447,7 @@
           "target_user_id": null
         },
         {
-          "id": 69,
+          "id": 73,
           "email": null,
           "action": 77,
           "context": null,
@@ -1457,10 +1457,10 @@
           "topic_id": null,
           "new_value": "[{\"name\": \"Docs\", \"url\": \"https://example.com/docs\", \"icon\": \"book\", \"image\": \"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\", \"category_ids\": [2, 4], \"tags\": [\"howto\"], \"weight\": 3, \"kind\": \"b\", \"when\": \"2026-10-14T10:00:00Z\", \"flag\": false, \"children\": [{\"label\": \"Kid\", \"groups\": [1, 3]}]}]",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:52.828427",
+          "created_at": "2026-11-22T01:39:32.492787",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:52.828427",
+          "updated_at": "2026-11-22T01:39:32.492787",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1469,7 +1469,7 @@
           "target_user_id": null
         },
         {
-          "id": 70,
+          "id": 74,
           "email": null,
           "action": 77,
           "context": null,
@@ -1479,10 +1479,10 @@
           "topic_id": null,
           "new_value": "0|2|3",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:53.074464",
+          "created_at": "2026-11-22T01:39:32.753751",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:53.074464",
+          "updated_at": "2026-11-22T01:39:32.753751",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1491,7 +1491,7 @@
           "target_user_id": null
         },
         {
-          "id": 71,
+          "id": 75,
           "email": null,
           "action": 77,
           "context": null,
@@ -1501,10 +1501,10 @@
           "topic_id": null,
           "new_value": "/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:53.168168",
+          "created_at": "2026-11-22T01:39:32.836197",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:53.168168",
+          "updated_at": "2026-11-22T01:39:32.836197",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1513,7 +1513,7 @@
           "target_user_id": null
         },
         {
-          "id": 72,
+          "id": 76,
           "email": null,
           "action": 77,
           "context": null,
@@ -1523,10 +1523,10 @@
           "topic_id": null,
           "new_value": "far-heart",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:53.353725",
+          "created_at": "2026-11-22T01:39:33.030138",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:53.353725",
+          "updated_at": "2026-11-22T01:39:33.030138",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1535,7 +1535,7 @@
           "target_user_id": null
         },
         {
-          "id": 73,
+          "id": 77,
           "email": null,
           "action": 4,
           "context": null,
@@ -1545,10 +1545,10 @@
           "topic_id": null,
           "new_value": "{\"id\":1,\"name\":\"Typed settings\",\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"url\":\"https://example.com/docs\",\"flag\":false,\"icon\":\"book\",\"kind\":\"b\",\"name\":\"Docs\",\"tags\":[\"howto\"],\"when\":\"2026-10-14T10:00:00Z\",\"image\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"weight\":3,\"children\":[{\"label\":\"Kid\",\"groups\":[3]}],\"category_ids\":[2,4]}],\"description\":\"The links\",\"objects_schema\":{\"name\":\"link\",\"identifier\":\"name\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true,\"validations\":{\"max_length\":20}},\"url\":{\"type\":\"string\",\"validations\":{\"url\":true}},\"icon\":{\"type\":\"icon\"},\"image\":{\"type\":\"upload\"},\"category_ids\":{\"type\":\"categories\",\"validations\":{\"max\":2}},\"tags\":{\"type\":\"tags\"},\"weight\":{\"type\":\"integer\",\"validations\":{\"min\":1,\"max\":10}},\"kind\":{\"type\":\"enum\",\"choices\":[\"a\",\"b\"]},\"when\":{\"type\":\"datetime\"},\"topic\":{\"type\":\"topic\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true},\"groups\":{\"type\":\"groups\",\"disallowed_groups\":\"1\"}}}}}}},{\"setting\":\"nav_items\",\"humanized_name\":\"Nav items\",\"type\":\"list\",\"default\":\"a|b\",\"value\":\"x|y\",\"list_type\":\"simple\"},{\"setting\":\"visible_groups\",\"humanized_name\":\"Visible groups\",\"type\":\"list\",\"default\":\"0|1\",\"value\":\"0|3\",\"list_type\":\"group\",\"disallowed_groups\":\"2\",\"resolve_group_membership\":true},{\"setting\":\"logo\",\"humanized_name\":\"Logo\",\"type\":\"upload\",\"default\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"value\":\"/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif\"},{\"setting\":\"star\",\"humanized_name\":\"Star\",\"type\":\"icon\",\"default\":\"star\",\"value\":\"far-heart\"},{\"setting\":\"config_json\",\"humanized_name\":\"Config JSON\",\"type\":\"string\",\"default\":\"{}\",\"value\":\"{}\",\"textarea\":false,\"json_schema\":{\"type\":\"object\"}},{\"setting\":\"count\",\"humanized_name\":\"Count\",\"type\":\"integer\",\"default\":5,\"value\":5},{\"setting\":\"ratio\",\"humanized_name\":\"Ratio\",\"type\":\"float\",\"default\":1,\"value\":2.5}]}",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:53.517151",
+          "created_at": "2026-11-22T01:39:33.190311",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:53.517151",
+          "updated_at": "2026-11-22T01:39:33.190311",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -1557,7 +1557,7 @@
           "target_user_id": null
         },
         {
-          "id": 74,
+          "id": 78,
           "email": null,
           "action": 5,
           "context": null,
@@ -1567,15 +1567,15 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:53.665959",
+          "created_at": "2026-11-22T01:39:33.338704",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:53.665959",
+          "updated_at": "2026-11-22T01:39:33.338704",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
           "acting_user_id": 1,
-          "previous_value": "{\"id\":1,\"name\":\"Typed settings\",\"description\":null,\"created_at\":\"2026-11-15T23:44:52.503Z\",\"updated_at\":\"2026-11-15T23:44:52.503Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "previous_value": "{\"id\":1,\"name\":\"Typed settings\",\"description\":null,\"created_at\":\"2026-11-22T01:39:32.185Z\",\"updated_at\":\"2026-11-22T01:39:32.185Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "target_user_id": null
         }
       ],
@@ -1588,13 +1588,13 @@
           "id": 36,
           "user_id": 1,
           "upload_id": 36,
-          "created_at": "2026-11-15T23:44:52.457042"
+          "created_at": "2026-11-22T01:39:32.140393"
         },
         {
           "id": 37,
           "user_id": 1,
           "upload_id": 37,
-          "created_at": "2026-11-15T23:44:52.485428"
+          "created_at": "2026-11-22T01:39:32.16845"
         }
       ],
       "deleted": [],
@@ -1604,12 +1604,12 @@
   "jobs": [],
   "next_ids": {
     "uploads": 36,
-    "user_histories": 68,
+    "user_histories": 72,
     "user_uploads": 36
   },
   "recorded_from": {
     "case": "300a83bda7e8ab3972cda3a9267bf43d29a4fd0c03fb62d4e1e75776761eaa0f",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

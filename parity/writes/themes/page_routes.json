@@ -77,8 +77,8 @@
       "path": "/admin/customize/themes/{{responses.0.body.theme.id}}.json"
     }
   ],
-  "started_at": "2026-11-15T23:44:41.649165",
-  "transaction_started_at": "2026-11-15T23:44:40.801392",
+  "started_at": "2026-11-22T01:39:21.665862",
+  "transaction_started_at": "2026-11-22T01:39:20.849587",
   "responses": [
     {
       "status": 201,
@@ -87,8 +87,8 @@
           "id": 1,
           "name": "Broken",
           "description": null,
-          "created_at": "2026-11-15T23:44:41.661Z",
-          "updated_at": "2026-11-15T23:44:41.661Z",
+          "created_at": "2026-11-22T01:39:21.680Z",
+          "updated_at": "2026-11-22T01:39:21.680Z",
           "component": true,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -144,8 +144,8 @@
           "id": 1,
           "name": "Broken",
           "description": null,
-          "created_at": "2026-11-15T23:44:41.661Z",
-          "updated_at": "2026-11-15T23:44:41.661Z",
+          "created_at": "2026-11-22T01:39:21.680Z",
+          "updated_at": "2026-11-22T01:39:21.680Z",
           "component": true,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -209,8 +209,8 @@
             "id": 1,
             "name": "Broken",
             "description": null,
-            "created_at": "2026-11-15T23:44:41.661Z",
-            "updated_at": "2026-11-15T23:44:41.661Z",
+            "created_at": "2026-11-22T01:39:21.680Z",
+            "updated_at": "2026-11-22T01:39:21.680Z",
             "component": true,
             "color_scheme_id": null,
             "dark_color_scheme_id": null,
@@ -1401,7 +1401,7 @@
               {
                 "name": "sidebar",
                 "target": "extra_scss",
-                "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link:focus,\n.sidebar-section-link-wrapper .sidebar-section-link:hover {\n  .d-icon {\n    color: var(--primary);\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
+                "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link {\n  &:focus-visible .d-icon {\n    color: var(--primary);\n  }\n\n  @media (hover: hover) {\n    &:hover .d-icon,\n    &:focus .d-icon {\n      color: var(--primary);\n    }\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
                 "type_id": 1,
                 "file_path": "stylesheets/sidebar.scss"
               },
@@ -3895,8 +3895,8 @@
             "id": 1,
             "name": "Broken",
             "description": null,
-            "created_at": "2026-11-15T23:44:41.661Z",
-            "updated_at": "2026-11-15T23:44:41.661Z",
+            "created_at": "2026-11-22T01:39:21.680Z",
+            "updated_at": "2026-11-22T01:39:21.680Z",
             "component": true,
             "color_scheme_id": null,
             "dark_color_scheme_id": null,
@@ -5087,7 +5087,7 @@
               {
                 "name": "sidebar",
                 "target": "extra_scss",
-                "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link:focus,\n.sidebar-section-link-wrapper .sidebar-section-link:hover {\n  .d-icon {\n    color: var(--primary);\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
+                "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link {\n  &:focus-visible .d-icon {\n    color: var(--primary);\n  }\n\n  @media (hover: hover) {\n    &:hover .d-icon,\n    &:focus .d-icon {\n      color: var(--primary);\n    }\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
                 "type_id": 1,
                 "file_path": "stylesheets/sidebar.scss"
               },
@@ -7580,8 +7580,8 @@
           "id": 1,
           "name": "Broken",
           "description": null,
-          "created_at": "2026-11-15T23:44:41.661Z",
-          "updated_at": "2026-11-15T23:44:41.661Z",
+          "created_at": "2026-11-22T01:39:21.680Z",
+          "updated_at": "2026-11-22T01:39:21.680Z",
           "component": true,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -7641,8 +7641,8 @@
             "id": 1,
             "name": "Broken",
             "description": null,
-            "created_at": "2026-11-15T23:44:41.661Z",
-            "updated_at": "2026-11-15T23:44:41.661Z",
+            "created_at": "2026-11-22T01:39:21.680Z",
+            "updated_at": "2026-11-22T01:39:21.680Z",
             "component": true,
             "color_scheme_id": null,
             "dark_color_scheme_id": null,
@@ -8829,7 +8829,7 @@
               {
                 "name": "sidebar",
                 "target": "extra_scss",
-                "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link:focus,\n.sidebar-section-link-wrapper .sidebar-section-link:hover {\n  .d-icon {\n    color: var(--primary);\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
+                "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link {\n  &:focus-visible .d-icon {\n    color: var(--primary);\n  }\n\n  @media (hover: hover) {\n    &:hover .d-icon,\n    &:focus .d-icon {\n      color: var(--primary);\n    }\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
                 "type_id": 1,
                 "file_path": "stylesheets/sidebar.scss"
               },
@@ -11321,33 +11321,33 @@
       "inserted": [
         {
           "id": 36,
-          "digest": "96242d55e62d9f8a9cbffb4215edbf42e325805a",
+          "digest": "bbd4ad2c3dd3789b1970a3d01431ceda7f0e56e6",
           "target": "common_theme_1",
           "content": "/* SCSS compilation error: Undefined variable. */",
           "theme_id": -1,
-          "created_at": "2026-11-15T23:44:41.976346",
+          "created_at": "2026-11-22T01:39:21.99314",
           "source_map": null,
-          "updated_at": "2026-11-15T23:44:41.976346"
+          "updated_at": "2026-11-22T01:39:21.99314"
         },
         {
           "id": 37,
-          "digest": "eb629a35290a2ecbf055f3074ef1232c0bd0c250",
+          "digest": "dd7555565e23fe5fb7bf788c75064cdc9baaf7f5",
           "target": "desktop_theme_1",
-          "content": ".fine{color:red}\n/*# sourceMappingURL=desktop_theme_1_eb629a35290a2ecbf055f3074ef1232c0bd0c250.css.map?__ws=localhost */",
+          "content": ".fine{color:red}\n/*# sourceMappingURL=desktop_theme_1_dd7555565e23fe5fb7bf788c75064cdc9baaf7f5.css.map?__ws=localhost */",
           "theme_id": -1,
-          "created_at": "2026-11-15T23:44:42.166931",
-          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_d3d4ed8766915858deee10f3c061efe1/discourse-broken/_entry_loadpath/theme-entrypoint/desktop.scss\"],\"names\":[],\"mappings\":\"AAAA,MAAA,SAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".fine { color: red; }\"]}",
-          "updated_at": "2026-11-15T23:44:42.166931"
+          "created_at": "2026-11-22T01:39:22.158095",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_ae4fe69017a1ce035ca352393e312fc0/discourse-broken/_entry_loadpath/theme-entrypoint/desktop.scss\"],\"names\":[],\"mappings\":\"AAAA,MAAA,SAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".fine { color: red; }\"]}",
+          "updated_at": "2026-11-22T01:39:22.158095"
         },
         {
           "id": 38,
-          "digest": "32ae0ad62985f7af0d562d2f5b72b6d976012dc7",
+          "digest": "eb185c1e4c5b8ab3d3b92d2970457bc845bb65f0",
           "target": "common_theme_1",
-          "content": ".broken{color:blue}\n/*# sourceMappingURL=common_theme_1_32ae0ad62985f7af0d562d2f5b72b6d976012dc7.css.map?__ws=localhost */",
+          "content": ".broken{color:blue}\n/*# sourceMappingURL=common_theme_1_eb185c1e4c5b8ab3d3b92d2970457bc845bb65f0.css.map?__ws=localhost */",
           "theme_id": -1,
-          "created_at": "2026-11-15T23:44:42.741948",
-          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_2c86c2c4820f96c3756e87f2b5000878/discourse-broken/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,UAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".broken { color: blue; }\"]}",
-          "updated_at": "2026-11-15T23:44:42.741948"
+          "created_at": "2026-11-22T01:39:22.743385",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_c610b310a07a2a567e2a9b1a53b201f4/discourse-broken/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,QAAA,UAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".broken { color: blue; }\"]}",
+          "updated_at": "2026-11-22T01:39:22.743385"
         }
       ],
       "deleted": [],
@@ -11364,9 +11364,9 @@
           "theme_id": 1,
           "target_id": 1,
           "upload_id": null,
-          "created_at": "2026-11-15T23:44:41.664811",
-          "updated_at": "2026-11-15T23:44:41.664811",
-          "value_baked": "ee340d8c093e18e394fc988866e9ebe0ed035967",
+          "created_at": "2026-11-22T01:39:21.683586",
+          "updated_at": "2026-11-22T01:39:21.683586",
+          "value_baked": "5afe71129ecc7f0e5d4928ab1506dcccce5bfe6c",
           "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         },
         {
@@ -11378,8 +11378,8 @@
           "theme_id": 1,
           "target_id": 2,
           "upload_id": null,
-          "created_at": "2026-11-15T23:44:42.217973",
-          "updated_at": "2026-11-15T23:44:42.217973",
+          "created_at": "2026-11-22T01:39:22.213386",
+          "updated_at": "2026-11-22T01:39:22.213386",
           "value_baked": "<div class=\"m\">m</div>",
           "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         },
@@ -11392,9 +11392,9 @@
           "theme_id": 1,
           "target_id": 0,
           "upload_id": null,
-          "created_at": "2026-11-15T23:44:41.663169",
-          "updated_at": "2026-11-15T23:44:42.57",
-          "value_baked": "4eeafe6cb7665d448f9b30c1435d31f69dab34ab",
+          "created_at": "2026-11-22T01:39:21.682249",
+          "updated_at": "2026-11-22T01:39:22.56648",
+          "value_baked": "d94ccc5e6c9f12deffc80bd0844f45d72e72299c",
           "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         }
       ],
@@ -11430,8 +11430,8 @@
           "enabled": true,
           "user_id": 1,
           "component": true,
-          "created_at": "2026-11-15T23:44:41.661842",
-          "updated_at": "2026-11-15T23:44:41.661842",
+          "created_at": "2026-11-22T01:39:21.680815",
+          "updated_at": "2026-11-22T01:39:21.680815",
           "auto_update": true,
           "color_scheme_id": null,
           "remote_theme_id": null,
@@ -11449,33 +11449,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ERQ2VL8zRMm3n6r+hTaHP/3QjnE=",
-            "created_at": "2026-11-15T23:44:41.205604",
-            "rotated_at": "2026-11-15T23:44:41.20486",
-            "updated_at": "2026-11-15T23:44:41.205604",
+            "auth_token": "mu07yZ+vEmWz6L+X8GGV25ZLoAs=",
+            "created_at": "2026-11-22T01:39:21.214463",
+            "rotated_at": "2026-11-22T01:39:21.213575",
+            "updated_at": "2026-11-22T01:39:21.214463",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ERQ2VL8zRMm3n6r+hTaHP/3QjnE=",
+            "prev_auth_token": "mu07yZ+vEmWz6L+X8GGV25ZLoAs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:44:41.653541",
+            "id": 1,
+            "seen_at": "2026-11-22T01:39:21.67182",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ERQ2VL8zRMm3n6r+hTaHP/3QjnE=",
-            "created_at": "2026-11-15T23:44:41.205604",
-            "rotated_at": "2026-11-15T23:44:41.20486",
-            "updated_at": "2026-11-15T23:44:41.205604",
+            "auth_token": "mu07yZ+vEmWz6L+X8GGV25ZLoAs=",
+            "created_at": "2026-11-22T01:39:21.214463",
+            "rotated_at": "2026-11-22T01:39:21.213575",
+            "updated_at": "2026-11-22T01:39:21.214463",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ERQ2VL8zRMm3n6r+hTaHP/3QjnE=",
+            "prev_auth_token": "mu07yZ+vEmWz6L+X8GGV25ZLoAs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -11486,7 +11486,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 72,
           "email": null,
           "action": 4,
           "context": null,
@@ -11494,12 +11494,12 @@
           "post_id": null,
           "subject": "Broken",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Broken\",\"description\":null,\"created_at\":\"2026-11-15T23:44:41.661Z\",\"updated_at\":\"2026-11-15T23:44:41.661Z\",\"component\":true,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"errors\":[\"Undefined variable.\"],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".broken { color: $nope; }\",\"error\":\"Undefined variable.\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"scss\",\"target\":\"desktop\",\"value\":\".fine { color: red; }\",\"type_id\":1,\"file_path\":\"desktop/desktop.scss\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "new_value": "{\"id\":1,\"name\":\"Broken\",\"description\":null,\"created_at\":\"2026-11-22T01:39:21.680Z\",\"updated_at\":\"2026-11-22T01:39:21.680Z\",\"component\":true,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"errors\":[\"Undefined variable.\"],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".broken { color: $nope; }\",\"error\":\"Undefined variable.\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"scss\",\"target\":\"desktop\",\"value\":\".fine { color: red; }\",\"type_id\":1,\"file_path\":\"desktop/desktop.scss\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:41.829938",
+          "created_at": "2026-11-22T01:39:21.847869",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:41.829938",
+          "updated_at": "2026-11-22T01:39:21.847869",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -11508,7 +11508,7 @@
           "target_user_id": null
         },
         {
-          "id": 69,
+          "id": 73,
           "email": null,
           "action": 4,
           "context": null,
@@ -11518,10 +11518,10 @@
           "topic_id": null,
           "new_value": "{\"id\":1,\"name\":\"Broken\",\"errors\":[\"Undefined mixin.\"],\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".broken { @include nope; }\",\"error\":\"Undefined mixin.\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"scss\",\"target\":\"desktop\",\"value\":\".fine { color: red; }\",\"type_id\":1,\"file_path\":\"desktop/desktop.scss\"},{\"name\":\"header\",\"target\":\"mobile\",\"value\":\"\\u003cdiv class='m'\\u003em\\u003c/div\\u003e\",\"type_id\":0,\"file_path\":\"mobile/header.html\"}]}",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:42.36322",
+          "created_at": "2026-11-22T01:39:22.365137",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:42.36322",
+          "updated_at": "2026-11-22T01:39:22.365137",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -11530,7 +11530,7 @@
           "target_user_id": null
         },
         {
-          "id": 70,
+          "id": 74,
           "email": null,
           "action": 4,
           "context": null,
@@ -11540,10 +11540,10 @@
           "topic_id": null,
           "new_value": "{\"id\":1,\"name\":\"Broken\",\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".broken { color: blue; }\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"scss\",\"target\":\"desktop\",\"value\":\".fine { color: red; }\",\"type_id\":1,\"file_path\":\"desktop/desktop.scss\"},{\"name\":\"header\",\"target\":\"mobile\",\"value\":\"\\u003cdiv class='m'\\u003em\\u003c/div\\u003e\",\"type_id\":0,\"file_path\":\"mobile/header.html\"}]}",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:42.809589",
+          "created_at": "2026-11-22T01:39:22.81213",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:42.809589",
+          "updated_at": "2026-11-22T01:39:22.81213",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -11562,14 +11562,14 @@
     "theme_fields": 163,
     "theme_modifier_sets": 3,
     "themes": 1,
-    "user_histories": 68
+    "user_histories": 72
   },
   "digests": [
     "theme_fields.value_baked"
   ],
   "recorded_from": {
     "case": "e22fe52048fd4587ed1dbfb654f358b199e7ec5b9e5a89621bebbe910d014b24",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

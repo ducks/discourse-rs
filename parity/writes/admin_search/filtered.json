@@ -59,8 +59,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T21:47:18.324411",
-  "transaction_started_at": "2026-11-15T21:47:17.346663",
+  "started_at": "2026-11-22T00:12:09.131203",
+  "transaction_started_at": "2026-11-22T00:12:08.396658",
   "responses": [
     {
       "status": 200,
@@ -329,7 +329,9 @@
             "setting": "title",
             "humanized_name": "Title",
             "description": "The name of this site. Visible to all visitors including anonymous users. Note that changing this title may send a prompt to users of the PWA asking them to either update or uninstall the app.",
-            "keywords": [],
+            "keywords": [
+              "community name"
+            ],
             "category": "required",
             "primary_area": "about"
           },
@@ -337,7 +339,9 @@
             "setting": "logo",
             "humanized_name": "Logo",
             "description": "The logo image at the top left of your site. Use a wide rectangular image with a height of 120 and an aspect ratio greater than 3:1. If left blank, the site title text will be shown.",
-            "keywords": [],
+            "keywords": [
+              "primary logo"
+            ],
             "category": "branding",
             "primary_area": null,
             "upload": {
@@ -633,7 +637,7 @@
                 "height": 851
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.639Z"
+              "status_changed_at": "2026-11-21T23:55:41.345Z"
             },
             "plugin": "Boards",
             "depends_on": [],
@@ -641,6 +645,34 @@
             "dependents": [
               "boards_manage_board_allowed_groups"
             ],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "chat_thread_improvements",
+            "humanized_name": "Chat thread improvements",
+            "description": "Enable direct replies to specific messages within chat threads, and allow broadcasting thread replies back to the channel.",
+            "value": false,
+            "upcoming_change": {
+              "status": "alpha",
+              "learn_more_url": "https://meta.discourse.org/t/-/417837",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.360Z"
+            },
+            "plugin": "Chat",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
@@ -663,7 +695,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.642Z"
+              "status_changed_at": "2026-11-21T23:55:41.367Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -675,10 +707,10 @@
           {
             "setting": "enable_category_hashtag_cards",
             "humanized_name": "Enable category hashtag cards",
-            "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
+            "description": "Shows a floating category card when a category hashtag is hovered if the user has permission to view that category.",
             "value": false,
             "upcoming_change": {
-              "status": "experimental",
+              "status": "alpha",
               "learn_more_url": "https://meta.discourse.org/t/-/412529",
               "group_setting": null,
               "impact_type": "feature",
@@ -688,7 +720,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.646Z"
+              "status_changed_at": "2026-11-21T23:55:41.415Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -718,7 +750,7 @@
                 "height": 1544
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.647Z"
+              "status_changed_at": "2026-11-21T23:55:41.423Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -743,7 +775,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.648Z"
+              "status_changed_at": "2026-11-21T23:55:41.435Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -776,7 +808,7 @@
                 "height": 687
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.650Z"
+              "status_changed_at": "2026-11-21T23:55:41.466Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -804,7 +836,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.652Z"
+              "status_changed_at": "2026-11-21T23:55:41.486Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -834,7 +866,7 @@
                 "height": 410
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.657Z"
+              "status_changed_at": "2026-11-21T23:55:41.591Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -866,7 +898,7 @@
                 "height": 730
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.659Z"
+              "status_changed_at": "2026-11-21T23:55:41.605Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -899,7 +931,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.660Z"
+              "status_changed_at": "2026-11-21T23:55:41.615Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -926,7 +958,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.662Z"
+              "status_changed_at": "2026-11-21T23:55:41.625Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -936,12 +968,39 @@
             "groups": null
           },
           {
+            "setting": "enable_new_default_for_hide_suspension_reasons_and_hide_silencing_reasons",
+            "humanized_name": "Enable new default for hide suspension reasons and hide silencing reasons",
+            "description": "We are updating the defaults for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_suspension_reasons\" data-setting-name=\"hide_suspension_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide suspension reasons</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_silencing_reasons\" data-setting-name=\"hide_silencing_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide silencing reasons</a> settings to hide these reasons from public view. If you have previously changed either setting, this change will have no effect on that setting.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/416547",
+              "permanent_warning": false,
+              "group_setting": null,
+              "impact_type": "site_setting_default",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "hide_settings": null,
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.650Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": true,
+            "groups": null
+          },
+          {
             "setting": "enable_new_reordering_controls",
             "humanized_name": "Enable new reordering controls",
             "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
-            "value": false,
+            "value": true,
             "upcoming_change": {
-              "status": "alpha",
+              "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/414613",
               "group_setting": null,
               "impact_type": "feature",
@@ -950,8 +1009,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.667Z"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.688Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -981,7 +1040,7 @@
                 "height": 436
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.671Z"
+              "status_changed_at": "2026-11-21T23:55:41.736Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1011,7 +1070,7 @@
                 "height": 442
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.673Z"
+              "status_changed_at": "2026-11-21T23:55:41.751Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1038,7 +1097,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.675Z"
+              "status_changed_at": "2026-11-21T23:55:41.776Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1065,7 +1124,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.677Z"
+              "status_changed_at": "2026-11-21T23:55:41.789Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1096,12 +1155,14 @@
                 "height": 407
               },
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.678Z"
+              "status_changed_at": "2026-11-21T23:55:41.803Z"
             },
             "plugin": "Live",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [
+              "live_file_transfer_max_size_mb",
+              "live_file_transfer_allowed_groups",
               "live_allowed_groups",
               "live_create_room_allowed_groups",
               "live_direct_calls_allowed_groups",
@@ -1122,6 +1183,31 @@
             }
           },
           {
+            "setting": "mobile_footer_navigation",
+            "humanized_name": "Mobile footer navigation",
+            "description": "Replaces the mobile header's menu button with a tab bar at the bottom of the screen. The footer navigation has a tab for each area of the site, a global menu button, and a button for writing new content. Plugins can add their own menu items and secondary menus using a new API.",
+            "value": false,
+            "upcoming_change": {
+              "status": "experimental",
+              "learn_more_url": "https://meta.discourse.org/t/-/417307",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.829Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
             "setting": "modernize_foundation_theme",
             "humanized_name": "Modernize Foundation theme",
             "description": "This change introduces design modifcations to the Foundation theme in Discourse.",
@@ -1137,7 +1223,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.680Z"
+              "status_changed_at": "2026-11-21T23:55:41.840Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1162,7 +1248,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.681Z"
+              "status_changed_at": "2026-11-21T23:55:41.852Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1192,7 +1278,7 @@
                 "suppress_uncategorized_badge"
               ],
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.682Z"
+              "status_changed_at": "2026-11-21T23:55:41.864Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1217,7 +1303,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.684Z"
+              "status_changed_at": "2026-11-21T23:55:41.875Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1242,7 +1328,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.686Z"
+              "status_changed_at": "2026-11-21T23:55:41.898Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1267,7 +1353,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.688Z"
+              "status_changed_at": "2026-11-21T23:55:41.908Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1294,7 +1380,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.690Z"
+              "status_changed_at": "2026-11-21T23:55:41.931Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1605,7 +1691,9 @@
             "setting": "allow_user_locale",
             "humanized_name": "Allow user locale",
             "description": "Allow users to choose their own language interface preference",
-            "keywords": [],
+            "keywords": [
+              "let users choose their language"
+            ],
             "category": "content_localization",
             "primary_area": "localization"
           },
@@ -1613,7 +1701,9 @@
             "setting": "content_localization_enabled",
             "humanized_name": "Content localization enabled",
             "description": "Displays localized content for users based on their browser or user language preferences. Such content may include categories, tags, posts, and topics. Supported locales are set in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=content_localization_supported_locales\" data-setting-name=\"content_localization_supported_locales\" data-setting-area=\"localization\" data-setting-category=\"content_localization\">Content localization supported locales</a>.",
-            "keywords": [],
+            "keywords": [
+              "show translations to readers"
+            ],
             "category": "content_localization",
             "primary_area": "localization"
           },
@@ -1621,7 +1711,9 @@
             "setting": "content_localization_supported_locales",
             "humanized_name": "Content localization supported locales",
             "description": "List of supported locales that user content can be translated to. The site's default locale is always included. Requires <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=content_localization_enabled\" data-setting-name=\"content_localization_enabled\" data-setting-area=\"localization\" data-setting-category=\"content_localization\">Content localization enabled</a>.",
-            "keywords": [],
+            "keywords": [
+              "translate into"
+            ],
             "category": "content_localization",
             "primary_area": "localization"
           },
@@ -1653,7 +1745,9 @@
             "setting": "content_localization_crawler_param",
             "humanized_name": "Content localization crawler param",
             "description": "Serve localized content to web crawlers when <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=content_localization_enabled\" data-setting-name=\"content_localization_enabled\" data-setting-area=\"localization\" data-setting-category=\"content_localization\">Content localization enabled</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=set_locale_from_param\" data-setting-name=\"set_locale_from_param\" data-setting-area=\"localization\" data-setting-category=\"content_localization\">Set locale from param</a> is enabled. The list of supported locales is defined in <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=content_localization_supported_locales\" data-setting-name=\"content_localization_supported_locales\" data-setting-area=\"localization\" data-setting-category=\"content_localization\">Content localization supported locales</a>.",
-            "keywords": [],
+            "keywords": [
+              "let search engines index translations"
+            ],
             "category": "content_localization",
             "primary_area": "localization"
           },
@@ -1661,7 +1755,9 @@
             "setting": "content_localization_use_default_locale_when_unsupported",
             "humanized_name": "Content localization use default locale when unsupported",
             "description": "Serve localized content in the site's default locale to users whose preferred language is not listed in 'content localization supported locales'.",
-            "keywords": [],
+            "keywords": [
+              "fall back to the default language"
+            ],
             "category": "content_localization",
             "primary_area": "localization"
           },
@@ -1685,7 +1781,9 @@
             "setting": "set_locale_from_param",
             "humanized_name": "Set locale from param",
             "description": "Allows setting an anonymous user's locale via the 'tl' URL param, e.g. ?tl=es",
-            "keywords": [],
+            "keywords": [
+              "language links"
+            ],
             "category": "content_localization",
             "primary_area": "localization"
           },
@@ -1992,7 +2090,7 @@
                 "height": 851
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.639Z"
+              "status_changed_at": "2026-11-21T23:55:41.345Z"
             },
             "plugin": "Boards",
             "depends_on": [],
@@ -2000,6 +2098,34 @@
             "dependents": [
               "boards_manage_board_allowed_groups"
             ],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "chat_thread_improvements",
+            "humanized_name": "Chat thread improvements",
+            "description": "Enable direct replies to specific messages within chat threads, and allow broadcasting thread replies back to the channel.",
+            "value": false,
+            "upcoming_change": {
+              "status": "alpha",
+              "learn_more_url": "https://meta.discourse.org/t/-/417837",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.360Z"
+            },
+            "plugin": "Chat",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
@@ -2022,7 +2148,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.642Z"
+              "status_changed_at": "2026-11-21T23:55:41.367Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2034,10 +2160,10 @@
           {
             "setting": "enable_category_hashtag_cards",
             "humanized_name": "Enable category hashtag cards",
-            "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
+            "description": "Shows a floating category card when a category hashtag is hovered if the user has permission to view that category.",
             "value": false,
             "upcoming_change": {
-              "status": "experimental",
+              "status": "alpha",
               "learn_more_url": "https://meta.discourse.org/t/-/412529",
               "group_setting": null,
               "impact_type": "feature",
@@ -2047,7 +2173,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.646Z"
+              "status_changed_at": "2026-11-21T23:55:41.415Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2077,7 +2203,7 @@
                 "height": 1544
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.647Z"
+              "status_changed_at": "2026-11-21T23:55:41.423Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2102,7 +2228,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.648Z"
+              "status_changed_at": "2026-11-21T23:55:41.435Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2135,7 +2261,7 @@
                 "height": 687
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.650Z"
+              "status_changed_at": "2026-11-21T23:55:41.466Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -2163,7 +2289,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.652Z"
+              "status_changed_at": "2026-11-21T23:55:41.486Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2193,7 +2319,7 @@
                 "height": 410
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.657Z"
+              "status_changed_at": "2026-11-21T23:55:41.591Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2225,7 +2351,7 @@
                 "height": 730
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.659Z"
+              "status_changed_at": "2026-11-21T23:55:41.605Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -2258,7 +2384,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.660Z"
+              "status_changed_at": "2026-11-21T23:55:41.615Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2285,7 +2411,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.662Z"
+              "status_changed_at": "2026-11-21T23:55:41.625Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2295,12 +2421,39 @@
             "groups": null
           },
           {
+            "setting": "enable_new_default_for_hide_suspension_reasons_and_hide_silencing_reasons",
+            "humanized_name": "Enable new default for hide suspension reasons and hide silencing reasons",
+            "description": "We are updating the defaults for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_suspension_reasons\" data-setting-name=\"hide_suspension_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide suspension reasons</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_silencing_reasons\" data-setting-name=\"hide_silencing_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide silencing reasons</a> settings to hide these reasons from public view. If you have previously changed either setting, this change will have no effect on that setting.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/416547",
+              "permanent_warning": false,
+              "group_setting": null,
+              "impact_type": "site_setting_default",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "hide_settings": null,
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.650Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": true,
+            "groups": null
+          },
+          {
             "setting": "enable_new_reordering_controls",
             "humanized_name": "Enable new reordering controls",
             "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
-            "value": false,
+            "value": true,
             "upcoming_change": {
-              "status": "alpha",
+              "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/414613",
               "group_setting": null,
               "impact_type": "feature",
@@ -2309,8 +2462,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.667Z"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.688Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2340,7 +2493,7 @@
                 "height": 436
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.671Z"
+              "status_changed_at": "2026-11-21T23:55:41.736Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2370,7 +2523,7 @@
                 "height": 442
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.673Z"
+              "status_changed_at": "2026-11-21T23:55:41.751Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2397,7 +2550,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.675Z"
+              "status_changed_at": "2026-11-21T23:55:41.776Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2424,7 +2577,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.677Z"
+              "status_changed_at": "2026-11-21T23:55:41.789Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2455,12 +2608,14 @@
                 "height": 407
               },
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.678Z"
+              "status_changed_at": "2026-11-21T23:55:41.803Z"
             },
             "plugin": "Live",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [
+              "live_file_transfer_max_size_mb",
+              "live_file_transfer_allowed_groups",
               "live_allowed_groups",
               "live_create_room_allowed_groups",
               "live_direct_calls_allowed_groups",
@@ -2481,6 +2636,31 @@
             }
           },
           {
+            "setting": "mobile_footer_navigation",
+            "humanized_name": "Mobile footer navigation",
+            "description": "Replaces the mobile header's menu button with a tab bar at the bottom of the screen. The footer navigation has a tab for each area of the site, a global menu button, and a button for writing new content. Plugins can add their own menu items and secondary menus using a new API.",
+            "value": false,
+            "upcoming_change": {
+              "status": "experimental",
+              "learn_more_url": "https://meta.discourse.org/t/-/417307",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.829Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
             "setting": "modernize_foundation_theme",
             "humanized_name": "Modernize Foundation theme",
             "description": "This change introduces design modifcations to the Foundation theme in Discourse.",
@@ -2496,7 +2676,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.680Z"
+              "status_changed_at": "2026-11-21T23:55:41.840Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2521,7 +2701,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.681Z"
+              "status_changed_at": "2026-11-21T23:55:41.852Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2551,7 +2731,7 @@
                 "suppress_uncategorized_badge"
               ],
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.682Z"
+              "status_changed_at": "2026-11-21T23:55:41.864Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2576,7 +2756,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.684Z"
+              "status_changed_at": "2026-11-21T23:55:41.875Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2601,7 +2781,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.686Z"
+              "status_changed_at": "2026-11-21T23:55:41.898Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2626,7 +2806,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.688Z"
+              "status_changed_at": "2026-11-21T23:55:41.908Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -2653,7 +2833,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.690Z"
+              "status_changed_at": "2026-11-21T23:55:41.931Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3022,7 +3202,7 @@
                 "height": 851
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.639Z"
+              "status_changed_at": "2026-11-21T23:55:41.345Z"
             },
             "plugin": "Boards",
             "depends_on": [],
@@ -3030,6 +3210,34 @@
             "dependents": [
               "boards_manage_board_allowed_groups"
             ],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "chat_thread_improvements",
+            "humanized_name": "Chat thread improvements",
+            "description": "Enable direct replies to specific messages within chat threads, and allow broadcasting thread replies back to the channel.",
+            "value": false,
+            "upcoming_change": {
+              "status": "alpha",
+              "learn_more_url": "https://meta.discourse.org/t/-/417837",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.360Z"
+            },
+            "plugin": "Chat",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
@@ -3052,7 +3260,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.642Z"
+              "status_changed_at": "2026-11-21T23:55:41.367Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3064,10 +3272,10 @@
           {
             "setting": "enable_category_hashtag_cards",
             "humanized_name": "Enable category hashtag cards",
-            "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
+            "description": "Shows a floating category card when a category hashtag is hovered if the user has permission to view that category.",
             "value": false,
             "upcoming_change": {
-              "status": "experimental",
+              "status": "alpha",
               "learn_more_url": "https://meta.discourse.org/t/-/412529",
               "group_setting": null,
               "impact_type": "feature",
@@ -3077,7 +3285,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.646Z"
+              "status_changed_at": "2026-11-21T23:55:41.415Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3107,7 +3315,7 @@
                 "height": 1544
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.647Z"
+              "status_changed_at": "2026-11-21T23:55:41.423Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3132,7 +3340,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.648Z"
+              "status_changed_at": "2026-11-21T23:55:41.435Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3165,7 +3373,7 @@
                 "height": 687
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.650Z"
+              "status_changed_at": "2026-11-21T23:55:41.466Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -3193,7 +3401,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.652Z"
+              "status_changed_at": "2026-11-21T23:55:41.486Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3223,7 +3431,7 @@
                 "height": 410
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.657Z"
+              "status_changed_at": "2026-11-21T23:55:41.591Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3255,7 +3463,7 @@
                 "height": 730
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.659Z"
+              "status_changed_at": "2026-11-21T23:55:41.605Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -3288,7 +3496,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.660Z"
+              "status_changed_at": "2026-11-21T23:55:41.615Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3315,7 +3523,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.662Z"
+              "status_changed_at": "2026-11-21T23:55:41.625Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3325,12 +3533,39 @@
             "groups": null
           },
           {
+            "setting": "enable_new_default_for_hide_suspension_reasons_and_hide_silencing_reasons",
+            "humanized_name": "Enable new default for hide suspension reasons and hide silencing reasons",
+            "description": "We are updating the defaults for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_suspension_reasons\" data-setting-name=\"hide_suspension_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide suspension reasons</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_silencing_reasons\" data-setting-name=\"hide_silencing_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide silencing reasons</a> settings to hide these reasons from public view. If you have previously changed either setting, this change will have no effect on that setting.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/416547",
+              "permanent_warning": false,
+              "group_setting": null,
+              "impact_type": "site_setting_default",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "hide_settings": null,
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.650Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": true,
+            "groups": null
+          },
+          {
             "setting": "enable_new_reordering_controls",
             "humanized_name": "Enable new reordering controls",
             "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
-            "value": false,
+            "value": true,
             "upcoming_change": {
-              "status": "alpha",
+              "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/414613",
               "group_setting": null,
               "impact_type": "feature",
@@ -3339,8 +3574,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.667Z"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.688Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3370,7 +3605,7 @@
                 "height": 436
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.671Z"
+              "status_changed_at": "2026-11-21T23:55:41.736Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3400,7 +3635,7 @@
                 "height": 442
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.673Z"
+              "status_changed_at": "2026-11-21T23:55:41.751Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3427,7 +3662,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.675Z"
+              "status_changed_at": "2026-11-21T23:55:41.776Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3454,7 +3689,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.677Z"
+              "status_changed_at": "2026-11-21T23:55:41.789Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3485,12 +3720,14 @@
                 "height": 407
               },
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.678Z"
+              "status_changed_at": "2026-11-21T23:55:41.803Z"
             },
             "plugin": "Live",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [
+              "live_file_transfer_max_size_mb",
+              "live_file_transfer_allowed_groups",
               "live_allowed_groups",
               "live_create_room_allowed_groups",
               "live_direct_calls_allowed_groups",
@@ -3511,6 +3748,31 @@
             }
           },
           {
+            "setting": "mobile_footer_navigation",
+            "humanized_name": "Mobile footer navigation",
+            "description": "Replaces the mobile header's menu button with a tab bar at the bottom of the screen. The footer navigation has a tab for each area of the site, a global menu button, and a button for writing new content. Plugins can add their own menu items and secondary menus using a new API.",
+            "value": false,
+            "upcoming_change": {
+              "status": "experimental",
+              "learn_more_url": "https://meta.discourse.org/t/-/417307",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.829Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
             "setting": "modernize_foundation_theme",
             "humanized_name": "Modernize Foundation theme",
             "description": "This change introduces design modifcations to the Foundation theme in Discourse.",
@@ -3526,7 +3788,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.680Z"
+              "status_changed_at": "2026-11-21T23:55:41.840Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3551,7 +3813,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.681Z"
+              "status_changed_at": "2026-11-21T23:55:41.852Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3581,7 +3843,7 @@
                 "suppress_uncategorized_badge"
               ],
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.682Z"
+              "status_changed_at": "2026-11-21T23:55:41.864Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3606,7 +3868,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.684Z"
+              "status_changed_at": "2026-11-21T23:55:41.875Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3631,7 +3893,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.686Z"
+              "status_changed_at": "2026-11-21T23:55:41.898Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3656,7 +3918,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.688Z"
+              "status_changed_at": "2026-11-21T23:55:41.908Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -3683,7 +3945,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.690Z"
+              "status_changed_at": "2026-11-21T23:55:41.931Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4498,7 +4760,7 @@
                 "height": 851
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.639Z"
+              "status_changed_at": "2026-11-21T23:55:41.345Z"
             },
             "plugin": "Boards",
             "depends_on": [],
@@ -4506,6 +4768,34 @@
             "dependents": [
               "boards_manage_board_allowed_groups"
             ],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "chat_thread_improvements",
+            "humanized_name": "Chat thread improvements",
+            "description": "Enable direct replies to specific messages within chat threads, and allow broadcasting thread replies back to the channel.",
+            "value": false,
+            "upcoming_change": {
+              "status": "alpha",
+              "learn_more_url": "https://meta.discourse.org/t/-/417837",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.360Z"
+            },
+            "plugin": "Chat",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
@@ -4528,7 +4818,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.642Z"
+              "status_changed_at": "2026-11-21T23:55:41.367Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4540,10 +4830,10 @@
           {
             "setting": "enable_category_hashtag_cards",
             "humanized_name": "Enable category hashtag cards",
-            "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
+            "description": "Shows a floating category card when a category hashtag is hovered if the user has permission to view that category.",
             "value": false,
             "upcoming_change": {
-              "status": "experimental",
+              "status": "alpha",
               "learn_more_url": "https://meta.discourse.org/t/-/412529",
               "group_setting": null,
               "impact_type": "feature",
@@ -4553,7 +4843,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.646Z"
+              "status_changed_at": "2026-11-21T23:55:41.415Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4583,7 +4873,7 @@
                 "height": 1544
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.647Z"
+              "status_changed_at": "2026-11-21T23:55:41.423Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4608,7 +4898,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.648Z"
+              "status_changed_at": "2026-11-21T23:55:41.435Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4641,7 +4931,7 @@
                 "height": 687
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.650Z"
+              "status_changed_at": "2026-11-21T23:55:41.466Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -4669,7 +4959,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.652Z"
+              "status_changed_at": "2026-11-21T23:55:41.486Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4699,7 +4989,7 @@
                 "height": 410
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.657Z"
+              "status_changed_at": "2026-11-21T23:55:41.591Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4731,7 +5021,7 @@
                 "height": 730
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.659Z"
+              "status_changed_at": "2026-11-21T23:55:41.605Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -4764,7 +5054,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.660Z"
+              "status_changed_at": "2026-11-21T23:55:41.615Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4791,7 +5081,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.662Z"
+              "status_changed_at": "2026-11-21T23:55:41.625Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4801,12 +5091,39 @@
             "groups": null
           },
           {
+            "setting": "enable_new_default_for_hide_suspension_reasons_and_hide_silencing_reasons",
+            "humanized_name": "Enable new default for hide suspension reasons and hide silencing reasons",
+            "description": "We are updating the defaults for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_suspension_reasons\" data-setting-name=\"hide_suspension_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide suspension reasons</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_silencing_reasons\" data-setting-name=\"hide_silencing_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide silencing reasons</a> settings to hide these reasons from public view. If you have previously changed either setting, this change will have no effect on that setting.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/416547",
+              "permanent_warning": false,
+              "group_setting": null,
+              "impact_type": "site_setting_default",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "hide_settings": null,
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.650Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": true,
+            "groups": null
+          },
+          {
             "setting": "enable_new_reordering_controls",
             "humanized_name": "Enable new reordering controls",
             "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
-            "value": false,
+            "value": true,
             "upcoming_change": {
-              "status": "alpha",
+              "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/414613",
               "group_setting": null,
               "impact_type": "feature",
@@ -4815,8 +5132,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.667Z"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.688Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4846,7 +5163,7 @@
                 "height": 436
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.671Z"
+              "status_changed_at": "2026-11-21T23:55:41.736Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4876,7 +5193,7 @@
                 "height": 442
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.673Z"
+              "status_changed_at": "2026-11-21T23:55:41.751Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4903,7 +5220,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.675Z"
+              "status_changed_at": "2026-11-21T23:55:41.776Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4930,7 +5247,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.677Z"
+              "status_changed_at": "2026-11-21T23:55:41.789Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -4961,12 +5278,14 @@
                 "height": 407
               },
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.678Z"
+              "status_changed_at": "2026-11-21T23:55:41.803Z"
             },
             "plugin": "Live",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [
+              "live_file_transfer_max_size_mb",
+              "live_file_transfer_allowed_groups",
               "live_allowed_groups",
               "live_create_room_allowed_groups",
               "live_direct_calls_allowed_groups",
@@ -4987,6 +5306,31 @@
             }
           },
           {
+            "setting": "mobile_footer_navigation",
+            "humanized_name": "Mobile footer navigation",
+            "description": "Replaces the mobile header's menu button with a tab bar at the bottom of the screen. The footer navigation has a tab for each area of the site, a global menu button, and a button for writing new content. Plugins can add their own menu items and secondary menus using a new API.",
+            "value": false,
+            "upcoming_change": {
+              "status": "experimental",
+              "learn_more_url": "https://meta.discourse.org/t/-/417307",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.829Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
             "setting": "modernize_foundation_theme",
             "humanized_name": "Modernize Foundation theme",
             "description": "This change introduces design modifcations to the Foundation theme in Discourse.",
@@ -5002,7 +5346,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.680Z"
+              "status_changed_at": "2026-11-21T23:55:41.840Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5027,7 +5371,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.681Z"
+              "status_changed_at": "2026-11-21T23:55:41.852Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5057,7 +5401,7 @@
                 "suppress_uncategorized_badge"
               ],
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.682Z"
+              "status_changed_at": "2026-11-21T23:55:41.864Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5082,7 +5426,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.684Z"
+              "status_changed_at": "2026-11-21T23:55:41.875Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5107,7 +5451,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.686Z"
+              "status_changed_at": "2026-11-21T23:55:41.898Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5132,7 +5476,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.688Z"
+              "status_changed_at": "2026-11-21T23:55:41.908Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5159,7 +5503,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.690Z"
+              "status_changed_at": "2026-11-21T23:55:41.931Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5694,7 +6038,7 @@
                 "height": 851
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.639Z"
+              "status_changed_at": "2026-11-21T23:55:41.345Z"
             },
             "plugin": "Boards",
             "depends_on": [],
@@ -5702,6 +6046,34 @@
             "dependents": [
               "boards_manage_board_allowed_groups"
             ],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
+            "setting": "chat_thread_improvements",
+            "humanized_name": "Chat thread improvements",
+            "description": "Enable direct replies to specific messages within chat threads, and allow broadcasting thread replies back to the channel.",
+            "value": false,
+            "upcoming_change": {
+              "status": "alpha",
+              "learn_more_url": "https://meta.discourse.org/t/-/417837",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.360Z"
+            },
+            "plugin": "Chat",
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
             "depends_on_met": true,
             "overriding_defaults": false,
             "groups": null
@@ -5724,7 +6096,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.642Z"
+              "status_changed_at": "2026-11-21T23:55:41.367Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5736,10 +6108,10 @@
           {
             "setting": "enable_category_hashtag_cards",
             "humanized_name": "Enable category hashtag cards",
-            "description": "Shows a floating category card when a category hashtag is clicked if the user has permission to view that category.",
+            "description": "Shows a floating category card when a category hashtag is hovered if the user has permission to view that category.",
             "value": false,
             "upcoming_change": {
-              "status": "experimental",
+              "status": "alpha",
               "learn_more_url": "https://meta.discourse.org/t/-/412529",
               "group_setting": null,
               "impact_type": "feature",
@@ -5749,7 +6121,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.646Z"
+              "status_changed_at": "2026-11-21T23:55:41.415Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5779,7 +6151,7 @@
                 "height": 1544
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.647Z"
+              "status_changed_at": "2026-11-21T23:55:41.423Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5804,7 +6176,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.648Z"
+              "status_changed_at": "2026-11-21T23:55:41.435Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5837,7 +6209,7 @@
                 "height": 687
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.650Z"
+              "status_changed_at": "2026-11-21T23:55:41.466Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -5865,7 +6237,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.652Z"
+              "status_changed_at": "2026-11-21T23:55:41.486Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5895,7 +6267,7 @@
                 "height": 410
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.657Z"
+              "status_changed_at": "2026-11-21T23:55:41.591Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5927,7 +6299,7 @@
                 "height": 730
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.659Z"
+              "status_changed_at": "2026-11-21T23:55:41.605Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -5960,7 +6332,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.660Z"
+              "status_changed_at": "2026-11-21T23:55:41.615Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5987,7 +6359,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.662Z"
+              "status_changed_at": "2026-11-21T23:55:41.625Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -5997,12 +6369,39 @@
             "groups": null
           },
           {
+            "setting": "enable_new_default_for_hide_suspension_reasons_and_hide_silencing_reasons",
+            "humanized_name": "Enable new default for hide suspension reasons and hide silencing reasons",
+            "description": "We are updating the defaults for the <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_suspension_reasons\" data-setting-name=\"hide_suspension_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide suspension reasons</a> and <a class=\"site-setting-link\" href=\"/admin/site_settings/category/all_results?filter=hide_silencing_reasons\" data-setting-name=\"hide_silencing_reasons\" data-setting-area=\"users\" data-setting-category=\"users\">Hide silencing reasons</a> settings to hide these reasons from public view. If you have previously changed either setting, this change will have no effect on that setting.",
+            "value": true,
+            "upcoming_change": {
+              "status": "beta",
+              "learn_more_url": "https://meta.discourse.org/t/-/416547",
+              "permanent_warning": false,
+              "group_setting": null,
+              "impact_type": "site_setting_default",
+              "impact_role": "all_members",
+              "allow_enabled_for": [
+                "everyone"
+              ],
+              "body_class": null,
+              "hide_settings": null,
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.650Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": true,
+            "groups": null
+          },
+          {
             "setting": "enable_new_reordering_controls",
             "humanized_name": "Enable new reordering controls",
             "description": "Use the shared reordering controls on list settings, admin lists, the user directory columns and sidebar links, giving each one the same drag handle, move menu and keyboard support.",
-            "value": false,
+            "value": true,
             "upcoming_change": {
-              "status": "alpha",
+              "status": "beta",
               "learn_more_url": "https://meta.discourse.org/t/-/414613",
               "group_setting": null,
               "impact_type": "feature",
@@ -6011,8 +6410,8 @@
               "body_class": null,
               "permanent_warning": true,
               "hide_settings": null,
-              "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.667Z"
+              "enabled_for": "everyone",
+              "status_changed_at": "2026-11-21T23:55:41.688Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6042,7 +6441,7 @@
                 "height": 436
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.671Z"
+              "status_changed_at": "2026-11-21T23:55:41.736Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6072,7 +6471,7 @@
                 "height": 442
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.673Z"
+              "status_changed_at": "2026-11-21T23:55:41.751Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6099,7 +6498,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.675Z"
+              "status_changed_at": "2026-11-21T23:55:41.776Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6126,7 +6525,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.677Z"
+              "status_changed_at": "2026-11-21T23:55:41.789Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6157,12 +6556,14 @@
                 "height": 407
               },
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.678Z"
+              "status_changed_at": "2026-11-21T23:55:41.803Z"
             },
             "plugin": "Live",
             "depends_on": [],
             "depends_on_humanized_names": [],
             "dependents": [
+              "live_file_transfer_max_size_mb",
+              "live_file_transfer_allowed_groups",
               "live_allowed_groups",
               "live_create_room_allowed_groups",
               "live_direct_calls_allowed_groups",
@@ -6183,6 +6584,31 @@
             }
           },
           {
+            "setting": "mobile_footer_navigation",
+            "humanized_name": "Mobile footer navigation",
+            "description": "Replaces the mobile header's menu button with a tab bar at the bottom of the screen. The footer navigation has a tab for each area of the site, a global menu button, and a button for writing new content. Plugins can add their own menu items and secondary menus using a new API.",
+            "value": false,
+            "upcoming_change": {
+              "status": "experimental",
+              "learn_more_url": "https://meta.discourse.org/t/-/417307",
+              "group_setting": null,
+              "impact_type": "feature",
+              "impact_role": "all_members",
+              "allow_enabled_for": null,
+              "body_class": null,
+              "permanent_warning": true,
+              "hide_settings": null,
+              "enabled_for": "no_one",
+              "status_changed_at": "2026-11-21T23:55:41.829Z"
+            },
+            "depends_on": [],
+            "depends_on_humanized_names": [],
+            "dependents": [],
+            "depends_on_met": true,
+            "overriding_defaults": false,
+            "groups": null
+          },
+          {
             "setting": "modernize_foundation_theme",
             "humanized_name": "Modernize Foundation theme",
             "description": "This change introduces design modifcations to the Foundation theme in Discourse.",
@@ -6198,7 +6624,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.680Z"
+              "status_changed_at": "2026-11-21T23:55:41.840Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6223,7 +6649,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.681Z"
+              "status_changed_at": "2026-11-21T23:55:41.852Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6253,7 +6679,7 @@
                 "suppress_uncategorized_badge"
               ],
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.682Z"
+              "status_changed_at": "2026-11-21T23:55:41.864Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6278,7 +6704,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.684Z"
+              "status_changed_at": "2026-11-21T23:55:41.875Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6303,7 +6729,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-15T19:20:03.686Z"
+              "status_changed_at": "2026-11-21T23:55:41.898Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6328,7 +6754,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.688Z"
+              "status_changed_at": "2026-11-21T23:55:41.908Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6355,7 +6781,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-15T19:20:03.690Z"
+              "status_changed_at": "2026-11-21T23:55:41.931Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -6379,33 +6805,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "cOWi1qGYhZLLhdf+W4lUxsOHEHE=",
-            "created_at": "2026-11-15T21:47:17.660623",
-            "rotated_at": "2026-11-15T21:47:17.659825",
-            "updated_at": "2026-11-15T21:47:17.660623",
+            "auth_token": "RZIdqnNcekU3eueQL5BYL5XZzaw=",
+            "created_at": "2026-11-22T00:12:08.673485",
+            "rotated_at": "2026-11-22T00:12:08.67269",
+            "updated_at": "2026-11-22T00:12:08.673485",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "cOWi1qGYhZLLhdf+W4lUxsOHEHE=",
+            "prev_auth_token": "RZIdqnNcekU3eueQL5BYL5XZzaw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T21:47:18.330934",
+            "id": 1,
+            "seen_at": "2026-11-22T00:12:09.136588",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "cOWi1qGYhZLLhdf+W4lUxsOHEHE=",
-            "created_at": "2026-11-15T21:47:17.660623",
-            "rotated_at": "2026-11-15T21:47:17.659825",
-            "updated_at": "2026-11-15T21:47:17.660623",
+            "auth_token": "RZIdqnNcekU3eueQL5BYL5XZzaw=",
+            "created_at": "2026-11-22T00:12:08.673485",
+            "rotated_at": "2026-11-22T00:12:08.67269",
+            "updated_at": "2026-11-22T00:12:08.673485",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "cOWi1qGYhZLLhdf+W4lUxsOHEHE=",
+            "prev_auth_token": "RZIdqnNcekU3eueQL5BYL5XZzaw=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -6418,10 +6844,10 @@
         {
           "id": 1,
           "name": "last_visited_upcoming_changes_at",
-          "value": "2026-11-15T21:47:18Z",
+          "value": "2026-11-22T00:12:09Z",
           "user_id": 1,
-          "created_at": "2026-11-15T21:47:18.493715",
-          "updated_at": "2026-11-15T21:47:18.493715"
+          "created_at": "2026-11-22T00:12:09.294783",
+          "updated_at": "2026-11-22T00:12:09.294783"
         }
       ],
       "deleted": [],
@@ -6434,7 +6860,7 @@
   },
   "recorded_from": {
     "case": "f4109fbbece8b061f61b851d06d572f7c404f4f4461e757009afaa9fd0cb53b4",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "72420af115231d4f3b6ef624bef9074c70dd654e4df434426b31e7a4adcd8630",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }
