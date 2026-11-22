@@ -1,4 +1,5 @@
 {
+  "unordered_responses": ["/responses/1/body/current_user/available_notification_types"],
   "user": "admin",
   "env": {"DISCOURSE_NEW_FEATURES_ENDPOINT": "http://fixtures.localhost:8099/new-features.json"},
   "settings": {"allowed_internal_hosts": "fixtures.localhost"},
