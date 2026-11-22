@@ -33,3 +33,28 @@ User.find_by!(username: "user0").user_option.update!(timezone: "America/Denver")
 
 puts User.where("id > 0").order(:id).pluck(:id, :username, :trust_level, :ip_address).inspect
 puts PostSearchData.group(:version).count.inspect
+
+# Seventh pass (2026-11-21): what the scheduler had done on rs-parity-20261115
+# before its snapshot, run here so the seed does not depend on how long
+# Sidekiq ran first: badges and their notifications, automatic groups,
+# featured topics, the directory (whose refresh creates the plugin columns),
+# problem checks' notices, hot scores and sitemaps.
+# BadgeGranter.backfill rather than Jobs::BadgeGrant: its inline backfill_badge
+# jobs try to start threads and the runner hangs.
+Badge.enabled.each { |badge| BadgeGranter.backfill(badge) }
+Group.refresh_automatic_groups!
+CategoryFeaturedTopic.feature_topics
+DirectoryItem.period_types.each_key { |period| DirectoryItem.refresh_period!(period, force: true) }
+Jobs::RunProblemChecks.new.execute({})
+TopicHotScore.update_scores
+Sitemap.regenerate_sitemaps
+
+puts({
+  user_badges: UserBadge.count,
+  directory_columns: DirectoryColumn.count,
+  directory_items: DirectoryItem.count,
+  admin_notices: AdminNotice.count,
+  topic_hot_scores: TopicHotScore.count,
+  category_featured_topics: CategoryFeaturedTopic.count,
+  sitemaps: Sitemap.count,
+}.inspect)
