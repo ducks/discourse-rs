@@ -290,9 +290,8 @@ pub(crate) async fn index_json(state: AppState, uri: Uri) -> Result<Response, Ap
     for hit in results.into_iter().skip(first).take(PER_PAGE) {
         match hit {
             Hit::Theme(v) => records.push(v),
-            Hit::Core(r) => {
-                records.push(site_texts::serialize(&mut conn, &r, Some(&overridden_keys)).await?)
-            }
+            Hit::Core(r) => records
+                .push(site_texts::serialize(&mut conn, &r, Some(&overridden_keys), true).await?),
         }
     }
     Ok(Json(json!({
@@ -391,23 +390,6 @@ async fn find_translations(
         }
         match found {
             Found::Plural(forms) => {
-                let complete = forms.len() == site_texts::PLURAL_KEYS.len()
-                    && site_texts::PLURAL_KEYS
-                        .iter()
-                        .all(|p| forms.iter().any(|(f, _)| f == p));
-                if complete {
-                    // The hash itself comes back: each pair's last element,
-                    // its value, is what record_for gets as the locale.
-                    for (form, value) in forms {
-                        results.push(site_texts::record_for(
-                            overrides,
-                            &format!("{key}.{form}"),
-                            Some(Value::String(value.clone())),
-                            &value,
-                        )?);
-                    }
-                    continue;
-                }
                 let fallback = match site_texts::tree().default_value(&key)? {
                     Value::Object(m) => m,
                     Value::String(s) if !s.starts_with("Translation missing: ") => {
@@ -518,7 +500,7 @@ async fn site_text_response(
     conn: &mut PgConnection,
     record: &Record,
 ) -> Result<Response, AppError> {
-    let body = site_texts::serialize(conn, record, None).await?;
+    let body = site_texts::serialize(conn, record, None, false).await?;
     Ok(Json(json!({"site_text": body, "__rest_serializer": "1"})).into_response())
 }
 
