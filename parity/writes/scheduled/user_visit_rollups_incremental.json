@@ -2,8 +2,8 @@
   "name": "user_visit_rollups_incremental",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:29:38.712995",
-  "transaction_started_at": "2026-11-15T23:29:38.090918",
+  "started_at": "2026-11-22T06:38:21.111187",
+  "transaction_started_at": "2026-11-22T06:38:17.302393",
   "responses": [],
   "changes": {
     "user_visit_daily_rollups": {
@@ -12,13 +12,13 @@
           "id": 3,
           "dau": 1,
           "mau": 2,
-          "date": "2026-11-14"
+          "date": "2026-11-21"
         },
         {
           "id": 4,
-          "dau": 4,
-          "mau": 4,
-          "date": "2026-11-15"
+          "dau": 1,
+          "mau": 3,
+          "date": "2026-11-22"
         }
       ],
       "deleted": [
@@ -26,7 +26,7 @@
           "id": 2,
           "dau": 9,
           "mau": 9,
-          "date": "2026-11-14"
+          "date": "2026-11-21"
         }
       ],
       "updated": []
@@ -37,6 +37,7 @@
     "user_visit_daily_rollups": 3
   },
   "setup": [
+    "DELETE FROM user_visits",
     "DELETE FROM user_visit_daily_rollups",
     "INSERT INTO user_visit_daily_rollups (date, dau, mau) VALUES ((now() - interval '5 days')::date, 7, 7), ((now() - interval '1 day')::date, 9, 9)",
     "INSERT INTO user_visits (user_id, visited_at, posts_read, mobile, time_read) VALUES (2, (now() - interval '3 days')::date, 3, false, 60), (3, (now() - interval '1 day')::date, 1, true, 30), (4, now()::date, 0, false, 10)"
@@ -49,8 +50,8 @@
   ],
   "jobs_from_jobs": [],
   "recorded_from": {
-    "case": "72a0268df980750b30c64de7b42d2a5fa2944e50c932844d7062e3b2cf6cc9dc",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "case": "64030fc6bf7dd912b2c2d8554165a9da79a6ff4ded35e1a662f312d7e383029b",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

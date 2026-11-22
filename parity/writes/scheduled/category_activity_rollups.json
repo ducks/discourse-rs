@@ -2,33 +2,33 @@
   "name": "category_activity_rollups",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:26:48.788782",
-  "transaction_started_at": "2026-11-15T23:26:48.207184",
+  "started_at": "2026-11-22T06:38:16.148227",
+  "transaction_started_at": "2026-11-22T06:38:12.670463",
   "responses": [],
   "changes": {
     "category_activity_daily_rollups": {
       "inserted": [
         {
           "id": 9,
-          "date": "2026-11-15",
-          "posts": 3,
-          "topics": 2,
-          "page_views": 0,
-          "category_id": 4,
+          "date": "2026-11-22",
+          "posts": 0,
+          "topics": 0,
+          "page_views": 10,
+          "category_id": 34,
           "likely_crawler_page_views": 0
         },
         {
           "id": 10,
-          "date": "2026-11-14",
-          "posts": 4,
-          "topics": 1,
-          "page_views": 7,
-          "category_id": 4,
+          "date": "2026-11-21",
+          "posts": 2,
+          "topics": 2,
+          "page_views": 0,
+          "category_id": 34,
           "likely_crawler_page_views": 0
         },
         {
           "id": 11,
-          "date": "2026-11-15",
+          "date": "2026-11-21",
           "posts": 1,
           "topics": 1,
           "page_views": 0,
@@ -37,54 +37,27 @@
         },
         {
           "id": 12,
-          "date": "2026-11-14",
-          "posts": 1,
-          "topics": 1,
-          "page_views": 0,
-          "category_id": 34,
+          "date": "2026-11-21",
+          "posts": 6,
+          "topics": 3,
+          "page_views": 7,
+          "category_id": 4,
           "likely_crawler_page_views": 0
         },
         {
           "id": 13,
-          "date": "2026-11-15",
+          "date": "2026-11-22",
           "posts": 1,
-          "topics": 1,
-          "page_views": 10,
-          "category_id": 34,
+          "topics": 0,
+          "page_views": 0,
+          "category_id": 4,
           "likely_crawler_page_views": 0
         }
       ],
       "deleted": [
         {
-          "id": 3,
-          "date": "2026-11-15",
-          "posts": 7,
-          "topics": 3,
-          "page_views": 0,
-          "category_id": 4,
-          "likely_crawler_page_views": 0
-        },
-        {
-          "id": 4,
-          "date": "2026-11-15",
-          "posts": 1,
-          "topics": 1,
-          "page_views": 0,
-          "category_id": 2,
-          "likely_crawler_page_views": 0
-        },
-        {
-          "id": 6,
-          "date": "2026-11-15",
-          "posts": 2,
-          "topics": 2,
-          "page_views": 0,
-          "category_id": 34,
-          "likely_crawler_page_views": 0
-        },
-        {
           "id": 7,
-          "date": "2026-11-13",
+          "date": "2026-11-20",
           "posts": 9,
           "topics": 9,
           "page_views": 9,
@@ -93,7 +66,7 @@
         },
         {
           "id": 8,
-          "date": "2026-11-14",
+          "date": "2026-11-21",
           "posts": 1,
           "topics": 1,
           "page_views": 1,
@@ -109,6 +82,7 @@
     "category_activity_daily_rollups": 9
   },
   "setup": [
+    "DELETE FROM category_activity_daily_rollups",
     "UPDATE topics SET created_at = now() - interval '1 day' WHERE id IN (35, 38)",
     "UPDATE posts SET created_at = now() - interval '1 day' WHERE topic_id IN (35, 38)",
     "UPDATE posts SET created_at = now() WHERE id = 52",
@@ -123,8 +97,8 @@
   ],
   "jobs_from_jobs": [],
   "recorded_from": {
-    "case": "1182012fa1682544d2ec4ca28fca222bee46ba530c971b00b6c439c2ce9b4b37",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "case": "73d83c6e2f4ae29b85ef1ef61fa6991154a4b3d1b2a3e54a22aa20fa98f92889",
+    "seed": "33d2be63a0fa8d7ebc4168cffad78e0fdf9dc5b1099897166869cbebf71a29f1",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }
