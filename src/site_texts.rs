@@ -37,7 +37,7 @@ pub const RESTRICTED_KEYS: [&str; 7] = [
 ];
 
 /// `TranslationOverride::ALLOWED_CUSTOM_INTERPOLATION_KEYS`
-const CUSTOM_INTERPOLATION_KEYS: [(&[&str], &[&str]); 4] = [
+const CUSTOM_INTERPOLATION_KEYS: [(&[&str], &[&str]); 5] = [
     (
         &[
             "user_notifications.user_",
@@ -73,6 +73,11 @@ const CUSTOM_INTERPOLATION_KEYS: [(&[&str], &[&str]); 4] = [
             "optional_cat",
             "optional_tags",
         ],
+    ),
+    // 70b9fd6b73c
+    (
+        &["user_notifications.signup_after_reject"],
+        &["reject_reason"],
     ),
     (
         &["system_messages.welcome_user"],
