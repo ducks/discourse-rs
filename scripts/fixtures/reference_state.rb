@@ -38,7 +38,7 @@ puts PostSearchData.group(:version).count.inspect
 # before its snapshot, run here so the seed does not depend on how long
 # Sidekiq ran first: badges and their notifications, automatic groups,
 # featured topics, the directory (whose refresh creates the plugin columns),
-# problem checks' notices, hot scores and sitemaps.
+# problem checks' notices, hot scores, sitemaps and fancy titles.
 # BadgeGranter.backfill rather than Jobs::BadgeGrant: its inline backfill_badge
 # jobs try to start threads and the runner hangs.
 Badge.enabled.each { |badge| BadgeGranter.backfill(badge) }
@@ -48,6 +48,9 @@ DirectoryItem.period_types.each_key { |period| DirectoryItem.refresh_period!(per
 Jobs::RunProblemChecks.new.execute({})
 TopicHotScore.update_scores
 Sitemap.regenerate_sitemaps
+# Topic#title= nulls fancy_title and the getter writes it back on first read;
+# the fixtures reassign titles, and browsing had filled them on the old agent.
+Topic.with_deleted.find_each(&:fancy_title)
 
 puts({
   user_badges: UserBadge.count,
