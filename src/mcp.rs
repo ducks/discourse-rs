@@ -1142,7 +1142,7 @@ mod tests {
     #[test]
     fn the_recording_is_the_registry() {
         let all = registry();
-        assert_eq!(all.len(), 96);
+        assert_eq!(all.len(), 116);
         assert_eq!(all[0].id(), "tool:chat_channel_list");
         assert!(scopes().contains(&INITIAL_SCOPE.to_string()));
         let status = find("tool", "discourse_user_status_set").unwrap();
