@@ -1,5 +1,5 @@
 //! Stylesheet::Compiler and Stylesheet::Importer: SCSS compiled with grass
-//! (crates/grass_compiler, patched to write what dart-sass 1.104 writes)
+//! (crates/grass_compiler, patched to write what dart-sass 1.108.2 writes)
 //! against Discourse's core stylesheets, the way Rails compiles a theme's
 //! fields and the color definitions. What the compile prints goes through
 //! [`super::postcss`] as AssetProcessor#post_css does.
@@ -310,7 +310,7 @@ mod tests {
 }
 
 /// crates/grass_compiler/PATCHES.md: each patch against what dart-sass
-/// 1.104.0 (the reference's sass-embedded) prints for the same input,
+/// 1.108.2 (the reference's sass-embedded) prints for the same input,
 /// compressed unless noted.
 #[cfg(test)]
 mod grass_patches {
@@ -462,5 +462,12 @@ mod grass_patches {
             compressed("a{b:calc(alpha + 0.1);c:calc(pi * 1px);d:calc(var(--x) + e)}"),
             "a{b:calc(alpha + .1);c:3.1415926536px;d:calc(var(--x) + 2.7182818285)}"
         );
+    }
+
+    #[test]
+    fn an_open_block_is_an_unended_rule() {
+        let err = grass::from_string("a { color: red".to_string(), &grass::Options::default())
+            .unwrap_err();
+        assert!(err.to_string().contains("expected end of rule."), "{err}");
     }
 }

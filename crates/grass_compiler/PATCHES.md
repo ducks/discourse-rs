@@ -1,14 +1,14 @@
 # grass_compiler 0.13.4, patched
 
 A copy of grass_compiler 0.13.4 from crates.io (MIT, LICENSE), patched so
-that theme SCSS compiles to what dart-sass 1.104.0 prints: the version the
+that theme SCSS compiles to what dart-sass 1.108.2 prints: the version the
 reference's sass-embedded gem runs, through Stylesheet::Compiler. The
 workspace's `[patch.crates-io]` builds `grass` against it; the workspace
 excludes it, so it is not formatted or linted with the port.
 
 Each patch is marked `discourse-rs:` in the source and has a test in
 src/stylesheet/scss.rs (`grass_patches`), its expected output what dart-sass
-1.104.0 prints for the same input. src/stylesheet/mod.rs's `compile_tests`
+1.108.2 prints for the same input. src/stylesheet/mod.rs's `compile_tests`
 compile what Rails fed dart-sass for the color definitions and Horizon's
 stylesheets and compare the output byte for byte.
 
@@ -110,6 +110,13 @@ relative color syntax), or one of the constants `pi`, `e`, `infinity`,
 `-infinity` and `NaN`, as dart-sass 1.104 evaluates calculations; grass
 refused with `Expected "(" or "."`. Test:
 `calculations_take_identifiers_and_constants`.
+
+## Errors
+
+`parse/stylesheet.rs` (`parse_children`): a block still open at the end of
+the input is `expected end of rule.`, as dart-sass 1.108 reports it (it
+was `expected "}".` through 1.104). Theme field errors and the email
+style's show it. Test: `an_open_block_is_an_unended_rule`.
 
 ## Lints
 

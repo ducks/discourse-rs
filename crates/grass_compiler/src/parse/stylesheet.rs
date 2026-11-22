@@ -135,7 +135,9 @@ pub(crate) trait StylesheetParser<'a>: BaseParser + Sized {
         }
 
         if !found_matching_brace {
-            return Err(("expected \"}\".", self.toks().current_span()).into());
+            // discourse-rs: a block left open at the end of the input, as
+            // dart-sass 1.108 words it.
+            return Err(("expected end of rule.", self.toks().current_span()).into());
         }
 
         Ok(children)

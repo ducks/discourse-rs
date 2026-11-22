@@ -264,7 +264,7 @@ mod tests {
         assert_eq!(ok(""), "");
         assert_eq!(
             compile("a { color: red").unwrap(),
-            Err("expected \"}\".".into())
+            Err("expected end of rule.".into())
         );
         assert_eq!(
             compile("a { color: $x; }").unwrap(),
