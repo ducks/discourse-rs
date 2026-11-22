@@ -395,6 +395,11 @@ pub async fn serialize(
         "can_upload_avatar".into(),
         json!(g.in_setting_groups("uploaded_avatars_allowed_groups")?),
     );
+    // Guardian#can_embed_media? (2e763edb7b0)
+    out.insert(
+        "can_embed_media".into(),
+        json!(g.is_staff() || g.in_setting_groups("embedded_media_post_allowed_groups")?),
+    );
     out.insert("can_edit".into(), json!(true));
     if can_invite_to_forum(&g, settings)? {
         out.insert("can_invite_to_forum".into(), json!(true));
