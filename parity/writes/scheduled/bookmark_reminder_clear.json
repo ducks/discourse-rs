@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_clear",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:27:30.479176",
-  "transaction_started_at": "2026-11-22T09:27:29.898729",
+  "started_at": "2026-11-23T17:34:09.643232",
+  "transaction_started_at": "2026-11-23T17:34:09.04933",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -16,11 +16,11 @@
             "name": "Parity fixture: with a reminder",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-11-21T23:56:54.662129",
-            "updated_at": "2026-11-21T23:56:54.662129",
-            "reminder_at": "2026-11-22T09:22:29.898729",
+            "created_at": "2026-11-23T16:08:46.245806",
+            "updated_at": "2026-11-23T16:08:46.245806",
+            "reminder_at": "2026-11-23T17:29:09.04933",
             "bookmarkable_id": 36,
-            "reminder_set_at": "2026-11-21T09:27:29.898729",
+            "reminder_set_at": "2026-11-22T17:34:09.04933",
             "bookmarkable_type": "Post",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 3
@@ -30,13 +30,13 @@
             "name": "Parity fixture: with a reminder",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-11-21T23:56:54.662129",
-            "updated_at": "2026-11-22T09:27:30.487447",
+            "created_at": "2026-11-23T16:08:46.245806",
+            "updated_at": "2026-11-23T17:34:09.654665",
             "reminder_at": null,
             "bookmarkable_id": 36,
             "reminder_set_at": null,
             "bookmarkable_type": "Post",
-            "reminder_last_sent_at": "2026-11-22T09:27:30.486675",
+            "reminder_last_sent_at": "2026-11-23T17:34:09.653308",
             "auto_delete_preference": 3
           }
         }
@@ -45,13 +45,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 34,
+          "id": 31,
           "data": "{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"display_username\":\"user1\",\"bookmark_name\":\"Parity fixture: with a reminder\",\"bookmark_id\":3,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":36}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-22T09:27:30.485539",
-          "updated_at": "2026-11-22T09:27:30.485539",
+          "created_at": "2026-11-23T17:34:09.651768",
+          "updated_at": "2026-11-23T17:34:09.651768",
           "post_number": 2,
           "high_priority": true,
           "post_action_id": null,
@@ -64,7 +64,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 34
+    "notifications": 31
   },
   "setup": [
     "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', auto_delete_preference = 3 WHERE id = 3"
@@ -78,7 +78,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "b2df47cfa3a3a487f18b7d1142fabb8dc48a016ae48df68781dd51c0e93053c7",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

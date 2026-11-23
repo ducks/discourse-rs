@@ -7,8 +7,8 @@
       "path": "/topics/feature_stats.json?category_id=3"
     }
   ],
-  "started_at": "2026-11-22T09:46:47.187182",
-  "transaction_started_at": "2026-11-22T09:46:46.559234",
+  "started_at": "2026-11-23T17:55:24.060786",
+  "transaction_started_at": "2026-11-23T17:55:23.306328",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
   ],
   "recorded_from": {
     "case": "6b468d7ef2fedfc00af78142c36548e8ece40cb408bf3d0320b7e6b8f64f4df8",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -7,8 +7,8 @@
       "path": "/user-status.json"
     }
   ],
-  "started_at": "2026-11-22T10:07:01.133516",
-  "transaction_started_at": "2026-11-22T10:07:00.512499",
+  "started_at": "2026-11-23T18:16:26.265104",
+  "transaction_started_at": "2026-11-23T18:16:25.590848",
   "responses": [
     {
       "status": 403,
@@ -28,7 +28,7 @@
   },
   "recorded_from": {
     "case": "7b0688e1b0da3eda66b092ccad06665d4615fbba73afdcf19efb250c37a999c4",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

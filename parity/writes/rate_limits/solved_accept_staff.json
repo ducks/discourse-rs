@@ -38,8 +38,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:18:51.907577",
-  "transaction_started_at": "2026-11-22T09:18:51.071949",
+  "started_at": "2026-11-23T17:24:55.626603",
+  "transaction_started_at": "2026-11-23T17:24:54.610328",
   "responses": [
     {
       "status": 200,
@@ -48,7 +48,7 @@
           "id": 36,
           "username": "user1",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-          "created_at": "2026-11-21T23:56:44.654Z",
+          "created_at": "2026-11-23T16:08:31.648Z",
           "cooked": "<p>Reply one from user1, also long enough to pass the minimum length check.</p>",
           "post_number": 2,
           "topic_id": 35,
@@ -67,7 +67,7 @@
           "id": 37,
           "username": "user2",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-          "created_at": "2026-11-21T23:56:44.759Z",
+          "created_at": "2026-11-23T16:08:32.082Z",
           "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
           "post_number": 3,
           "topic_id": 35,
@@ -86,7 +86,7 @@
           "id": 36,
           "username": "user1",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-          "created_at": "2026-11-21T23:56:44.654Z",
+          "created_at": "2026-11-23T16:08:31.648Z",
           "cooked": "<p>Reply one from user1, also long enough to pass the minimum length check.</p>",
           "post_number": 2,
           "topic_id": 35,
@@ -101,8 +101,8 @@
         {
           "id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-22T09:18:52.276773",
-          "updated_at": "2026-11-22T09:18:52.276773",
+          "created_at": "2026-11-23T17:24:56.080648",
+          "updated_at": "2026-11-23T17:24:56.080648",
           "answer_post_id": null,
           "topic_timer_id": null,
           "accepter_user_id": null
@@ -115,8 +115,8 @@
       "inserted": [
         {
           "id": 3,
-          "created_at": "2026-11-22T09:18:52.283747",
-          "updated_at": "2026-11-22T09:18:52.283747",
+          "created_at": "2026-11-23T17:24:56.087556",
+          "updated_at": "2026-11-23T17:24:56.087556",
           "answer_post_id": 36,
           "solved_topic_id": 3,
           "accepter_user_id": 1
@@ -128,26 +128,26 @@
     "notifications": {
       "inserted": [
         {
-          "id": 38,
+          "id": 35,
           "data": "{\"message\":\"solved.accepted_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.title\"}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-22T09:18:52.291466",
-          "updated_at": "2026-11-22T09:18:52.291466",
+          "created_at": "2026-11-23T17:24:56.092992",
+          "updated_at": "2026-11-23T17:24:56.092992",
           "post_number": 2,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 14
         },
         {
-          "id": 39,
+          "id": 36,
           "data": "{\"message\":\"solved.topic_solved_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.topic_solved_title\"}",
           "read": false,
           "user_id": 4,
           "topic_id": 35,
-          "created_at": "2026-11-22T09:18:52.298717",
-          "updated_at": "2026-11-22T09:18:52.298717",
+          "created_at": "2026-11-23T17:24:56.098395",
+          "updated_at": "2026-11-23T17:24:56.098395",
           "post_number": 2,
           "high_priority": false,
           "post_action_id": null,
@@ -162,8 +162,8 @@
         {
           "id": 67,
           "user_id": 3,
-          "created_at": "2026-11-22T09:18:52.267726",
-          "updated_at": "2026-11-22T09:18:52.267726",
+          "created_at": "2026-11-23T17:24:56.071225",
+          "updated_at": "2026-11-23T17:24:56.071225",
           "action_type": 15,
           "acting_user_id": 1,
           "target_post_id": 36,
@@ -180,33 +180,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "o5PM/Js9dGqCVSYVpV15p4C5RZM=",
-            "created_at": "2026-11-22T09:18:51.411385",
-            "rotated_at": "2026-11-22T09:18:51.41062",
-            "updated_at": "2026-11-22T09:18:51.411385",
+            "auth_token": "vkIC94NOuIVZB4035uUsuQ5DUQ8=",
+            "created_at": "2026-11-23T17:24:54.96428",
+            "rotated_at": "2026-11-23T17:24:54.963331",
+            "updated_at": "2026-11-23T17:24:54.96428",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "o5PM/Js9dGqCVSYVpV15p4C5RZM=",
+            "prev_auth_token": "vkIC94NOuIVZB4035uUsuQ5DUQ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:18:51.916696",
+            "id": 1,
+            "seen_at": "2026-11-23T17:24:55.635792",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "o5PM/Js9dGqCVSYVpV15p4C5RZM=",
-            "created_at": "2026-11-22T09:18:51.411385",
-            "rotated_at": "2026-11-22T09:18:51.41062",
-            "updated_at": "2026-11-22T09:18:51.411385",
+            "auth_token": "vkIC94NOuIVZB4035uUsuQ5DUQ8=",
+            "created_at": "2026-11-23T17:24:54.96428",
+            "rotated_at": "2026-11-23T17:24:54.963331",
+            "updated_at": "2026-11-23T17:24:54.96428",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "o5PM/Js9dGqCVSYVpV15p4C5RZM=",
+            "prev_auth_token": "vkIC94NOuIVZB4035uUsuQ5DUQ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -219,7 +219,7 @@
   "next_ids": {
     "discourse_solved_solved_topics": 1,
     "discourse_solved_topic_answers": 1,
-    "notifications": 34,
+    "notifications": 31,
     "user_actions": 65
   },
   "settings": {
@@ -228,7 +228,7 @@
   "rate_limits": true,
   "recorded_from": {
     "case": "05f5eab014dc540b2c0873aa9dc0e3175e81fa21d24bd2abe5b1238db98d2d12",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

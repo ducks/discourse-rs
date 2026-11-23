@@ -7,8 +7,8 @@
       "path": "/badges/11.json"
     }
   ],
-  "started_at": "2026-11-22T08:29:12.835249",
-  "transaction_started_at": "2026-11-22T08:29:12.036215",
+  "started_at": "2026-11-23T16:31:19.230401",
+  "transaction_started_at": "2026-11-23T16:31:18.383393",
   "responses": [
     {
       "status": 200,
@@ -50,26 +50,26 @@
       "updated": [
         {
           "before": {
-            "id": 30,
+            "id": 26,
             "data": "{\"badge_id\":11,\"badge_name\":\"First Like\",\"badge_slug\":\"first-like\",\"badge_title\":false,\"username\":\"user1\"}",
             "read": false,
             "user_id": 3,
             "topic_id": null,
-            "created_at": "2026-11-22T04:14:26.18351",
-            "updated_at": "2026-11-22T04:14:26.18351",
+            "created_at": "2026-11-23T16:08:49.884852",
+            "updated_at": "2026-11-23T16:08:49.884852",
             "post_number": null,
             "high_priority": false,
             "post_action_id": null,
             "notification_type": 12
           },
           "after": {
-            "id": 30,
+            "id": 26,
             "data": "{\"badge_id\":11,\"badge_name\":\"First Like\",\"badge_slug\":\"first-like\",\"badge_title\":false,\"username\":\"user1\"}",
             "read": true,
             "user_id": 3,
             "topic_id": null,
-            "created_at": "2026-11-22T04:14:26.18351",
-            "updated_at": "2026-11-22T08:29:12.854536",
+            "created_at": "2026-11-23T16:08:49.884852",
+            "updated_at": "2026-11-23T16:31:19.248464",
             "post_number": null,
             "high_priority": false,
             "post_action_id": null,
@@ -84,33 +84,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "IjAi6DjdSMgj/Zx3yNiXwrOjn7Q=",
-            "created_at": "2026-11-22T08:29:12.345249",
-            "rotated_at": "2026-11-22T08:29:12.344402",
-            "updated_at": "2026-11-22T08:29:12.345249",
+            "auth_token": "z12yaM4ixs7aVCkzh1pGPAs3Ctk=",
+            "created_at": "2026-11-23T16:31:18.711904",
+            "rotated_at": "2026-11-23T16:31:18.710939",
+            "updated_at": "2026-11-23T16:31:18.711904",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "IjAi6DjdSMgj/Zx3yNiXwrOjn7Q=",
+            "prev_auth_token": "z12yaM4ixs7aVCkzh1pGPAs3Ctk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:29:12.842546",
+            "id": 1,
+            "seen_at": "2026-11-23T16:31:19.237699",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "IjAi6DjdSMgj/Zx3yNiXwrOjn7Q=",
-            "created_at": "2026-11-22T08:29:12.345249",
-            "rotated_at": "2026-11-22T08:29:12.344402",
-            "updated_at": "2026-11-22T08:29:12.345249",
+            "auth_token": "z12yaM4ixs7aVCkzh1pGPAs3Ctk=",
+            "created_at": "2026-11-23T16:31:18.711904",
+            "rotated_at": "2026-11-23T16:31:18.710939",
+            "updated_at": "2026-11-23T16:31:18.711904",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "IjAi6DjdSMgj/Zx3yNiXwrOjn7Q=",
+            "prev_auth_token": "z12yaM4ixs7aVCkzh1pGPAs3Ctk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -129,7 +129,7 @@
   ],
   "recorded_from": {
     "case": "f6ff41ba40789c20994aef37478388ad4fa75359dc0892f77adf9e33b0aefdcc",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

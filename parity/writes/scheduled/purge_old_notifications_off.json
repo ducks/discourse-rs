@@ -2,8 +2,8 @@
   "name": "purge_old_notifications_off",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:29:33.27455",
-  "transaction_started_at": "2026-11-22T09:29:32.635423",
+  "started_at": "2026-11-23T17:36:22.137467",
+  "transaction_started_at": "2026-11-23T17:36:21.488187",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -23,7 +23,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "86e9067d1336cc9990ef0c32da5320e7f490481bf3db59078d86347d9e7ee565",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

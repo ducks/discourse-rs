@@ -91,8 +91,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:22:20.180215",
-  "transaction_started_at": "2026-11-22T08:22:19.228489",
+  "started_at": "2026-11-23T16:23:43.549922",
+  "transaction_started_at": "2026-11-23T16:23:42.590774",
   "responses": [
     {
       "status": 200,
@@ -106,7 +106,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-08",
+              "x": "2026-10-09",
               "y": 1
             }
           ],
@@ -162,7 +162,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-08",
+              "x": "2026-10-09",
               "y": 1
             }
           ],
@@ -219,7 +219,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-08",
+              "x": "2026-10-09",
               "y": 1
             }
           ],
@@ -280,7 +280,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-08",
+              "x": "2026-10-09",
               "y": 1
             }
           ],
@@ -341,7 +341,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-08",
+              "x": "2026-10-09",
               "y": 1
             }
           ],
@@ -397,7 +397,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-08",
+              "x": "2026-10-09",
               "y": 1
             }
           ],
@@ -454,7 +454,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-08",
+              "x": "2026-10-09",
               "y": 1
             }
           ],
@@ -515,7 +515,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-08",
+              "x": "2026-10-09",
               "y": 1
             }
           ],
@@ -572,33 +572,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "FJsuZ/KicwvZt6ZwYRqTmSW6Fyc=",
-            "created_at": "2026-11-22T08:22:19.530471",
-            "rotated_at": "2026-11-22T08:22:19.529011",
-            "updated_at": "2026-11-22T08:22:19.530471",
+            "auth_token": "J9DPcEQ+c1wd9Qx5m2+2CD+70eU=",
+            "created_at": "2026-11-23T16:23:42.918287",
+            "rotated_at": "2026-11-23T16:23:42.917411",
+            "updated_at": "2026-11-23T16:23:42.918287",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "FJsuZ/KicwvZt6ZwYRqTmSW6Fyc=",
+            "prev_auth_token": "J9DPcEQ+c1wd9Qx5m2+2CD+70eU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:22:20.186425",
+            "id": 1,
+            "seen_at": "2026-11-23T16:23:43.556413",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "FJsuZ/KicwvZt6ZwYRqTmSW6Fyc=",
-            "created_at": "2026-11-22T08:22:19.530471",
-            "rotated_at": "2026-11-22T08:22:19.529011",
-            "updated_at": "2026-11-22T08:22:19.530471",
+            "auth_token": "J9DPcEQ+c1wd9Qx5m2+2CD+70eU=",
+            "created_at": "2026-11-23T16:23:42.918287",
+            "rotated_at": "2026-11-23T16:23:42.917411",
+            "updated_at": "2026-11-23T16:23:42.918287",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "FJsuZ/KicwvZt6ZwYRqTmSW6Fyc=",
+            "prev_auth_token": "J9DPcEQ+c1wd9Qx5m2+2CD+70eU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -617,7 +617,7 @@
   ],
   "recorded_from": {
     "case": "340d07a524d8f7bf8eb964641f68a4dea078b3067d09025b47fb67f18416c63d",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -73,8 +73,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:21:17.98048",
-  "transaction_started_at": "2026-11-22T08:21:17.191349",
+  "started_at": "2026-11-23T16:22:40.723819",
+  "transaction_started_at": "2026-11-23T16:22:39.947412",
   "responses": [
     {
       "status": 200,
@@ -82,8 +82,8 @@
         "activity": [
           {
             "id": 903,
-            "occurred_at": "2026-11-22T05:21:17.191Z",
-            "created_at": "2026-11-22T05:21:17.191Z",
+            "occurred_at": "2026-11-23T13:22:39.947Z",
+            "created_at": "2026-11-23T13:22:39.947Z",
             "username": "user1",
             "client_id": null,
             "client_name": null,
@@ -98,8 +98,8 @@
           },
           {
             "id": 902,
-            "occurred_at": "2026-11-22T06:21:17.191Z",
-            "created_at": "2026-11-22T06:21:17.191Z",
+            "occurred_at": "2026-11-23T14:22:39.947Z",
+            "created_at": "2026-11-23T14:22:39.947Z",
             "username": "admin",
             "client_id": "https://client.example.com/oauth",
             "client_name": "Example client",
@@ -114,8 +114,8 @@
           },
           {
             "id": 901,
-            "occurred_at": "2026-11-22T07:21:17.191Z",
-            "created_at": "2026-11-22T07:21:17.191Z",
+            "occurred_at": "2026-11-23T15:22:39.947Z",
+            "created_at": "2026-11-23T15:22:39.947Z",
             "username": "admin",
             "client_id": "https://client.example.com/oauth",
             "client_name": "Example client",
@@ -149,8 +149,8 @@
         "activity": [
           {
             "id": 903,
-            "occurred_at": "2026-11-22T05:21:17.191Z",
-            "created_at": "2026-11-22T05:21:17.191Z",
+            "occurred_at": "2026-11-23T13:22:39.947Z",
+            "created_at": "2026-11-23T13:22:39.947Z",
             "username": "user1",
             "client_id": null,
             "client_name": null,
@@ -182,8 +182,8 @@
         "activity": [
           {
             "id": 901,
-            "occurred_at": "2026-11-22T07:21:17.191Z",
-            "created_at": "2026-11-22T07:21:17.191Z",
+            "occurred_at": "2026-11-23T15:22:39.947Z",
+            "created_at": "2026-11-23T15:22:39.947Z",
             "username": "admin",
             "client_id": "https://client.example.com/oauth",
             "client_name": "Example client",
@@ -211,8 +211,8 @@
         "activity": [
           {
             "id": 902,
-            "occurred_at": "2026-11-22T06:21:17.191Z",
-            "created_at": "2026-11-22T06:21:17.191Z",
+            "occurred_at": "2026-11-23T14:22:39.947Z",
+            "created_at": "2026-11-23T14:22:39.947Z",
             "username": "admin",
             "client_id": "https://client.example.com/oauth",
             "client_name": "Example client",
@@ -244,8 +244,8 @@
         "activity": [
           {
             "id": 903,
-            "occurred_at": "2026-11-22T05:21:17.191Z",
-            "created_at": "2026-11-22T05:21:17.191Z",
+            "occurred_at": "2026-11-23T13:22:39.947Z",
+            "created_at": "2026-11-23T13:22:39.947Z",
             "username": "user1",
             "client_id": null,
             "client_name": null,
@@ -277,8 +277,8 @@
         "activity": [
           {
             "id": 902,
-            "occurred_at": "2026-11-22T06:21:17.191Z",
-            "created_at": "2026-11-22T06:21:17.191Z",
+            "occurred_at": "2026-11-23T14:22:39.947Z",
+            "created_at": "2026-11-23T14:22:39.947Z",
             "username": "admin",
             "client_id": "https://client.example.com/oauth",
             "client_name": "Example client",
@@ -310,8 +310,8 @@
         "activity": [
           {
             "id": 904,
-            "occurred_at": "2026-10-23T08:21:17.191Z",
-            "created_at": "2026-10-23T08:21:17.191Z",
+            "occurred_at": "2026-10-24T16:22:39.947Z",
+            "created_at": "2026-10-24T16:22:39.947Z",
             "username": "admin",
             "client_id": "https://client.example.com/oauth",
             "client_name": "Example client",
@@ -326,8 +326,8 @@
           },
           {
             "id": 903,
-            "occurred_at": "2026-11-22T05:21:17.191Z",
-            "created_at": "2026-11-22T05:21:17.191Z",
+            "occurred_at": "2026-11-23T13:22:39.947Z",
+            "created_at": "2026-11-23T13:22:39.947Z",
             "username": "user1",
             "client_id": null,
             "client_name": null,
@@ -342,8 +342,8 @@
           },
           {
             "id": 902,
-            "occurred_at": "2026-11-22T06:21:17.191Z",
-            "created_at": "2026-11-22T06:21:17.191Z",
+            "occurred_at": "2026-11-23T14:22:39.947Z",
+            "created_at": "2026-11-23T14:22:39.947Z",
             "username": "admin",
             "client_id": "https://client.example.com/oauth",
             "client_name": "Example client",
@@ -358,8 +358,8 @@
           },
           {
             "id": 901,
-            "occurred_at": "2026-11-22T07:21:17.191Z",
-            "created_at": "2026-11-22T07:21:17.191Z",
+            "occurred_at": "2026-11-23T15:22:39.947Z",
+            "created_at": "2026-11-23T15:22:39.947Z",
             "username": "admin",
             "client_id": "https://client.example.com/oauth",
             "client_name": "Example client",
@@ -422,33 +422,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "3dJYxNHkWtr7zsc6mZEH3KTzCS8=",
-            "created_at": "2026-11-22T08:21:17.467198",
-            "rotated_at": "2026-11-22T08:21:17.466161",
-            "updated_at": "2026-11-22T08:21:17.467198",
+            "auth_token": "rRbmozoB76sISushXLpQewyQqdI=",
+            "created_at": "2026-11-23T16:22:40.241403",
+            "rotated_at": "2026-11-23T16:22:40.240513",
+            "updated_at": "2026-11-23T16:22:40.241403",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "3dJYxNHkWtr7zsc6mZEH3KTzCS8=",
+            "prev_auth_token": "rRbmozoB76sISushXLpQewyQqdI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:21:17.992731",
+            "id": 1,
+            "seen_at": "2026-11-23T16:22:40.732572",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "3dJYxNHkWtr7zsc6mZEH3KTzCS8=",
-            "created_at": "2026-11-22T08:21:17.467198",
-            "rotated_at": "2026-11-22T08:21:17.466161",
-            "updated_at": "2026-11-22T08:21:17.467198",
+            "auth_token": "rRbmozoB76sISushXLpQewyQqdI=",
+            "created_at": "2026-11-23T16:22:40.241403",
+            "rotated_at": "2026-11-23T16:22:40.240513",
+            "updated_at": "2026-11-23T16:22:40.241403",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "3dJYxNHkWtr7zsc6mZEH3KTzCS8=",
+            "prev_auth_token": "rRbmozoB76sISushXLpQewyQqdI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -465,7 +465,7 @@
   ],
   "recorded_from": {
     "case": "64e54e2bdcb42f8c13aa413d5167258f6ff9cdc8a89725e5a9ba6d0d7c97809f",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

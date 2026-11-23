@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:23:46.312771",
-  "transaction_started_at": "2026-11-22T09:23:45.299931",
+  "started_at": "2026-11-23T17:30:13.54081",
+  "transaction_started_at": "2026-11-23T17:30:12.646686",
   "responses": [
     {
       "status": 200,
@@ -27,7 +27,7 @@
             "target_type": "Post",
             "target_id": 37,
             "target_url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35/3",
-            "target_created_at": "2026-11-21T23:56:44.759Z",
+            "target_created_at": "2026-11-23T16:08:32.082Z",
             "topic_tags": [
               {
                 "id": 2,
@@ -47,7 +47,7 @@
             "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
             "raw": "Reply two from user2, also long enough to pass the minimum length check.",
             "reply_count": 0,
-            "post_updated_at": "2026-11-21T23:56:44.759Z",
+            "post_updated_at": "2026-11-23T16:08:32.082Z",
             "post_version": 1,
             "post_id": 37,
             "target_created_by_id": 4,
@@ -170,10 +170,10 @@
             "reply_count": 0,
             "highest_post_number": 5,
             "image_url": null,
-            "created_at": "2026-11-21T23:56:44.408Z",
-            "last_posted_at": "2026-11-21T23:56:51.452Z",
+            "created_at": "2026-11-23T16:08:31.048Z",
+            "last_posted_at": "2026-11-23T16:08:43.039Z",
             "bumped": true,
-            "bumped_at": "2026-11-21T23:56:51.452Z",
+            "bumped_at": "2026-11-23T16:08:43.039Z",
             "archetype": "regular",
             "unseen": true,
             "pinned": false,
@@ -358,33 +358,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Nr4PbwA3ou6omZ9azy5HvvZfxAo=",
-            "created_at": "2026-11-22T09:23:45.661723",
-            "rotated_at": "2026-11-22T09:23:45.660886",
-            "updated_at": "2026-11-22T09:23:45.661723",
+            "auth_token": "cZU3fgR7afAiO9JM9s+qQmt0/2g=",
+            "created_at": "2026-11-23T17:30:13.0474",
+            "rotated_at": "2026-11-23T17:30:13.046591",
+            "updated_at": "2026-11-23T17:30:13.0474",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Nr4PbwA3ou6omZ9azy5HvvZfxAo=",
+            "prev_auth_token": "cZU3fgR7afAiO9JM9s+qQmt0/2g=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:23:46.321279",
+            "id": 1,
+            "seen_at": "2026-11-23T17:30:13.548407",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Nr4PbwA3ou6omZ9azy5HvvZfxAo=",
-            "created_at": "2026-11-22T09:23:45.661723",
-            "rotated_at": "2026-11-22T09:23:45.660886",
-            "updated_at": "2026-11-22T09:23:45.661723",
+            "auth_token": "cZU3fgR7afAiO9JM9s+qQmt0/2g=",
+            "created_at": "2026-11-23T17:30:13.0474",
+            "rotated_at": "2026-11-23T17:30:13.046591",
+            "updated_at": "2026-11-23T17:30:13.0474",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Nr4PbwA3ou6omZ9azy5HvvZfxAo=",
+            "prev_auth_token": "cZU3fgR7afAiO9JM9s+qQmt0/2g=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -414,7 +414,7 @@
   ],
   "recorded_from": {
     "case": "9594cb054005a90a43ee19b5e71010358ae8d88d22f165388868701e8dde837f",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -23,8 +23,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:13:43.124976",
-  "transaction_started_at": "2026-11-22T08:13:42.182548",
+  "started_at": "2026-11-23T16:15:04.394353",
+  "transaction_started_at": "2026-11-23T16:15:03.39266",
   "responses": [
     {
       "status": 200,
@@ -97,7 +97,7 @@
             "name": "Getting Started",
             "position": 0,
             "created_at": "2026-11-03T05:07:09.656567",
-            "updated_at": "2026-11-22T08:13:43.159081",
+            "updated_at": "2026-11-23T16:15:04.413716",
             "description": null
           }
         },
@@ -115,7 +115,7 @@
             "name": "Community",
             "position": 1,
             "created_at": "2026-11-03T05:07:09.664559",
-            "updated_at": "2026-11-22T08:13:43.165932",
+            "updated_at": "2026-11-23T16:15:04.417473",
             "description": null
           }
         },
@@ -133,7 +133,7 @@
             "name": "Posting",
             "position": 2,
             "created_at": "2026-11-03T05:07:09.674059",
-            "updated_at": "2026-11-22T08:13:43.175392",
+            "updated_at": "2026-11-23T16:15:04.420775",
             "description": null
           }
         },
@@ -151,7 +151,7 @@
             "name": "Trust Level",
             "position": 3,
             "created_at": "2026-11-03T05:07:09.683169",
-            "updated_at": "2026-11-22T08:13:43.181319",
+            "updated_at": "2026-11-23T16:15:04.424662",
             "description": null
           }
         },
@@ -169,7 +169,7 @@
             "name": "Other",
             "position": 4,
             "created_at": "2026-11-03T05:07:09.691556",
-            "updated_at": "2026-11-22T08:13:43.185884",
+            "updated_at": "2026-11-23T16:15:04.428445",
             "description": null
           }
         }
@@ -181,33 +181,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "oKKQgFjjMvZ2DeM/4n1Jg9fAPac=",
-            "created_at": "2026-11-22T08:13:42.516202",
-            "rotated_at": "2026-11-22T08:13:42.515174",
-            "updated_at": "2026-11-22T08:13:42.516202",
+            "auth_token": "Xb2URr7q6OV8KaaZ8x6PvtadxDg=",
+            "created_at": "2026-11-23T16:15:03.790793",
+            "rotated_at": "2026-11-23T16:15:03.789057",
+            "updated_at": "2026-11-23T16:15:03.790793",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "oKKQgFjjMvZ2DeM/4n1Jg9fAPac=",
+            "prev_auth_token": "Xb2URr7q6OV8KaaZ8x6PvtadxDg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:13:43.136829",
+            "id": 1,
+            "seen_at": "2026-11-23T16:15:04.402471",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "oKKQgFjjMvZ2DeM/4n1Jg9fAPac=",
-            "created_at": "2026-11-22T08:13:42.516202",
-            "rotated_at": "2026-11-22T08:13:42.515174",
-            "updated_at": "2026-11-22T08:13:42.516202",
+            "auth_token": "Xb2URr7q6OV8KaaZ8x6PvtadxDg=",
+            "created_at": "2026-11-23T16:15:03.790793",
+            "rotated_at": "2026-11-23T16:15:03.789057",
+            "updated_at": "2026-11-23T16:15:03.790793",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "oKKQgFjjMvZ2DeM/4n1Jg9fAPac=",
+            "prev_auth_token": "Xb2URr7q6OV8KaaZ8x6PvtadxDg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -226,7 +226,7 @@
   ],
   "recorded_from": {
     "case": "25ab8f058c8dd2444a5232571dcbec8d02e0e117ada386ab4ff85464ed553023",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

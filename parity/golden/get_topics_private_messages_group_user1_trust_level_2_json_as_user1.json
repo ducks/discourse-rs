@@ -1,7 +1,7 @@
 {
   "request": "GET /topics/private-messages-group/user1/trust_level_2.json as=user1",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T10:22:07.743070177+00:00",
+  "recorded_at": "2026-11-23T18:28:53.816915800+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"topic_list\":{\"can_create_topic\":true,\"filter\":\"private_messages\",\"per_page\":30,\"top_tags\":[{\"id\":2,\"name\":\"guide\",\"slug\":\"guide\"},{\"id\":1,\"name\":\"howto\",\"slug\":\"howto\"}],\"topics\":[]}}"

@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T10:11:06.77623",
-  "transaction_started_at": "2026-11-22T10:11:05.90976",
+  "started_at": "2026-11-23T18:20:52.34545",
+  "transaction_started_at": "2026-11-23T18:20:51.054422",
   "responses": [
     {
       "status": 200,
@@ -25,8 +25,8 @@
         {
           "id": 1,
           "topic_id": 35,
-          "created_at": "2026-11-22T10:11:05.90976",
-          "updated_at": "2026-11-22T10:11:05.90976",
+          "created_at": "2026-11-23T18:20:51.054422",
+          "updated_at": "2026-11-23T18:20:51.054422",
           "answer_post_id": null,
           "topic_timer_id": null,
           "accepter_user_id": null
@@ -39,8 +39,8 @@
       "deleted": [
         {
           "id": 1,
-          "created_at": "2026-11-22T10:11:05.90976",
-          "updated_at": "2026-11-22T10:11:05.90976",
+          "created_at": "2026-11-23T18:20:51.054422",
+          "updated_at": "2026-11-23T18:20:51.054422",
           "answer_post_id": 36,
           "solved_topic_id": 1,
           "accepter_user_id": 2
@@ -54,33 +54,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "e40xDWirlOcVwA94IT7ELS7ANdU=",
-            "created_at": "2026-11-22T10:11:06.292819",
-            "rotated_at": "2026-11-22T10:11:06.291798",
-            "updated_at": "2026-11-22T10:11:06.292819",
+            "auth_token": "tzS3ibXjx8sC97m7y2F/1eH/Jc0=",
+            "created_at": "2026-11-23T18:20:51.510582",
+            "rotated_at": "2026-11-23T18:20:51.509572",
+            "updated_at": "2026-11-23T18:20:51.510582",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "e40xDWirlOcVwA94IT7ELS7ANdU=",
+            "prev_auth_token": "tzS3ibXjx8sC97m7y2F/1eH/Jc0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T10:11:06.78417",
+            "id": 1,
+            "seen_at": "2026-11-23T18:20:52.353289",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "e40xDWirlOcVwA94IT7ELS7ANdU=",
-            "created_at": "2026-11-22T10:11:06.292819",
-            "rotated_at": "2026-11-22T10:11:06.291798",
-            "updated_at": "2026-11-22T10:11:06.292819",
+            "auth_token": "tzS3ibXjx8sC97m7y2F/1eH/Jc0=",
+            "created_at": "2026-11-23T18:20:51.510582",
+            "rotated_at": "2026-11-23T18:20:51.509572",
+            "updated_at": "2026-11-23T18:20:51.510582",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "e40xDWirlOcVwA94IT7ELS7ANdU=",
+            "prev_auth_token": "tzS3ibXjx8sC97m7y2F/1eH/Jc0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -98,7 +98,7 @@
         "tag_ids": [
           2
         ],
-        "payload": "{\"id\":36,\"name\":\"User1\",\"username\":\"user1\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"created_at\":\"2026-11-21T23:56:44.654Z\",\"cooked\":\"\\u003cp\\u003eReply one from user1, also long enough to pass the minimum length check.\\u003c/p\\u003e\",\"post_number\":2,\"post_type\":1,\"posts_count\":5,\"updated_at\":\"2026-11-21T23:56:44.654Z\",\"reply_count\":0,\"reply_to_post_number\":null,\"quote_count\":0,\"incoming_link_count\":0,\"reads\":1,\"score\":0,\"topic_id\":35,\"topic_slug\":\"parity-fixture-replies-and-posters\",\"topic_title\":\"Parity fixture: replies and posters\",\"category_id\":4,\"display_username\":\"User1\",\"primary_group_name\":null,\"flair_name\":null,\"flair_group_id\":null,\"version\":1,\"user_title\":null,\"bookmarked\":false,\"raw\":\"Reply one from user1, also long enough to pass the minimum length check.\",\"moderator\":false,\"admin\":false,\"staff\":false,\"user_id\":3,\"hidden\":false,\"trust_level\":2,\"deleted_at\":null,\"user_deleted\":false,\"edit_reason\":null,\"wiki\":false,\"reviewable_id\":null,\"reviewable_score_count\":0,\"reviewable_score_pending_count\":0,\"post_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"reactions\":[{\"id\":\"heart\",\"type\":\"emoji\",\"count\":1}],\"current_user_reaction\":null,\"reaction_users_count\":1,\"current_user_used_main_reaction\":false,\"can_accept_answer\":true,\"can_unaccept_answer\":false,\"accepted_answer\":false,\"topic_accepted_answer\":null,\"topic_posts_count\":5,\"topic_filtered_posts_count\":5,\"topic_archetype\":\"regular\",\"category_slug\":\"general\"}",
+        "payload": "{\"id\":36,\"name\":\"User1\",\"username\":\"user1\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"created_at\":\"2026-11-23T16:08:31.648Z\",\"cooked\":\"\\u003cp\\u003eReply one from user1, also long enough to pass the minimum length check.\\u003c/p\\u003e\",\"post_number\":2,\"post_type\":1,\"posts_count\":5,\"updated_at\":\"2026-11-23T16:08:31.648Z\",\"reply_count\":0,\"reply_to_post_number\":null,\"quote_count\":0,\"incoming_link_count\":0,\"reads\":1,\"score\":15.2,\"topic_id\":35,\"topic_slug\":\"parity-fixture-replies-and-posters\",\"topic_title\":\"Parity fixture: replies and posters\",\"category_id\":4,\"display_username\":\"User1\",\"primary_group_name\":null,\"flair_name\":null,\"flair_group_id\":null,\"version\":1,\"user_title\":null,\"bookmarked\":false,\"raw\":\"Reply one from user1, also long enough to pass the minimum length check.\",\"moderator\":false,\"admin\":false,\"staff\":false,\"user_id\":3,\"hidden\":false,\"trust_level\":2,\"deleted_at\":null,\"user_deleted\":false,\"edit_reason\":null,\"wiki\":false,\"reviewable_id\":null,\"reviewable_score_count\":0,\"reviewable_score_pending_count\":0,\"post_url\":\"/t/parity-fixture-replies-and-posters/35/2\",\"reactions\":[{\"id\":\"heart\",\"type\":\"emoji\",\"count\":1}],\"current_user_reaction\":null,\"reaction_users_count\":1,\"current_user_used_main_reaction\":false,\"can_accept_answer\":true,\"can_unaccept_answer\":false,\"accepted_answer\":false,\"topic_accepted_answer\":null,\"topic_posts_count\":5,\"topic_filtered_posts_count\":5,\"topic_archetype\":\"regular\",\"category_slug\":\"general\"}",
         "web_hook_id": 9001,
         "event_name": "unaccepted_solution",
         "event_type": "solved"
@@ -117,7 +117,7 @@
   ],
   "recorded_from": {
     "case": "b44fb20367ad249b08f92f0279eb7ddc310bfd9391a5d1ed2ca03baf89e48918",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

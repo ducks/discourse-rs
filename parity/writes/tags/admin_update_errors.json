@@ -50,8 +50,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:42:36.803988",
-  "transaction_started_at": "2026-11-22T09:42:36.000722",
+  "started_at": "2026-11-23T17:50:46.927694",
+  "transaction_started_at": "2026-11-23T17:50:46.022391",
   "responses": [
     {
       "status": 422,
@@ -131,23 +131,23 @@
             "name": "guide",
             "slug": "guide",
             "locale": null,
-            "created_at": "2026-11-21T23:56:46.214356",
-            "updated_at": "2026-11-21T23:56:46.214356",
+            "created_at": "2026-11-23T16:08:36.815246",
+            "updated_at": "2026-11-23T16:08:36.815246",
             "description": null,
             "target_tag_id": null,
             "pm_topic_count": 0,
             "staff_topic_count": 2,
             "description_cooked": null,
             "public_topic_count": 2,
-            "description_cooked_version": null
+            "description_cooked_version": 1
           },
           "after": {
             "id": 2,
             "name": "guide-renamed",
             "slug": "guide-renamed",
             "locale": null,
-            "created_at": "2026-11-21T23:56:46.214356",
-            "updated_at": "2026-11-22T09:42:36.919787",
+            "created_at": "2026-11-23T16:08:36.815246",
+            "updated_at": "2026-11-23T17:50:47.049258",
             "description": "This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long. This description goes on for far too long.",
             "target_tag_id": null,
             "pm_topic_count": 0,
@@ -165,33 +165,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "auBOh4y8ka1fnSCs+7yeSBbjsa0=",
-            "created_at": "2026-11-22T09:42:36.339053",
-            "rotated_at": "2026-11-22T09:42:36.338221",
-            "updated_at": "2026-11-22T09:42:36.339053",
+            "auth_token": "Okfgg1UMyiY8HZeOPGZ3fxvYrdM=",
+            "created_at": "2026-11-23T17:50:46.415929",
+            "rotated_at": "2026-11-23T17:50:46.414579",
+            "updated_at": "2026-11-23T17:50:46.415929",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "auBOh4y8ka1fnSCs+7yeSBbjsa0=",
+            "prev_auth_token": "Okfgg1UMyiY8HZeOPGZ3fxvYrdM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:42:36.810481",
+            "id": 1,
+            "seen_at": "2026-11-23T17:50:46.933589",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "auBOh4y8ka1fnSCs+7yeSBbjsa0=",
-            "created_at": "2026-11-22T09:42:36.339053",
-            "rotated_at": "2026-11-22T09:42:36.338221",
-            "updated_at": "2026-11-22T09:42:36.339053",
+            "auth_token": "Okfgg1UMyiY8HZeOPGZ3fxvYrdM=",
+            "created_at": "2026-11-23T17:50:46.415929",
+            "rotated_at": "2026-11-23T17:50:46.414579",
+            "updated_at": "2026-11-23T17:50:46.415929",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "auBOh4y8ka1fnSCs+7yeSBbjsa0=",
+            "prev_auth_token": "Okfgg1UMyiY8HZeOPGZ3fxvYrdM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -202,7 +202,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 23,
           "context": null,
@@ -212,10 +212,10 @@
           "topic_id": null,
           "new_value": "guide-renamed",
           "admin_only": true,
-          "created_at": "2026-11-22T09:42:36.927447",
+          "created_at": "2026-11-23T17:50:47.056822",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:42:36.927447",
+          "updated_at": "2026-11-23T17:50:47.056822",
           "category_id": null,
           "custom_type": "renamed_tag",
           "reviewable_id": null,
@@ -243,11 +243,11 @@
     ]
   ],
   "next_ids": {
-    "user_histories": 72
+    "user_histories": 66
   },
   "recorded_from": {
     "case": "b9b09e1da33655368844fb6ed59b8c42d5f7f9101b65ec14895b87ce195af203",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

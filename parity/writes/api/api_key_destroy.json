@@ -7,8 +7,8 @@
       "path": "/admin/api/keys/9202.json"
     }
   ],
-  "started_at": "2026-11-22T08:26:46.052537",
-  "transaction_started_at": "2026-11-22T08:26:45.249583",
+  "started_at": "2026-11-23T16:28:38.410493",
+  "transaction_started_at": "2026-11-23T16:28:37.210993",
   "responses": [
     {
       "status": 200,
@@ -26,13 +26,13 @@
           "hidden": false,
           "user_id": 3,
           "key_hash": "204717d7551fdf9e25ac0a693b8c8acd96b413b4134ac88e05231d3d6b321d0f",
-          "created_at": "2026-11-18T08:26:45.249583",
+          "created_at": "2026-11-19T16:28:37.210993",
           "revoked_at": null,
           "scope_mode": 2,
-          "updated_at": "2026-11-18T08:26:45.249583",
+          "updated_at": "2026-11-19T16:28:37.210993",
           "allowed_ips": null,
           "description": "user1 key",
-          "last_used_at": "2026-11-21T08:26:45.249583",
+          "last_used_at": "2026-11-22T16:28:37.210993",
           "created_by_id": 1,
           "truncated_key": "k920"
         }
@@ -45,33 +45,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "nGu+g2n+PmbXFOab65X4BWWNT+U=",
-            "created_at": "2026-11-22T08:26:45.570329",
-            "rotated_at": "2026-11-22T08:26:45.569472",
-            "updated_at": "2026-11-22T08:26:45.570329",
+            "auth_token": "XvtqBnxsqW0Briq4QIxKoesOtrU=",
+            "created_at": "2026-11-23T16:28:37.789409",
+            "rotated_at": "2026-11-23T16:28:37.788051",
+            "updated_at": "2026-11-23T16:28:37.789409",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "nGu+g2n+PmbXFOab65X4BWWNT+U=",
+            "prev_auth_token": "XvtqBnxsqW0Briq4QIxKoesOtrU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:26:46.059161",
+            "id": 1,
+            "seen_at": "2026-11-23T16:28:38.420486",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "nGu+g2n+PmbXFOab65X4BWWNT+U=",
-            "created_at": "2026-11-22T08:26:45.570329",
-            "rotated_at": "2026-11-22T08:26:45.569472",
-            "updated_at": "2026-11-22T08:26:45.570329",
+            "auth_token": "XvtqBnxsqW0Briq4QIxKoesOtrU=",
+            "created_at": "2026-11-23T16:28:37.789409",
+            "rotated_at": "2026-11-23T16:28:37.788051",
+            "updated_at": "2026-11-23T16:28:37.789409",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "nGu+g2n+PmbXFOab65X4BWWNT+U=",
+            "prev_auth_token": "XvtqBnxsqW0Briq4QIxKoesOtrU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -82,7 +82,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 82,
           "context": null,
@@ -92,10 +92,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T08:26:46.068948",
+          "created_at": "2026-11-23T16:28:38.431184",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:26:46.068948",
+          "updated_at": "2026-11-23T16:28:38.431184",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -110,7 +110,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 72
+    "user_histories": 66
   },
   "setup": [
     "INSERT INTO api_keys (id, user_id, created_by_id, created_at, updated_at, last_used_at, description, key_hash, truncated_key, scope_mode, revoked_at, hidden) VALUES (9201, NULL, 1, now() - interval '5 days', now() - interval '5 days', NULL, 'all users', encode(sha256(convert_to('k9201aaaa', 'UTF8')), 'hex'), 'k920', NULL, NULL, false)",
@@ -122,7 +122,7 @@
   ],
   "recorded_from": {
     "case": "5b04810ec04e9d92ca107fc3ff84439d175fbe188f0b51753991069664024712",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

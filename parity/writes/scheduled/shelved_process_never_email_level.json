@@ -2,8 +2,8 @@
   "name": "shelved_process_never_email_level",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:30:00.487825",
-  "transaction_started_at": "2026-11-22T09:29:59.847047",
+  "started_at": "2026-11-23T17:36:52.763983",
+  "transaction_started_at": "2026-11-23T17:36:52.036089",
   "responses": [],
   "changes": {
     "do_not_disturb_timings": {
@@ -11,10 +11,10 @@
       "deleted": [
         {
           "id": 1,
-          "ends_at": "2026-11-22T09:19:59.847047",
+          "ends_at": "2026-11-23T17:26:52.036089",
           "user_id": 3,
           "scheduled": false,
-          "starts_at": "2026-11-22T07:29:59.847047"
+          "starts_at": "2026-11-23T15:36:52.036089"
         }
       ],
       "updated": []
@@ -47,7 +47,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "237fc46025ef86e6c5c145a98d24cb6d72fcc7bf8af5d4b469c1e51f2eb9a9a0",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

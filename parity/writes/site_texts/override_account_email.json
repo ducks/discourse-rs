@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:38:37.554385",
-  "transaction_started_at": "2026-11-22T09:38:36.957683",
+  "started_at": "2026-11-23T17:46:03.592773",
+  "transaction_started_at": "2026-11-23T17:46:02.740193",
   "responses": [
     {
       "status": 200,
@@ -29,10 +29,10 @@
           "email": "user1@example.com",
           "purpose": 1,
           "attempts": 0,
-          "code_hash": "d145a70f63a3da8abcdee1cd81c131215e171811a2f325388594be47a6a7e446",
-          "created_at": "2026-11-22T09:38:37.571604",
-          "expires_at": "2026-11-22T09:48:37.569845",
-          "updated_at": "2026-11-22T09:38:37.571604",
+          "code_hash": "9e5c2d68a8018db7b1ce6dbd5000bdc8142a7fde2940f4eb6ec03684344c1bb3",
+          "created_at": "2026-11-23T17:46:03.618038",
+          "expires_at": "2026-11-23T17:56:03.615666",
+          "updated_at": "2026-11-23T17:46:03.618038",
           "consumed_at": null
         }
       ],
@@ -49,11 +49,11 @@
           "user_id": null,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-22T09:38:38.673016",
+          "created_at": "2026-11-23T17:46:04.908453",
           "email_type": "email_login_code",
-          "message_id": "48f4dbc9-b5a5-4f2a-ad53-2ac801e80571@localhost",
+          "message_id": "0094f86c-5e47-4400-8c16-1f359a03c481@localhost",
           "to_address": "user1@example.com",
-          "updated_at": "2026-11-22T09:38:38.673016",
+          "updated_at": "2026-11-23T17:46:04.908453",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -71,7 +71,7 @@
       "send_email_login_code",
       {
         "to_address": "user1@example.com",
-        "code": "688679",
+        "code": "443567",
         "password_reset": true
       }
     ]
@@ -105,7 +105,7 @@
         ],
         [
           "Message-ID",
-          "<48f4dbc9-b5a5-4f2a-ad53-2ac801e80571@localhost>"
+          "<0094f86c-5e47-4400-8c16-1f359a03c481@localhost>"
         ],
         [
           "Subject",
@@ -117,7 +117,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b02b81ea1e7f_2a14af38117dc"
+          "multipart/alternative; boundary=--==_mimepart_6b047bdcda30c_bca2f3877357"
         ],
         [
           "Content-Transfer-Encoding",
@@ -136,13 +136,13 @@
           "auto-generated"
         ]
       ],
-      "text": "Reset on **Discourse**:\n\n## 688679\n\nValid 10 minutes.",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Reset on <strong>Discourse</strong>:</p>\n<h2><a name=\"h-688679-1\" class=\"anchor\" href=\"#h-688679-1\" aria-label=\"Heading link\" style=\"text-decoration:none;font-weight:bold;color:#006699\"></a>688679</h2>\n<p>Valid 10 minutes.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Reset on **Discourse**:\n\n## 443567\n\nValid 10 minutes.",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Reset on <strong>Discourse</strong>:</p>\n<h2><a name=\"h-443567-1\" class=\"anchor\" href=\"#h-443567-1\" aria-label=\"Heading link\" style=\"text-decoration:none;font-weight:bold;color:#006699\"></a>443567</h2>\n<p>Valid 10 minutes.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "a237714dc619f7f0b262bd59a47fd8584033a4d131d3745cb3fc8aa97956182f",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

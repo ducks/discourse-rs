@@ -11,8 +11,8 @@
       "path": "/auth/twitter/callback?oauth_token=x&oauth_verifier=y"
     }
   ],
-  "started_at": "2026-11-22T08:50:41.502561",
-  "transaction_started_at": "2026-11-22T08:50:40.73906",
+  "started_at": "2026-11-23T16:55:17.939689",
+  "transaction_started_at": "2026-11-23T16:55:17.099843",
   "responses": [
     {
       "status": 302,
@@ -55,7 +55,7 @@
   ],
   "recorded_from": {
     "case": "67b77e55541cd0f92acd09378dd33fe657d7d73c3a57854c68bbb283553dffb5",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

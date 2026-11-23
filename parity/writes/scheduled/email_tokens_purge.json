@@ -2,8 +2,8 @@
   "name": "email_tokens_purge",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:28:38.136014",
-  "transaction_started_at": "2026-11-22T09:28:37.517898",
+  "started_at": "2026-11-23T17:35:23.47999",
+  "transaction_started_at": "2026-11-23T17:35:22.828459",
   "responses": [],
   "changes": {
     "email_tokens": {
@@ -16,9 +16,9 @@
           "expired": true,
           "user_id": 3,
           "confirmed": false,
-          "created_at": "2026-10-13T09:28:37.517898",
+          "created_at": "2026-10-14T17:35:22.828459",
           "token_hash": "h9501",
-          "updated_at": "2026-10-13T09:28:37.517898"
+          "updated_at": "2026-10-14T17:35:22.828459"
         }
       ],
       "updated": []
@@ -38,7 +38,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "232fd200dbecc60f2250e02d5fd1dcbbafd6da0cdbdc2ec4b012057c452ecd9e",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

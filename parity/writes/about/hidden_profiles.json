@@ -7,8 +7,8 @@
       "path": "/about.json"
     }
   ],
-  "started_at": "2026-11-22T08:11:01.283549",
-  "transaction_started_at": "2026-11-22T08:11:00.662083",
+  "started_at": "2026-11-23T16:12:18.451833",
+  "transaction_started_at": "2026-11-23T16:12:17.866067",
   "responses": [
     {
       "status": 200,
@@ -82,7 +82,7 @@
   },
   "recorded_from": {
     "case": "e2272271249698a4aaf9c05f0a92baaf5a2be83a4c083fc3f217055163ae50ee",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

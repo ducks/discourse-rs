@@ -11,14 +11,14 @@
       "path": "/auth/oidc/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
     }
   ],
-  "started_at": "2026-11-22T08:50:34.082185",
-  "transaction_started_at": "2026-11-22T08:50:33.466545",
+  "started_at": "2026-11-23T16:55:09.540023",
+  "transaction_started_at": "2026-11-23T16:55:08.778852",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=oidc-client&nonce=015bb244319aecffc420302259c5e75b23cc98fc6bdc33edc36ae022cf7c5102&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foidc%2Fcallback&response_type=code&scope=openid&state=1b8b68d5e0fc006586f6d5b6ccaadfc9f86f3e8defce55b4...",
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=oidc-client&nonce=01f9caeb6829a7a1f8558d794b929bcda7f3020ca1460d9c6f1ee8cab6b3ad3f&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foidc%2Fcallback&response_type=code&scope=openid&state=b3bc584c8ef82695cb327192db02db93b09bc6dbb3d80dc5...",
       "headers": {
-        "Location": "/authorize?client_id=oidc-client&nonce=015bb244319aecffc420302259c5e75b23cc98fc6bdc33edc36ae022cf7c5102&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foidc%2Fcallback&response_type=code&scope=openid&state=1b8b68d5e0fc006586f6d5b6ccaadfc9f86f3e8defce55b4"
+        "Location": "/authorize?client_id=oidc-client&nonce=01f9caeb6829a7a1f8558d794b929bcda7f3020ca1460d9c6f1ee8cab6b3ad3f&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foidc%2Fcallback&response_type=code&scope=openid&state=b3bc584c8ef82695cb327192db02db93b09bc6dbb3d80dc5"
       }
     },
     {
@@ -61,7 +61,7 @@
   ],
   "recorded_from": {
     "case": "55c99e2d32098f19e00a75253f776b2e5586b795cdea98031f4da953eb67cbd0",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

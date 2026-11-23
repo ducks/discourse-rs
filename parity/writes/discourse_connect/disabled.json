@@ -11,8 +11,8 @@
       "path": "/session/sso_login?sso=abc&sig=def"
     }
   ],
-  "started_at": "2026-11-22T08:44:26.194398",
-  "transaction_started_at": "2026-11-22T08:44:25.631321",
+  "started_at": "2026-11-23T16:48:29.891851",
+  "transaction_started_at": "2026-11-23T16:48:29.18484",
   "responses": [
     {
       "status": 404,
@@ -38,7 +38,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "d268cb4c8d7f5ef259c1bbb21b723c7a68b3340cbb1942227df62940118c99c1",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

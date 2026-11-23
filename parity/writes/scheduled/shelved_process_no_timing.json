@@ -2,8 +2,8 @@
   "name": "shelved_process_no_timing",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:30:01.390459",
-  "transaction_started_at": "2026-11-22T09:30:00.750266",
+  "started_at": "2026-11-23T17:36:53.747515",
+  "transaction_started_at": "2026-11-23T17:36:53.044109",
   "responses": [],
   "changes": {
     "do_not_disturb_timings": {
@@ -11,10 +11,10 @@
       "deleted": [
         {
           "id": 1,
-          "ends_at": "2026-11-22T09:20:00.750266",
+          "ends_at": "2026-11-23T17:26:53.044109",
           "user_id": 4,
           "scheduled": false,
-          "starts_at": "2026-11-22T07:30:00.750266"
+          "starts_at": "2026-11-23T15:36:53.044109"
         }
       ],
       "updated": []
@@ -36,7 +36,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "59a8161d39a2b1ab7683ba07238c206344f5d434d41717b41e8b1d19b411f64a",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "digest_off",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T08:43:10.623186",
-  "transaction_started_at": "2026-11-22T08:43:10.022155",
+  "started_at": "2026-11-23T16:47:09.027917",
+  "transaction_started_at": "2026-11-23T16:47:08.191111",
   "responses": [],
   "changes": {
     "user_stats": {
@@ -21,7 +21,7 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -34,7 +34,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:44.45838",
+            "first_post_created_at": "2026-11-23T16:08:31.163852",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -47,7 +47,7 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -57,10 +57,10 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": "2026-11-22T08:43:10.627185",
+            "digest_attempted_at": "2026-11-23T16:47:09.031524",
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:44.45838",
+            "first_post_created_at": "2026-11-23T16:08:31.163852",
             "reset_bounce_score_after": null
           }
         }
@@ -88,7 +88,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "0912225589113c346994ac151a7647c38ef1b64e15022ca2384fa5ef2da109bb",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

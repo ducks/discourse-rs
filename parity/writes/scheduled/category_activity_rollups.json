@@ -2,33 +2,33 @@
   "name": "category_activity_rollups",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:27:44.778375",
-  "transaction_started_at": "2026-11-22T09:27:44.194916",
+  "started_at": "2026-11-23T17:34:25.479974",
+  "transaction_started_at": "2026-11-23T17:34:24.787171",
   "responses": [],
   "changes": {
     "category_activity_daily_rollups": {
       "inserted": [
         {
-          "id": 9,
-          "date": "2026-11-22",
-          "posts": 0,
-          "topics": 0,
+          "id": 3,
+          "date": "2026-11-23",
+          "posts": 1,
+          "topics": 1,
           "page_views": 10,
           "category_id": 34,
           "likely_crawler_page_views": 0
         },
         {
-          "id": 10,
-          "date": "2026-11-21",
-          "posts": 2,
-          "topics": 2,
+          "id": 4,
+          "date": "2026-11-22",
+          "posts": 1,
+          "topics": 1,
           "page_views": 0,
           "category_id": 34,
           "likely_crawler_page_views": 0
         },
         {
-          "id": 11,
-          "date": "2026-11-21",
+          "id": 5,
+          "date": "2026-11-23",
           "posts": 1,
           "topics": 1,
           "page_views": 0,
@@ -36,19 +36,19 @@
           "likely_crawler_page_views": 0
         },
         {
-          "id": 12,
-          "date": "2026-11-21",
-          "posts": 6,
-          "topics": 3,
+          "id": 6,
+          "date": "2026-11-22",
+          "posts": 4,
+          "topics": 1,
           "page_views": 7,
           "category_id": 4,
           "likely_crawler_page_views": 0
         },
         {
-          "id": 13,
-          "date": "2026-11-22",
-          "posts": 1,
-          "topics": 0,
+          "id": 7,
+          "date": "2026-11-23",
+          "posts": 3,
+          "topics": 2,
           "page_views": 0,
           "category_id": 4,
           "likely_crawler_page_views": 0
@@ -56,8 +56,8 @@
       ],
       "deleted": [
         {
-          "id": 7,
-          "date": "2026-11-20",
+          "id": 1,
+          "date": "2026-11-21",
           "posts": 9,
           "topics": 9,
           "page_views": 9,
@@ -65,8 +65,8 @@
           "likely_crawler_page_views": 3
         },
         {
-          "id": 8,
-          "date": "2026-11-21",
+          "id": 2,
+          "date": "2026-11-22",
           "posts": 1,
           "topics": 1,
           "page_views": 1,
@@ -79,7 +79,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "category_activity_daily_rollups": 9
+    "category_activity_daily_rollups": 3
   },
   "setup": [
     "DELETE FROM category_activity_daily_rollups",
@@ -98,7 +98,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "73d83c6e2f4ae29b85ef1ef61fa6991154a4b3d1b2a3e54a22aa20fa98f92889",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

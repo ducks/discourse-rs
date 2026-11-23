@@ -62,8 +62,8 @@
       "path": "/admin/themes/-1.json"
     }
   ],
-  "started_at": "2026-11-22T09:45:53.813601",
-  "transaction_started_at": "2026-11-22T09:45:52.99258",
+  "started_at": "2026-11-23T17:54:25.548975",
+  "transaction_started_at": "2026-11-23T17:54:24.636753",
   "responses": [
     {
       "status": 200,
@@ -630,8 +630,8 @@
           "value": "f",
           "theme_id": -1,
           "data_type": 5,
-          "created_at": "2026-11-22T09:45:53.831623",
-          "updated_at": "2026-11-22T09:45:53.831623"
+          "created_at": "2026-11-23T17:54:25.565908",
+          "updated_at": "2026-11-23T17:54:25.565908"
         },
         {
           "id": 4,
@@ -639,8 +639,8 @@
           "value": "search_field",
           "theme_id": -1,
           "data_type": 7,
-          "created_at": "2026-11-22T09:45:53.862103",
-          "updated_at": "2026-11-22T09:45:53.862103"
+          "created_at": "2026-11-23T17:54:25.598816",
+          "updated_at": "2026-11-23T17:54:25.598816"
         }
       ],
       "deleted": [],
@@ -662,7 +662,7 @@
             "theme_id": -2,
             "data_type": 7,
             "created_at": "2026-11-03T05:07:17.391495",
-            "updated_at": "2026-11-22T09:45:53.892127"
+            "updated_at": "2026-11-23T17:54:25.628965"
           }
         }
       ]
@@ -673,33 +673,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "6yJGj+tb8HS/PGE5iMsRcyPf0xo=",
-            "created_at": "2026-11-22T09:45:53.352135",
-            "rotated_at": "2026-11-22T09:45:53.351129",
-            "updated_at": "2026-11-22T09:45:53.352135",
+            "auth_token": "6HdtElFCKvAUgFzUb4tTM2Fc9jE=",
+            "created_at": "2026-11-23T17:54:25.031817",
+            "rotated_at": "2026-11-23T17:54:25.030862",
+            "updated_at": "2026-11-23T17:54:25.031817",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "6yJGj+tb8HS/PGE5iMsRcyPf0xo=",
+            "prev_auth_token": "6HdtElFCKvAUgFzUb4tTM2Fc9jE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:45:53.820509",
+            "id": 1,
+            "seen_at": "2026-11-23T17:54:25.555943",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "6yJGj+tb8HS/PGE5iMsRcyPf0xo=",
-            "created_at": "2026-11-22T09:45:53.352135",
-            "rotated_at": "2026-11-22T09:45:53.351129",
-            "updated_at": "2026-11-22T09:45:53.352135",
+            "auth_token": "6HdtElFCKvAUgFzUb4tTM2Fc9jE=",
+            "created_at": "2026-11-23T17:54:25.031817",
+            "rotated_at": "2026-11-23T17:54:25.030862",
+            "updated_at": "2026-11-23T17:54:25.031817",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "6yJGj+tb8HS/PGE5iMsRcyPf0xo=",
+            "prev_auth_token": "6HdtElFCKvAUgFzUb4tTM2Fc9jE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -710,7 +710,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 120,
           "context": null,
@@ -720,10 +720,10 @@
           "topic_id": null,
           "new_value": "f",
           "admin_only": true,
-          "created_at": "2026-11-22T09:45:53.833268",
+          "created_at": "2026-11-23T17:54:25.567561",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:45:53.833268",
+          "updated_at": "2026-11-23T17:54:25.567561",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -732,7 +732,7 @@
           "target_user_id": null
         },
         {
-          "id": 73,
+          "id": 67,
           "email": null,
           "action": 120,
           "context": null,
@@ -742,10 +742,10 @@
           "topic_id": null,
           "new_value": "search_field",
           "admin_only": true,
-          "created_at": "2026-11-22T09:45:53.864027",
+          "created_at": "2026-11-23T17:54:25.601663",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:45:53.864027",
+          "updated_at": "2026-11-23T17:54:25.601663",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -754,7 +754,7 @@
           "target_user_id": null
         },
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 120,
           "context": null,
@@ -764,10 +764,10 @@
           "topic_id": null,
           "new_value": "search_icon",
           "admin_only": true,
-          "created_at": "2026-11-22T09:45:53.893638",
+          "created_at": "2026-11-23T17:54:25.630728",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:45:53.893638",
+          "updated_at": "2026-11-23T17:54:25.630728",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -776,7 +776,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 120,
           "context": null,
@@ -786,10 +786,10 @@
           "topic_id": null,
           "new_value": "t",
           "admin_only": true,
-          "created_at": "2026-11-22T09:45:53.924676",
+          "created_at": "2026-11-23T17:54:25.65613",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:45:53.924676",
+          "updated_at": "2026-11-23T17:54:25.65613",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -805,11 +805,11 @@
   "jobs": [],
   "next_ids": {
     "theme_site_settings": 3,
-    "user_histories": 72
+    "user_histories": 66
   },
   "recorded_from": {
     "case": "1bea2fdc60653ab4687a956da93d986d1d4a195bbe443cae1892ea2098fef9f1",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

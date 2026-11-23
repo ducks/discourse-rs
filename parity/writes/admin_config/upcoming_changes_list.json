@@ -14,8 +14,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:16:50.29638",
-  "transaction_started_at": "2026-11-22T08:16:49.376595",
+  "started_at": "2026-11-23T16:18:12.272058",
+  "transaction_started_at": "2026-11-23T16:18:11.499468",
   "responses": [
     {
       "status": 200,
@@ -45,7 +45,7 @@
                 "height": 851
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.345Z"
+              "status_changed_at": "2026-11-23T16:07:30.255Z"
             },
             "plugin": "Boards",
             "depends_on": [],
@@ -73,7 +73,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.352Z"
+              "status_changed_at": "2026-11-23T16:07:30.268Z"
             },
             "plugin": "Chat",
             "depends_on": [],
@@ -101,7 +101,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.360Z"
+              "status_changed_at": "2026-11-23T16:07:30.281Z"
             },
             "plugin": "Chat",
             "depends_on": [],
@@ -129,7 +129,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.367Z"
+              "status_changed_at": "2026-11-23T16:07:30.296Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -154,7 +154,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.380Z"
+              "status_changed_at": "2026-11-23T16:07:30.309Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -179,7 +179,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.415Z"
+              "status_changed_at": "2026-11-23T16:07:30.347Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -209,7 +209,7 @@
                 "height": 1544
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.423Z"
+              "status_changed_at": "2026-11-23T16:07:30.361Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -234,7 +234,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.435Z"
+              "status_changed_at": "2026-11-23T16:07:30.376Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -260,7 +260,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.448Z"
+              "status_changed_at": "2026-11-23T16:07:30.386Z"
             },
             "plugin": "Reactions",
             "depends_on": [],
@@ -294,7 +294,7 @@
                 "height": 687
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.466Z"
+              "status_changed_at": "2026-11-23T16:07:30.397Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -321,7 +321,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.478Z"
+              "status_changed_at": "2026-11-23T16:07:30.410Z"
             },
             "plugin": "Events",
             "depends_on": [],
@@ -349,7 +349,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.486Z"
+              "status_changed_at": "2026-11-23T16:07:30.421Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -375,7 +375,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.563Z"
+              "status_changed_at": "2026-11-23T16:07:30.484Z"
             },
             "plugin": "Topic Voting",
             "depends_on": [],
@@ -406,7 +406,7 @@
                 "height": 410
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.591Z"
+              "status_changed_at": "2026-11-23T16:07:30.505Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -438,7 +438,7 @@
                 "height": 730
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.605Z"
+              "status_changed_at": "2026-11-23T16:07:30.515Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -471,7 +471,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.615Z"
+              "status_changed_at": "2026-11-23T16:07:30.527Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -498,7 +498,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.625Z"
+              "status_changed_at": "2026-11-23T16:07:30.538Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -528,7 +528,7 @@
                 "height": 396
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.636Z"
+              "status_changed_at": "2026-11-23T16:07:30.546Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -555,7 +555,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.650Z"
+              "status_changed_at": "2026-11-23T16:07:30.556Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -582,7 +582,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.664Z"
+              "status_changed_at": "2026-11-23T16:07:30.565Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -612,7 +612,7 @@
                 "height": 132
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.676Z"
+              "status_changed_at": "2026-11-23T16:07:30.576Z"
             },
             "plugin": "Reactions",
             "depends_on": [],
@@ -638,7 +638,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.688Z"
+              "status_changed_at": "2026-11-23T16:07:30.586Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -668,7 +668,7 @@
                 "height": 653
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.700Z"
+              "status_changed_at": "2026-11-23T16:07:30.597Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -699,7 +699,7 @@
                 "height": 467
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.714Z"
+              "status_changed_at": "2026-11-23T16:07:30.611Z"
             },
             "plugin": "Solved",
             "depends_on": [],
@@ -730,7 +730,7 @@
                 "height": 436
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.736Z"
+              "status_changed_at": "2026-11-23T16:07:30.621Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -760,7 +760,7 @@
                 "height": 442
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.751Z"
+              "status_changed_at": "2026-11-23T16:07:30.633Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -790,7 +790,7 @@
                 "height": 1077
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.763Z"
+              "status_changed_at": "2026-11-23T16:07:30.653Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -817,7 +817,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.776Z"
+              "status_changed_at": "2026-11-23T16:07:30.671Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -844,7 +844,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.789Z"
+              "status_changed_at": "2026-11-23T16:07:30.697Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -875,7 +875,7 @@
                 "height": 407
               },
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.803Z"
+              "status_changed_at": "2026-11-23T16:07:30.706Z"
             },
             "plugin": "Live",
             "depends_on": [],
@@ -918,7 +918,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.829Z"
+              "status_changed_at": "2026-11-23T16:07:30.718Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -943,7 +943,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.840Z"
+              "status_changed_at": "2026-11-23T16:07:30.729Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -968,7 +968,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.852Z"
+              "status_changed_at": "2026-11-23T16:07:30.741Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -998,7 +998,7 @@
                 "suppress_uncategorized_badge"
               ],
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.864Z"
+              "status_changed_at": "2026-11-23T16:07:30.755Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1023,7 +1023,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.875Z"
+              "status_changed_at": "2026-11-23T16:07:30.765Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1048,7 +1048,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.886Z"
+              "status_changed_at": "2026-11-23T16:07:30.773Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1073,7 +1073,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.898Z"
+              "status_changed_at": "2026-11-23T16:07:30.790Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1098,7 +1098,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.908Z"
+              "status_changed_at": "2026-11-23T16:07:30.808Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1125,7 +1125,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "no_one",
-              "status_changed_at": "2026-11-21T23:55:41.931Z"
+              "status_changed_at": "2026-11-23T16:07:30.848Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1165,7 +1165,7 @@
                 "height": 851
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.345Z"
+              "status_changed_at": "2026-11-23T16:07:30.255Z"
             },
             "plugin": "Boards",
             "depends_on": [],
@@ -1198,7 +1198,7 @@
                 "height": 1544
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.423Z"
+              "status_changed_at": "2026-11-23T16:07:30.361Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1231,7 +1231,7 @@
                 "height": 687
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.466Z"
+              "status_changed_at": "2026-11-23T16:07:30.397Z"
             },
             "plugin": "Workflows",
             "depends_on": [],
@@ -1259,7 +1259,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.486Z"
+              "status_changed_at": "2026-11-23T16:07:30.421Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1289,7 +1289,7 @@
                 "height": 410
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.591Z"
+              "status_changed_at": "2026-11-23T16:07:30.505Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1321,7 +1321,7 @@
                 "height": 730
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.605Z"
+              "status_changed_at": "2026-11-23T16:07:30.515Z"
             },
             "depends_on": [
               "enable_local_logins",
@@ -1354,7 +1354,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.615Z"
+              "status_changed_at": "2026-11-23T16:07:30.527Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1381,7 +1381,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.625Z"
+              "status_changed_at": "2026-11-23T16:07:30.538Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1408,7 +1408,7 @@
               "body_class": null,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.650Z"
+              "status_changed_at": "2026-11-23T16:07:30.556Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1433,7 +1433,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.688Z"
+              "status_changed_at": "2026-11-23T16:07:30.586Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1463,7 +1463,7 @@
                 "height": 436
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.736Z"
+              "status_changed_at": "2026-11-23T16:07:30.621Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1493,7 +1493,7 @@
                 "height": 442
               },
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.751Z"
+              "status_changed_at": "2026-11-23T16:07:30.633Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1520,7 +1520,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.776Z"
+              "status_changed_at": "2026-11-23T16:07:30.671Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1545,7 +1545,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.840Z"
+              "status_changed_at": "2026-11-23T16:07:30.729Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1575,7 +1575,7 @@
                 "suppress_uncategorized_badge"
               ],
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.864Z"
+              "status_changed_at": "2026-11-23T16:07:30.755Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1600,7 +1600,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.875Z"
+              "status_changed_at": "2026-11-23T16:07:30.765Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1625,7 +1625,7 @@
               "permanent_warning": true,
               "hide_settings": null,
               "enabled_for": "everyone",
-              "status_changed_at": "2026-11-21T23:55:41.898Z"
+              "status_changed_at": "2026-11-23T16:07:30.790Z"
             },
             "depends_on": [],
             "depends_on_humanized_names": [],
@@ -1645,33 +1645,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "2a5bWv3HqWxJ1KSVW8lCivMuRVc=",
-            "created_at": "2026-11-22T08:16:49.677555",
-            "rotated_at": "2026-11-22T08:16:49.676694",
-            "updated_at": "2026-11-22T08:16:49.677555",
+            "auth_token": "5noD4UHMWXe/UV9ghkjKBALuw3s=",
+            "created_at": "2026-11-23T16:18:11.784107",
+            "rotated_at": "2026-11-23T16:18:11.783207",
+            "updated_at": "2026-11-23T16:18:11.784107",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "2a5bWv3HqWxJ1KSVW8lCivMuRVc=",
+            "prev_auth_token": "5noD4UHMWXe/UV9ghkjKBALuw3s=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:16:50.314268",
+            "id": 1,
+            "seen_at": "2026-11-23T16:18:12.278015",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "2a5bWv3HqWxJ1KSVW8lCivMuRVc=",
-            "created_at": "2026-11-22T08:16:49.677555",
-            "rotated_at": "2026-11-22T08:16:49.676694",
-            "updated_at": "2026-11-22T08:16:49.677555",
+            "auth_token": "5noD4UHMWXe/UV9ghkjKBALuw3s=",
+            "created_at": "2026-11-23T16:18:11.784107",
+            "rotated_at": "2026-11-23T16:18:11.783207",
+            "updated_at": "2026-11-23T16:18:11.784107",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "2a5bWv3HqWxJ1KSVW8lCivMuRVc=",
+            "prev_auth_token": "5noD4UHMWXe/UV9ghkjKBALuw3s=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1684,10 +1684,10 @@
         {
           "id": 1,
           "name": "last_visited_upcoming_changes_at",
-          "value": "2026-11-22T08:16:50Z",
+          "value": "2026-11-23T16:18:12Z",
           "user_id": 1,
-          "created_at": "2026-11-22T08:16:50.377977",
-          "updated_at": "2026-11-22T08:16:50.377977"
+          "created_at": "2026-11-23T16:18:12.301546",
+          "updated_at": "2026-11-23T16:18:12.301546"
         }
       ],
       "deleted": [],
@@ -1700,7 +1700,7 @@
   },
   "recorded_from": {
     "case": "263373944a07596fdc48c0ee99ebd5facd2558a396943ad7f07079d3e8e7ae6d",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

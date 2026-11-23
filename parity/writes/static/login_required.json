@@ -19,8 +19,8 @@
       "path": "/tos"
     }
   ],
-  "started_at": "2026-11-22T09:40:56.312712",
-  "transaction_started_at": "2026-11-22T09:40:55.58638",
+  "started_at": "2026-11-23T17:48:37.816417",
+  "transaction_started_at": "2026-11-23T17:48:36.987312",
   "responses": [
     {
       "status": 302,
@@ -45,7 +45,7 @@
     },
     {
       "status": 200,
-      "body": "<div itemscope itemtype='http://schema.org/WebPage'>\n  <meta itemprop='lastReviewed' content='2026-11-21'>\n  <ul class='nav-pills' role='navigation' itemscope itemtype='http://schema.org/SiteNavigationElement'>\n      <li class='nav-item-tos'><a href='/tos' class='active'>Terms of Service</a></li>\n  </ul>\n\n\n  <div itemprop='mainContentOfPage'>\n    <p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>\n  </div>\n</div>\n\n  \n"
+      "body": "<div itemscope itemtype='http://schema.org/WebPage'>\n  <meta itemprop='lastReviewed' content='2026-11-23'>\n  <ul class='nav-pills' role='navigation' itemscope itemtype='http://schema.org/SiteNavigationElement'>\n      <li class='nav-item-tos'><a href='/tos' class='active'>Terms of Service</a></li>\n  </ul>\n\n\n  <div itemprop='mainContentOfPage'>\n    <p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>\n  </div>\n</div>\n\n  \n"
     }
   ],
   "changes": {},
@@ -60,7 +60,7 @@
   ],
   "recorded_from": {
     "case": "ea60e6ccba3410524a54298444ce3588d78d0d97c73807118f3e6822e199c413",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

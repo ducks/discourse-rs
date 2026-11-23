@@ -7,8 +7,8 @@
       "path": "/t/admin-guide-getting-started/6.json"
     }
   ],
-  "started_at": "2026-11-22T09:50:30.988002",
-  "transaction_started_at": "2026-11-22T09:50:30.116729",
+  "started_at": "2026-11-23T17:59:22.442161",
+  "transaction_started_at": "2026-11-23T17:59:21.564899",
   "responses": [
     {
       "status": 200,
@@ -52,49 +52,7 @@
               "can_wiki": true,
               "link_counts": [
                 {
-                  "url": "https://github.com/discourse/discourse/blob/main/docs/INSTALL-email.md",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "discourse/docs/INSTALL-email.md at main · discourse/discourse · GitHub",
-                  "clicks": 0
-                },
-                {
-                  "url": "https://discover.discourse.com/",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Discourse Discover",
-                  "clicks": 0
-                },
-                {
-                  "url": "https://blog.discourse.org/",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Blog | Discourse",
-                  "clicks": 0
-                },
-                {
-                  "url": "https://meta.discourse.org/c/documentation/10",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Documentation - Discourse Meta",
-                  "clicks": 0
-                },
-                {
-                  "url": "http://ask.discourse.com",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Ask Discourse",
-                  "clicks": 0
-                },
-                {
-                  "url": "https://meta.discourse.org/",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Discourse Meta",
-                  "clicks": 0
-                },
-                {
-                  "url": "http://localhost:3000/admin/config/login-and-authentication",
+                  "url": "http://localhost:3000/admin/email/server-settings",
                   "internal": false,
                   "reflection": false,
                   "clicks": 0
@@ -106,9 +64,49 @@
                   "clicks": 0
                 },
                 {
-                  "url": "http://localhost:3000/admin/email/server-settings",
+                  "url": "http://localhost:3000/admin/config/login-and-authentication",
                   "internal": false,
                   "reflection": false,
+                  "clicks": 0
+                },
+                {
+                  "url": "https://meta.discourse.org/c/documentation/10",
+                  "internal": false,
+                  "reflection": false,
+                  "clicks": 0
+                },
+                {
+                  "url": "https://github.com/discourse/discourse/blob/main/docs/INSTALL-email.md",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "discourse/docs/INSTALL-email.md at main · discourse/discourse · GitHub",
+                  "clicks": 0
+                },
+                {
+                  "url": "https://meta.discourse.org/",
+                  "internal": false,
+                  "reflection": false,
+                  "clicks": 0
+                },
+                {
+                  "url": "http://ask.discourse.com",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "Ask Discourse",
+                  "clicks": 0
+                },
+                {
+                  "url": "https://blog.discourse.org/",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "Blog | Discourse",
+                  "clicks": 0
+                },
+                {
+                  "url": "https://discover.discourse.com/",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "Discourse Discover",
                   "clicks": 0
                 }
               ],
@@ -174,7 +172,7 @@
         "timeline_lookup": [
           [
             1,
-            19
+            21
           ]
         ],
         "suggested_topics": [
@@ -187,10 +185,10 @@
             "reply_count": 0,
             "highest_post_number": 5,
             "image_url": null,
-            "created_at": "2026-11-21T23:56:44.408Z",
-            "last_posted_at": "2026-11-21T23:56:51.452Z",
+            "created_at": "2026-11-23T16:08:31.048Z",
+            "last_posted_at": "2026-11-23T16:08:43.039Z",
             "bumped": true,
-            "bumped_at": "2026-11-21T23:56:51.452Z",
+            "bumped_at": "2026-11-23T16:08:43.039Z",
             "archetype": "regular",
             "unseen": false,
             "last_read_post_number": 4,
@@ -276,10 +274,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-11-21T23:56:45.383Z",
-            "last_posted_at": "2026-11-21T23:56:45.425Z",
+            "created_at": "2026-11-23T16:08:34.219Z",
+            "last_posted_at": "2026-11-23T16:08:34.354Z",
             "bumped": true,
-            "bumped_at": "2026-11-21T23:56:45.425Z",
+            "bumped_at": "2026-11-23T16:08:34.354Z",
             "archetype": "regular",
             "unseen": true,
             "pinned": false,
@@ -513,33 +511,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1Eml3tMFXf9f9TisglBhGy0tCp4=",
-            "created_at": "2026-11-22T09:50:30.530409",
-            "rotated_at": "2026-11-22T09:50:30.529311",
-            "updated_at": "2026-11-22T09:50:30.530409",
+            "auth_token": "rZ94UzenAefPX+kwQu11OnnKMdo=",
+            "created_at": "2026-11-23T17:59:21.951704",
+            "rotated_at": "2026-11-23T17:59:21.950521",
+            "updated_at": "2026-11-23T17:59:21.951704",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "1Eml3tMFXf9f9TisglBhGy0tCp4=",
+            "prev_auth_token": "rZ94UzenAefPX+kwQu11OnnKMdo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:50:30.994704",
+            "id": 1,
+            "seen_at": "2026-11-23T17:59:22.448629",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1Eml3tMFXf9f9TisglBhGy0tCp4=",
-            "created_at": "2026-11-22T09:50:30.530409",
-            "rotated_at": "2026-11-22T09:50:30.529311",
-            "updated_at": "2026-11-22T09:50:30.530409",
+            "auth_token": "rZ94UzenAefPX+kwQu11OnnKMdo=",
+            "created_at": "2026-11-23T17:59:21.951704",
+            "rotated_at": "2026-11-23T17:59:21.950521",
+            "updated_at": "2026-11-23T17:59:21.951704",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "1Eml3tMFXf9f9TisglBhGy0tCp4=",
+            "prev_auth_token": "rZ94UzenAefPX+kwQu11OnnKMdo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -555,7 +553,7 @@
   ],
   "recorded_from": {
     "case": "9a1270b480264945f13bf739af21921f100b33c18f71c990c5faccd48e232233",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

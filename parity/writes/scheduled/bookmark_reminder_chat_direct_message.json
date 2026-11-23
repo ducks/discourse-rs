@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_chat_direct_message",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:27:28.605941",
-  "transaction_started_at": "2026-11-22T09:27:27.978722",
+  "started_at": "2026-11-23T17:34:07.612127",
+  "transaction_started_at": "2026-11-23T17:34:06.783298",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -18,9 +18,9 @@
             "user_id": 3,
             "created_at": "2026-10-02T11:02:00",
             "updated_at": "2026-10-02T11:02:00",
-            "reminder_at": "2026-11-22T09:22:27.978722",
+            "reminder_at": "2026-11-23T17:29:06.783298",
             "bookmarkable_id": 3,
-            "reminder_set_at": "2026-11-21T09:27:27.978722",
+            "reminder_set_at": "2026-11-22T17:34:06.783298",
             "bookmarkable_type": "ChatMessage",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 3
@@ -31,12 +31,12 @@
             "pinned": null,
             "user_id": 3,
             "created_at": "2026-10-02T11:02:00",
-            "updated_at": "2026-11-22T09:27:28.626491",
+            "updated_at": "2026-11-23T17:34:07.633168",
             "reminder_at": null,
             "bookmarkable_id": 3,
             "reminder_set_at": null,
             "bookmarkable_type": "ChatMessage",
-            "reminder_last_sent_at": "2026-11-22T09:27:28.625468",
+            "reminder_last_sent_at": "2026-11-23T17:34:07.632305",
             "auto_delete_preference": 3
           }
         }
@@ -45,13 +45,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 34,
+          "id": 31,
           "data": "{\"title\":\"message with user0\",\"bookmarkable_url\":\"/chat/c/-/3/3\",\"display_username\":\"user1\",\"bookmark_name\":null,\"bookmark_id\":12,\"bookmarkable_type\":\"ChatMessage\",\"bookmarkable_id\":3}",
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-22T09:27:28.624298",
-          "updated_at": "2026-11-22T09:27:28.624298",
+          "created_at": "2026-11-23T17:34:07.631383",
+          "updated_at": "2026-11-23T17:34:07.631383",
           "post_number": null,
           "high_priority": true,
           "post_action_id": null,
@@ -64,7 +64,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 34
+    "notifications": 31
   },
   "setup": [
     "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
@@ -88,7 +88,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "2ae40446ba09ea5d724c3df0ee7fd83f84e825e172f5abf9275493013fe8ec5e",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

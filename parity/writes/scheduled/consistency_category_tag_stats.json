@@ -2,8 +2,8 @@
   "name": "consistency_category_tag_stats",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:28:02.152676",
-  "transaction_started_at": "2026-11-22T09:28:01.551997",
+  "started_at": "2026-11-23T17:34:43.758885",
+  "transaction_started_at": "2026-11-23T17:34:43.062425",
   "responses": [],
   "changes": {
     "category_tag_stats": {
@@ -62,7 +62,7 @@
             "group_id": 10,
             "created_at": "2026-11-03T05:07:59.74266",
             "updated_at": "2026-11-03T05:07:59.74266",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         },
@@ -84,7 +84,7 @@
             "group_id": 1,
             "created_at": "2026-11-03T05:07:59.833677",
             "updated_at": "2026-11-03T05:07:59.833677",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 2
           }
         },
@@ -106,7 +106,7 @@
             "group_id": 3,
             "created_at": "2026-11-03T05:07:59.833677",
             "updated_at": "2026-11-03T05:07:59.833677",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 2
           }
         },
@@ -128,7 +128,7 @@
             "group_id": 11,
             "created_at": "2026-11-03T05:07:59.960501",
             "updated_at": "2026-11-03T05:07:59.960501",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         },
@@ -150,7 +150,7 @@
             "group_id": 12,
             "created_at": "2026-11-03T05:07:59.974341",
             "updated_at": "2026-11-03T05:07:59.974341",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         },
@@ -172,7 +172,7 @@
             "group_id": 13,
             "created_at": "2026-11-03T05:07:59.98744",
             "updated_at": "2026-11-03T05:07:59.98744",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         },
@@ -194,7 +194,7 @@
             "group_id": 14,
             "created_at": "2026-11-03T05:08:00.00371",
             "updated_at": "2026-11-03T05:08:00.00371",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         },
@@ -216,7 +216,7 @@
             "group_id": 10,
             "created_at": "2026-11-03T05:08:00.247582",
             "updated_at": "2026-11-03T05:08:00.247582",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         },
@@ -238,7 +238,7 @@
             "group_id": 11,
             "created_at": "2026-11-03T05:08:00.346634",
             "updated_at": "2026-11-03T05:08:00.346634",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         },
@@ -260,7 +260,7 @@
             "group_id": 10,
             "created_at": "2026-11-03T05:08:00.537378",
             "updated_at": "2026-11-03T05:08:00.537378",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         },
@@ -282,7 +282,7 @@
             "group_id": 11,
             "created_at": "2026-11-03T05:08:00.594226",
             "updated_at": "2026-11-03T05:08:00.594226",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         },
@@ -304,7 +304,7 @@
             "group_id": 12,
             "created_at": "2026-11-03T05:08:00.607537",
             "updated_at": "2026-11-03T05:08:00.607537",
-            "first_unread_pm_at": "2026-11-22T09:18:02.248784",
+            "first_unread_pm_at": "2026-11-23T17:24:43.973901",
             "notification_level": 3
           }
         }
@@ -392,7 +392,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:44.759506",
+            "first_post_created_at": "2026-11-23T16:08:32.082365",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -418,7 +418,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 2,
-            "first_post_created_at": "2026-11-21T23:56:44.759506",
+            "first_post_created_at": "2026-11-23T16:08:32.082365",
             "reset_bounce_score_after": null
           }
         },
@@ -433,7 +433,7 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -446,7 +446,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:44.45838",
+            "first_post_created_at": "2026-11-23T16:08:31.163852",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -459,20 +459,20 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
             "topics_entered": 0,
-            "first_unread_at": "2026-11-22T09:18:02.243178",
+            "first_unread_at": "2026-11-23T17:24:43.968062",
             "flags_disagreed": 0,
             "post_edits_count": null,
             "posts_read_count": 3,
-            "first_unread_pm_at": "2026-11-22T09:18:02.247236",
+            "first_unread_pm_at": "2026-11-23T17:24:43.972143",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-21T23:56:44.45838",
+            "first_post_created_at": "2026-11-23T16:08:31.163852",
             "reset_bounce_score_after": null
           }
         },
@@ -487,7 +487,7 @@
             "likes_given": 1,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -500,7 +500,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:44.654494",
+            "first_post_created_at": "2026-11-23T16:08:31.648314",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -513,20 +513,20 @@
             "likes_given": 1,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
             "topics_entered": 0,
-            "first_unread_at": "2026-11-21T23:56:51.518343",
+            "first_unread_at": "2026-11-23T16:08:43.102964",
             "flags_disagreed": 0,
             "post_edits_count": null,
             "posts_read_count": 2,
-            "first_unread_pm_at": "2026-11-21T23:56:50.92648",
+            "first_unread_pm_at": "2026-11-23T16:08:42.484573",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-21T23:56:44.654494",
+            "first_post_created_at": "2026-11-23T16:08:31.648314",
             "reset_bounce_score_after": null
           }
         },
@@ -541,7 +541,7 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
@@ -554,7 +554,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:45.037179",
+            "first_post_created_at": "2026-11-23T16:08:32.395967",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -567,20 +567,20 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
             "topics_entered": 0,
-            "first_unread_at": "2026-11-21T23:56:51.518343",
+            "first_unread_at": "2026-11-23T16:08:43.102964",
             "flags_disagreed": 0,
             "post_edits_count": null,
             "posts_read_count": 6,
-            "first_unread_pm_at": "2026-11-22T09:18:02.247236",
+            "first_unread_pm_at": "2026-11-23T17:24:43.972143",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-21T23:56:45.037179",
+            "first_post_created_at": "2026-11-23T16:08:32.395967",
             "reset_bounce_score_after": null
           }
         }
@@ -605,7 +605,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "05138f7b2ea10951a04ce8b17b7d7f9dc4fa4e2b77600944abd40cc89b9c1290",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -12,22 +12,22 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:58:12.412494",
-  "transaction_started_at": "2026-11-22T08:58:11.402107",
+  "started_at": "2026-11-23T17:03:03.086067",
+  "transaction_started_at": "2026-11-23T17:03:02.107593",
   "responses": [
     {
       "status": 200,
       "body": {
         "id": 1,
-        "invite_key": "aUCX7wXZWV",
-        "link": "http://localhost:3042/invites/aUCX7wXZWV",
+        "invite_key": "CcrpFvshVW",
+        "link": "http://localhost:3042/invites/CcrpFvshVW",
         "description": null,
         "domain": null,
         "can_delete_invite": true,
         "max_redemptions_allowed": 50,
         "redemption_count": 0,
-        "created_at": "2026-11-22T08:58:12.428Z",
-        "updated_at": "2026-11-22T08:58:12.428Z",
+        "created_at": "2026-11-23T17:03:03.104Z",
+        "updated_at": "2026-11-23T17:03:03.104Z",
         "expires_at": "2026-12-31T00:00:00.000Z",
         "expired": false,
         "grants_admin": false,
@@ -76,8 +76,8 @@
           "id": 1,
           "group_id": 9001,
           "invite_id": 1,
-          "created_at": "2026-11-22T08:58:12.432849",
-          "updated_at": "2026-11-22T08:58:12.432849"
+          "created_at": "2026-11-23T17:03:03.110615",
+          "updated_at": "2026-11-23T17:03:03.110615"
         }
       ],
       "deleted": [],
@@ -91,11 +91,11 @@
           "email": null,
           "domain": null,
           "moderator": false,
-          "created_at": "2026-11-22T08:58:12.428375",
+          "created_at": "2026-11-23T17:03:03.104111",
           "deleted_at": null,
           "expires_at": "2026-12-31T00:00:00",
-          "invite_key": "aUCX7wXZWV",
-          "updated_at": "2026-11-22T08:58:12.428375",
+          "invite_key": "CcrpFvshVW",
+          "updated_at": "2026-11-23T17:03:03.104111",
           "description": null,
           "email_token": null,
           "deleted_by_id": null,
@@ -116,33 +116,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "cMkBCHr7E+7qK3r9V35gR9Mq5vA=",
-            "created_at": "2026-11-22T08:58:11.898424",
-            "rotated_at": "2026-11-22T08:58:11.896121",
-            "updated_at": "2026-11-22T08:58:11.898424",
+            "auth_token": "+waPAynbJ+HgjBWW7pQeo4cHrF8=",
+            "created_at": "2026-11-23T17:03:02.426062",
+            "rotated_at": "2026-11-23T17:03:02.425198",
+            "updated_at": "2026-11-23T17:03:02.426062",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "cMkBCHr7E+7qK3r9V35gR9Mq5vA=",
+            "prev_auth_token": "+waPAynbJ+HgjBWW7pQeo4cHrF8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:58:12.418705",
+            "id": 1,
+            "seen_at": "2026-11-23T17:03:03.093349",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "cMkBCHr7E+7qK3r9V35gR9Mq5vA=",
-            "created_at": "2026-11-22T08:58:11.898424",
-            "rotated_at": "2026-11-22T08:58:11.896121",
-            "updated_at": "2026-11-22T08:58:11.898424",
+            "auth_token": "+waPAynbJ+HgjBWW7pQeo4cHrF8=",
+            "created_at": "2026-11-23T17:03:02.426062",
+            "rotated_at": "2026-11-23T17:03:02.425198",
+            "updated_at": "2026-11-23T17:03:02.426062",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "cMkBCHr7E+7qK3r9V35gR9Mq5vA=",
+            "prev_auth_token": "+waPAynbJ+HgjBWW7pQeo4cHrF8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -161,7 +161,7 @@
   ],
   "recorded_from": {
     "case": "17c8d7227d4ce11d86941f91ad750520663773a9be60264c4b89a6cc1dfff011",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

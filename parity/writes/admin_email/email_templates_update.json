@@ -31,8 +31,8 @@
       "path": "/admin/email/templates/user_notifications.signup"
     }
   ],
-  "started_at": "2026-11-22T08:19:12.642751",
-  "transaction_started_at": "2026-11-22T08:19:11.855379",
+  "started_at": "2026-11-23T16:20:32.968186",
+  "transaction_started_at": "2026-11-23T16:20:31.890052",
   "responses": [
     {
       "status": 200,
@@ -2020,33 +2020,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "kP3So8shS2ixLJZvThnWr1Vbbpw=",
-            "created_at": "2026-11-22T08:19:12.154665",
-            "rotated_at": "2026-11-22T08:19:12.153704",
-            "updated_at": "2026-11-22T08:19:12.154665",
+            "auth_token": "K//0giK7MyLgwxb8h3qhkQSSqpc=",
+            "created_at": "2026-11-23T16:20:32.215735",
+            "rotated_at": "2026-11-23T16:20:32.214752",
+            "updated_at": "2026-11-23T16:20:32.215735",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "kP3So8shS2ixLJZvThnWr1Vbbpw=",
+            "prev_auth_token": "K//0giK7MyLgwxb8h3qhkQSSqpc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:19:12.649323",
+            "id": 1,
+            "seen_at": "2026-11-23T16:20:32.975968",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "kP3So8shS2ixLJZvThnWr1Vbbpw=",
-            "created_at": "2026-11-22T08:19:12.154665",
-            "rotated_at": "2026-11-22T08:19:12.153704",
-            "updated_at": "2026-11-22T08:19:12.154665",
+            "auth_token": "K//0giK7MyLgwxb8h3qhkQSSqpc=",
+            "created_at": "2026-11-23T16:20:32.215735",
+            "rotated_at": "2026-11-23T16:20:32.214752",
+            "updated_at": "2026-11-23T16:20:32.215735",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "kP3So8shS2ixLJZvThnWr1Vbbpw=",
+            "prev_auth_token": "K//0giK7MyLgwxb8h3qhkQSSqpc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -2057,7 +2057,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 29,
           "context": null,
@@ -2067,10 +2067,10 @@
           "topic_id": null,
           "new_value": "Confirm your %{email_prefix} account",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:12.808135",
+          "created_at": "2026-11-23T16:20:33.193468",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:12.808135",
+          "updated_at": "2026-11-23T16:20:33.193468",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2079,7 +2079,7 @@
           "target_user_id": null
         },
         {
-          "id": 73,
+          "id": 67,
           "email": null,
           "action": 29,
           "context": null,
@@ -2089,10 +2089,10 @@
           "topic_id": null,
           "new_value": "Hello!\n\nConfirm here: %{base_url}/u/activate-account/%{email_token}",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:12.811799",
+          "created_at": "2026-11-23T16:20:33.196849",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:12.811799",
+          "updated_at": "2026-11-23T16:20:33.196849",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2101,7 +2101,7 @@
           "target_user_id": null
         },
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 29,
           "context": null,
@@ -2111,10 +2111,10 @@
           "topic_id": null,
           "new_value": "Again %{email_prefix}",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:13.022509",
+          "created_at": "2026-11-23T16:20:33.415291",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:13.022509",
+          "updated_at": "2026-11-23T16:20:33.415291",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2123,7 +2123,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 29,
           "context": null,
@@ -2133,10 +2133,10 @@
           "topic_id": null,
           "new_value": "Again: %{base_url}/u/activate-account/%{email_token}",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:13.026487",
+          "created_at": "2026-11-23T16:20:33.419166",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:13.026487",
+          "updated_at": "2026-11-23T16:20:33.419166",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2145,7 +2145,7 @@
           "target_user_id": null
         },
         {
-          "id": 76,
+          "id": 70,
           "email": null,
           "action": 29,
           "context": null,
@@ -2155,10 +2155,10 @@
           "topic_id": null,
           "new_value": "[%{email_prefix}] Confirm your new account",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:13.155512",
+          "created_at": "2026-11-23T16:20:33.517313",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:13.155512",
+          "updated_at": "2026-11-23T16:20:33.517313",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2167,7 +2167,7 @@
           "target_user_id": null
         },
         {
-          "id": 77,
+          "id": 71,
           "email": null,
           "action": 29,
           "context": null,
@@ -2177,10 +2177,10 @@
           "topic_id": null,
           "new_value": "Welcome to %{site_name}!\n\nClick the following link to confirm and activate your new account:\n%{base_url}/u/activate-account/%{email_token}\n\nIf the above link is not clickable, try copying and pasting it into the address bar of your web browser.\n",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:13.167272",
+          "created_at": "2026-11-23T16:20:33.521806",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:13.167272",
+          "updated_at": "2026-11-23T16:20:33.521806",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2195,11 +2195,11 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 72
+    "user_histories": 66
   },
   "recorded_from": {
     "case": "96bbd9ef71b90ac19696deed0679373ce30c512191e16d2b3cd9b3349cd1e691",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

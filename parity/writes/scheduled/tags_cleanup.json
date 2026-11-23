@@ -2,8 +2,8 @@
   "name": "tags_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:30:05.290841",
-  "transaction_started_at": "2026-11-22T09:30:04.641162",
+  "started_at": "2026-11-23T17:36:57.942683",
+  "transaction_started_at": "2026-11-23T17:36:57.258977",
   "responses": [],
   "changes": {
     "tag_users": {
@@ -13,8 +13,8 @@
           "id": 1,
           "tag_id": 9501,
           "user_id": 3,
-          "created_at": "2026-11-22T09:30:04.641162",
-          "updated_at": "2026-11-22T09:30:04.641162",
+          "created_at": "2026-11-23T17:36:57.258977",
+          "updated_at": "2026-11-23T17:36:57.258977",
           "notification_level": 3
         }
       ],
@@ -28,8 +28,8 @@
           "name": "stale",
           "slug": "",
           "locale": null,
-          "created_at": "2026-11-21T09:30:04.641162",
-          "updated_at": "2026-11-21T09:30:04.641162",
+          "created_at": "2026-11-22T17:36:57.258977",
+          "updated_at": "2026-11-22T17:36:57.258977",
           "description": null,
           "target_tag_id": null,
           "pm_topic_count": 0,
@@ -43,8 +43,8 @@
           "name": "abandoned",
           "slug": "",
           "locale": null,
-          "created_at": "2026-11-21T09:30:04.641162",
-          "updated_at": "2026-11-21T09:30:04.641162",
+          "created_at": "2026-11-22T17:36:57.258977",
+          "updated_at": "2026-11-22T17:36:57.258977",
           "description": null,
           "target_tag_id": null,
           "pm_topic_count": 0,
@@ -63,8 +63,8 @@
           "id": 5,
           "tag_id": 9504,
           "topic_id": 40,
-          "created_at": "2026-11-22T09:30:04.641162",
-          "updated_at": "2026-11-22T09:30:04.641162"
+          "created_at": "2026-11-23T17:36:57.258977",
+          "updated_at": "2026-11-23T17:36:57.258977"
         }
       ],
       "updated": []
@@ -72,7 +72,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 23,
           "context": null,
@@ -82,10 +82,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T09:30:05.293021",
+          "created_at": "2026-11-23T17:36:57.945144",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:30:05.293021",
+          "updated_at": "2026-11-23T17:36:57.945144",
           "category_id": null,
           "custom_type": "deleted_unused_tags",
           "reviewable_id": null,
@@ -100,7 +100,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 72
+    "user_histories": 66
   },
   "settings": {
     "automatically_clean_unused_tags": true
@@ -121,7 +121,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "56819b892a23a808dd8cb83bd7974a406786669c7da3ca472e72f96e5e8ea0a0",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

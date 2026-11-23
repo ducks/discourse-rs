@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:30:48.709561",
-  "transaction_started_at": "2026-11-22T08:30:47.899262",
+  "started_at": "2026-11-23T16:33:01.700222",
+  "transaction_started_at": "2026-11-23T16:33:00.8825",
   "responses": [
     {
       "status": 200,
@@ -32,11 +32,11 @@
             "name": "Parity fixture: with a reminder",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-11-21T23:56:54.662129",
-            "updated_at": "2026-11-21T23:56:54.662129",
+            "created_at": "2026-11-23T16:08:46.245806",
+            "updated_at": "2026-11-23T16:08:46.245806",
             "reminder_at": "2031-01-15T09:30:00",
             "bookmarkable_id": 36,
-            "reminder_set_at": "2026-11-21T23:56:54.658775",
+            "reminder_set_at": "2026-11-23T16:08:46.243126",
             "bookmarkable_type": "Post",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 3
@@ -46,11 +46,11 @@
             "name": "Renamed bookmark",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-11-21T23:56:54.662129",
-            "updated_at": "2026-11-22T08:30:48.724502",
+            "created_at": "2026-11-23T16:08:46.245806",
+            "updated_at": "2026-11-23T16:33:01.71669",
             "reminder_at": "2031-06-01T09:00:00",
             "bookmarkable_id": 36,
-            "reminder_set_at": "2026-11-22T08:30:48.721814",
+            "reminder_set_at": "2026-11-23T16:33:01.713641",
             "bookmarkable_type": "Post",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 3
@@ -64,33 +64,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "8Ao00SRr7cCzypxdJAsWDJAfS44=",
-            "created_at": "2026-11-22T08:30:48.238373",
-            "rotated_at": "2026-11-22T08:30:48.23745",
-            "updated_at": "2026-11-22T08:30:48.238373",
+            "auth_token": "eRSejoTbP1FBzT9p9diwmfiH9fY=",
+            "created_at": "2026-11-23T16:33:01.223703",
+            "rotated_at": "2026-11-23T16:33:01.222824",
+            "updated_at": "2026-11-23T16:33:01.223703",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "8Ao00SRr7cCzypxdJAsWDJAfS44=",
+            "prev_auth_token": "eRSejoTbP1FBzT9p9diwmfiH9fY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:30:48.715659",
+            "id": 1,
+            "seen_at": "2026-11-23T16:33:01.707146",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "8Ao00SRr7cCzypxdJAsWDJAfS44=",
-            "created_at": "2026-11-22T08:30:48.238373",
-            "rotated_at": "2026-11-22T08:30:48.23745",
-            "updated_at": "2026-11-22T08:30:48.238373",
+            "auth_token": "eRSejoTbP1FBzT9p9diwmfiH9fY=",
+            "created_at": "2026-11-23T16:33:01.223703",
+            "rotated_at": "2026-11-23T16:33:01.222824",
+            "updated_at": "2026-11-23T16:33:01.223703",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "8Ao00SRr7cCzypxdJAsWDJAfS44=",
+            "prev_auth_token": "eRSejoTbP1FBzT9p9diwmfiH9fY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -103,7 +103,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "35758360bebb5514ffb4d9e32cb74b1a7414fe3b5a936b9748ad023d43d7f9f6",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

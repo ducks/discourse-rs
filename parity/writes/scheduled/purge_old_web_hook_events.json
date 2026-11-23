@@ -2,8 +2,8 @@
   "name": "purge_old_web_hook_events",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:29:34.173888",
-  "transaction_started_at": "2026-11-22T09:29:33.532172",
+  "started_at": "2026-11-23T17:36:23.06227",
+  "transaction_started_at": "2026-11-23T17:36:22.388532",
   "responses": [],
   "changes": {
     "web_hook_events": {
@@ -15,8 +15,8 @@
           "headers": "{}",
           "payload": "{}",
           "duration": 1,
-          "created_at": "2026-11-11T09:29:33.532172",
-          "updated_at": "2026-11-11T09:29:33.532172",
+          "created_at": "2026-11-12T17:36:22.388532",
+          "updated_at": "2026-11-12T17:36:22.388532",
           "web_hook_id": 9001,
           "response_body": null,
           "response_headers": null
@@ -30,8 +30,8 @@
         {
           "id": 9001,
           "date": "2026-08-01",
-          "created_at": "2026-10-12T09:29:33.532172",
-          "updated_at": "2026-10-12T09:29:33.532172",
+          "created_at": "2026-10-13T17:36:22.388532",
+          "updated_at": "2026-10-13T17:36:22.388532",
           "web_hook_id": 9001,
           "mean_duration": 5,
           "failed_event_count": 0,
@@ -67,7 +67,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "8d1bd8aa14bce4069da5346f197c22a945cf39b2b318207f565b3357c478a13d",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

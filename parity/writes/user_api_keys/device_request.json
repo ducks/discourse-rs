@@ -14,16 +14,16 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:59:56.634756",
-  "transaction_started_at": "2026-11-22T09:59:56.00948",
+  "started_at": "2026-11-23T18:09:09.417858",
+  "transaction_started_at": "2026-11-23T18:09:08.617917",
   "responses": [
     {
       "status": 200,
       "body": {
-        "device_code": "5a4dc85feb60f3e059c4b0fe2d7b75379bf096a24a083cf6273f2917d370ba71",
-        "user_code": "J28G-BLLZ",
+        "device_code": "2722760aef6dbf5c8f04a793275800e958e8bee2b82254ab7c62325351e97a3d",
+        "user_code": "GAYR-NRFL",
         "verification_uri": "http://localhost:3042/user-api-key/activate",
-        "verification_uri_with_request": "http://localhost:3042/user-api-key/activate?request=gDpdDnuD",
+        "verification_uri_with_request": "http://localhost:3042/user-api-key/activate?request=42YtFbX-",
         "expires_in": 600,
         "interval": 5
       }
@@ -34,7 +34,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "4dc5b74b14fc0283315e346fedd2f23f00099bc8e0ae596cde9e33da66c57fc3",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

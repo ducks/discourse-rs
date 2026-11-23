@@ -7,8 +7,8 @@
       "path": "/u/user1/user-menu-private-messages.json"
     }
   ],
-  "started_at": "2026-11-22T09:03:53.083725",
-  "transaction_started_at": "2026-11-22T09:03:52.093134",
+  "started_at": "2026-11-23T17:09:02.78728",
+  "transaction_started_at": "2026-11-23T17:09:01.876196",
   "responses": [
     {
       "status": 200,
@@ -16,12 +16,12 @@
         "unread_notifications": [
           {
             "fancy_title": "Parity fixture: PM user2 to user1, archived",
-            "id": 16,
+            "id": 13,
             "user_id": 3,
             "notification_type": 6,
             "read": false,
             "high_priority": true,
-            "created_at": "2026-11-21T23:56:51.409Z",
+            "created_at": "2026-11-23T16:08:42.998Z",
             "post_number": 1,
             "topic_id": 44,
             "slug": "parity-fixture-pm-user2-to-user1-archived",
@@ -40,12 +40,12 @@
           },
           {
             "fancy_title": "Parity fixture: PM admin to user1 and user2",
-            "id": 13,
+            "id": 11,
             "user_id": 3,
             "notification_type": 6,
             "read": false,
             "high_priority": true,
-            "created_at": "2026-11-21T23:56:51.115Z",
+            "created_at": "2026-11-23T16:08:42.699Z",
             "post_number": 1,
             "topic_id": 43,
             "slug": "parity-fixture-pm-admin-to-user1-and-user2",
@@ -64,12 +64,12 @@
           },
           {
             "fancy_title": "Parity fixture: PM user1 to user0",
-            "id": 12,
+            "id": 10,
             "user_id": 3,
             "notification_type": 6,
             "read": false,
             "high_priority": true,
-            "created_at": "2026-11-21T23:56:50.987Z",
+            "created_at": "2026-11-23T16:08:42.560Z",
             "post_number": 2,
             "topic_id": 42,
             "slug": "parity-fixture-pm-user1-to-user0",
@@ -99,33 +99,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "S6uO4BkP2rJ2c0ajaDdFKnEJBLE=",
-            "created_at": "2026-11-22T09:03:52.42707",
-            "rotated_at": "2026-11-22T09:03:52.426241",
-            "updated_at": "2026-11-22T09:03:52.42707",
+            "auth_token": "E3XMRqVG+AnlrhTmbPpmWOJv65A=",
+            "created_at": "2026-11-23T17:09:02.258047",
+            "rotated_at": "2026-11-23T17:09:02.25701",
+            "updated_at": "2026-11-23T17:09:02.258047",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "S6uO4BkP2rJ2c0ajaDdFKnEJBLE=",
+            "prev_auth_token": "E3XMRqVG+AnlrhTmbPpmWOJv65A=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:03:53.09117",
+            "id": 1,
+            "seen_at": "2026-11-23T17:09:02.795135",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "S6uO4BkP2rJ2c0ajaDdFKnEJBLE=",
-            "created_at": "2026-11-22T09:03:52.42707",
-            "rotated_at": "2026-11-22T09:03:52.426241",
-            "updated_at": "2026-11-22T09:03:52.42707",
+            "auth_token": "E3XMRqVG+AnlrhTmbPpmWOJv65A=",
+            "created_at": "2026-11-23T17:09:02.258047",
+            "rotated_at": "2026-11-23T17:09:02.25701",
+            "updated_at": "2026-11-23T17:09:02.258047",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "S6uO4BkP2rJ2c0ajaDdFKnEJBLE=",
+            "prev_auth_token": "E3XMRqVG+AnlrhTmbPpmWOJv65A=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -144,7 +144,7 @@
   ],
   "recorded_from": {
     "case": "d81db8a4503c1518df8bc15d00e1a111fb67a454d3912d7c67bf19ba4f05c109",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

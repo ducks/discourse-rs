@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_topic",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:27:39.054492",
-  "transaction_started_at": "2026-11-22T09:27:38.421983",
+  "started_at": "2026-11-23T17:34:19.065277",
+  "transaction_started_at": "2026-11-23T17:34:18.363364",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -16,11 +16,11 @@
             "name": "Parity fixture: admin's PM bookmark",
             "pinned": null,
             "user_id": 1,
-            "created_at": "2026-11-21T23:56:54.747085",
-            "updated_at": "2026-11-21T23:56:54.747085",
-            "reminder_at": "2026-11-22T09:22:38.421983",
+            "created_at": "2026-11-23T16:08:46.355664",
+            "updated_at": "2026-11-23T16:08:46.355664",
+            "reminder_at": "2026-11-23T17:29:18.363364",
             "bookmarkable_id": 43,
-            "reminder_set_at": "2026-11-21T09:27:38.421983",
+            "reminder_set_at": "2026-11-22T17:34:18.363364",
             "bookmarkable_type": "Topic",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 0
@@ -30,13 +30,13 @@
             "name": "Parity fixture: admin's PM bookmark",
             "pinned": null,
             "user_id": 1,
-            "created_at": "2026-11-21T23:56:54.747085",
-            "updated_at": "2026-11-22T09:27:39.062085",
-            "reminder_at": "2026-11-22T09:22:38.421983",
+            "created_at": "2026-11-23T16:08:46.355664",
+            "updated_at": "2026-11-23T17:34:19.073829",
+            "reminder_at": "2026-11-23T17:29:18.363364",
             "bookmarkable_id": 43,
             "reminder_set_at": null,
             "bookmarkable_type": "Topic",
-            "reminder_last_sent_at": "2026-11-22T09:27:39.060762",
+            "reminder_last_sent_at": "2026-11-23T17:34:19.072997",
             "auto_delete_preference": 0
           }
         }
@@ -45,13 +45,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 34,
+          "id": 31,
           "data": "{\"title\":\"Parity fixture: PM admin to user1 and user2\",\"bookmarkable_url\":\"/t/parity-fixture-pm-admin-to-user1-and-user2/43/1\",\"display_username\":\"admin\",\"bookmark_name\":\"Parity fixture: admin's PM bookmark\",\"bookmark_id\":7,\"bookmarkable_type\":\"Topic\",\"bookmarkable_id\":43}",
           "read": false,
           "user_id": 1,
           "topic_id": 43,
-          "created_at": "2026-11-22T09:27:39.060027",
-          "updated_at": "2026-11-22T09:27:39.060027",
+          "created_at": "2026-11-23T17:34:19.070592",
+          "updated_at": "2026-11-23T17:34:19.070592",
           "post_number": 1,
           "high_priority": true,
           "post_action_id": null,
@@ -64,7 +64,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 34
+    "notifications": 31
   },
   "setup": [
     "UPDATE bookmarks SET reminder_at = now() - interval '5 minutes', reminder_set_at = now() - interval '1 day', auto_delete_preference = 0 WHERE id = 7"
@@ -78,7 +78,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "c3c0170a00987a8c799b022bf1b1147a2ba7eec10fcb71de697a4869de56d8b6",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

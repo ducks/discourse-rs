@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:13:55.507186",
-  "transaction_started_at": "2026-11-22T08:13:54.666099",
+  "started_at": "2026-11-23T16:15:18.02296",
+  "transaction_started_at": "2026-11-23T16:15:16.860396",
   "responses": [
     {
       "status": 200,
@@ -92,7 +92,7 @@
             "listable": true,
             "created_at": "2026-10-01T10:00:00",
             "show_posts": false,
-            "updated_at": "2026-11-22T08:13:55.530107",
+            "updated_at": "2026-11-23T16:15:18.047455",
             "allow_title": true,
             "auto_revoke": true,
             "description": "Custom description",
@@ -114,8 +114,8 @@
           "id": 38,
           "target_id": 138,
           "upload_id": 35,
-          "created_at": "2026-11-22T08:13:55.531381",
-          "updated_at": "2026-11-22T08:13:55.531392",
+          "created_at": "2026-11-23T16:15:18.049518",
+          "updated_at": "2026-11-23T16:15:18.049531",
           "target_type": "Badge"
         }
       ],
@@ -128,33 +128,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "0ZHMFh9fh4UW2ydn+9tv4uLDrbY=",
-            "created_at": "2026-11-22T08:13:54.997936",
-            "rotated_at": "2026-11-22T08:13:54.997059",
-            "updated_at": "2026-11-22T08:13:54.997936",
+            "auth_token": "bbb5jgi16+U4jWR2B4dEo0XtIkE=",
+            "created_at": "2026-11-23T16:15:17.239019",
+            "rotated_at": "2026-11-23T16:15:17.237119",
+            "updated_at": "2026-11-23T16:15:17.239019",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "0ZHMFh9fh4UW2ydn+9tv4uLDrbY=",
+            "prev_auth_token": "bbb5jgi16+U4jWR2B4dEo0XtIkE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:13:55.515242",
+            "id": 1,
+            "seen_at": "2026-11-23T16:15:18.03056",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "0ZHMFh9fh4UW2ydn+9tv4uLDrbY=",
-            "created_at": "2026-11-22T08:13:54.997936",
-            "rotated_at": "2026-11-22T08:13:54.997059",
-            "updated_at": "2026-11-22T08:13:54.997936",
+            "auth_token": "bbb5jgi16+U4jWR2B4dEo0XtIkE=",
+            "created_at": "2026-11-23T16:15:17.239019",
+            "rotated_at": "2026-11-23T16:15:17.237119",
+            "updated_at": "2026-11-23T16:15:17.239019",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "0ZHMFh9fh4UW2ydn+9tv4uLDrbY=",
+            "prev_auth_token": "bbb5jgi16+U4jWR2B4dEo0XtIkE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -165,7 +165,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 58,
           "context": null,
@@ -175,10 +175,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T08:13:55.537845",
+          "created_at": "2026-11-23T16:15:18.056081",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:13:55.537845",
+          "updated_at": "2026-11-23T16:15:18.056081",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -194,7 +194,7 @@
   "jobs": [],
   "next_ids": {
     "upload_references": 38,
-    "user_histories": 72
+    "user_histories": 66
   },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",
@@ -205,7 +205,7 @@
   ],
   "recorded_from": {
     "case": "badcc4cd1311915ffec4b53a054432c570588e9d2415a6cdcaf1c1cc28285156",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

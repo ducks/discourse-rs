@@ -27,8 +27,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:26:55.789319",
-  "transaction_started_at": "2026-11-22T08:26:55.102782",
+  "started_at": "2026-11-23T16:28:50.150536",
+  "transaction_started_at": "2026-11-23T16:28:49.457465",
   "responses": [
     {
       "status": 200,
@@ -39,7 +39,7 @@
           "username": "user2",
           "name": "User2",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-          "last_posted_at": "2026-11-21T23:56:44.759Z",
+          "last_posted_at": "2026-11-23T16:08:32.082Z",
           "last_seen_at": null,
           "created_at": "2026-11-03T05:08:00.661Z",
           "ignored": false,
@@ -108,32 +108,7 @@
           "can_change_website": true,
           "can_change_tracking_preferences": true,
           "user_api_keys": null,
-          "user_auth_tokens": [
-            {
-              "id": 6,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-22T06:29:07.657Z",
-              "seen_at": "2026-11-22T06:29:07.748Z",
-              "is_active": false
-            },
-            {
-              "id": 2,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-22T02:18:09.285Z",
-              "seen_at": "2026-11-22T02:18:09.383Z",
-              "is_active": false
-            }
-          ],
+          "user_auth_tokens": [],
           "user_notification_schedule": {
             "enabled": false,
             "day_0_start_time": 480,
@@ -371,7 +346,7 @@
             "name": "Admin",
             "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
             "title": null,
-            "last_seen_at": "2026-11-22T04:14:24.970Z"
+            "last_seen_at": "2026-11-23T16:08:49.565Z"
           }
         ],
         "about": {
@@ -445,10 +420,10 @@
             "hidden": false,
             "user_id": null,
             "key_hash": "8bec1b0f5ea428acf61a80c032c3b163b182ed58ebed51564ad410bdca4b09a1",
-            "created_at": "2026-11-17T08:26:55.102782",
+            "created_at": "2026-11-18T16:28:49.457465",
             "revoked_at": null,
             "scope_mode": 2,
-            "updated_at": "2026-11-17T08:26:55.102782",
+            "updated_at": "2026-11-18T16:28:49.457465",
             "allowed_ips": null,
             "description": "scoped",
             "last_used_at": null,
@@ -460,13 +435,13 @@
             "hidden": false,
             "user_id": null,
             "key_hash": "8bec1b0f5ea428acf61a80c032c3b163b182ed58ebed51564ad410bdca4b09a1",
-            "created_at": "2026-11-17T08:26:55.102782",
+            "created_at": "2026-11-18T16:28:49.457465",
             "revoked_at": null,
             "scope_mode": 2,
-            "updated_at": "2026-11-17T08:26:55.102782",
+            "updated_at": "2026-11-18T16:28:49.457465",
             "allowed_ips": null,
             "description": "scoped",
-            "last_used_at": "2026-11-22T08:26:55.921131",
+            "last_used_at": "2026-11-23T16:28:50.303568",
             "created_by_id": 1,
             "truncated_key": "scop"
           }
@@ -478,7 +453,7 @@
         {
           "id": 1,
           "user_id": 1,
-          "viewed_at": "2026-11-22T08:26:55.924289",
+          "viewed_at": "2026-11-23T16:28:50.30698",
           "ip_address": null,
           "user_profile_id": 4
         }
@@ -499,7 +474,7 @@
             "location": null,
             "bio_cooked": null,
             "featured_topic_id": null,
-            "bio_cooked_version": null,
+            "bio_cooked_version": 1,
             "dismissed_banner_key": null,
             "granted_title_badge_id": null,
             "card_background_upload_id": null,
@@ -513,7 +488,7 @@
             "location": null,
             "bio_cooked": null,
             "featured_topic_id": null,
-            "bio_cooked_version": null,
+            "bio_cooked_version": 1,
             "dismissed_banner_key": null,
             "granted_title_badge_id": null,
             "card_background_upload_id": null,
@@ -533,7 +508,7 @@
   ],
   "recorded_from": {
     "case": "f9d5780df6c51fedb1501dd87bac347c25fe2f78280c89e5d79c9e4926e5b151",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

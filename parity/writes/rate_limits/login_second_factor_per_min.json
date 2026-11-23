@@ -73,8 +73,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:18:35.589625",
-  "transaction_started_at": "2026-11-22T09:18:34.798283",
+  "started_at": "2026-11-23T17:24:37.945443",
+  "transaction_started_at": "2026-11-23T17:24:37.084308",
   "responses": [
     {
       "status": 200,
@@ -116,16 +116,16 @@
       "status": 429,
       "body": {
         "errors": [
-          "You’ve performed this action too many times. Please wait 1 minute before trying again."
+          "You’ve performed this action too many times. Please wait 59 seconds before trying again."
         ],
         "error_type": "rate_limit",
         "extras": {
-          "wait_seconds": 60,
-          "time_left": "1 minute"
+          "wait_seconds": 59,
+          "time_left": "59 seconds"
         }
       },
       "headers": {
-        "Retry-After": "60"
+        "Retry-After": "59"
       }
     }
   ],
@@ -138,7 +138,7 @@
   "rate_limits": true,
   "recorded_from": {
     "case": "126425fdaba1a77698dc2044ca5c9bc3d9d6adf5ce8bdc8cb8e5ac944fac453b",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

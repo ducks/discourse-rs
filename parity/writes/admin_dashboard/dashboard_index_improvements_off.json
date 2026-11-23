@@ -11,8 +11,8 @@
       "path": "/admin/dashboard/site-traffic-explorer.json"
     }
   ],
-  "started_at": "2026-11-22T08:17:28.985159",
-  "transaction_started_at": "2026-11-22T08:17:28.064051",
+  "started_at": "2026-11-23T16:18:50.736221",
+  "transaction_started_at": "2026-11-23T16:18:49.821607",
   "responses": [
     {
       "status": 200,
@@ -29,8 +29,8 @@
                   "percent_change": null,
                   "report_type": "signups",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 {
@@ -40,8 +40,8 @@
                   "percent_change": null,
                   "report_type": "dau_by_mau",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 {
@@ -51,8 +51,8 @@
                   "percent_change": null,
                   "report_type": "new_contributors",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 }
               ]
@@ -111,10 +111,6 @@
                   "color": "#4B3CE0",
                   "data": [
                     {
-                      "x": "2026-10-24",
-                      "y": 0
-                    },
-                    {
                       "x": "2026-10-25",
                       "y": 0
                     },
@@ -228,6 +224,10 @@
                     },
                     {
                       "x": "2026-11-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-23",
                       "y": 0
                     }
                   ]
@@ -238,10 +238,6 @@
                   "color": "#9C8DEC",
                   "data": [
                     {
-                      "x": "2026-10-24",
-                      "y": 0
-                    },
-                    {
                       "x": "2026-10-25",
                       "y": 0
                     },
@@ -355,6 +351,10 @@
                     },
                     {
                       "x": "2026-11-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-23",
                       "y": 0
                     }
                   ]
@@ -365,10 +365,6 @@
                   "color": "#D5CDF7",
                   "data": [
                     {
-                      "x": "2026-10-24",
-                      "y": 0
-                    },
-                    {
                       "x": "2026-10-25",
                       "y": 0
                     },
@@ -482,6 +478,10 @@
                     },
                     {
                       "x": "2026-11-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-23",
                       "y": 0
                     }
                   ]
@@ -512,8 +512,8 @@
                   "percent_change": null,
                   "report_type": "dau_by_mau",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 {
@@ -523,8 +523,8 @@
                   "percent_change": null,
                   "report_type": "daily_engaged_users",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 {
@@ -534,8 +534,8 @@
                   "percent_change": null,
                   "report_type": "signups",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 }
               ],
@@ -637,61 +637,8 @@
                 ]
               },
               "activity_by_category": {
-                "rows": [
-                  {
-                    "category_id": 4,
-                    "name": "General",
-                    "color": "25AAE2",
-                    "slug": "general",
-                    "topics": 5,
-                    "posts": 9,
-                    "page_views": 0,
-                    "share": 48.28,
-                    "share_change": 48.28,
-                    "share_formatted": "48.28%",
-                    "share_change_formatted": "+48.28%"
-                  },
-                  {
-                    "category_id": 3,
-                    "name": "Staff",
-                    "color": "E45735",
-                    "slug": "staff",
-                    "topics": 3,
-                    "posts": 4,
-                    "page_views": 0,
-                    "share": 24.14,
-                    "share_change": 24.14,
-                    "share_formatted": "24.14%",
-                    "share_change_formatted": "+24.14%"
-                  },
-                  {
-                    "category_id": 34,
-                    "name": "Sub General",
-                    "color": "AB9364",
-                    "slug": "sub-general",
-                    "topics": 2,
-                    "posts": 2,
-                    "page_views": 0,
-                    "share": 13.79,
-                    "share_change": 13.79,
-                    "share_formatted": "13.79%",
-                    "share_change_formatted": "+13.79%"
-                  },
-                  {
-                    "category_id": 2,
-                    "name": "Site Feedback",
-                    "color": "808281",
-                    "slug": "site-feedback",
-                    "topics": 2,
-                    "posts": 2,
-                    "page_views": 0,
-                    "share": 13.79,
-                    "share_change": 13.79,
-                    "share_formatted": "13.79%",
-                    "share_change_formatted": "+13.79%"
-                  }
-                ],
-                "total": 29,
+                "rows": [],
+                "total": 0,
                 "category_ids": null
               }
             }
@@ -702,56 +649,18 @@
               "logging_enabled": true,
               "kpis": {
                 "total_searches": {
-                  "value": 8,
+                  "value": 0,
                   "previous_value": 0
                 },
                 "no_result_rate": {
-                  "value": 100,
+                  "value": null,
                   "previous_value": null,
-                  "exceeds_threshold": true
+                  "exceeds_threshold": false
                 }
               },
-              "trending": [
-                {
-                  "term": "fixture",
-                  "searches": 2
-                },
-                {
-                  "term": "general",
-                  "searches": 2
-                },
-                {
-                  "term": "parity",
-                  "searches": 2
-                },
-                {
-                  "term": "staff",
-                  "searches": 2
-                }
-              ],
+              "trending": [],
               "trending_period": "monthly",
-              "content_gaps": [
-                {
-                  "term": "fixture",
-                  "searches": 2,
-                  "status": "no_match"
-                },
-                {
-                  "term": "general",
-                  "searches": 2,
-                  "status": "no_match"
-                },
-                {
-                  "term": "parity",
-                  "searches": 2,
-                  "status": "no_match"
-                },
-                {
-                  "term": "staff",
-                  "searches": 2,
-                  "status": "no_match"
-                }
-              ],
+              "content_gaps": [],
               "search_type": "non_staff_only"
             }
           },
@@ -770,14 +679,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 12353159168,
+                  "free_bytes": 242436657152,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 12353159168,
+                  "free_bytes": 242436657152,
                   "remote": false
                 }
               },
@@ -852,33 +761,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "IugjPiIV0YmP8Fs0s48nsqXUirA=",
-            "created_at": "2026-11-22T08:17:28.400007",
-            "rotated_at": "2026-11-22T08:17:28.398945",
-            "updated_at": "2026-11-22T08:17:28.400007",
+            "auth_token": "7bJx0CGS0FpdPVKI1ZcHGvltj/c=",
+            "created_at": "2026-11-23T16:18:50.138281",
+            "rotated_at": "2026-11-23T16:18:50.137501",
+            "updated_at": "2026-11-23T16:18:50.138281",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "IugjPiIV0YmP8Fs0s48nsqXUirA=",
+            "prev_auth_token": "7bJx0CGS0FpdPVKI1ZcHGvltj/c=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:17:28.993342",
+            "id": 1,
+            "seen_at": "2026-11-23T16:18:50.74229",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "IugjPiIV0YmP8Fs0s48nsqXUirA=",
-            "created_at": "2026-11-22T08:17:28.400007",
-            "rotated_at": "2026-11-22T08:17:28.398945",
-            "updated_at": "2026-11-22T08:17:28.400007",
+            "auth_token": "7bJx0CGS0FpdPVKI1ZcHGvltj/c=",
+            "created_at": "2026-11-23T16:18:50.138281",
+            "rotated_at": "2026-11-23T16:18:50.137501",
+            "updated_at": "2026-11-23T16:18:50.138281",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "IugjPiIV0YmP8Fs0s48nsqXUirA=",
+            "prev_auth_token": "7bJx0CGS0FpdPVKI1ZcHGvltj/c=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -901,7 +810,7 @@
   },
   "recorded_from": {
     "case": "e60cb69f55bfc9f20a54c375de666d5a08d9e163e5eb5e1db4c191935e60c265",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

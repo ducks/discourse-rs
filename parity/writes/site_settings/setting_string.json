@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:37:50.865446",
-  "transaction_started_at": "2026-11-22T09:37:50.055783",
+  "started_at": "2026-11-23T17:45:13.253463",
+  "transaction_started_at": "2026-11-23T17:45:12.208737",
   "responses": [
     {
       "status": 204,
@@ -26,8 +26,8 @@
           "name": "short_site_description",
           "value": "A forum for parity tests",
           "data_type": 1,
-          "created_at": "2026-11-22T09:37:50.880126",
-          "updated_at": "2026-11-22T09:37:50.880126"
+          "created_at": "2026-11-23T17:45:13.270339",
+          "updated_at": "2026-11-23T17:45:13.270339"
         }
       ],
       "deleted": [],
@@ -39,33 +39,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "6CXprcI07zqBNIgpZUSxXjZnthM=",
-            "created_at": "2026-11-22T09:37:50.40344",
-            "rotated_at": "2026-11-22T09:37:50.402561",
-            "updated_at": "2026-11-22T09:37:50.40344",
+            "auth_token": "pUzIazX4vZFb/HRR/R53C6hWjOg=",
+            "created_at": "2026-11-23T17:45:12.586849",
+            "rotated_at": "2026-11-23T17:45:12.585558",
+            "updated_at": "2026-11-23T17:45:12.586849",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "6CXprcI07zqBNIgpZUSxXjZnthM=",
+            "prev_auth_token": "pUzIazX4vZFb/HRR/R53C6hWjOg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:37:50.871182",
+            "id": 1,
+            "seen_at": "2026-11-23T17:45:13.260106",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "6CXprcI07zqBNIgpZUSxXjZnthM=",
-            "created_at": "2026-11-22T09:37:50.40344",
-            "rotated_at": "2026-11-22T09:37:50.402561",
-            "updated_at": "2026-11-22T09:37:50.40344",
+            "auth_token": "pUzIazX4vZFb/HRR/R53C6hWjOg=",
+            "created_at": "2026-11-23T17:45:12.586849",
+            "rotated_at": "2026-11-23T17:45:12.585558",
+            "updated_at": "2026-11-23T17:45:12.586849",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "6CXprcI07zqBNIgpZUSxXjZnthM=",
+            "prev_auth_token": "pUzIazX4vZFb/HRR/R53C6hWjOg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -76,7 +76,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 3,
           "context": null,
@@ -86,10 +86,10 @@
           "topic_id": null,
           "new_value": "A forum for parity tests",
           "admin_only": true,
-          "created_at": "2026-11-22T09:37:50.882588",
+          "created_at": "2026-11-23T17:45:13.273123",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:37:50.882588",
+          "updated_at": "2026-11-23T17:45:13.273123",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -105,11 +105,11 @@
   "jobs": [],
   "next_ids": {
     "site_settings": 37,
-    "user_histories": 72
+    "user_histories": 66
   },
   "recorded_from": {
     "case": "33cb13805a2e4eeec1efa9c2c11770ba1c99154c9362d68dc001f95a14be54fa",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -51,8 +51,8 @@
       "path": "/groups/nope/permissions.json"
     }
   ],
-  "started_at": "2026-11-22T08:53:54.051941",
-  "transaction_started_at": "2026-11-22T08:53:53.464167",
+  "started_at": "2026-11-23T16:58:35.255238",
+  "transaction_started_at": "2026-11-23T16:58:34.643894",
   "responses": [
     {
       "status": 403,
@@ -177,7 +177,7 @@
   ],
   "recorded_from": {
     "case": "3bddab754bb322e0a4a3f026127f1b7d5b84fd2c41552e4137962086786ac492",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

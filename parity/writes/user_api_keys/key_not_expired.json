@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T10:00:06.466894",
-  "transaction_started_at": "2026-11-22T10:00:05.82462",
+  "started_at": "2026-11-23T18:09:19.143576",
+  "transaction_started_at": "2026-11-23T18:09:18.345794",
   "responses": [
     {
       "status": 200,
@@ -64,7 +64,7 @@
           "unseen_reviewable_count": 0,
           "new_personal_messages_notifications_count": 3,
           "read_faq": false,
-          "previous_visit_at": "2026-11-21T23:56:57.920Z",
+          "previous_visit_at": null,
           "seen_notification_id": 0,
           "flair_group_id": null,
           "can_create_topic": true,
@@ -315,11 +315,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-20T10:00:05.82462",
-            "expires_at": "2026-11-23T10:00:05.82462",
+            "created_at": "2026-11-21T18:09:18.345794",
+            "expires_at": "2026-11-24T18:09:18.345794",
             "revoked_at": null,
-            "updated_at": "2026-11-20T10:00:05.82462",
-            "last_used_at": "2026-11-21T10:00:05.82462",
+            "updated_at": "2026-11-21T18:09:18.345794",
+            "last_used_at": "2026-11-22T18:09:18.345794",
             "application_name": null,
             "user_api_key_client_id": 9101
           },
@@ -329,11 +329,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-20T10:00:05.82462",
-            "expires_at": "2026-11-23T10:00:05.82462",
+            "created_at": "2026-11-21T18:09:18.345794",
+            "expires_at": "2026-11-24T18:09:18.345794",
             "revoked_at": null,
-            "updated_at": "2026-11-20T10:00:05.82462",
-            "last_used_at": "2026-11-22T10:00:06.475554",
+            "updated_at": "2026-11-21T18:09:18.345794",
+            "last_used_at": "2026-11-23T18:09:19.153109",
             "application_name": null,
             "user_api_key_client_id": 9101
           }
@@ -350,7 +350,7 @@
   ],
   "recorded_from": {
     "case": "67a01b22efb0652cb0e88f02cd71fa179a24e22fc6b2df4be42e16d38ebd1953",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -1,7 +1,7 @@
 {
   "request": "GET /notifications.json",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T10:21:46.219891050+00:00",
+  "recorded_at": "2026-11-23T18:28:24.329772026+00:00",
   "status": 403,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"errors\":[\"You need to be logged in to do that.\"],\"error_type\":\"not_logged_in\"}"

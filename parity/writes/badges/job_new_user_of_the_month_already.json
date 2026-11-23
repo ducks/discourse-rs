@@ -2,8 +2,8 @@
   "name": "job_new_user_of_the_month_already",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T08:29:06.285349",
-  "transaction_started_at": "2026-11-22T08:29:05.559951",
+  "started_at": "2026-11-23T16:31:11.608722",
+  "transaction_started_at": "2026-11-23T16:31:10.749652",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -26,7 +26,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "d7949e78856f5719c80ef0b2723e91d8e4fcabc476b238a038f9e3d51b0cd957",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

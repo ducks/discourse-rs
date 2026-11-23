@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:59:51.306938",
-  "transaction_started_at": "2026-11-22T08:59:50.495359",
+  "started_at": "2026-11-23T17:04:46.890499",
+  "transaction_started_at": "2026-11-23T17:04:45.944662",
   "responses": [
     {
       "status": 200,
@@ -26,9 +26,9 @@
         "emailed": true,
         "can_delete_invite": true,
         "custom_message": null,
-        "created_at": "2026-11-19T08:59:50.495Z",
-        "updated_at": "2026-11-22T08:59:51.329Z",
-        "expires_at": "2026-12-22T08:59:50.495Z",
+        "created_at": "2026-11-20T17:04:45.944Z",
+        "updated_at": "2026-11-23T17:04:46.916Z",
+        "expires_at": "2026-12-23T17:04:45.944Z",
         "expired": false,
         "grants_admin": false,
         "grants_moderator": false,
@@ -83,11 +83,11 @@
           "user_id": null,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-22T08:59:51.371616",
+          "created_at": "2026-11-23T17:04:46.963106",
           "email_type": "invite",
-          "message_id": "3c077745-f23d-4fa9-871e-75c3e166fe66@localhost",
+          "message_id": "03320242-2117-44f5-bc01-42d6875823ae@localhost",
           "to_address": "reader@example.com",
-          "updated_at": "2026-11-22T08:59:51.371616",
+          "updated_at": "2026-11-23T17:04:46.963106",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -110,11 +110,11 @@
             "email": null,
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-19T08:59:50.495359",
+            "created_at": "2026-11-20T17:04:45.944662",
             "deleted_at": null,
-            "expires_at": "2026-12-22T08:59:50.495359",
+            "expires_at": "2026-12-23T17:04:45.944662",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-19T08:59:50.495359",
+            "updated_at": "2026-11-20T17:04:45.944662",
             "description": "for the book club",
             "email_token": null,
             "deleted_by_id": null,
@@ -131,13 +131,13 @@
             "email": "reader@example.com",
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-19T08:59:50.495359",
+            "created_at": "2026-11-20T17:04:45.944662",
             "deleted_at": null,
-            "expires_at": "2026-12-22T08:59:50.495359",
+            "expires_at": "2026-12-23T17:04:45.944662",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-22T08:59:51.32996",
+            "updated_at": "2026-11-23T17:04:46.916365",
             "description": "for the book club",
-            "email_token": "3966146324f8d130e12e87868eab4f80",
+            "email_token": "c3b6f42308438e37c45aed5054c33820",
             "deleted_by_id": null,
             "invited_by_id": 3,
             "custom_message": null,
@@ -155,33 +155,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "t9WdURHjY3tg6IUEhjwQ2DBozFs=",
-            "created_at": "2026-11-22T08:59:50.825175",
-            "rotated_at": "2026-11-22T08:59:50.824287",
-            "updated_at": "2026-11-22T08:59:50.825175",
+            "auth_token": "BYvRs00LByzw6HpnU77XUEIdS4w=",
+            "created_at": "2026-11-23T17:04:46.318507",
+            "rotated_at": "2026-11-23T17:04:46.317297",
+            "updated_at": "2026-11-23T17:04:46.318507",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "t9WdURHjY3tg6IUEhjwQ2DBozFs=",
+            "prev_auth_token": "BYvRs00LByzw6HpnU77XUEIdS4w=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:59:51.313336",
+            "id": 1,
+            "seen_at": "2026-11-23T17:04:46.898575",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "t9WdURHjY3tg6IUEhjwQ2DBozFs=",
-            "created_at": "2026-11-22T08:59:50.825175",
-            "rotated_at": "2026-11-22T08:59:50.824287",
-            "updated_at": "2026-11-22T08:59:50.825175",
+            "auth_token": "BYvRs00LByzw6HpnU77XUEIdS4w=",
+            "created_at": "2026-11-23T17:04:46.318507",
+            "rotated_at": "2026-11-23T17:04:46.317297",
+            "updated_at": "2026-11-23T17:04:46.318507",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "t9WdURHjY3tg6IUEhjwQ2DBozFs=",
+            "prev_auth_token": "BYvRs00LByzw6HpnU77XUEIdS4w=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -227,7 +227,7 @@
         ],
         [
           "Message-ID",
-          "<3c077745-f23d-4fa9-871e-75c3e166fe66@localhost>"
+          "<03320242-2117-44f5-bc01-42d6875823ae@localhost>"
         ],
         [
           "Subject",
@@ -239,7 +239,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b02af0759f08_262a9f3867b"
+          "multipart/alternative; boundary=--==_mimepart_6b04722eea6d3_7d19f3830970"
         ],
         [
           "Content-Transfer-Encoding",
@@ -264,7 +264,7 @@
   ],
   "recorded_from": {
     "case": "5490b8123763a22cb69303bd3cffe74800fe5fc89cdb52ddd29d9c1df044878d",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

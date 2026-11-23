@@ -2,8 +2,8 @@
   "name": "digest_suspended",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T08:43:14.373386",
-  "transaction_started_at": "2026-11-22T08:43:13.786456",
+  "started_at": "2026-11-23T16:47:13.001558",
+  "transaction_started_at": "2026-11-23T16:47:12.356694",
   "responses": [],
   "changes": {
     "skipped_email_logs": {
@@ -12,10 +12,10 @@
           "id": 1,
           "post_id": null,
           "user_id": 2,
-          "created_at": "2026-11-22T08:43:14.376671",
+          "created_at": "2026-11-23T16:47:13.005162",
           "email_type": "digest",
           "to_address": "user0@example.com",
-          "updated_at": "2026-11-22T08:43:14.376671",
+          "updated_at": "2026-11-23T16:47:13.005162",
           "reason_type": 8,
           "custom_reason": null
         }
@@ -38,7 +38,7 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -51,7 +51,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:44.45838",
+            "first_post_created_at": "2026-11-23T16:08:31.163852",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -64,7 +64,7 @@
             "likes_given": 1,
             "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -74,10 +74,10 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": "2026-11-22T08:43:14.377671",
+            "digest_attempted_at": "2026-11-23T16:47:13.006466",
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:44.45838",
+            "first_post_created_at": "2026-11-23T16:08:31.163852",
             "reset_bounce_score_after": null
           }
         }
@@ -107,7 +107,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "d3abfdb101b62a44768c27fe912851e17ee912fa2a1d3899399ad85d1fe3385a",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

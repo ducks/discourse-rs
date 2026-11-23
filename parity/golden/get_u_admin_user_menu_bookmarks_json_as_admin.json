@@ -1,7 +1,7 @@
 {
   "request": "GET /u/admin/user-menu-bookmarks.json as=admin",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T10:23:16.131689172+00:00",
+  "recorded_at": "2026-11-23T18:30:08.068988731+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"notifications\":[],\"bookmarks\":[{\"id\":7,\"name\":\"Parity fixture: admin's PM bookmark\",\"fancy_title\":\"Parity fixture: PM admin to user1 and user2\",\"topic_id\":43,\"bookmarkable_url\":\"http://localhost:3042/t/parity-fixture-pm-admin-to-user1-and-user2/43/2\",\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\"}},{\"id\":6,\"name\":null,\"fancy_title\":\"About the Staff category\",\"topic_id\":2,\"bookmarkable_url\":\"http://localhost:3042/t/about-the-staff-category/2/1\",\"user\":{\"id\":-1,\"username\":\"system\",\"name\":\"system\",\"avatar_template\":\"/images/discourse-logo-sketch-small.png\"}}]}"

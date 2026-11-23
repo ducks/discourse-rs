@@ -15,8 +15,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:53:04.244056",
-  "transaction_started_at": "2026-11-22T09:53:03.17109",
+  "started_at": "2026-11-23T18:02:06.107435",
+  "transaction_started_at": "2026-11-23T18:02:05.264153",
   "responses": [
     {
       "status": 200,
@@ -94,8 +94,8 @@
           "post_id": 35,
           "user_id": 1,
           "unlisted": false,
-          "created_at": "2026-11-22T09:53:04.327455",
-          "updated_at": "2026-11-22T09:53:04.327455",
+          "created_at": "2026-11-23T18:02:06.186549",
+          "updated_at": "2026-11-23T18:02:06.186549",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntags:\n- - guide\n- - howto\n"
         }
       ],
@@ -109,24 +109,6 @@
         {
           "before": {
             "locale": "en",
-            "post_id": 52,
-            "version": 5,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 52,
-            "version": 0,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
             "post_id": 35,
             "version": 5,
             "raw_data": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
@@ -181,7 +163,7 @@
         {
           "before": {
             "locale": "en",
-            "post_id": 39,
+            "post_id": 38,
             "version": 5,
             "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
             "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
@@ -189,10 +171,28 @@
           },
           "after": {
             "locale": "en",
-            "post_id": 39,
+            "post_id": 38,
             "version": 0,
             "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
             "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 5,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 0,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
             "private_message": false
           }
         }
@@ -208,26 +208,26 @@
             "raw": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "wiki": false,
             "reads": 1,
-            "score": null,
+            "score": 0.2,
             "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
             "hidden": false,
             "locale": null,
             "user_id": 2,
             "version": 1,
-            "baked_at": "2026-11-21T23:56:44.45832",
+            "baked_at": "2026-11-23T16:08:31.163746",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-11-21T23:56:44.45838",
+            "created_at": "2026-11-23T16:08:31.163852",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-21T23:56:44.45838",
+            "updated_at": "2026-11-23T16:08:31.163852",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -236,7 +236,7 @@
             "quote_count": 0,
             "reply_count": 0,
             "locked_by_id": null,
-            "percent_rank": 1,
+            "percent_rank": 0.25,
             "reply_quoted": false,
             "user_deleted": false,
             "baked_version": 2,
@@ -247,7 +247,7 @@
             "last_editor_id": 2,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-11-21T23:56:44.47558",
+            "last_version_at": "2026-11-23T16:08:31.211869",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -263,26 +263,26 @@
             "raw": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "wiki": false,
             "reads": 1,
-            "score": null,
+            "score": 0.2,
             "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
             "hidden": false,
             "locale": null,
             "user_id": 2,
             "version": 2,
-            "baked_at": "2026-11-21T23:56:44.45832",
+            "baked_at": "2026-11-23T16:08:31.163746",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-11-21T23:56:44.45838",
+            "created_at": "2026-11-23T16:08:31.163852",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T09:53:04.27217",
+            "updated_at": "2026-11-23T18:02:06.134428",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -291,7 +291,7 @@
             "quote_count": 0,
             "reply_count": 0,
             "locked_by_id": null,
-            "percent_rank": 1,
+            "percent_rank": 0.25,
             "reply_quoted": false,
             "user_deleted": false,
             "baked_version": 2,
@@ -302,7 +302,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T09:53:04.266551",
+            "last_version_at": "2026-11-23T18:02:06.12879",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -326,30 +326,30 @@
             "name": "guide",
             "slug": "guide",
             "locale": null,
-            "created_at": "2026-11-21T23:56:46.214356",
-            "updated_at": "2026-11-21T23:56:46.214356",
+            "created_at": "2026-11-23T16:08:36.815246",
+            "updated_at": "2026-11-23T16:08:36.815246",
             "description": null,
             "target_tag_id": null,
             "pm_topic_count": 0,
             "staff_topic_count": 2,
             "description_cooked": null,
             "public_topic_count": 2,
-            "description_cooked_version": null
+            "description_cooked_version": 1
           },
           "after": {
             "id": 2,
             "name": "guide",
             "slug": "guide",
             "locale": null,
-            "created_at": "2026-11-21T23:56:46.214356",
-            "updated_at": "2026-11-21T23:56:46.214356",
+            "created_at": "2026-11-23T16:08:36.815246",
+            "updated_at": "2026-11-23T16:08:36.815246",
             "description": null,
             "target_tag_id": null,
             "pm_topic_count": 0,
             "staff_topic_count": 1,
             "description_cooked": null,
             "public_topic_count": 1,
-            "description_cooked_version": null
+            "description_cooked_version": 1
           }
         },
         {
@@ -358,30 +358,30 @@
             "name": "howto",
             "slug": "howto",
             "locale": null,
-            "created_at": "2026-11-21T23:56:45.338708",
-            "updated_at": "2026-11-21T23:56:45.338708",
+            "created_at": "2026-11-23T16:08:34.074098",
+            "updated_at": "2026-11-23T16:08:34.074098",
             "description": null,
             "target_tag_id": null,
             "pm_topic_count": 0,
             "staff_topic_count": 2,
             "description_cooked": null,
             "public_topic_count": 2,
-            "description_cooked_version": null
+            "description_cooked_version": 1
           },
           "after": {
             "id": 1,
             "name": "howto",
             "slug": "howto",
             "locale": null,
-            "created_at": "2026-11-21T23:56:45.338708",
-            "updated_at": "2026-11-21T23:56:45.338708",
+            "created_at": "2026-11-23T16:08:34.074098",
+            "updated_at": "2026-11-23T16:08:34.074098",
             "description": null,
             "target_tag_id": null,
             "pm_topic_count": 0,
             "staff_topic_count": 3,
             "description_cooked": null,
             "public_topic_count": 3,
-            "description_cooked_version": null
+            "description_cooked_version": 1
           }
         }
       ]
@@ -392,8 +392,8 @@
           "id": 5,
           "tag_id": 1,
           "topic_id": 35,
-          "created_at": "2026-11-22T09:53:04.304084",
-          "updated_at": "2026-11-22T09:53:04.304084"
+          "created_at": "2026-11-23T18:02:06.166017",
+          "updated_at": "2026-11-23T18:02:06.166017"
         }
       ],
       "deleted": [
@@ -401,8 +401,8 @@
           "id": 2,
           "tag_id": 2,
           "topic_id": 35,
-          "created_at": "2026-11-21T23:56:46.231103",
-          "updated_at": "2026-11-21T23:56:46.231103"
+          "created_at": "2026-11-23T16:08:36.863013",
+          "updated_at": "2026-11-23T16:08:36.863013"
         }
       ],
       "updated": []
@@ -415,7 +415,7 @@
           "before": {
             "id": 35,
             "slug": "parity-fixture-replies-and-posters",
-            "score": null,
+            "score": 3.1999999999999997,
             "title": "Parity fixture: replies and posters",
             "views": 0,
             "closed": false,
@@ -426,13 +426,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-11-21T23:56:51.452828",
+            "bumped_at": "2026-11-23T16:08:43.039825",
             "pinned_at": null,
-            "created_at": "2026-11-21T23:56:44.408368",
+            "created_at": "2026-11-23T16:08:31.048442",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-21T23:56:51.518343",
+            "updated_at": "2026-11-23T16:08:43.102964",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -445,7 +445,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-11-21T23:56:51.452828",
+            "last_posted_at": "2026-11-23T16:08:43.039825",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -467,7 +467,7 @@
           "after": {
             "id": 35,
             "slug": "parity-fixture-replies-and-posters",
-            "score": null,
+            "score": 3.1999999999999997,
             "title": "Parity fixture: replies and posters",
             "views": 0,
             "closed": false,
@@ -478,13 +478,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-11-21T23:56:51.452828",
+            "bumped_at": "2026-11-23T16:08:43.039825",
             "pinned_at": null,
-            "created_at": "2026-11-21T23:56:44.408368",
+            "created_at": "2026-11-23T16:08:31.048442",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T09:53:04.313989",
+            "updated_at": "2026-11-23T18:02:06.173549",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -497,7 +497,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-11-21T23:56:51.452828",
+            "last_posted_at": "2026-11-23T16:08:43.039825",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -525,33 +525,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "v7wabATcYs9PFkUcaqPfRwvxYaU=",
-            "created_at": "2026-11-22T09:53:03.550375",
-            "rotated_at": "2026-11-22T09:53:03.549558",
-            "updated_at": "2026-11-22T09:53:03.550375",
+            "auth_token": "+2GfedT/Dt2Ye3wa81Zr8V9uWUU=",
+            "created_at": "2026-11-23T18:02:05.636167",
+            "rotated_at": "2026-11-23T18:02:05.63539",
+            "updated_at": "2026-11-23T18:02:05.636167",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "v7wabATcYs9PFkUcaqPfRwvxYaU=",
+            "prev_auth_token": "+2GfedT/Dt2Ye3wa81Zr8V9uWUU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:53:04.251165",
+            "id": 1,
+            "seen_at": "2026-11-23T18:02:06.114091",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "v7wabATcYs9PFkUcaqPfRwvxYaU=",
-            "created_at": "2026-11-22T09:53:03.550375",
-            "rotated_at": "2026-11-22T09:53:03.549558",
-            "updated_at": "2026-11-22T09:53:03.550375",
+            "auth_token": "+2GfedT/Dt2Ye3wa81Zr8V9uWUU=",
+            "created_at": "2026-11-23T18:02:05.636167",
+            "rotated_at": "2026-11-23T18:02:05.63539",
+            "updated_at": "2026-11-23T18:02:05.636167",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "v7wabATcYs9PFkUcaqPfRwvxYaU=",
+            "prev_auth_token": "+2GfedT/Dt2Ye3wa81Zr8V9uWUU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -574,7 +574,7 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
@@ -587,7 +587,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:45.037179",
+            "first_post_created_at": "2026-11-23T16:08:32.395967",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -600,7 +600,7 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
@@ -613,7 +613,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:45.037179",
+            "first_post_created_at": "2026-11-23T16:08:32.395967",
             "reset_bounce_score_after": null
           }
         }
@@ -681,7 +681,7 @@
   },
   "recorded_from": {
     "case": "b3b408849eb24f50775c7e5d9c61f9a14f0aef4aa1c4d62c59a77e26acbfe9af",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

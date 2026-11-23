@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T10:11:05.474132",
-  "transaction_started_at": "2026-11-22T10:11:04.626487",
+  "started_at": "2026-11-23T18:20:50.584977",
+  "transaction_started_at": "2026-11-23T18:20:49.655788",
   "responses": [
     {
       "status": 200,
@@ -20,7 +20,7 @@
           "id": 37,
           "username": "user2",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-          "created_at": "2026-11-21T23:56:44.759Z",
+          "created_at": "2026-11-23T16:08:32.082Z",
           "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
           "post_number": 3,
           "topic_id": 35,
@@ -35,8 +35,8 @@
         {
           "id": 1,
           "topic_id": 35,
-          "created_at": "2026-11-22T10:11:05.509979",
-          "updated_at": "2026-11-22T10:11:05.509979",
+          "created_at": "2026-11-23T18:20:50.627403",
+          "updated_at": "2026-11-23T18:20:50.627403",
           "answer_post_id": null,
           "topic_timer_id": null,
           "accepter_user_id": null
@@ -49,8 +49,8 @@
       "inserted": [
         {
           "id": 1,
-          "created_at": "2026-11-22T10:11:05.51927",
-          "updated_at": "2026-11-22T10:11:05.51927",
+          "created_at": "2026-11-23T18:20:50.638881",
+          "updated_at": "2026-11-23T18:20:50.638881",
           "answer_post_id": 37,
           "solved_topic_id": 1,
           "accepter_user_id": 1
@@ -62,26 +62,26 @@
     "notifications": {
       "inserted": [
         {
-          "id": 34,
+          "id": 31,
           "data": "{\"message\":\"solved.accepted_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.title\"}",
           "read": false,
           "user_id": 4,
           "topic_id": 35,
-          "created_at": "2026-11-22T10:11:05.526203",
-          "updated_at": "2026-11-22T10:11:05.526203",
+          "created_at": "2026-11-23T18:20:50.645666",
+          "updated_at": "2026-11-23T18:20:50.645666",
           "post_number": 3,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 14
         },
         {
-          "id": 35,
+          "id": 32,
           "data": "{\"message\":\"solved.topic_solved_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.topic_solved_title\"}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-22T10:11:05.533378",
-          "updated_at": "2026-11-22T10:11:05.533378",
+          "created_at": "2026-11-23T18:20:50.653471",
+          "updated_at": "2026-11-23T18:20:50.653471",
           "post_number": 3,
           "high_priority": false,
           "post_action_id": null,
@@ -96,8 +96,8 @@
         {
           "id": 65,
           "user_id": 4,
-          "created_at": "2026-11-22T10:11:05.499314",
-          "updated_at": "2026-11-22T10:11:05.499314",
+          "created_at": "2026-11-23T18:20:50.614061",
+          "updated_at": "2026-11-23T18:20:50.614061",
           "action_type": 15,
           "acting_user_id": 1,
           "target_post_id": 37,
@@ -114,33 +114,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "jIDWZj8N7gnj/rNhRyGItQmc5/s=",
-            "created_at": "2026-11-22T10:11:04.997187",
-            "rotated_at": "2026-11-22T10:11:04.996365",
-            "updated_at": "2026-11-22T10:11:04.997187",
+            "auth_token": "rGrBpxHZUXlG3911QlshlakndE8=",
+            "created_at": "2026-11-23T18:20:50.066275",
+            "rotated_at": "2026-11-23T18:20:50.065293",
+            "updated_at": "2026-11-23T18:20:50.066275",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "jIDWZj8N7gnj/rNhRyGItQmc5/s=",
+            "prev_auth_token": "rGrBpxHZUXlG3911QlshlakndE8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T10:11:05.482726",
+            "id": 1,
+            "seen_at": "2026-11-23T18:20:50.595782",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "jIDWZj8N7gnj/rNhRyGItQmc5/s=",
-            "created_at": "2026-11-22T10:11:04.997187",
-            "rotated_at": "2026-11-22T10:11:04.996365",
-            "updated_at": "2026-11-22T10:11:04.997187",
+            "auth_token": "rGrBpxHZUXlG3911QlshlakndE8=",
+            "created_at": "2026-11-23T18:20:50.066275",
+            "rotated_at": "2026-11-23T18:20:50.065293",
+            "updated_at": "2026-11-23T18:20:50.066275",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "jIDWZj8N7gnj/rNhRyGItQmc5/s=",
+            "prev_auth_token": "rGrBpxHZUXlG3911QlshlakndE8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -158,7 +158,7 @@
         "tag_ids": [
           2
         ],
-        "payload": "{\"id\":37,\"name\":\"User2\",\"username\":\"user2\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png\",\"created_at\":\"2026-11-21T23:56:44.759Z\",\"cooked\":\"\\u003cp\\u003eReply two from user2, also long enough to pass the minimum length check.\\u003c/p\\u003e\",\"post_number\":3,\"post_type\":1,\"posts_count\":5,\"updated_at\":\"2026-11-21T23:56:44.759Z\",\"reply_count\":0,\"reply_to_post_number\":null,\"quote_count\":0,\"incoming_link_count\":0,\"reads\":1,\"score\":0,\"topic_id\":35,\"topic_slug\":\"parity-fixture-replies-and-posters\",\"topic_title\":\"Parity fixture: replies and posters\",\"category_id\":4,\"display_username\":\"User2\",\"primary_group_name\":null,\"flair_name\":null,\"flair_group_id\":null,\"version\":1,\"user_title\":null,\"bookmarked\":false,\"raw\":\"Reply two from user2, also long enough to pass the minimum length check.\",\"moderator\":false,\"admin\":false,\"staff\":false,\"user_id\":4,\"hidden\":false,\"trust_level\":2,\"deleted_at\":null,\"user_deleted\":false,\"edit_reason\":null,\"wiki\":false,\"reviewable_id\":null,\"reviewable_score_count\":0,\"reviewable_score_pending_count\":0,\"post_url\":\"/t/parity-fixture-replies-and-posters/35/3\",\"reactions\":[],\"current_user_reaction\":null,\"reaction_users_count\":0,\"current_user_used_main_reaction\":false,\"can_accept_answer\":true,\"can_unaccept_answer\":true,\"accepted_answer\":true,\"topic_accepted_answer\":true,\"topic_posts_count\":5,\"topic_filtered_posts_count\":5,\"topic_archetype\":\"regular\",\"category_slug\":\"general\"}",
+        "payload": "{\"id\":37,\"name\":\"User2\",\"username\":\"user2\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png\",\"created_at\":\"2026-11-23T16:08:32.082Z\",\"cooked\":\"\\u003cp\\u003eReply two from user2, also long enough to pass the minimum length check.\\u003c/p\\u003e\",\"post_number\":3,\"post_type\":1,\"posts_count\":5,\"updated_at\":\"2026-11-23T16:08:32.082Z\",\"reply_count\":0,\"reply_to_post_number\":null,\"quote_count\":0,\"incoming_link_count\":0,\"reads\":1,\"score\":0.2,\"topic_id\":35,\"topic_slug\":\"parity-fixture-replies-and-posters\",\"topic_title\":\"Parity fixture: replies and posters\",\"category_id\":4,\"display_username\":\"User2\",\"primary_group_name\":null,\"flair_name\":null,\"flair_group_id\":null,\"version\":1,\"user_title\":null,\"bookmarked\":false,\"raw\":\"Reply two from user2, also long enough to pass the minimum length check.\",\"moderator\":false,\"admin\":false,\"staff\":false,\"user_id\":4,\"hidden\":false,\"trust_level\":2,\"deleted_at\":null,\"user_deleted\":false,\"edit_reason\":null,\"wiki\":false,\"reviewable_id\":null,\"reviewable_score_count\":0,\"reviewable_score_pending_count\":0,\"post_url\":\"/t/parity-fixture-replies-and-posters/35/3\",\"reactions\":[],\"current_user_reaction\":null,\"reaction_users_count\":0,\"current_user_used_main_reaction\":false,\"can_accept_answer\":true,\"can_unaccept_answer\":true,\"accepted_answer\":true,\"topic_accepted_answer\":true,\"topic_posts_count\":5,\"topic_filtered_posts_count\":5,\"topic_archetype\":\"regular\",\"category_slug\":\"general\"}",
         "web_hook_id": 9001,
         "event_name": "accepted_solution",
         "event_type": "solved"
@@ -168,7 +168,7 @@
   "next_ids": {
     "discourse_solved_solved_topics": 1,
     "discourse_solved_topic_answers": 1,
-    "notifications": 34,
+    "notifications": 31,
     "user_actions": 65
   },
   "settings": {
@@ -180,7 +180,7 @@
   ],
   "recorded_from": {
     "case": "1553dbfbb275e7fd8599fd6870677034346255eeb0eefc16f87357df5d2131d9",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "tl3_demote_grace",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:30:09.882839",
-  "transaction_started_at": "2026-11-22T09:30:09.217308",
+  "started_at": "2026-11-23T17:37:03.274001",
+  "transaction_started_at": "2026-11-23T17:37:02.475151",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -23,7 +23,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "67314148c13009ff07144e711ca13ad3981a03747141650f863e56bdba9e227a",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

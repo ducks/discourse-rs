@@ -19,8 +19,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:26:52.479869",
-  "transaction_started_at": "2026-11-22T08:26:51.921839",
+  "started_at": "2026-11-23T16:28:46.255978",
+  "transaction_started_at": "2026-11-23T16:28:45.54994",
   "responses": [
     {
       "status": 200,
@@ -73,7 +73,7 @@
           "unseen_reviewable_count": 0,
           "new_personal_messages_notifications_count": 3,
           "read_faq": false,
-          "previous_visit_at": "2026-11-21T23:56:57.920Z",
+          "previous_visit_at": null,
           "seen_notification_id": 0,
           "flair_group_id": null,
           "can_create_topic": true,
@@ -332,10 +332,10 @@
             "hidden": false,
             "user_id": null,
             "key_hash": "2eaae31495bfe68b56496e77f9389d644ff6dfb9183a0b0975e68f9611a65a9d",
-            "created_at": "2026-11-17T08:26:51.921839",
+            "created_at": "2026-11-18T16:28:45.54994",
             "revoked_at": null,
             "scope_mode": 2,
-            "updated_at": "2026-11-17T08:26:51.921839",
+            "updated_at": "2026-11-18T16:28:45.54994",
             "allowed_ips": null,
             "description": "scoped",
             "last_used_at": null,
@@ -347,13 +347,13 @@
             "hidden": false,
             "user_id": null,
             "key_hash": "2eaae31495bfe68b56496e77f9389d644ff6dfb9183a0b0975e68f9611a65a9d",
-            "created_at": "2026-11-17T08:26:51.921839",
+            "created_at": "2026-11-18T16:28:45.54994",
             "revoked_at": null,
             "scope_mode": 2,
-            "updated_at": "2026-11-17T08:26:51.921839",
+            "updated_at": "2026-11-18T16:28:45.54994",
             "allowed_ips": null,
             "description": "scoped",
-            "last_used_at": "2026-11-22T08:26:52.6038",
+            "last_used_at": "2026-11-23T16:28:46.414179",
             "created_by_id": 1,
             "truncated_key": "scop"
           }
@@ -369,7 +369,7 @@
   ],
   "recorded_from": {
     "case": "9a05b687d95754e5016eb7e7a32a5b90009aa95a506f47d4270e78c53655742d",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

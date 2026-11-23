@@ -166,8 +166,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:17:37.426219",
-  "transaction_started_at": "2026-11-22T08:17:36.629531",
+  "started_at": "2026-11-23T16:18:58.210185",
+  "transaction_started_at": "2026-11-23T16:18:57.430895",
   "responses": [
     {
       "status": 200,
@@ -845,14 +845,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "remote": false
                 }
               },
@@ -1007,8 +1007,8 @@
                   "percent_change": null,
                   "report_type": "signups",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 {
@@ -1018,8 +1018,8 @@
                   "percent_change": null,
                   "report_type": "dau_by_mau",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 {
@@ -1029,8 +1029,8 @@
                   "percent_change": null,
                   "report_type": "new_contributors",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 {
@@ -1040,8 +1040,8 @@
                   "percent_change": null,
                   "report_type": "accepted_solutions",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 }
               ]
@@ -1100,10 +1100,6 @@
                   "color": "#4B3CE0",
                   "data": [
                     {
-                      "x": "2026-10-24",
-                      "y": 0
-                    },
-                    {
                       "x": "2026-10-25",
                       "y": 0
                     },
@@ -1217,6 +1213,10 @@
                     },
                     {
                       "x": "2026-11-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-23",
                       "y": 0
                     }
                   ]
@@ -1227,10 +1227,6 @@
                   "color": "#9C8DEC",
                   "data": [
                     {
-                      "x": "2026-10-24",
-                      "y": 0
-                    },
-                    {
                       "x": "2026-10-25",
                       "y": 0
                     },
@@ -1344,6 +1340,10 @@
                     },
                     {
                       "x": "2026-11-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-23",
                       "y": 0
                     }
                   ]
@@ -1354,10 +1354,6 @@
                   "color": "#D5CDF7",
                   "data": [
                     {
-                      "x": "2026-10-24",
-                      "y": 0
-                    },
-                    {
                       "x": "2026-10-25",
                       "y": 0
                     },
@@ -1471,6 +1467,10 @@
                     },
                     {
                       "x": "2026-11-22",
+                      "y": 0
+                    },
+                    {
+                      "x": "2026-11-23",
                       "y": 0
                     }
                   ]
@@ -1501,8 +1501,8 @@
                   "percent_change": null,
                   "report_type": "dau_by_mau",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 {
@@ -1512,8 +1512,8 @@
                   "percent_change": null,
                   "report_type": "daily_engaged_users",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 {
@@ -1523,8 +1523,8 @@
                   "percent_change": null,
                   "report_type": "signups",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 }
               ],
@@ -1626,61 +1626,8 @@
                 ]
               },
               "activity_by_category": {
-                "rows": [
-                  {
-                    "category_id": 4,
-                    "name": "General",
-                    "color": "25AAE2",
-                    "slug": "general",
-                    "topics": 5,
-                    "posts": 9,
-                    "page_views": 0,
-                    "share": 48.28,
-                    "share_change": 48.28,
-                    "share_formatted": "48.28%",
-                    "share_change_formatted": "+48.28%"
-                  },
-                  {
-                    "category_id": 3,
-                    "name": "Staff",
-                    "color": "E45735",
-                    "slug": "staff",
-                    "topics": 3,
-                    "posts": 4,
-                    "page_views": 0,
-                    "share": 24.14,
-                    "share_change": 24.14,
-                    "share_formatted": "24.14%",
-                    "share_change_formatted": "+24.14%"
-                  },
-                  {
-                    "category_id": 34,
-                    "name": "Sub General",
-                    "color": "AB9364",
-                    "slug": "sub-general",
-                    "topics": 2,
-                    "posts": 2,
-                    "page_views": 0,
-                    "share": 13.79,
-                    "share_change": 13.79,
-                    "share_formatted": "13.79%",
-                    "share_change_formatted": "+13.79%"
-                  },
-                  {
-                    "category_id": 2,
-                    "name": "Site Feedback",
-                    "color": "808281",
-                    "slug": "site-feedback",
-                    "topics": 2,
-                    "posts": 2,
-                    "page_views": 0,
-                    "share": 13.79,
-                    "share_change": 13.79,
-                    "share_formatted": "13.79%",
-                    "share_change_formatted": "+13.79%"
-                  }
-                ],
-                "total": 29,
+                "rows": [],
+                "total": 0,
                 "category_ids": null
               }
             }
@@ -1721,14 +1668,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "remote": false
                 }
               },
@@ -1755,8 +1702,8 @@
                   "previous_value": 0.0,
                   "report_type": "accepted_solutions",
                   "report_query": {
-                    "start_date": "2026-10-23",
-                    "end_date": "2026-11-22"
+                    "start_date": "2026-10-24",
+                    "end_date": "2026-11-23"
                   }
                 },
                 "staff_involvement": {
@@ -1898,8 +1845,8 @@
             "previous_value": 0.0,
             "report_type": "accepted_solutions",
             "report_query": {
-              "start_date": "2026-10-23",
-              "end_date": "2026-11-22"
+              "start_date": "2026-10-24",
+              "end_date": "2026-11-23"
             }
           },
           "staff_involvement": {
@@ -2219,7 +2166,7 @@
             "previous_value": null,
             "report_type": "accepted_solutions",
             "report_query": {
-              "start_date": "2026-10-23",
+              "start_date": "2026-10-24",
               "end_date": "2026-10-20"
             }
           },
@@ -3029,14 +2976,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "remote": false
                 }
               },
@@ -3906,14 +3853,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "remote": false
                 }
               },
@@ -4739,14 +4686,14 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 11689099264,
+                  "free_bytes": 242434912256,
                   "remote": false
                 }
               },
@@ -4824,9 +4771,9 @@
               ]
             }
           },
-          "created_at": "2026-11-22T08:17:38.074625",
+          "created_at": "2026-11-23T16:18:58.951005",
           "section_id": "support",
-          "updated_at": "2026-11-22T08:17:38.074625"
+          "updated_at": "2026-11-23T16:18:58.951005"
         }
       ],
       "deleted": [],
@@ -4846,9 +4793,9 @@
             "visible": true,
             "position": 1,
             "settings": {},
-            "created_at": "2026-11-22T08:17:38.074625",
+            "created_at": "2026-11-23T16:18:58.951005",
             "section_id": "highlights",
-            "updated_at": "2026-11-22T08:17:38.074625"
+            "updated_at": "2026-11-23T16:18:58.951005"
           }
         },
         {
@@ -4866,9 +4813,9 @@
             "visible": true,
             "position": 2,
             "settings": {},
-            "created_at": "2026-11-22T08:17:38.074625",
+            "created_at": "2026-11-23T16:18:58.951005",
             "section_id": "reports",
-            "updated_at": "2026-11-22T08:17:38.074625"
+            "updated_at": "2026-11-23T16:18:58.951005"
           }
         },
         {
@@ -4886,9 +4833,9 @@
             "visible": true,
             "position": 3,
             "settings": {},
-            "created_at": "2026-11-22T08:17:38.074625",
+            "created_at": "2026-11-23T16:18:58.951005",
             "section_id": "traffic",
-            "updated_at": "2026-11-22T08:17:38.074625"
+            "updated_at": "2026-11-23T16:18:58.951005"
           }
         },
         {
@@ -4906,9 +4853,9 @@
             "visible": true,
             "position": 4,
             "settings": {},
-            "created_at": "2026-11-22T08:17:38.074625",
+            "created_at": "2026-11-23T16:18:58.951005",
             "section_id": "engagement",
-            "updated_at": "2026-11-22T08:17:38.074625"
+            "updated_at": "2026-11-23T16:18:58.951005"
           }
         },
         {
@@ -4926,9 +4873,9 @@
             "visible": true,
             "position": 5,
             "settings": {},
-            "created_at": "2026-11-22T08:17:38.074625",
+            "created_at": "2026-11-23T16:18:58.951005",
             "section_id": "search",
-            "updated_at": "2026-11-22T08:17:38.074625"
+            "updated_at": "2026-11-23T16:18:58.951005"
           }
         },
         {
@@ -4946,9 +4893,9 @@
             "visible": true,
             "position": 6,
             "settings": {},
-            "created_at": "2026-11-22T08:17:38.074625",
+            "created_at": "2026-11-23T16:18:58.951005",
             "section_id": "system",
-            "updated_at": "2026-11-22T08:17:38.074625"
+            "updated_at": "2026-11-23T16:18:58.951005"
           }
         }
       ]
@@ -4959,33 +4906,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "V9pw36Z1nEQzbHMlRwF0X9JMlRg=",
-            "created_at": "2026-11-22T08:17:36.935657",
-            "rotated_at": "2026-11-22T08:17:36.934767",
-            "updated_at": "2026-11-22T08:17:36.935657",
+            "auth_token": "jA+hELIcmHPlEUgcWLo0FEzNuE8=",
+            "created_at": "2026-11-23T16:18:57.697745",
+            "rotated_at": "2026-11-23T16:18:57.696938",
+            "updated_at": "2026-11-23T16:18:57.697745",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "V9pw36Z1nEQzbHMlRwF0X9JMlRg=",
+            "prev_auth_token": "jA+hELIcmHPlEUgcWLo0FEzNuE8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:17:37.433409",
+            "id": 1,
+            "seen_at": "2026-11-23T16:18:58.217323",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "V9pw36Z1nEQzbHMlRwF0X9JMlRg=",
-            "created_at": "2026-11-22T08:17:36.935657",
-            "rotated_at": "2026-11-22T08:17:36.934767",
-            "updated_at": "2026-11-22T08:17:36.935657",
+            "auth_token": "jA+hELIcmHPlEUgcWLo0FEzNuE8=",
+            "created_at": "2026-11-23T16:18:57.697745",
+            "rotated_at": "2026-11-23T16:18:57.696938",
+            "updated_at": "2026-11-23T16:18:57.697745",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "V9pw36Z1nEQzbHMlRwF0X9JMlRg=",
+            "prev_auth_token": "jA+hELIcmHPlEUgcWLo0FEzNuE8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -4996,7 +4943,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 23,
           "context": null,
@@ -5006,10 +4953,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T08:17:38.083156",
+          "created_at": "2026-11-23T16:18:58.954649",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:17:38.083156",
+          "updated_at": "2026-11-23T16:18:58.954649",
           "category_id": null,
           "custom_type": "update_dashboard_sections",
           "reviewable_id": null,
@@ -5056,7 +5003,7 @@
   ],
   "next_ids": {
     "admin_dashboard_sections": 7,
-    "user_histories": 72
+    "user_histories": 66
   },
   "setup": [
     "DELETE FROM search_logs",
@@ -5072,7 +5019,7 @@
   ],
   "recorded_from": {
     "case": "68dd6eae906eb5d3bee0660ab3cfec02b82d96f973b1cdc76c00cb3c87e620c6",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

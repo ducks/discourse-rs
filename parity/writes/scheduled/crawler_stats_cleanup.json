@@ -2,8 +2,8 @@
   "name": "crawler_stats_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:28:15.252026",
-  "transaction_started_at": "2026-11-22T09:28:14.651711",
+  "started_at": "2026-11-23T17:34:57.840061",
+  "transaction_started_at": "2026-11-23T17:34:56.996779",
   "responses": [],
   "changes": {
     "web_crawler_requests": {
@@ -11,49 +11,49 @@
       "deleted": [
         {
           "id": 1,
-          "date": "2026-10-13",
+          "date": "2026-10-14",
           "count": 100,
           "user_agent": "OldBot"
         },
         {
           "id": 2,
-          "date": "2026-10-22",
+          "date": "2026-10-23",
           "count": 5,
           "user_agent": "OldishBot"
         },
         {
           "id": 6,
-          "date": "2026-11-21",
+          "date": "2026-11-22",
           "count": 1,
           "user_agent": "Bot1"
         },
         {
           "id": 7,
-          "date": "2026-11-21",
+          "date": "2026-11-22",
           "count": 2,
           "user_agent": "Bot2"
         },
         {
           "id": 8,
-          "date": "2026-11-21",
+          "date": "2026-11-22",
           "count": 3,
           "user_agent": "Bot3"
         },
         {
           "id": 9,
-          "date": "2026-11-21",
+          "date": "2026-11-22",
           "count": 4,
           "user_agent": "Bot4"
         },
         {
           "id": 10,
-          "date": "2026-11-21",
+          "date": "2026-11-22",
           "count": 5,
           "user_agent": "Bot5"
         },
         {
           "id": 11,
-          "date": "2026-11-21",
+          "date": "2026-11-22",
           "count": 6,
           "user_agent": "Bot6"
         }
@@ -76,7 +76,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "249f235748e1b17d063d873f4daff0f946cc0a9ca7390905fb45d7c2270570ed",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

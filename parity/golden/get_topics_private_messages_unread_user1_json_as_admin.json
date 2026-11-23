@@ -1,7 +1,7 @@
 {
   "request": "GET /topics/private-messages-unread/user1.json as=admin",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T10:22:03.137788112+00:00",
+  "recorded_at": "2026-11-23T18:28:47.965354327+00:00",
   "status": 404,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"errors\":[\"The requested URL or resource could not be found.\"],\"error_type\":\"not_found\"}"

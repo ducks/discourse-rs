@@ -50,13 +50,13 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:33:46.850011",
-  "transaction_started_at": "2026-11-22T09:33:46.233849",
+  "started_at": "2026-11-23T17:40:57.988582",
+  "transaction_started_at": "2026-11-23T17:40:57.301275",
   "responses": [
     {
       "status": 200,
       "body": {
-        "challenge": "9906812fd2c19733e06c586cb3bdb5d5b24b7cfe389383f4e11a0755223d"
+        "challenge": "69598a93f368dbc72fb13e2bdffe408e2973d650393cf26a272983ac79ae"
       }
     },
     {
@@ -101,7 +101,7 @@
   ],
   "recorded_from": {
     "case": "e42a2005c0fc995d3b6ad0f93501a6846a7fb86c3da57e36829c7cae2625a245",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

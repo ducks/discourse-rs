@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:56:49.27401",
-  "transaction_started_at": "2026-11-22T08:56:48.477021",
+  "started_at": "2026-11-23T17:01:35.522268",
+  "transaction_started_at": "2026-11-23T17:01:34.685271",
   "responses": [
     {
       "status": 200,
@@ -28,12 +28,12 @@
           "post_id": null,
           "user_id": null,
           "topic_id": null,
-          "bounce_key": "7f926276-7f21-e714-c753-3a3a82a76efc",
-          "created_at": "2026-11-22T08:56:49.362382",
-          "email_type": "email_reject_reply_not_allowed",
-          "message_id": "686405e3-fac3-49ee-8115-25ecbcecead7@localhost",
+          "bounce_key": "d40e26ec-2b64-4f17-7f7a-ab4c054591ed",
+          "created_at": "2026-11-23T17:01:35.628095",
+          "email_type": "email_reject_post_too_short",
+          "message_id": "3a0fb06a-d8c0-4387-bf19-dba4e54f0f5c@localhost",
           "to_address": "user0@example.com",
-          "updated_at": "2026-11-22T08:56:49.362382",
+          "updated_at": "2026-11-23T17:01:35.628095",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -50,7 +50,7 @@
         {
           "id": 1,
           "raw": "Date: Thu, 01 Oct 2026 10:00:00 +0000\r\nFrom: User0 <user0@example.com>\r\nTo: replies+0123456789abcdef0123456789abcdef@example.com\r\nMessage-ID: <reject-short@mail.example.com>\r\nSubject: Re: [Discourse] [General] Parity fixture: replies and posters\r\nMIME-Version: 1.0\r\nContent-Type: text/plain;\r\n charset=UTF-8\r\nContent-Transfer-Encoding: 7bit\r\n\r\nToo short.\r\n",
-          "error": "Email::Receiver::ReplyNotAllowedError",
+          "error": "Email::Receiver::TooShortPost",
           "post_id": null,
           "subject": "Re: [Discourse] [General] Parity fixture: replies and posters",
           "user_id": 2,
@@ -58,9 +58,9 @@
           "topic_id": null,
           "imap_sync": null,
           "is_bounce": false,
-          "created_at": "2026-11-22T08:56:49.292524",
+          "created_at": "2026-11-23T17:01:35.545134",
           "message_id": "reject-short@mail.example.com",
-          "updated_at": "2026-11-22T08:56:49.364391",
+          "updated_at": "2026-11-23T17:01:35.630195",
           "created_via": 1,
           "cc_addresses": "",
           "from_address": "user0@example.com",
@@ -69,7 +69,7 @@
           "imap_group_id": null,
           "imap_uid_validity": null,
           "is_auto_generated": false,
-          "rejection_message": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nYou don't have permissions to reply to the topic. If you believe this is an error, [contact a staff member](http://localhost:3042/about).\n"
+          "rejection_message": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nTo promote more in depth conversations, very short replies are not allowed. Can you please reply with at least 20 characters? Alternatively, you can like a post via email by replying with \"+1\".\n"
         }
       ],
       "deleted": [],
@@ -81,33 +81,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "wdrKzc7aiM/wYu6Y+CWzY2+N/YM=",
-            "created_at": "2026-11-22T08:56:48.782411",
-            "rotated_at": "2026-11-22T08:56:48.781542",
-            "updated_at": "2026-11-22T08:56:48.782411",
+            "auth_token": "mhFLCYzxpDL2yiJ7HYp1vrmj/9U=",
+            "created_at": "2026-11-23T17:01:34.998577",
+            "rotated_at": "2026-11-23T17:01:34.997512",
+            "updated_at": "2026-11-23T17:01:34.998577",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "wdrKzc7aiM/wYu6Y+CWzY2+N/YM=",
+            "prev_auth_token": "mhFLCYzxpDL2yiJ7HYp1vrmj/9U=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:56:49.279937",
+            "id": 1,
+            "seen_at": "2026-11-23T17:01:35.530719",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "wdrKzc7aiM/wYu6Y+CWzY2+N/YM=",
-            "created_at": "2026-11-22T08:56:48.782411",
-            "rotated_at": "2026-11-22T08:56:48.781542",
-            "updated_at": "2026-11-22T08:56:48.782411",
+            "auth_token": "mhFLCYzxpDL2yiJ7HYp1vrmj/9U=",
+            "created_at": "2026-11-23T17:01:34.998577",
+            "rotated_at": "2026-11-23T17:01:34.997512",
+            "updated_at": "2026-11-23T17:01:34.998577",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "wdrKzc7aiM/wYu6Y+CWzY2+N/YM=",
+            "prev_auth_token": "mhFLCYzxpDL2yiJ7HYp1vrmj/9U=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -144,7 +144,7 @@
       "headers": [
         [
           "Return-Path",
-          "replies+verp-7f9262767f21e714c7533a3a82a76efc@example.com"
+          "replies+verp-d40e26ec2b644f177f7aab4c054591ed@example.com"
         ],
         [
           "From",
@@ -160,11 +160,11 @@
         ],
         [
           "Message-ID",
-          "<686405e3-fac3-49ee-8115-25ecbcecead7@localhost>"
+          "<3a0fb06a-d8c0-4387-bf19-dba4e54f0f5c@localhost>"
         ],
         [
           "Subject",
-          "[Discourse] Email issue -- Reply Not Allowed"
+          "[Discourse] Email issue -- Post too short"
         ],
         [
           "MIME-Version",
@@ -172,7 +172,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b02ae5157a09_260f7f3844ab"
+          "multipart/alternative; boundary=--==_mimepart_6b04716f98811_7b5cf38811c3"
         ],
         [
           "Content-Transfer-Encoding",
@@ -191,13 +191,13 @@
           "auto-generated"
         ]
       ],
-      "text": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nYou don't have permissions to reply to the topic. If you believe this is an error, [contact a staff member](http://localhost:3042/about).\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+0123456789abcdef0123456789abcdef@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+0123456789abcdef0123456789abcdef@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>You don’t have permissions to reply to the topic. If you believe this is an error, <a href=\"http://localhost:3042/about\" style=\"text-decoration:none;font-weight:bold;color:#006699\">contact a staff member</a>.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "We're sorry, but your email message to [\"replies+0123456789abcdef0123456789abcdef@example.com\"] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn't work.\n\nTo promote more in depth conversations, very short replies are not allowed. Can you please reply with at least 20 characters? Alternatively, you can like a post via email by replying with \"+1\".\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>We’re sorry, but your email message to [“<a href=\"mailto:replies+0123456789abcdef0123456789abcdef@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">replies+0123456789abcdef0123456789abcdef@example.com</a>”] (titled Re: [Discourse] [General] Parity fixture: replies and posters) didn’t work.</p>\n<p>To promote more in depth conversations, very short replies are not allowed. Can you please reply with at least 20 characters? Alternatively, you can like a post via email by replying with “+1”.</p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "103a4c09895456d5d84ae3e960216fc9cfe84d9117acdd743133d8c76c8fa2c3",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

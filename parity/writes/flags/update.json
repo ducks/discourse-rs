@@ -89,8 +89,8 @@
       "path": "/admin/config/flags/1001/edit.json"
     }
   ],
-  "started_at": "2026-11-22T08:51:18.017774",
-  "transaction_started_at": "2026-11-22T08:51:17.058419",
+  "started_at": "2026-11-23T16:55:55.004871",
+  "transaction_started_at": "2026-11-23T16:55:53.945762",
   "responses": [
     {
       "status": 200,
@@ -188,9 +188,9 @@
             "applies_to": [
               "Post"
             ],
-            "created_at": "2026-11-21T08:51:17.058419",
+            "created_at": "2026-11-22T16:55:53.945762",
             "score_type": false,
-            "updated_at": "2026-11-21T08:51:17.058419",
+            "updated_at": "2026-11-22T16:55:53.945762",
             "description": "An old one",
             "notify_type": true,
             "require_message": false,
@@ -206,9 +206,9 @@
               "Post",
               "Topic"
             ],
-            "created_at": "2026-11-21T08:51:17.058419",
+            "created_at": "2026-11-22T16:55:53.945762",
             "score_type": false,
-            "updated_at": "2026-11-22T08:51:18.037413",
+            "updated_at": "2026-11-23T16:55:55.028876",
             "description": "New words",
             "notify_type": true,
             "require_message": true,
@@ -225,9 +225,9 @@
             "applies_to": [
               "Topic"
             ],
-            "created_at": "2026-11-21T08:51:17.058419",
+            "created_at": "2026-11-22T16:55:53.945762",
             "score_type": false,
-            "updated_at": "2026-11-21T08:51:17.058419",
+            "updated_at": "2026-11-22T16:55:53.945762",
             "description": "Another",
             "notify_type": true,
             "require_message": false,
@@ -242,9 +242,9 @@
             "applies_to": [
               "Topic"
             ],
-            "created_at": "2026-11-21T08:51:17.058419",
+            "created_at": "2026-11-22T16:55:53.945762",
             "score_type": false,
-            "updated_at": "2026-11-22T08:51:18.066125",
+            "updated_at": "2026-11-23T16:55:55.063445",
             "description": "Description only",
             "notify_type": true,
             "require_message": false,
@@ -259,33 +259,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Riy3XLlkC7ngu35WdWkodkgIBdI=",
-            "created_at": "2026-11-22T08:51:17.39995",
-            "rotated_at": "2026-11-22T08:51:17.399182",
-            "updated_at": "2026-11-22T08:51:17.39995",
+            "auth_token": "9orMzhMNbvElWgKLByOULjXfZyQ=",
+            "created_at": "2026-11-23T16:55:54.483067",
+            "rotated_at": "2026-11-23T16:55:54.482093",
+            "updated_at": "2026-11-23T16:55:54.483067",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Riy3XLlkC7ngu35WdWkodkgIBdI=",
+            "prev_auth_token": "9orMzhMNbvElWgKLByOULjXfZyQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:51:18.023958",
+            "id": 1,
+            "seen_at": "2026-11-23T16:55:55.011421",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Riy3XLlkC7ngu35WdWkodkgIBdI=",
-            "created_at": "2026-11-22T08:51:17.39995",
-            "rotated_at": "2026-11-22T08:51:17.399182",
-            "updated_at": "2026-11-22T08:51:17.39995",
+            "auth_token": "9orMzhMNbvElWgKLByOULjXfZyQ=",
+            "created_at": "2026-11-23T16:55:54.483067",
+            "rotated_at": "2026-11-23T16:55:54.482093",
+            "updated_at": "2026-11-23T16:55:54.483067",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Riy3XLlkC7ngu35WdWkodkgIBdI=",
+            "prev_auth_token": "9orMzhMNbvElWgKLByOULjXfZyQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -296,7 +296,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 23,
           "context": null,
@@ -306,10 +306,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T08:51:18.039141",
+          "created_at": "2026-11-23T16:55:55.030544",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:51:18.039141",
+          "updated_at": "2026-11-23T16:55:55.030544",
           "category_id": null,
           "custom_type": "update_flag",
           "reviewable_id": null,
@@ -318,7 +318,7 @@
           "target_user_id": null
         },
         {
-          "id": 73,
+          "id": 67,
           "email": null,
           "action": 23,
           "context": null,
@@ -328,10 +328,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T08:51:18.067523",
+          "created_at": "2026-11-23T16:55:55.065089",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:51:18.067523",
+          "updated_at": "2026-11-23T16:55:55.065089",
           "category_id": null,
           "custom_type": "update_flag",
           "reviewable_id": null,
@@ -346,7 +346,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 72
+    "user_histories": 66
   },
   "setup": [
     "INSERT INTO flags (id, name, name_key, description, notify_type, auto_action_type, applies_to, position, enabled, require_message, score_type, created_at, updated_at) VALUES (1001, 'Old', 'custom_old', 'An old one', true, false, '{Post}', 9, true, false, false, now() - interval '1 day', now() - interval '1 day'), (1002, 'Other', 'custom_other', 'Another', true, false, '{Topic}', 10, true, false, false, now() - interval '1 day', now() - interval '1 day')",
@@ -355,7 +355,7 @@
   ],
   "recorded_from": {
     "case": "844dd2f26ee72fc1128a7d7d542d248eca95c7764e01a874864c12943fc696be",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

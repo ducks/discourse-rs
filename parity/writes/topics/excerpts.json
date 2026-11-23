@@ -23,8 +23,8 @@
       "path": "/t/999999/excerpts.json?post_ids%5B%5D=1"
     }
   ],
-  "started_at": "2026-11-22T09:49:21.55093",
-  "transaction_started_at": "2026-11-22T09:49:20.748746",
+  "started_at": "2026-11-23T17:58:06.899045",
+  "transaction_started_at": "2026-11-23T17:58:05.99857",
   "responses": [
     {
       "status": 200,
@@ -38,6 +38,11 @@
           "post_id": 37,
           "username": "user2",
           "excerpt": "Reply two from user2, also long enough to pass the minimum length check."
+        },
+        {
+          "post_id": 38,
+          "username": "admin",
+          "excerpt": "Reply three from admin, also long enough to pass the minimum length check."
         },
         {
           "post_id": 36,
@@ -91,7 +96,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "f1341c80ee3fed5c6ec2ff32d6788fcd99bc3e6cef7b73860ad71d7207faaa0f",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:53:07.640901",
-  "transaction_started_at": "2026-11-22T09:53:06.78209",
+  "started_at": "2026-11-23T18:02:09.775085",
+  "transaction_started_at": "2026-11-23T18:02:08.694771",
   "responses": [
     {
       "status": 200,
@@ -54,7 +54,7 @@
             "style_type": 2,
             "text_color": "FFFFFF",
             "topics_day": 0,
-            "updated_at": "2026-11-21T23:56:45.856644",
+            "updated_at": "2026-11-23T16:08:35.815006",
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "posts_month": 0,
             "topic_count": 3,
@@ -117,7 +117,7 @@
             "style_type": 2,
             "text_color": "FFFFFF",
             "topics_day": 0,
-            "updated_at": "2026-11-21T23:56:45.856644",
+            "updated_at": "2026-11-23T16:08:35.815006",
             "description": "Create topics here that don’t fit into any other existing category.",
             "posts_month": 0,
             "topic_count": 3,
@@ -182,8 +182,8 @@
           "post_id": 3,
           "user_id": 1,
           "unlisted": false,
-          "created_at": "2026-11-22T09:53:07.709349",
-          "updated_at": "2026-11-22T09:53:07.709349",
+          "created_at": "2026-11-23T18:02:09.843853",
+          "updated_at": "2026-11-23T18:02:09.843853",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- About the General category\n- About the General category, renamed\n"
         }
       ],
@@ -298,7 +298,7 @@
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T09:53:07.659271",
+            "updated_at": "2026-11-23T18:02:09.79329",
             "word_count": 12,
             "action_code": null,
             "cook_method": 1,
@@ -318,7 +318,7 @@
             "last_editor_id": 1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T09:53:07.657212",
+            "last_version_at": "2026-11-23T18:02:09.791263",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -431,7 +431,7 @@
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-11-22T09:53:07.692993",
+            "updated_at": "2026-11-23T18:02:09.826114",
             "word_count": 12,
             "category_id": 4,
             "external_id": null,
@@ -472,33 +472,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "V4e7H8Opag9KrS9CKRo+qXIUZBQ=",
-            "created_at": "2026-11-22T09:53:07.164212",
-            "rotated_at": "2026-11-22T09:53:07.163217",
-            "updated_at": "2026-11-22T09:53:07.164212",
+            "auth_token": "i7KRVApuuW5Li1hBV/CtVwBQE8I=",
+            "created_at": "2026-11-23T18:02:09.093977",
+            "rotated_at": "2026-11-23T18:02:09.09238",
+            "updated_at": "2026-11-23T18:02:09.093977",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "V4e7H8Opag9KrS9CKRo+qXIUZBQ=",
+            "prev_auth_token": "i7KRVApuuW5Li1hBV/CtVwBQE8I=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:53:07.648157",
+            "id": 1,
+            "seen_at": "2026-11-23T18:02:09.781723",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "V4e7H8Opag9KrS9CKRo+qXIUZBQ=",
-            "created_at": "2026-11-22T09:53:07.164212",
-            "rotated_at": "2026-11-22T09:53:07.163217",
-            "updated_at": "2026-11-22T09:53:07.164212",
+            "auth_token": "i7KRVApuuW5Li1hBV/CtVwBQE8I=",
+            "created_at": "2026-11-23T18:02:09.093977",
+            "rotated_at": "2026-11-23T18:02:09.09238",
+            "updated_at": "2026-11-23T18:02:09.093977",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "V4e7H8Opag9KrS9CKRo+qXIUZBQ=",
+            "prev_auth_token": "i7KRVApuuW5Li1hBV/CtVwBQE8I=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -521,7 +521,7 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
@@ -534,7 +534,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:45.037179",
+            "first_post_created_at": "2026-11-23T16:08:32.395967",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -547,7 +547,7 @@
             "likes_given": 0,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 0,
@@ -560,7 +560,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:45.037179",
+            "first_post_created_at": "2026-11-23T16:08:32.395967",
             "reset_bounce_score_after": null
           }
         }
@@ -602,7 +602,7 @@
   },
   "recorded_from": {
     "case": "441d7213c8142910291fd816f722be5188a001004d73e6a981a818792e19a862",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

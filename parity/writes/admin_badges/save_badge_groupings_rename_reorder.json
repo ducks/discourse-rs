@@ -25,8 +25,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:13:44.257749",
-  "transaction_started_at": "2026-11-22T08:13:43.447025",
+  "started_at": "2026-11-23T16:15:05.800338",
+  "transaction_started_at": "2026-11-23T16:15:04.690777",
   "responses": [
     {
       "status": 200,
@@ -97,7 +97,7 @@
             "name": "Community!",
             "position": 0,
             "created_at": "2026-11-03T05:07:09.664559",
-            "updated_at": "2026-11-22T08:13:44.274893",
+            "updated_at": "2026-11-23T16:15:05.817289",
             "description": null
           }
         },
@@ -115,7 +115,7 @@
             "name": "Getting Started",
             "position": 1,
             "created_at": "2026-11-03T05:07:09.656567",
-            "updated_at": "2026-11-22T08:13:44.277697",
+            "updated_at": "2026-11-23T16:15:05.82025",
             "description": null
           }
         },
@@ -133,7 +133,7 @@
             "name": "Posting",
             "position": 2,
             "created_at": "2026-11-03T05:07:09.674059",
-            "updated_at": "2026-11-22T08:13:44.280217",
+            "updated_at": "2026-11-23T16:15:05.822669",
             "description": null
           }
         },
@@ -151,7 +151,7 @@
             "name": "Trust Level",
             "position": 3,
             "created_at": "2026-11-03T05:07:09.683169",
-            "updated_at": "2026-11-22T08:13:44.282983",
+            "updated_at": "2026-11-23T16:15:05.825276",
             "description": null
           }
         },
@@ -169,7 +169,7 @@
             "name": "Other",
             "position": 4,
             "created_at": "2026-11-03T05:07:09.691556",
-            "updated_at": "2026-11-22T08:13:44.286012",
+            "updated_at": "2026-11-23T16:15:05.827866",
             "description": null
           }
         },
@@ -187,7 +187,7 @@
             "name": "Voice",
             "position": 5,
             "created_at": "2026-11-03T05:07:25.90933",
-            "updated_at": "2026-11-22T08:13:44.289298",
+            "updated_at": "2026-11-23T16:15:05.830803",
             "description": null
           }
         }
@@ -199,33 +199,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "i7uzfnq0/4bXWQFH41jyED5xIIg=",
-            "created_at": "2026-11-22T08:13:43.746179",
-            "rotated_at": "2026-11-22T08:13:43.745347",
-            "updated_at": "2026-11-22T08:13:43.746179",
+            "auth_token": "mZTAb1SMk3QHIwxuf7NptPU1vXU=",
+            "created_at": "2026-11-23T16:15:05.293184",
+            "rotated_at": "2026-11-23T16:15:05.292029",
+            "updated_at": "2026-11-23T16:15:05.293184",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "i7uzfnq0/4bXWQFH41jyED5xIIg=",
+            "prev_auth_token": "mZTAb1SMk3QHIwxuf7NptPU1vXU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:13:44.265729",
+            "id": 1,
+            "seen_at": "2026-11-23T16:15:05.808285",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "i7uzfnq0/4bXWQFH41jyED5xIIg=",
-            "created_at": "2026-11-22T08:13:43.746179",
-            "rotated_at": "2026-11-22T08:13:43.745347",
-            "updated_at": "2026-11-22T08:13:43.746179",
+            "auth_token": "mZTAb1SMk3QHIwxuf7NptPU1vXU=",
+            "created_at": "2026-11-23T16:15:05.293184",
+            "rotated_at": "2026-11-23T16:15:05.292029",
+            "updated_at": "2026-11-23T16:15:05.293184",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "i7uzfnq0/4bXWQFH41jyED5xIIg=",
+            "prev_auth_token": "mZTAb1SMk3QHIwxuf7NptPU1vXU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -244,7 +244,7 @@
   ],
   "recorded_from": {
     "case": "933eff54e32d97825fa3c6e45b60a91bec80c870f569fe5f0ce107a54e57ab99",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

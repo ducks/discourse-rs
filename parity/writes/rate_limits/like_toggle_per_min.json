@@ -41,8 +41,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:18:32.868747",
-  "transaction_started_at": "2026-11-22T09:18:32.052259",
+  "started_at": "2026-11-23T17:24:34.991281",
+  "transaction_started_at": "2026-11-23T17:24:34.126429",
   "responses": [
     {
       "status": 200,
@@ -51,19 +51,19 @@
         "name": "User2",
         "username": "user2",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-        "created_at": "2026-11-21T23:56:44.759Z",
+        "created_at": "2026-11-23T16:08:32.082Z",
         "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
         "post_number": 3,
         "post_type": 1,
         "posts_count": 5,
-        "updated_at": "2026-11-21T23:56:44.759Z",
+        "updated_at": "2026-11-23T16:08:32.082Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
         "incoming_link_count": 0,
         "reads": 1,
         "readers_count": 0,
-        "score": 0,
+        "score": 0.2,
         "yours": false,
         "topic_id": 35,
         "topic_slug": "parity-fixture-replies-and-posters",
@@ -161,19 +161,19 @@
         "name": "User2",
         "username": "user2",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-        "created_at": "2026-11-21T23:56:44.759Z",
+        "created_at": "2026-11-23T16:08:32.082Z",
         "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
         "post_number": 3,
         "post_type": 1,
         "posts_count": 5,
-        "updated_at": "2026-11-21T23:56:44.759Z",
+        "updated_at": "2026-11-23T16:08:32.082Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
         "incoming_link_count": 0,
         "reads": 1,
         "readers_count": 0,
-        "score": 0,
+        "score": 0.2,
         "yours": false,
         "topic_id": 35,
         "topic_slug": "parity-fixture-replies-and-posters",
@@ -255,19 +255,19 @@
         "name": "User2",
         "username": "user2",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-        "created_at": "2026-11-21T23:56:44.759Z",
+        "created_at": "2026-11-23T16:08:32.082Z",
         "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
         "post_number": 3,
         "post_type": 1,
         "posts_count": 5,
-        "updated_at": "2026-11-21T23:56:44.759Z",
+        "updated_at": "2026-11-23T16:08:32.082Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
         "incoming_link_count": 0,
         "reads": 1,
         "readers_count": 0,
-        "score": 0,
+        "score": 0.2,
         "yours": false,
         "topic_id": 35,
         "topic_slug": "parity-fixture-replies-and-posters",
@@ -365,19 +365,19 @@
         "name": "User2",
         "username": "user2",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-        "created_at": "2026-11-21T23:56:44.759Z",
+        "created_at": "2026-11-23T16:08:32.082Z",
         "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
         "post_number": 3,
         "post_type": 1,
         "posts_count": 5,
-        "updated_at": "2026-11-21T23:56:44.759Z",
+        "updated_at": "2026-11-23T16:08:32.082Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
         "incoming_link_count": 0,
         "reads": 1,
         "readers_count": 0,
-        "score": 0,
+        "score": 0.2,
         "yours": false,
         "topic_id": 35,
         "topic_slug": "parity-fixture-replies-and-posters",
@@ -456,32 +456,20 @@
       "status": 429,
       "body": {
         "errors": [
-          "You’ve performed this action too many times. Please wait 59 seconds before trying again."
+          "You’ve performed this action too many times. Please wait 1 minute before trying again."
         ],
         "error_type": "rate_limit",
         "extras": {
-          "wait_seconds": 59,
-          "time_left": "59 seconds"
+          "wait_seconds": 60,
+          "time_left": "1 minute"
         }
       },
       "headers": {
-        "Retry-After": "59"
+        "Retry-After": "60"
       }
     }
   ],
   "changes": {
-    "given_daily_likes": {
-      "inserted": [
-        {
-          "user_id": 3,
-          "given_date": "2026-11-22",
-          "likes_given": 0,
-          "limit_reached": false
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
     "post_actions": {
       "inserted": [
         {
@@ -489,9 +477,9 @@
           "post_id": 37,
           "user_id": 3,
           "agreed_at": null,
-          "created_at": "2026-11-22T09:18:33.102107",
-          "deleted_at": "2026-11-22T09:18:33.391475",
-          "updated_at": "2026-11-22T09:18:33.116079",
+          "created_at": "2026-11-23T17:24:35.33822",
+          "deleted_at": "2026-11-23T17:24:35.599309",
+          "updated_at": "2026-11-23T17:24:35.381152",
           "deferred_at": null,
           "agreed_by_id": null,
           "disagreed_at": null,
@@ -513,33 +501,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "++5i5fWvnxICNAiZSJmhctCAjyg=",
-            "created_at": "2026-11-22T09:18:32.404686",
-            "rotated_at": "2026-11-22T09:18:32.403809",
-            "updated_at": "2026-11-22T09:18:32.404686",
+            "auth_token": "DdA2nxU5dSfxDbtqTDbqNAELGrs=",
+            "created_at": "2026-11-23T17:24:34.478565",
+            "rotated_at": "2026-11-23T17:24:34.477701",
+            "updated_at": "2026-11-23T17:24:34.478565",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "++5i5fWvnxICNAiZSJmhctCAjyg=",
+            "prev_auth_token": "DdA2nxU5dSfxDbtqTDbqNAELGrs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:18:32.875486",
+            "id": 1,
+            "seen_at": "2026-11-23T17:24:34.998723",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "++5i5fWvnxICNAiZSJmhctCAjyg=",
-            "created_at": "2026-11-22T09:18:32.404686",
-            "rotated_at": "2026-11-22T09:18:32.403809",
-            "updated_at": "2026-11-22T09:18:32.404686",
+            "auth_token": "DdA2nxU5dSfxDbtqTDbqNAELGrs=",
+            "created_at": "2026-11-23T17:24:34.478565",
+            "rotated_at": "2026-11-23T17:24:34.477701",
+            "updated_at": "2026-11-23T17:24:34.478565",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "++5i5fWvnxICNAiZSJmhctCAjyg=",
+            "prev_auth_token": "DdA2nxU5dSfxDbtqTDbqNAELGrs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -564,7 +552,7 @@
   "rate_limits": true,
   "recorded_from": {
     "case": "9d0d4dbce4b08e2fc188cf356ed4e69e0a49646365a63a963551660cd782a7bb",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

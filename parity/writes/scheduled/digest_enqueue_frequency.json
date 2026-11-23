@@ -2,8 +2,8 @@
   "name": "digest_enqueue_frequency",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:28:21.339267",
-  "transaction_started_at": "2026-11-22T09:28:20.711468",
+  "started_at": "2026-11-23T17:35:04.642836",
+  "transaction_started_at": "2026-11-23T17:35:03.913175",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -50,7 +50,7 @@
   ],
   "recorded_from": {
     "case": "6f76565485e8e278d80a051eb7aa81ee71b5d8d60687f6e983d2891d57c6e163",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

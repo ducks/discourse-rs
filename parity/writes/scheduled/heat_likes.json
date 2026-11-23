@@ -2,8 +2,8 @@
   "name": "heat_likes",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:28:39.195549",
-  "transaction_started_at": "2026-11-22T09:28:38.392384",
+  "started_at": "2026-11-23T17:35:24.357596",
+  "transaction_started_at": "2026-11-23T17:35:23.733326",
   "responses": [],
   "changes": {
     "site_settings": {
@@ -13,24 +13,24 @@
           "name": "topic_post_like_heat_high",
           "value": "2.5",
           "data_type": 4,
-          "created_at": "2026-11-22T09:28:39.198366",
-          "updated_at": "2026-11-22T09:28:39.198366"
+          "created_at": "2026-11-23T17:35:24.360696",
+          "updated_at": "2026-11-23T17:35:24.360696"
         },
         {
           "id": 38,
           "name": "topic_post_like_heat_medium",
           "value": "1.5",
           "data_type": 4,
-          "created_at": "2026-11-22T09:28:39.204529",
-          "updated_at": "2026-11-22T09:28:39.204529"
+          "created_at": "2026-11-23T17:35:24.367714",
+          "updated_at": "2026-11-23T17:35:24.367714"
         },
         {
           "id": 39,
           "name": "topic_post_like_heat_low",
           "value": "0.58",
           "data_type": 4,
-          "created_at": "2026-11-22T09:28:39.212029",
-          "updated_at": "2026-11-22T09:28:39.212029"
+          "created_at": "2026-11-23T17:35:24.373483",
+          "updated_at": "2026-11-23T17:35:24.373483"
         }
       ],
       "deleted": [],
@@ -39,7 +39,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 3,
           "context": null,
@@ -49,10 +49,10 @@
           "topic_id": null,
           "new_value": "2.5",
           "admin_only": true,
-          "created_at": "2026-11-22T09:28:39.201773",
+          "created_at": "2026-11-23T17:35:24.364171",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:28:39.201773",
+          "updated_at": "2026-11-23T17:35:24.364171",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -61,7 +61,7 @@
           "target_user_id": null
         },
         {
-          "id": 73,
+          "id": 67,
           "email": null,
           "action": 3,
           "context": null,
@@ -71,10 +71,10 @@
           "topic_id": null,
           "new_value": "1.5",
           "admin_only": true,
-          "created_at": "2026-11-22T09:28:39.208229",
+          "created_at": "2026-11-23T17:35:24.370647",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:28:39.208229",
+          "updated_at": "2026-11-23T17:35:24.370647",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -83,7 +83,7 @@
           "target_user_id": null
         },
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 3,
           "context": null,
@@ -93,10 +93,10 @@
           "topic_id": null,
           "new_value": "0.58",
           "admin_only": true,
-          "created_at": "2026-11-22T09:28:39.215207",
+          "created_at": "2026-11-23T17:35:24.376719",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:28:39.215207",
+          "updated_at": "2026-11-23T17:35:24.376719",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -112,7 +112,7 @@
   "jobs": [],
   "next_ids": {
     "site_settings": 37,
-    "user_histories": 72
+    "user_histories": 66
   },
   "setup": [
     "UPDATE topics SET posts_count = x.p, like_count = x.l FROM (VALUES (35,10,30),(37,10,25),(38,10,21),(41,10,18),(34,10,15),(1,10,12),(2,10,11),(3,10,7),(4,12,7)) AS x(id,p,l) WHERE topics.id = x.id"
@@ -126,7 +126,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "91d174ddbe996f2c5b43acc39b37df48db75466c2e3b495cd1c8f1b06740408e",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

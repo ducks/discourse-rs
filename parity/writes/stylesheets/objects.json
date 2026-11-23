@@ -59,8 +59,8 @@
       "stylesheet": "common_theme"
     }
   ],
-  "started_at": "2026-11-22T09:41:47.811469",
-  "transaction_started_at": "2026-11-22T09:41:47.008163",
+  "started_at": "2026-11-23T17:49:42.034194",
+  "transaction_started_at": "2026-11-23T17:49:41.111905",
   "responses": [
     {
       "status": 201,
@@ -69,8 +69,8 @@
           "id": 1,
           "name": "Objects",
           "description": null,
-          "created_at": "2026-11-22T09:41:47.824Z",
-          "updated_at": "2026-11-22T09:41:47.824Z",
+          "created_at": "2026-11-23T17:49:42.050Z",
+          "updated_at": "2026-11-23T17:49:42.050Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -218,8 +218,8 @@
           "id": 1,
           "name": "Objects",
           "description": null,
-          "created_at": "2026-11-22T09:41:47.824Z",
-          "updated_at": "2026-11-22T09:41:47.824Z",
+          "created_at": "2026-11-23T17:49:42.050Z",
+          "updated_at": "2026-11-23T17:49:42.050Z",
           "default": true,
           "component": false,
           "color_scheme_id": null,
@@ -363,7 +363,7 @@
     },
     {
       "status": 200,
-      "body": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_6b3c4782e38ec9dc82ee7269b72b7d303c62c0bf.css.map?__ws=localhost */\n"
+      "body": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_91af922a5982ceb0629178b40c987251c9a8b097.css.map?__ws=localhost */\n"
     },
     {
       "status": 200,
@@ -391,7 +391,7 @@
     },
     {
       "status": 200,
-      "body": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_6f62f545d97c63f7fd1e256f80d0d4b169ea3ff9.css.map?__ws=localhost */\n"
+      "body": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_f043d0c76c45f960cabf6e2b14add67179ddb0fb.css.map?__ws=localhost */\n"
     }
   ],
   "changes": {
@@ -414,7 +414,7 @@
             "value": "1",
             "data_type": 3,
             "created_at": "2026-11-03T05:07:17.745255",
-            "updated_at": "2026-11-22T09:41:48.45886"
+            "updated_at": "2026-11-23T17:49:42.670446"
           }
         }
       ]
@@ -423,23 +423,23 @@
       "inserted": [
         {
           "id": 36,
-          "digest": "6b3c4782e38ec9dc82ee7269b72b7d303c62c0bf",
+          "digest": "91af922a5982ceb0629178b40c987251c9a8b097",
           "target": "common_theme_1",
-          "content": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_6b3c4782e38ec9dc82ee7269b72b7d303c62c0bf.css.map?__ws=localhost */",
+          "content": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_91af922a5982ceb0629178b40c987251c9a8b097.css.map?__ws=localhost */",
           "theme_id": -1,
-          "created_at": "2026-11-22T09:41:48.300984",
-          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_505b376f1235caf45d5da9ad6ddb62f1/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,kDAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
-          "updated_at": "2026-11-22T09:41:48.300984"
+          "created_at": "2026-11-23T17:49:42.486368",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_5bc83d668be3b06680b2690adb2f76bd/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,kDAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
+          "updated_at": "2026-11-23T17:49:42.486368"
         },
         {
           "id": 37,
-          "digest": "6f62f545d97c63f7fd1e256f80d0d4b169ea3ff9",
+          "digest": "f043d0c76c45f960cabf6e2b14add67179ddb0fb",
           "target": "common_theme_1",
-          "content": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_6f62f545d97c63f7fd1e256f80d0d4b169ea3ff9.css.map?__ws=localhost */",
+          "content": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_f043d0c76c45f960cabf6e2b14add67179ddb0fb.css.map?__ws=localhost */",
           "theme_id": -1,
-          "created_at": "2026-11-22T09:41:49.298559",
-          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_74285dd5a0e3ce9eeb0c386e04823cc7/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,qQAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
-          "updated_at": "2026-11-22T09:41:49.298559"
+          "created_at": "2026-11-23T17:49:43.656754",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_e521766b39feb4cdd5a96f5dd5a48380/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,qQAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
+          "updated_at": "2026-11-23T17:49:43.656754"
         }
       ],
       "deleted": [],
@@ -456,8 +456,8 @@
           "theme_id": 1,
           "target_id": 3,
           "upload_id": null,
-          "created_at": "2026-11-22T09:41:47.826028",
-          "updated_at": "2026-11-22T09:41:47.826028",
+          "created_at": "2026-11-23T17:49:42.052311",
+          "updated_at": "2026-11-23T17:49:42.052311",
           "value_baked": "baked",
           "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         },
@@ -470,9 +470,9 @@
           "theme_id": 1,
           "target_id": 0,
           "upload_id": null,
-          "created_at": "2026-11-22T09:41:47.828506",
-          "updated_at": "2026-11-22T09:41:47.828506",
-          "value_baked": "308d773d54895246ad83f5bfbccdd5cd38bec43e",
+          "created_at": "2026-11-23T17:49:42.055377",
+          "updated_at": "2026-11-23T17:49:42.055377",
+          "value_baked": "217f8f595250e5a1b6721cffb0228e6c46216149",
           "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         }
       ],
@@ -507,7 +507,7 @@
           "value": null,
           "theme_id": 1,
           "data_type": 7,
-          "created_at": "2026-11-22T09:41:49.098418",
+          "created_at": "2026-11-23T17:49:43.423693",
           "json_value": [
             {
               "url": "https://example.com/a?b=c",
@@ -527,7 +527,7 @@
               "ratio": 2.0
             }
           ],
-          "updated_at": "2026-11-22T09:41:49.098418"
+          "updated_at": "2026-11-23T17:49:43.423693"
         }
       ],
       "deleted": [],
@@ -542,8 +542,8 @@
           "enabled": true,
           "user_id": 1,
           "component": false,
-          "created_at": "2026-11-22T09:41:47.824729",
-          "updated_at": "2026-11-22T09:41:47.824729",
+          "created_at": "2026-11-23T17:49:42.050213",
+          "updated_at": "2026-11-23T17:49:42.050213",
           "auto_update": true,
           "color_scheme_id": null,
           "remote_theme_id": null,
@@ -561,33 +561,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Fj3DD/1oQBMlJkZYXKDWjbrOLAE=",
-            "created_at": "2026-11-22T09:41:47.367746",
-            "rotated_at": "2026-11-22T09:41:47.366952",
-            "updated_at": "2026-11-22T09:41:47.367746",
+            "auth_token": "rkNTdDppgpONvljSCShVbVlmpKY=",
+            "created_at": "2026-11-23T17:49:41.558293",
+            "rotated_at": "2026-11-23T17:49:41.557454",
+            "updated_at": "2026-11-23T17:49:41.558293",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Fj3DD/1oQBMlJkZYXKDWjbrOLAE=",
+            "prev_auth_token": "rkNTdDppgpONvljSCShVbVlmpKY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:41:47.816676",
+            "id": 1,
+            "seen_at": "2026-11-23T17:49:42.040254",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Fj3DD/1oQBMlJkZYXKDWjbrOLAE=",
-            "created_at": "2026-11-22T09:41:47.367746",
-            "rotated_at": "2026-11-22T09:41:47.366952",
-            "updated_at": "2026-11-22T09:41:47.367746",
+            "auth_token": "rkNTdDppgpONvljSCShVbVlmpKY=",
+            "created_at": "2026-11-23T17:49:41.558293",
+            "rotated_at": "2026-11-23T17:49:41.557454",
+            "updated_at": "2026-11-23T17:49:41.558293",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Fj3DD/1oQBMlJkZYXKDWjbrOLAE=",
+            "prev_auth_token": "rkNTdDppgpONvljSCShVbVlmpKY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -598,7 +598,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 4,
           "context": null,
@@ -606,12 +606,12 @@
           "post_id": null,
           "subject": "Objects",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Objects\",\"description\":null,\"created_at\":\"2026-11-22T09:41:47.824Z\",\"updated_at\":\"2026-11-22T09:41:47.824Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true},\"url\":{\"type\":\"string\"},\"weight\":{\"type\":\"integer\"},\"ratio\":{\"type\":\"float\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true}}}}}}},{\"setting\":\"empty_links\",\"humanized_name\":\"Empty links\",\"type\":\"objects\",\"default\":[],\"value\":[],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\"}}}}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"links:\\n  type: objects\\n  default:\\n    - name: Home\\n      url: /latest\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n        required: true\\n      url:\\n        type: string\\n      weight:\\n        type: integer\\n      ratio:\\n        type: float\\n      flag:\\n        type: boolean\\n      children:\\n        type: objects\\n        schema:\\n          name: child\\n          properties:\\n            label:\\n              type: string\\n              required: true\\nempty_links:\\n  type: objects\\n  default: []\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "new_value": "{\"id\":1,\"name\":\"Objects\",\"description\":null,\"created_at\":\"2026-11-23T17:49:42.050Z\",\"updated_at\":\"2026-11-23T17:49:42.050Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true},\"url\":{\"type\":\"string\"},\"weight\":{\"type\":\"integer\"},\"ratio\":{\"type\":\"float\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true}}}}}}},{\"setting\":\"empty_links\",\"humanized_name\":\"Empty links\",\"type\":\"objects\",\"default\":[],\"value\":[],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\"}}}}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"links:\\n  type: objects\\n  default:\\n    - name: Home\\n      url: /latest\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n        required: true\\n      url:\\n        type: string\\n      weight:\\n        type: integer\\n      ratio:\\n        type: float\\n      flag:\\n        type: boolean\\n      children:\\n        type: objects\\n        schema:\\n          name: child\\n          properties:\\n            label:\\n              type: string\\n              required: true\\nempty_links:\\n  type: objects\\n  default: []\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "admin_only": true,
-          "created_at": "2026-11-22T09:41:48.004564",
+          "created_at": "2026-11-23T17:49:42.297451",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:41:48.004564",
+          "updated_at": "2026-11-23T17:49:42.297451",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -620,7 +620,7 @@
           "target_user_id": null
         },
         {
-          "id": 73,
+          "id": 67,
           "email": null,
           "action": 4,
           "context": null,
@@ -630,10 +630,10 @@
           "topic_id": null,
           "new_value": "{\"id\":1,\"name\":\"Objects\",\"default\":true}",
           "admin_only": true,
-          "created_at": "2026-11-22T09:41:48.484128",
+          "created_at": "2026-11-23T17:49:42.694519",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:41:48.484128",
+          "updated_at": "2026-11-23T17:49:42.694519",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -642,7 +642,7 @@
           "target_user_id": null
         },
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 77,
           "context": null,
@@ -652,10 +652,10 @@
           "topic_id": null,
           "new_value": "[{\"name\": \"It's \\\"quoted\\\" \\\\ #{x}\", \"url\": \"https://example.com/a?b=c\", \"weight\": 3, \"ratio\": 1.5, \"flag\": false, \"children\": [{\"label\": \"Kid\"}]}, {\"name\": \"Second\", \"ratio\": 2.0, \"flag\": true}]",
           "admin_only": true,
-          "created_at": "2026-11-22T09:41:49.165508",
+          "created_at": "2026-11-23T17:49:43.495853",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:41:49.165508",
+          "updated_at": "2026-11-23T17:49:43.495853",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -687,22 +687,22 @@
             "created_at": "2026-11-03T05:07:59.531425",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-21T23:56:45.584857",
+            "updated_at": "2026-11-23T16:08:34.844104",
             "approved_at": "2026-11-03T05:07:59.903079",
             "trust_level": 4,
-            "last_seen_at": "2026-11-22T04:14:24.970474",
+            "last_seen_at": "2026-11-23T16:08:49.565015",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-21T23:56:57.944136",
+            "first_seen_at": "2026-11-23T16:08:49.565015",
             "silenced_till": null,
             "approved_by_id": -1,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-21T23:56:45.555639",
+            "last_posted_at": "2026-11-23T16:08:34.728995",
             "suspended_till": null,
             "username_lower": "admin",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": "2026-11-21T23:56:57.944136",
+            "previous_visit_at": null,
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -727,22 +727,22 @@
             "created_at": "2026-11-03T05:07:59.531425",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-21T23:56:45.584857",
+            "updated_at": "2026-11-23T16:08:34.844104",
             "approved_at": "2026-11-03T05:07:59.903079",
             "trust_level": 4,
-            "last_seen_at": "2026-11-22T09:41:49.033909",
+            "last_seen_at": "2026-11-23T17:49:43.342832",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-21T23:56:57.944136",
+            "first_seen_at": "2026-11-23T16:08:49.565015",
             "silenced_till": null,
             "approved_by_id": -1,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-21T23:56:45.555639",
+            "last_posted_at": "2026-11-23T16:08:34.728995",
             "suspended_till": null,
             "username_lower": "admin",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": "2026-11-22T04:14:24.970474",
+            "previous_visit_at": "2026-11-23T16:08:49.565015",
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -768,14 +768,14 @@
     "theme_modifier_sets": 3,
     "theme_settings": 1,
     "themes": 1,
-    "user_histories": 72
+    "user_histories": 66
   },
   "digests": [
     "theme_fields.value_baked"
   ],
   "recorded_from": {
     "case": "15a6f3fb2c978d784b824be8ac3981ce80d4489a59360294194aa95572404d30",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

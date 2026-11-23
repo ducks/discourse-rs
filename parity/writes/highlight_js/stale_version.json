@@ -7,8 +7,8 @@
       "path": "/highlight-js/localhost/d125c3422119592da271b68fa9500c957dd748c0.js"
     }
   ],
-  "started_at": "2026-11-22T08:55:38.887594",
-  "transaction_started_at": "2026-11-22T08:55:38.141354",
+  "started_at": "2026-11-23T17:00:24.261669",
+  "transaction_started_at": "2026-11-23T17:00:23.684737",
   "responses": [
     {
       "status": 302,
@@ -23,7 +23,7 @@
   },
   "recorded_from": {
     "case": "fc95e4d84c9d2f9fb9243ad4da346c98fbf5fc1e10093829e3910cc9a8733a5f",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

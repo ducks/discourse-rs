@@ -21,8 +21,8 @@
       "path": "/admin/email/templates/system_messages.pending_users_reminder"
     }
   ],
-  "started_at": "2026-11-22T08:19:16.047176",
-  "transaction_started_at": "2026-11-22T08:19:15.28927",
+  "started_at": "2026-11-23T16:20:36.395068",
+  "transaction_started_at": "2026-11-23T16:20:35.605999",
   "responses": [
     {
       "status": 200,
@@ -1985,33 +1985,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "wXMFaDrNhbqDKSeLoMJdoIBL6fc=",
-            "created_at": "2026-11-22T08:19:15.57361",
-            "rotated_at": "2026-11-22T08:19:15.57278",
-            "updated_at": "2026-11-22T08:19:15.57361",
+            "auth_token": "igI97bTja6oE+wfCnIbUIv4d7PU=",
+            "created_at": "2026-11-23T16:20:35.887264",
+            "rotated_at": "2026-11-23T16:20:35.886452",
+            "updated_at": "2026-11-23T16:20:35.887264",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "wXMFaDrNhbqDKSeLoMJdoIBL6fc=",
+            "prev_auth_token": "igI97bTja6oE+wfCnIbUIv4d7PU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:19:16.052615",
+            "id": 1,
+            "seen_at": "2026-11-23T16:20:36.400772",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "wXMFaDrNhbqDKSeLoMJdoIBL6fc=",
-            "created_at": "2026-11-22T08:19:15.57361",
-            "rotated_at": "2026-11-22T08:19:15.57278",
-            "updated_at": "2026-11-22T08:19:15.57361",
+            "auth_token": "igI97bTja6oE+wfCnIbUIv4d7PU=",
+            "created_at": "2026-11-23T16:20:35.887264",
+            "rotated_at": "2026-11-23T16:20:35.886452",
+            "updated_at": "2026-11-23T16:20:35.887264",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "wXMFaDrNhbqDKSeLoMJdoIBL6fc=",
+            "prev_auth_token": "igI97bTja6oE+wfCnIbUIv4d7PU=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -2022,7 +2022,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 29,
           "context": null,
@@ -2032,10 +2032,10 @@
           "topic_id": null,
           "new_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:16.156844",
+          "created_at": "2026-11-23T16:20:36.509557",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:16.156844",
+          "updated_at": "2026-11-23T16:20:36.509557",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2044,7 +2044,7 @@
           "target_user_id": null
         },
         {
-          "id": 73,
+          "id": 67,
           "email": null,
           "action": 29,
           "context": null,
@@ -2054,10 +2054,10 @@
           "topic_id": null,
           "new_value": "A body",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:16.15984",
+          "created_at": "2026-11-23T16:20:36.512893",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:16.15984",
+          "updated_at": "2026-11-23T16:20:36.512893",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2066,7 +2066,7 @@
           "target_user_id": null
         },
         {
-          "id": 74,
+          "id": 68,
           "email": null,
           "action": 29,
           "context": null,
@@ -2076,10 +2076,10 @@
           "topic_id": null,
           "new_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:16.237822",
+          "created_at": "2026-11-23T16:20:36.594939",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:16.237822",
+          "updated_at": "2026-11-23T16:20:36.594939",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2088,7 +2088,7 @@
           "target_user_id": null
         },
         {
-          "id": 75,
+          "id": 69,
           "email": null,
           "action": 29,
           "context": null,
@@ -2098,10 +2098,10 @@
           "topic_id": null,
           "new_value": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
           "admin_only": true,
-          "created_at": "2026-11-22T08:19:16.240933",
+          "created_at": "2026-11-23T16:20:36.598049",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:19:16.240933",
+          "updated_at": "2026-11-23T16:20:36.598049",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2116,11 +2116,11 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 72
+    "user_histories": 66
   },
   "recorded_from": {
     "case": "45a55f1a82768e33ce5f41b84f4e983b60ef7a83fb8de21531470dff110f3e6a",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

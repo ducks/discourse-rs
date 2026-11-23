@@ -11,8 +11,8 @@
       "path": "/chat/api/channels.json"
     }
   ],
-  "started_at": "2026-11-22T08:36:22.664783",
-  "transaction_started_at": "2026-11-22T08:36:21.83159",
+  "started_at": "2026-11-23T16:39:12.066368",
+  "transaction_started_at": "2026-11-23T16:39:10.942979",
   "responses": [
     {
       "status": 200,
@@ -88,7 +88,7 @@
               "notification_level": "mention",
               "chat_channel_id": 2,
               "last_read_message_id": null,
-              "last_viewed_at": "2026-11-21T23:56:57.842Z",
+              "last_viewed_at": "2026-11-23T16:08:49.419Z",
               "last_viewed_pins_at": null,
               "starred": false,
               "has_unseen_pins": false
@@ -115,7 +115,7 @@
               "id": 6,
               "message": "https://example.com",
               "cooked": "<p><a href=\"https://example.com\" rel=\"noopener nofollow ugc\">https://example.com</a></p>",
-              "created_at": "2026-11-22T08:31:21Z",
+              "created_at": "2026-11-23T16:34:10Z",
               "excerpt": "https://example.com",
               "deleted_at": null,
               "deleted_by_id": null,
@@ -231,7 +231,7 @@
               "notification_level": "mention",
               "chat_channel_id": 2,
               "last_read_message_id": null,
-              "last_viewed_at": "2026-11-21T23:56:57.842Z",
+              "last_viewed_at": "2026-11-23T16:08:49.419Z",
               "last_viewed_pins_at": null,
               "starred": false,
               "has_unseen_pins": false
@@ -258,7 +258,7 @@
               "id": 6,
               "message": "https://example.com",
               "cooked": "<p><a href=\"https://example.com\" rel=\"noopener nofollow ugc\">https://example.com</a></p>",
-              "created_at": "2026-11-22T08:31:21Z",
+              "created_at": "2026-11-23T16:34:10Z",
               "excerpt": "https://example.com",
               "deleted_at": null,
               "deleted_by_id": null,
@@ -281,33 +281,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "rh/4P+ErEnF+WbvOKBSqWzThPpw=",
-            "created_at": "2026-11-22T08:36:22.162803",
-            "rotated_at": "2026-11-22T08:36:22.161887",
-            "updated_at": "2026-11-22T08:36:22.162803",
+            "auth_token": "0FY/8MYI68ld3LDkrMgsjZUH//M=",
+            "created_at": "2026-11-23T16:39:11.383453",
+            "rotated_at": "2026-11-23T16:39:11.382359",
+            "updated_at": "2026-11-23T16:39:11.383453",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "rh/4P+ErEnF+WbvOKBSqWzThPpw=",
+            "prev_auth_token": "0FY/8MYI68ld3LDkrMgsjZUH//M=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:36:22.67269",
+            "id": 1,
+            "seen_at": "2026-11-23T16:39:12.077156",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "rh/4P+ErEnF+WbvOKBSqWzThPpw=",
-            "created_at": "2026-11-22T08:36:22.162803",
-            "rotated_at": "2026-11-22T08:36:22.161887",
-            "updated_at": "2026-11-22T08:36:22.162803",
+            "auth_token": "0FY/8MYI68ld3LDkrMgsjZUH//M=",
+            "created_at": "2026-11-23T16:39:11.383453",
+            "rotated_at": "2026-11-23T16:39:11.382359",
+            "updated_at": "2026-11-23T16:39:11.383453",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "rh/4P+ErEnF+WbvOKBSqWzThPpw=",
+            "prev_auth_token": "0FY/8MYI68ld3LDkrMgsjZUH//M=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -339,7 +339,7 @@
   ],
   "recorded_from": {
     "case": "0bdc39be0e1994fbfdace61c509e9b30434d1b6df4e5963ad30f3028f17da197",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

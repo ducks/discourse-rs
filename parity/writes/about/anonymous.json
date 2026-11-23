@@ -7,8 +7,8 @@
       "path": "/about.json"
     }
   ],
-  "started_at": "2026-11-22T08:10:59.235031",
-  "transaction_started_at": "2026-11-22T08:10:58.465302",
+  "started_at": "2026-11-23T16:12:16.587657",
+  "transaction_started_at": "2026-11-23T16:12:15.950701",
   "responses": [
     {
       "status": 200,
@@ -20,7 +20,7 @@
             "name": "Admin",
             "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
             "title": null,
-            "last_seen_at": "2026-11-22T04:14:24.970Z"
+            "last_seen_at": "2026-11-23T16:08:49.565Z"
           }
         ],
         "about": {
@@ -88,7 +88,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "8a6ef052d809644ad0884eba4522d54dc73f1afd09de8d3bd0389de4c2f95fb3",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

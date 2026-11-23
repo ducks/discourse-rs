@@ -48,14 +48,14 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:57:54.177898",
-  "transaction_started_at": "2026-11-22T08:57:53.579639",
+  "started_at": "2026-11-23T17:02:43.624488",
+  "transaction_started_at": "2026-11-23T17:02:42.992355",
   "responses": [
     {
       "status": 200,
       "body": {
-        "value": "dbc06182fe1fade67926735a95ea432d",
-        "challenge": "cfa1090439c22cc1744260187b07d776",
+        "value": "ee961971f581cba2f777c1272a18ff86",
+        "challenge": "1a2fb5e6b7a58bcb15542d17d987bc10",
         "expires_in": 3600
       }
     },
@@ -103,11 +103,11 @@
           "email": "user2@example.com",
           "purpose": 0,
           "attempts": 0,
-          "code_hash": "f91fd81767c135bd9858935fccb752db86f002925c14053e7b94d64fde8b3249",
-          "created_at": "2026-11-22T08:57:54.227721",
-          "expires_at": "2026-11-22T09:07:54.22755",
-          "updated_at": "2026-11-22T08:57:54.227721",
-          "consumed_at": "2026-11-22T08:57:54.35076"
+          "code_hash": "674b69d4de7dd77173f1cfd2eded3a2ada499a61c78e3f06df130066925a4cec",
+          "created_at": "2026-11-23T17:02:43.677033",
+          "expires_at": "2026-11-23T17:12:43.67681",
+          "updated_at": "2026-11-23T17:02:43.677033",
+          "consumed_at": "2026-11-23T17:02:43.835075"
         }
       ],
       "deleted": [],
@@ -119,9 +119,9 @@
           "id": 1,
           "user_id": 4,
           "invite_id": 900,
-          "created_at": "2026-11-22T08:57:54.359094",
-          "updated_at": "2026-11-22T08:57:54.370591",
-          "redeemed_at": "2026-11-22T08:57:54.357791"
+          "created_at": "2026-11-23T17:02:43.846095",
+          "updated_at": "2026-11-23T17:02:43.859688",
+          "redeemed_at": "2026-11-23T17:02:43.844262"
         }
       ],
       "deleted": [],
@@ -138,11 +138,11 @@
             "email": null,
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-19T08:57:53.579639",
+            "created_at": "2026-11-20T17:02:42.992355",
             "deleted_at": null,
-            "expires_at": "2026-12-22T08:57:53.579639",
+            "expires_at": "2026-12-23T17:02:42.992355",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-19T08:57:53.579639",
+            "updated_at": "2026-11-20T17:02:42.992355",
             "description": "for the book club",
             "email_token": null,
             "deleted_by_id": null,
@@ -159,11 +159,11 @@
             "email": null,
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-19T08:57:53.579639",
+            "created_at": "2026-11-20T17:02:42.992355",
             "deleted_at": null,
-            "expires_at": "2026-12-22T08:57:53.579639",
+            "expires_at": "2026-12-23T17:02:42.992355",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-19T08:57:53.579639",
+            "updated_at": "2026-11-20T17:02:42.992355",
             "description": "for the book club",
             "email_token": null,
             "deleted_by_id": null,
@@ -180,26 +180,26 @@
     "notifications": {
       "inserted": [
         {
-          "id": 34,
+          "id": 31,
           "data": "{\"display_username\":\"user2\"}",
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-22T08:57:54.372153",
-          "updated_at": "2026-11-22T08:57:54.372153",
+          "created_at": "2026-11-23T17:02:43.861417",
+          "updated_at": "2026-11-23T17:02:43.861417",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 8
         },
         {
-          "id": 35,
+          "id": 32,
           "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"display_username\":\"user1\",\"original_user_id\":3,\"original_username\":\"user1\"}",
           "read": false,
           "user_id": 4,
           "topic_id": 35,
-          "created_at": "2026-11-22T08:57:54.407814",
-          "updated_at": "2026-11-22T08:57:54.407814",
+          "created_at": "2026-11-23T17:02:43.888965",
+          "updated_at": "2026-11-23T17:02:43.888965",
           "post_number": 1,
           "high_priority": false,
           "post_action_id": null,
@@ -217,10 +217,10 @@
           "action": "generate",
           "user_id": 4,
           "client_ip": "127.0.0.1",
-          "auth_token": "1R35Hq1M9t03hExtrnB9Zn7G8D4=",
-          "created_at": "2026-11-22T08:57:54.428792",
+          "auth_token": "+d7o1BKn2xUahlRjW5qFaK1wqV4=",
+          "created_at": "2026-11-23T17:02:43.904505",
           "user_agent": null,
-          "user_auth_token_id": 9
+          "user_auth_token_id": 1
         }
       ],
       "deleted": [],
@@ -229,17 +229,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 9,
+          "id": 1,
           "seen_at": null,
           "user_id": 4,
           "client_ip": "127.0.0.1",
-          "auth_token": "1R35Hq1M9t03hExtrnB9Zn7G8D4=",
-          "created_at": "2026-11-22T08:57:54.424685",
-          "rotated_at": "2026-11-22T08:57:54.423025",
-          "updated_at": "2026-11-22T08:57:54.424685",
+          "auth_token": "+d7o1BKn2xUahlRjW5qFaK1wqV4=",
+          "created_at": "2026-11-23T17:02:43.901528",
+          "rotated_at": "2026-11-23T17:02:43.900595",
+          "updated_at": "2026-11-23T17:02:43.901528",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "1R35Hq1M9t03hExtrnB9Zn7G8D4=",
+          "prev_auth_token": "+d7o1BKn2xUahlRjW5qFaK1wqV4=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": false,
           "impersonation_expires_at": null
@@ -261,8 +261,8 @@
             "enabled": true,
             "user_id": 4,
             "last_used": null,
-            "created_at": "2026-11-22T08:57:53.579639",
-            "updated_at": "2026-11-22T08:57:53.579639"
+            "created_at": "2026-11-23T17:02:42.992355",
+            "updated_at": "2026-11-23T17:02:42.992355"
           },
           "after": {
             "id": 9301,
@@ -271,9 +271,9 @@
             "method": 1,
             "enabled": true,
             "user_id": 4,
-            "last_used": "2026-11-22T08:57:54.340663",
-            "created_at": "2026-11-22T08:57:53.579639",
-            "updated_at": "2026-11-22T08:57:54.34153"
+            "last_used": "2026-11-23T17:02:43.823373",
+            "created_at": "2026-11-23T17:02:42.992355",
+            "updated_at": "2026-11-23T17:02:43.824539"
           }
         }
       ]
@@ -284,7 +284,7 @@
       "send_email_login_code",
       {
         "to_address": "user2@example.com",
-        "code": "894147"
+        "code": "151490"
       }
     ],
     [
@@ -292,7 +292,7 @@
       {
         "type": "user_invited_to_topic",
         "user_id": 4,
-        "notification_id": 35,
+        "notification_id": 32,
         "notification_data_hash": {
           "topic_title": "Parity fixture: replies and posters",
           "display_username": "user1",
@@ -307,9 +307,9 @@
   "next_ids": {
     "email_login_codes": 1,
     "invited_users": 1,
-    "notifications": 34,
+    "notifications": 31,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 9
+    "user_auth_tokens": 1
   },
   "setup": [
     "INSERT INTO invites (id, invite_key, email, invited_by_id, created_at, updated_at, emailed_status, max_redemptions_allowed, redemption_count, expires_at, email_token, description, custom_message) VALUES (900, 'Fixture900', NULL, 3, now() - interval '3 days', now() - interval '3 days', 0, 5, 0, now() + interval '30 days', NULL, 'for the book club', NULL)",
@@ -319,7 +319,7 @@
   ],
   "recorded_from": {
     "case": "18222da326abb42d60e70b5b2755e38b2c6526ba02a49985b64b0d17e41f821c",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

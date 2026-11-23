@@ -1,7 +1,7 @@
 {
   "request": "GET /u/nobody/card.json",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T10:18:40.559447153+00:00",
+  "recorded_at": "2026-11-23T18:25:10.616791677+00:00",
   "status": 404,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"errors\":[\"The requested URL or resource could not be found.\"],\"error_type\":\"not_found\"}"

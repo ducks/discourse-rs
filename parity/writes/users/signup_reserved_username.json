@@ -19,14 +19,14 @@
       }
     }
   ],
-  "started_at": "2026-11-22T10:04:09.410723",
-  "transaction_started_at": "2026-11-22T10:04:08.720109",
+  "started_at": "2026-11-23T18:13:27.047277",
+  "transaction_started_at": "2026-11-23T18:13:26.418092",
   "responses": [
     {
       "status": 200,
       "body": {
-        "value": "8fea0cc1ccb2caf1e1df893dee99abce",
-        "challenge": "73a787a6b757332b4de4780e8d67fb39",
+        "value": "e43ef6fa47374966ff20088177898374",
+        "challenge": "8907ae620862de6acb39dc89c847d434",
         "expires_in": 3600
       }
     },
@@ -46,7 +46,7 @@
   },
   "recorded_from": {
     "case": "67cc8c53277d181cb4863917dcf1e7608414b599f2257caa73116ff2981a812d",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

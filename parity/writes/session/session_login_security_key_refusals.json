@@ -51,8 +51,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:34:14.96258",
-  "transaction_started_at": "2026-11-22T09:34:14.394722",
+  "started_at": "2026-11-23T17:41:28.07843",
+  "transaction_started_at": "2026-11-23T17:41:27.221408",
   "responses": [
     {
       "status": 200,
@@ -69,7 +69,7 @@
         "allowed_credential_ids": [
           "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
         ],
-        "challenge": "9ba40767751851dd4ba0c686841c7dc427efbda13f7f6ea51db4b20625d9"
+        "challenge": "ba86dbec133c38ecb54d7d901595021ffa4e6038a590ff861d03228b8ca0"
       }
     },
     {
@@ -87,7 +87,7 @@
         "allowed_credential_ids": [
           "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
         ],
-        "challenge": "3715ea18170be87ac92b8e23cf2c403912e9a44eb35b6c420e2a9fa4539a"
+        "challenge": "45cb591f0443c55e3ca3e796767027700c77bc6cdd6e346242d4c6ebe3df"
       }
     },
     {
@@ -105,7 +105,7 @@
         "allowed_credential_ids": [
           "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
         ],
-        "challenge": "38c8a0bc08b191997aa9ad998d0d339ba23402dc3d2fc270ecce8b792456"
+        "challenge": "bc77354ca1c8fa7637634fa29bb39e536f4655ad4783596d7c439e29e3b3"
       }
     },
     {
@@ -123,7 +123,7 @@
         "allowed_credential_ids": [
           "nEIQqb5MYIcA+/f62owSYpNr/cXqn0tdeU4EBWPYw8k="
         ],
-        "challenge": "6dfc989ed452bcfa707a91e52ebbc41a6fc76bd728eb2c229a7a6ab550f3"
+        "challenge": "ef7d299171aa59b5568c64eefa69ee4ce943ca215dc82a1895ca45701f08"
       }
     }
   ],
@@ -135,7 +135,7 @@
   ],
   "recorded_from": {
     "case": "e3cbf6750d596b0801e7f0362034b1732f6865d03f6739522522a0ff56edfd6a",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

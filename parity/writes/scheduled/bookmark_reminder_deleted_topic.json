@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_deleted_topic",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:27:33.369075",
-  "transaction_started_at": "2026-11-22T09:27:32.616021",
+  "started_at": "2026-11-23T17:34:12.923203",
+  "transaction_started_at": "2026-11-23T17:34:12.243442",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -16,11 +16,11 @@
             "name": "Parity fixture: with a reminder",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-11-21T23:56:54.662129",
-            "updated_at": "2026-11-21T23:56:54.662129",
-            "reminder_at": "2026-11-22T09:22:32.616021",
+            "created_at": "2026-11-23T16:08:46.245806",
+            "updated_at": "2026-11-23T16:08:46.245806",
+            "reminder_at": "2026-11-23T17:29:12.243442",
             "bookmarkable_id": 36,
-            "reminder_set_at": "2026-11-21T09:27:32.616021",
+            "reminder_set_at": "2026-11-22T17:34:12.243442",
             "bookmarkable_type": "Post",
             "reminder_last_sent_at": null,
             "auto_delete_preference": 0
@@ -30,13 +30,13 @@
             "name": "Parity fixture: with a reminder",
             "pinned": null,
             "user_id": 3,
-            "created_at": "2026-11-21T23:56:54.662129",
-            "updated_at": "2026-11-22T09:27:33.374206",
-            "reminder_at": "2026-11-22T09:22:32.616021",
+            "created_at": "2026-11-23T16:08:46.245806",
+            "updated_at": "2026-11-23T17:34:12.928613",
+            "reminder_at": "2026-11-23T17:29:12.243442",
             "bookmarkable_id": 36,
             "reminder_set_at": null,
             "bookmarkable_type": "Post",
-            "reminder_last_sent_at": "2026-11-22T09:27:33.373243",
+            "reminder_last_sent_at": "2026-11-23T17:34:12.927756",
             "auto_delete_preference": 0
           }
         }
@@ -58,7 +58,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "06867860bcb38dd6b09ac894dd163aadde94063a68872fd0b2fc4919d42200a8",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

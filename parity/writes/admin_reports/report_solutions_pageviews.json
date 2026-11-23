@@ -72,8 +72,8 @@
       "path": "/admin/reports/storage_stats.json"
     }
   ],
-  "started_at": "2026-11-22T08:22:16.500917",
-  "transaction_started_at": "2026-11-22T08:22:15.588189",
+  "started_at": "2026-11-23T16:23:39.907408",
+  "transaction_started_at": "2026-11-23T16:23:39.152171",
   "responses": [
     {
       "status": 200,
@@ -87,7 +87,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-03",
+              "x": "2026-10-04",
               "y": 1
             }
           ],
@@ -197,7 +197,7 @@
           "description_link": null,
           "data": [
             {
-              "x": "2026-10-03",
+              "x": "2026-10-04",
               "y": 1
             }
           ],
@@ -478,23 +478,23 @@
           "data": {
             "backups": {
               "used_bytes": 0,
-              "free_bytes": 12002881536,
+              "free_bytes": 242398613504,
               "count": 0,
               "last_backup_taken_at": null
             },
             "uploads": {
               "used_bytes": 618825,
-              "free_bytes": 12002881536
+              "free_bytes": 242398613504
             }
           },
-          "start_date": "2026-11-21T00:00:00Z",
-          "end_date": "2026-12-21T23:59:59Z",
+          "start_date": "2026-11-22T00:00:00Z",
+          "end_date": "2026-12-22T23:59:59Z",
           "prev_data": null,
-          "prev_start_date": "2026-10-21T00:00:00Z",
-          "prev_end_date": "2026-11-21T00:00:00Z",
+          "prev_start_date": "2026-10-22T00:00:00Z",
+          "prev_end_date": "2026-11-22T00:00:00Z",
           "prev30Days": null,
           "dates_filtering": true,
-          "report_key": "reports:storage_stats:20261121:20261221:[:total, :prev30Days]:5:1:true:false",
+          "report_key": "reports:storage_stats:20261122:20261222:[:total, :prev30Days]:5:1:true:false",
           "primary_color": "rgba(0,136,204,1)",
           "secondary_color": "rgba(0,136,204,0.1)",
           "available_filters": [],
@@ -528,33 +528,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "8eYPaxTXWBUVMA+cGG0BrQtVh9M=",
-            "created_at": "2026-11-22T08:22:15.884549",
-            "rotated_at": "2026-11-22T08:22:15.883632",
-            "updated_at": "2026-11-22T08:22:15.884549",
+            "auth_token": "vZb8jwAbKhsgWx3+aYgWXAS9iQE=",
+            "created_at": "2026-11-23T16:23:39.419152",
+            "rotated_at": "2026-11-23T16:23:39.418177",
+            "updated_at": "2026-11-23T16:23:39.419152",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "8eYPaxTXWBUVMA+cGG0BrQtVh9M=",
+            "prev_auth_token": "vZb8jwAbKhsgWx3+aYgWXAS9iQE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:22:16.506971",
+            "id": 1,
+            "seen_at": "2026-11-23T16:23:39.913174",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "8eYPaxTXWBUVMA+cGG0BrQtVh9M=",
-            "created_at": "2026-11-22T08:22:15.884549",
-            "rotated_at": "2026-11-22T08:22:15.883632",
-            "updated_at": "2026-11-22T08:22:15.884549",
+            "auth_token": "vZb8jwAbKhsgWx3+aYgWXAS9iQE=",
+            "created_at": "2026-11-23T16:23:39.419152",
+            "rotated_at": "2026-11-23T16:23:39.418177",
+            "updated_at": "2026-11-23T16:23:39.419152",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "8eYPaxTXWBUVMA+cGG0BrQtVh9M=",
+            "prev_auth_token": "vZb8jwAbKhsgWx3+aYgWXAS9iQE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -574,7 +574,7 @@
   ],
   "recorded_from": {
     "case": "7a9f3a0988926d7d2facf7edfcd5c9636217cf127f40e592c2159a682f978d37",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

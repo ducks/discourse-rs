@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T08:34:39.783876",
-  "transaction_started_at": "2026-11-22T08:34:38.966199",
+  "started_at": "2026-11-23T16:37:13.157079",
+  "transaction_started_at": "2026-11-23T16:37:12.290349",
   "responses": [
     {
       "status": 200,
@@ -35,9 +35,9 @@
             "type": "DirectMessageChannel",
             "emoji": null,
             "status": 0,
-            "created_at": "2026-11-21T08:34:38.966199",
+            "created_at": "2026-11-22T16:37:12.290349",
             "deleted_at": null,
-            "updated_at": "2026-11-21T08:34:38.966199",
+            "updated_at": "2026-11-22T16:37:12.290349",
             "user_count": 2,
             "chatable_id": 1,
             "description": null,
@@ -59,9 +59,9 @@
             "type": "DirectMessageChannel",
             "emoji": null,
             "status": 0,
-            "created_at": "2026-11-21T08:34:38.966199",
+            "created_at": "2026-11-22T16:37:12.290349",
             "deleted_at": null,
-            "updated_at": "2026-11-22T08:34:39.878937",
+            "updated_at": "2026-11-23T16:37:13.26009",
             "user_count": 3,
             "chatable_id": 1,
             "description": null,
@@ -83,11 +83,11 @@
       "inserted": [
         {
           "chat_mention_id": 1,
-          "notification_id": 34
+          "notification_id": 31
         },
         {
           "chat_mention_id": 2,
-          "notification_id": 35
+          "notification_id": 32
         }
       ],
       "deleted": [],
@@ -99,16 +99,16 @@
           "id": 1,
           "type": "Chat::UserMention",
           "target_id": 3,
-          "created_at": "2026-11-22T08:34:38.966199",
-          "updated_at": "2026-11-22T08:34:38.966199",
+          "created_at": "2026-11-23T16:37:12.290349",
+          "updated_at": "2026-11-23T16:37:12.290349",
           "chat_message_id": 1
         },
         {
           "id": 2,
           "type": "Chat::UserMention",
           "target_id": 5,
-          "created_at": "2026-11-22T08:34:38.966199",
-          "updated_at": "2026-11-22T08:34:38.966199",
+          "created_at": "2026-11-23T16:37:12.290349",
+          "updated_at": "2026-11-23T16:37:12.290349",
           "chat_message_id": 1
         }
       ],
@@ -139,9 +139,9 @@
           "user_id": -1,
           "streaming": false,
           "thread_id": null,
-          "created_at": "2026-11-22T08:34:39.875985",
+          "created_at": "2026-11-23T16:37:13.256985",
           "deleted_at": null,
-          "updated_at": "2026-11-22T08:34:39.875985",
+          "updated_at": "2026-11-23T16:37:13.256985",
           "broadcasted": false,
           "deleted_by_id": null,
           "cooked_version": 2,
@@ -159,15 +159,15 @@
         {
           "id": 3,
           "user_id": 5,
-          "created_at": "2026-11-22T08:34:39.813987",
-          "updated_at": "2026-11-22T08:34:39.813996",
+          "created_at": "2026-11-23T16:37:13.190763",
+          "updated_at": "2026-11-23T16:37:13.190772",
           "direct_message_channel_id": 1
         },
         {
           "id": 4,
           "user_id": -1,
-          "created_at": "2026-11-22T08:34:39.83123",
-          "updated_at": "2026-11-22T08:34:39.83123",
+          "created_at": "2026-11-23T16:37:13.21097",
+          "updated_at": "2026-11-23T16:37:13.21097",
           "direct_message_channel_id": 1
         }
       ],
@@ -177,26 +177,26 @@
     "notifications": {
       "inserted": [
         {
-          "id": 34,
+          "id": 31,
           "data": "{\"chat_message_id\":1,\"chat_channel_id\":3,\"mentioned_by_username\":\"system\",\"is_direct_message_channel\":true}",
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-22T08:34:39.974825",
-          "updated_at": "2026-11-22T08:34:39.974825",
+          "created_at": "2026-11-23T16:37:13.506038",
+          "updated_at": "2026-11-23T16:37:13.506038",
           "post_number": null,
           "high_priority": true,
           "post_action_id": null,
           "notification_type": 29
         },
         {
-          "id": 35,
+          "id": 32,
           "data": "{\"chat_message_id\":1,\"chat_channel_id\":3,\"mentioned_by_username\":\"system\",\"is_direct_message_channel\":true}",
           "read": false,
           "user_id": 5,
           "topic_id": null,
-          "created_at": "2026-11-22T08:34:39.98961",
-          "updated_at": "2026-11-22T08:34:39.98961",
+          "created_at": "2026-11-23T16:37:13.549206",
+          "updated_at": "2026-11-23T16:37:13.549206",
           "post_number": null,
           "high_priority": true,
           "post_action_id": null,
@@ -212,33 +212,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "mThavgBMuLvYau+Nu9IUR3SlaE0=",
-            "created_at": "2026-11-22T08:34:39.277318",
-            "rotated_at": "2026-11-22T08:34:39.2764",
-            "updated_at": "2026-11-22T08:34:39.277318",
+            "auth_token": "/D/CkWj17wmHoN0SfB9Fwajq3Fk=",
+            "created_at": "2026-11-23T16:37:12.652625",
+            "rotated_at": "2026-11-23T16:37:12.651628",
+            "updated_at": "2026-11-23T16:37:12.652625",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "mThavgBMuLvYau+Nu9IUR3SlaE0=",
+            "prev_auth_token": "/D/CkWj17wmHoN0SfB9Fwajq3Fk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:34:39.791276",
+            "id": 1,
+            "seen_at": "2026-11-23T16:37:13.164442",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "mThavgBMuLvYau+Nu9IUR3SlaE0=",
-            "created_at": "2026-11-22T08:34:39.277318",
-            "rotated_at": "2026-11-22T08:34:39.2764",
-            "updated_at": "2026-11-22T08:34:39.277318",
+            "auth_token": "/D/CkWj17wmHoN0SfB9Fwajq3Fk=",
+            "created_at": "2026-11-23T16:37:12.652625",
+            "rotated_at": "2026-11-23T16:37:12.651628",
+            "updated_at": "2026-11-23T16:37:12.652625",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "mThavgBMuLvYau+Nu9IUR3SlaE0=",
+            "prev_auth_token": "/D/CkWj17wmHoN0SfB9Fwajq3Fk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -255,10 +255,10 @@
           "user_id": 5,
           "following": true,
           "join_mode": 0,
-          "created_at": "2026-11-22T08:34:39.812491",
-          "updated_at": "2026-11-22T08:34:39.812517",
+          "created_at": "2026-11-23T16:37:13.18928",
+          "updated_at": "2026-11-23T16:37:13.18931",
           "muted_until": null,
-          "last_viewed_at": "2026-11-22T08:34:38.966199",
+          "last_viewed_at": "2026-11-23T16:37:12.290349",
           "chat_channel_id": 3,
           "notification_level": 2,
           "last_viewed_pins_at": null,
@@ -274,10 +274,10 @@
           "user_id": -1,
           "following": true,
           "join_mode": 0,
-          "created_at": "2026-11-22T08:34:39.825003",
-          "updated_at": "2026-11-22T08:34:39.880376",
+          "created_at": "2026-11-23T16:37:13.203022",
+          "updated_at": "2026-11-23T16:37:13.261937",
           "muted_until": null,
-          "last_viewed_at": "2026-11-22T08:34:38.966199",
+          "last_viewed_at": "2026-11-23T16:37:12.290349",
           "chat_channel_id": 3,
           "notification_level": 1,
           "last_viewed_pins_at": null,
@@ -310,7 +310,7 @@
     "chat_mentions": 1,
     "chat_messages": 1,
     "direct_message_users": 3,
-    "notifications": 34,
+    "notifications": 31,
     "user_chat_channel_memberships": 7
   },
   "setup": [
@@ -335,7 +335,7 @@
           "global_mentions": []
         },
         "already_notified_user_ids": [],
-        "timestamp": "2026-11-22 08:34:39 UTC"
+        "timestamp": "2026-11-23 16:37:13 UTC"
       }
     ],
     [
@@ -347,13 +347,13 @@
           5,
           -1
         ],
-        "timestamp": "2026-11-22 08:34:39 UTC"
+        "timestamp": "2026-11-23 16:37:13 UTC"
       }
     ]
   ],
   "recorded_from": {
     "case": "910f894845cbf1a3da90aa5e41012d8be27d29b89a090a984ba2818560767bed",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

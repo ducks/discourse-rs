@@ -7,8 +7,8 @@
       "path": "/admin/users/4/activate.json"
     }
   ],
-  "started_at": "2026-11-22T08:23:24.417436",
-  "transaction_started_at": "2026-11-22T08:23:23.655656",
+  "started_at": "2026-11-23T16:24:50.853977",
+  "transaction_started_at": "2026-11-23T16:24:49.774783",
   "responses": [
     {
       "status": 200,
@@ -27,9 +27,9 @@
           "expired": true,
           "user_id": 4,
           "confirmed": false,
-          "created_at": "2026-11-22T08:23:24.436428",
-          "token_hash": "303005f18ba8e780947d026a97bf076d16483fd7af2be9d4fbc250804fa7927c",
-          "updated_at": "2026-11-22T08:23:24.436428"
+          "created_at": "2026-11-23T16:24:50.872114",
+          "token_hash": "6d0e20d14eed5649c288df8b4d656de13af2c7f66288bbdb431317cb6852783d",
+          "updated_at": "2026-11-23T16:24:50.872114"
         },
         {
           "id": 14,
@@ -38,9 +38,9 @@
           "expired": false,
           "user_id": 4,
           "confirmed": true,
-          "created_at": "2026-11-22T08:23:24.440925",
-          "token_hash": "3b6212e54dc24f2ce05d68276455e22273d2f95d0271fe7ddbe1e2210726b084",
-          "updated_at": "2026-11-22T08:23:24.446512"
+          "created_at": "2026-11-23T16:24:50.876287",
+          "token_hash": "85e5568fb2834d1ad92c455e484f9f27e6170b1a954ea177e1e8ed4286562802",
+          "updated_at": "2026-11-23T16:24:50.884259"
         }
       ],
       "deleted": [],
@@ -77,33 +77,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "q5pPLlL90hmU6CAvJxsfR2zCuHU=",
-            "created_at": "2026-11-22T08:23:23.965709",
-            "rotated_at": "2026-11-22T08:23:23.964917",
-            "updated_at": "2026-11-22T08:23:23.965709",
+            "auth_token": "+aahDVP8Kj2o5uHIZpbX2mZkXUs=",
+            "created_at": "2026-11-23T16:24:50.324124",
+            "rotated_at": "2026-11-23T16:24:50.323078",
+            "updated_at": "2026-11-23T16:24:50.324124",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "q5pPLlL90hmU6CAvJxsfR2zCuHU=",
+            "prev_auth_token": "+aahDVP8Kj2o5uHIZpbX2mZkXUs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:23:24.424264",
+            "id": 1,
+            "seen_at": "2026-11-23T16:24:50.859471",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "q5pPLlL90hmU6CAvJxsfR2zCuHU=",
-            "created_at": "2026-11-22T08:23:23.965709",
-            "rotated_at": "2026-11-22T08:23:23.964917",
-            "updated_at": "2026-11-22T08:23:23.965709",
+            "auth_token": "+aahDVP8Kj2o5uHIZpbX2mZkXUs=",
+            "created_at": "2026-11-23T16:24:50.324124",
+            "rotated_at": "2026-11-23T16:24:50.323078",
+            "updated_at": "2026-11-23T16:24:50.324124",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "q5pPLlL90hmU6CAvJxsfR2zCuHU=",
+            "prev_auth_token": "+aahDVP8Kj2o5uHIZpbX2mZkXUs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -114,7 +114,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 43,
           "context": null,
@@ -124,10 +124,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-22T08:23:24.485218",
+          "created_at": "2026-11-23T16:24:50.921341",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:23:24.485218",
+          "updated_at": "2026-11-23T16:24:50.921341",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -159,7 +159,7 @@
             "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-21T23:56:57.750413",
+            "updated_at": "2026-11-23T16:08:49.356684",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
@@ -169,7 +169,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-21T23:56:44.759506",
+            "last_posted_at": "2026-11-23T16:08:32.082365",
             "suspended_till": null,
             "username_lower": "user2",
             "last_emailed_at": null,
@@ -199,7 +199,7 @@
             "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-22T08:23:24.452632",
+            "updated_at": "2026-11-23T16:24:50.892395",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
@@ -209,7 +209,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-21T23:56:44.759506",
+            "last_posted_at": "2026-11-23T16:08:32.082365",
             "suspended_till": null,
             "username_lower": "user2",
             "last_emailed_at": null,
@@ -231,14 +231,14 @@
   "jobs": [],
   "next_ids": {
     "email_tokens": 13,
-    "user_histories": 72
+    "user_histories": 66
   },
   "setup": [
     "UPDATE users SET active = FALSE WHERE id = 4"
   ],
   "recorded_from": {
     "case": "77d11abc40883363e66a59b1ec3daa35103f1ddb7db3bf39eea4d454df905d90",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

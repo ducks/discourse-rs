@@ -17,8 +17,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:37:54.398007",
-  "transaction_started_at": "2026-11-22T09:37:53.576219",
+  "started_at": "2026-11-23T17:45:17.160719",
+  "transaction_started_at": "2026-11-23T17:45:16.058342",
   "responses": [
     {
       "status": 204,
@@ -39,8 +39,8 @@
           "post_id": 6,
           "user_id": -1,
           "unlisted": false,
-          "created_at": "2026-11-22T09:37:55.470231",
-          "updated_at": "2026-11-22T09:37:55.658268",
+          "created_at": "2026-11-23T17:45:18.35885",
+          "updated_at": "2026-11-23T17:45:18.545791",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntitle:\n- 'Welcome to Discourse! :wave:'\n- 'Welcome to Duck Pond! :wave:'\nraw:\n- |-\n  We are so glad you joined us.\n\n\n\n  Here are some things you can do to get started:\n\n  :speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n  :open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n  :handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n  > If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).\n- |-\n  We are so glad you joined us.\n\n  > ## Duck Pond\n  >\n  > Quack\n\n\n  Here are some things you can do to get started:\n\n  :speaking_head: **Introduce yourself** by adding your picture and information about yourself and your interests to [your profile](/my/preferences/account). What is one thing you’d like to be asked about?\n\n  :open_book: **Get to know the community** by [browsing discussions](/latest) that are already happening here. When you find a post interesting, informative, or entertaining, use the :heart: to show your appreciation or support!\n\n  :handshake: **Contribute** by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the [Community Guidelines](/faq).\n\n  > If you need help or have a suggestion, feel free to ask in #site-feedback or [contact the admins](/about).\ncooked:\n- |-\n  <p>We are so glad you joined us.</p>\n  <p>Here are some things you can do to get started:</p>\n  <p><img src=\"/images/emoji/twitter/speaking_head.png?v=16\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n  <p><img src=\"/images/emoji/twitter/open_book.png?v=16\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=16\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n  <p><img src=\"/images/emoji/twitter/handshake.png?v=16\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n  <blockquote>\n  <p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n  </blockquote>\n- |-\n  <p>We are so glad you joined us.</p>\n  <blockquote>\n  <h2>Duck Pond</h2>\n  <p>Quack</p>\n  </blockquote>\n  <p>Here are some things you can do to get started:</p>\n  <p><img src=\"/images/emoji/twitter/speaking_head.png?v=16\" title=\":speaking_head:\" class=\"emoji\" alt=\":speaking_head:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Introduce yourself</strong> by adding your picture and information about yourself and your interests to <a href=\"/my/preferences/account\">your profile</a>. What is one thing you’d like to be asked about?</p>\n  <p><img src=\"/images/emoji/twitter/open_book.png?v=16\" title=\":open_book:\" class=\"emoji\" alt=\":open_book:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Get to know the community</strong> by <a href=\"/latest\">browsing discussions</a> that are already happening here. When you find a post interesting, informative, or entertaining, use the <img src=\"/images/emoji/twitter/heart.png?v=16\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"> to show your appreciation or support!</p>\n  <p><img src=\"/images/emoji/twitter/handshake.png?v=16\" title=\":handshake:\" class=\"emoji\" alt=\":handshake:\" loading=\"lazy\" width=\"20\" height=\"20\"> <strong>Contribute</strong> by commenting, sharing your own perspective, asking questions, or offering feedback in the discussion. Before replying or starting new topics, please review the <a href=\"/faq\">Community Guidelines</a>.</p>\n  <blockquote>\n  <p>If you need help or have a suggestion, feel free to ask in <a class=\"hashtag-cooked\" href=\"/c/site-feedback/2\" data-type=\"category\" data-slug=\"site-feedback\" data-id=\"2\" data-style-type=\"emoji\" data-emoji=\"thought_balloon\"><span class=\"hashtag-icon-placeholder\"><svg class=\"fa d-icon d-icon-square-full svg-icon svg-node\"><use href=\"#square-full\"></use></svg></span><span>Site Feedback</span></a> or <a href=\"/about\">contact the admins</a>.</p>\n  </blockquote>\n"
         }
       ],
@@ -142,7 +142,7 @@
             "locale": null,
             "user_id": -1,
             "version": 2,
-            "baked_at": "2026-11-22T09:37:55.639659",
+            "baked_at": "2026-11-23T17:45:18.52807",
             "topic_id": 5,
             "hidden_at": null,
             "post_type": 1,
@@ -155,7 +155,7 @@
             "self_edits": 2,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-22T09:37:55.639819",
+            "updated_at": "2026-11-23T17:45:18.528222",
             "word_count": 132,
             "action_code": null,
             "cook_method": 1,
@@ -175,7 +175,7 @@
             "last_editor_id": -1,
             "public_version": 2,
             "image_upload_id": null,
-            "last_version_at": "2026-11-22T09:37:54.436736",
+            "last_version_at": "2026-11-23T17:45:17.236664",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -196,16 +196,16 @@
           "name": "title",
           "value": "Duck Pond",
           "data_type": 1,
-          "created_at": "2026-11-22T09:37:54.414392",
-          "updated_at": "2026-11-22T09:37:54.414392"
+          "created_at": "2026-11-23T17:45:17.176686",
+          "updated_at": "2026-11-23T17:45:17.176686"
         },
         {
           "id": 38,
           "name": "site_description",
           "value": "Quack",
           "data_type": 1,
-          "created_at": "2026-11-22T09:37:55.566769",
-          "updated_at": "2026-11-22T09:37:55.566769"
+          "created_at": "2026-11-23T17:45:18.447478",
+          "updated_at": "2026-11-23T17:45:18.447478"
         }
       ],
       "deleted": [],
@@ -310,7 +310,7 @@
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-11-22T09:37:55.644742",
+            "updated_at": "2026-11-23T17:45:18.53291",
             "word_count": 132,
             "category_id": 4,
             "external_id": null,
@@ -351,33 +351,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "WOhZjh0eQe9VO5wE6CV/zZgntLY=",
-            "created_at": "2026-11-22T09:37:53.921714",
-            "rotated_at": "2026-11-22T09:37:53.920266",
-            "updated_at": "2026-11-22T09:37:53.921714",
+            "auth_token": "0WEpk7CUJB2dDA1Myp5yoa7Gi2A=",
+            "created_at": "2026-11-23T17:45:16.667129",
+            "rotated_at": "2026-11-23T17:45:16.666208",
+            "updated_at": "2026-11-23T17:45:16.667129",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "WOhZjh0eQe9VO5wE6CV/zZgntLY=",
+            "prev_auth_token": "0WEpk7CUJB2dDA1Myp5yoa7Gi2A=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:37:54.404552",
+            "id": 1,
+            "seen_at": "2026-11-23T17:45:17.166611",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "WOhZjh0eQe9VO5wE6CV/zZgntLY=",
-            "created_at": "2026-11-22T09:37:53.921714",
-            "rotated_at": "2026-11-22T09:37:53.920266",
-            "updated_at": "2026-11-22T09:37:53.921714",
+            "auth_token": "0WEpk7CUJB2dDA1Myp5yoa7Gi2A=",
+            "created_at": "2026-11-23T17:45:16.667129",
+            "rotated_at": "2026-11-23T17:45:16.666208",
+            "updated_at": "2026-11-23T17:45:16.667129",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "WOhZjh0eQe9VO5wE6CV/zZgntLY=",
+            "prev_auth_token": "0WEpk7CUJB2dDA1Myp5yoa7Gi2A=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -388,7 +388,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 3,
           "context": null,
@@ -398,10 +398,10 @@
           "topic_id": null,
           "new_value": "Duck Pond",
           "admin_only": true,
-          "created_at": "2026-11-22T09:37:55.538861",
+          "created_at": "2026-11-23T17:45:18.415021",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:37:55.538861",
+          "updated_at": "2026-11-23T17:45:18.415021",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -410,7 +410,7 @@
           "target_user_id": null
         },
         {
-          "id": 73,
+          "id": 67,
           "email": null,
           "action": 3,
           "context": null,
@@ -420,10 +420,10 @@
           "topic_id": null,
           "new_value": "Quack",
           "admin_only": true,
-          "created_at": "2026-11-22T09:37:55.689499",
+          "created_at": "2026-11-23T17:45:18.577922",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T09:37:55.689499",
+          "updated_at": "2026-11-23T17:45:18.577922",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -463,11 +463,11 @@
   "next_ids": {
     "post_revisions": 1,
     "site_settings": 37,
-    "user_histories": 72
+    "user_histories": 66
   },
   "recorded_from": {
     "case": "1e882b6d8897b9b1f393c742a2973f647a23b7492fd85716253341044232e3a7",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

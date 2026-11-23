@@ -54,8 +54,8 @@
       "path": "/admin/config/user_fields.json"
     }
   ],
-  "started_at": "2026-11-22T10:01:54.486197",
-  "transaction_started_at": "2026-11-22T10:01:53.645669",
+  "started_at": "2026-11-23T18:11:06.890843",
+  "transaction_started_at": "2026-11-23T18:11:06.001791",
   "responses": [
     {
       "status": 200,
@@ -191,7 +191,7 @@
           "type": 1,
           "enabled": true,
           "position": 10,
-          "created_at": "2026-11-22T10:01:53.645669",
+          "created_at": "2026-11-23T18:11:06.001791",
           "user_field_id": 1,
           "automatic_position": null
         }
@@ -204,33 +204,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "CyHGWt5aToxqLd2/GFTj5fmSBzs=",
-            "created_at": "2026-11-22T10:01:54.029801",
-            "rotated_at": "2026-11-22T10:01:54.028846",
-            "updated_at": "2026-11-22T10:01:54.029801",
+            "auth_token": "++03caaf/Kz1y+EuVaCTxVxHcxc=",
+            "created_at": "2026-11-23T18:11:06.402909",
+            "rotated_at": "2026-11-23T18:11:06.402091",
+            "updated_at": "2026-11-23T18:11:06.402909",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "CyHGWt5aToxqLd2/GFTj5fmSBzs=",
+            "prev_auth_token": "++03caaf/Kz1y+EuVaCTxVxHcxc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T10:01:54.491787",
+            "id": 1,
+            "seen_at": "2026-11-23T18:11:06.898235",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "CyHGWt5aToxqLd2/GFTj5fmSBzs=",
-            "created_at": "2026-11-22T10:01:54.029801",
-            "rotated_at": "2026-11-22T10:01:54.028846",
-            "updated_at": "2026-11-22T10:01:54.029801",
+            "auth_token": "++03caaf/Kz1y+EuVaCTxVxHcxc=",
+            "created_at": "2026-11-23T18:11:06.402909",
+            "rotated_at": "2026-11-23T18:11:06.402091",
+            "updated_at": "2026-11-23T18:11:06.402909",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "CyHGWt5aToxqLd2/GFTj5fmSBzs=",
+            "prev_auth_token": "++03caaf/Kz1y+EuVaCTxVxHcxc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -246,15 +246,15 @@
           "before": {
             "id": 1,
             "value": "cat",
-            "created_at": "2026-11-21T10:01:53.645669",
-            "updated_at": "2026-11-21T10:01:53.645669",
+            "created_at": "2026-11-22T18:11:06.001791",
+            "updated_at": "2026-11-22T18:11:06.001791",
             "user_field_id": 1
           },
           "after": {
             "id": 1,
             "value": "bird",
-            "created_at": "2026-11-22T10:01:54.502502",
-            "updated_at": "2026-11-22T10:01:54.502502",
+            "created_at": "2026-11-23T18:11:06.912177",
+            "updated_at": "2026-11-23T18:11:06.912177",
             "user_field_id": 1
           }
         },
@@ -262,15 +262,15 @@
           "before": {
             "id": 2,
             "value": "dog",
-            "created_at": "2026-11-21T10:01:53.645669",
-            "updated_at": "2026-11-21T10:01:53.645669",
+            "created_at": "2026-11-22T18:11:06.001791",
+            "updated_at": "2026-11-22T18:11:06.001791",
             "user_field_id": 1
           },
           "after": {
             "id": 2,
             "value": "dog",
-            "created_at": "2026-11-22T10:01:54.503469",
-            "updated_at": "2026-11-22T10:01:54.503469",
+            "created_at": "2026-11-23T18:11:06.913337",
+            "updated_at": "2026-11-23T18:11:06.913337",
             "user_field_id": 1
           }
         }
@@ -287,10 +287,10 @@
             "editable": true,
             "position": 1,
             "required": true,
-            "created_at": "2026-11-21T10:01:53.645669",
+            "created_at": "2026-11-22T18:11:06.001791",
             "field_type": null,
             "searchable": false,
-            "updated_at": "2026-11-21T10:01:53.645669",
+            "updated_at": "2026-11-22T18:11:06.001791",
             "description": "Your pet",
             "requirement": 0,
             "external_name": null,
@@ -306,10 +306,10 @@
             "editable": true,
             "position": 1,
             "required": true,
-            "created_at": "2026-11-21T10:01:53.645669",
+            "created_at": "2026-11-22T18:11:06.001791",
             "field_type": null,
             "searchable": false,
-            "updated_at": "2026-11-22T10:01:54.501244",
+            "updated_at": "2026-11-23T18:11:06.910775",
             "description": "Your pet",
             "requirement": 0,
             "external_name": null,
@@ -327,10 +327,10 @@
             "editable": true,
             "position": 2,
             "required": true,
-            "created_at": "2026-11-21T10:01:53.645669",
+            "created_at": "2026-11-22T18:11:06.001791",
             "field_type": null,
             "searchable": false,
-            "updated_at": "2026-11-21T10:01:53.645669",
+            "updated_at": "2026-11-22T18:11:06.001791",
             "description": "Your color",
             "requirement": 0,
             "external_name": null,
@@ -346,10 +346,10 @@
             "editable": true,
             "position": 2,
             "required": true,
-            "created_at": "2026-11-21T10:01:53.645669",
+            "created_at": "2026-11-22T18:11:06.001791",
             "field_type": null,
             "searchable": false,
-            "updated_at": "2026-11-22T10:01:54.527657",
+            "updated_at": "2026-11-23T18:11:06.94273",
             "description": "Pick a <i>color</i>",
             "requirement": 1,
             "external_name": null,
@@ -367,10 +367,10 @@
             "editable": true,
             "position": 3,
             "required": true,
-            "created_at": "2026-11-21T10:01:53.645669",
+            "created_at": "2026-11-22T18:11:06.001791",
             "field_type": null,
             "searchable": false,
-            "updated_at": "2026-11-21T10:01:53.645669",
+            "updated_at": "2026-11-22T18:11:06.001791",
             "description": "Your team",
             "requirement": 0,
             "external_name": null,
@@ -386,10 +386,10 @@
             "editable": true,
             "position": 9,
             "required": true,
-            "created_at": "2026-11-21T10:01:53.645669",
+            "created_at": "2026-11-22T18:11:06.001791",
             "field_type": null,
             "searchable": false,
-            "updated_at": "2026-11-22T10:01:54.571495",
+            "updated_at": "2026-11-23T18:11:06.99378",
             "description": "Your team",
             "requirement": 0,
             "external_name": null,
@@ -406,8 +406,8 @@
       "inserted": [
         {
           "id": 1,
-          "created_at": "2026-11-22T10:01:54.528777",
-          "updated_at": "2026-11-22T10:01:54.528777"
+          "created_at": "2026-11-23T18:11:06.944576",
+          "updated_at": "2026-11-23T18:11:06.944576"
         }
       ],
       "deleted": [],
@@ -444,7 +444,7 @@
   ],
   "recorded_from": {
     "case": "cdbba73b50d57c00e2fcbb9acb5a6a2c2658cef76ea09f6e9a66fe199bae2fb7",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

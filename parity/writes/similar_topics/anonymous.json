@@ -27,8 +27,8 @@
       "path": "/topics/similar_to.json?title="
     }
   ],
-  "started_at": "2026-11-22T09:35:28.615198",
-  "transaction_started_at": "2026-11-22T09:35:27.686205",
+  "started_at": "2026-11-23T17:42:46.171283",
+  "transaction_started_at": "2026-11-23T17:42:45.026009",
   "responses": [
     {
       "status": 200,
@@ -43,10 +43,10 @@
             "reply_count": 0,
             "highest_post_number": 5,
             "image_url": null,
-            "created_at": "2026-11-21T23:56:44.408Z",
-            "last_posted_at": "2026-11-21T23:56:51.452Z",
+            "created_at": "2026-11-23T16:08:31.048Z",
+            "last_posted_at": "2026-11-23T16:08:43.039Z",
             "bumped": true,
-            "bumped_at": "2026-11-21T23:56:51.452Z",
+            "bumped_at": "2026-11-23T16:08:43.039Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": false,
@@ -114,10 +114,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-11-21T23:56:45.940Z",
-            "last_posted_at": "2026-11-21T23:56:45.971Z",
+            "created_at": "2026-11-23T16:08:36.074Z",
+            "last_posted_at": "2026-11-23T16:08:36.153Z",
             "bumped": true,
-            "bumped_at": "2026-11-21T23:56:45.971Z",
+            "bumped_at": "2026-11-23T16:08:36.153Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": false,
@@ -176,10 +176,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-11-21T23:56:45.144Z",
-            "last_posted_at": "2026-11-21T23:56:45.180Z",
+            "created_at": "2026-11-23T16:08:33.315Z",
+            "last_posted_at": "2026-11-23T16:08:33.529Z",
             "bumped": true,
-            "bumped_at": "2026-11-21T23:56:45.180Z",
+            "bumped_at": "2026-11-23T16:08:33.529Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": true,
@@ -250,21 +250,21 @@
           {
             "id": 35,
             "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-            "created_at": "2026-11-21T23:56:44.408Z",
+            "created_at": "2026-11-23T16:08:31.048Z",
             "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35",
             "topic_id": 35
           },
           {
             "id": 41,
             "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
-            "created_at": "2026-11-21T23:56:45.940Z",
+            "created_at": "2026-11-23T16:08:36.074Z",
             "url": "http://localhost:3042/t/parity-fixture-liked-and-archived/41",
             "topic_id": 41
           },
           {
             "id": 37,
             "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
-            "created_at": "2026-11-21T23:56:45.144Z",
+            "created_at": "2026-11-23T16:08:33.315Z",
             "url": "http://localhost:3042/t/parity-fixture-pinned-and-closed/37",
             "topic_id": 37
           }
@@ -285,10 +285,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-11-21T23:56:45.144Z",
-            "last_posted_at": "2026-11-21T23:56:45.180Z",
+            "created_at": "2026-11-23T16:08:33.315Z",
+            "last_posted_at": "2026-11-23T16:08:33.529Z",
             "bumped": true,
-            "bumped_at": "2026-11-21T23:56:45.180Z",
+            "bumped_at": "2026-11-23T16:08:33.529Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": true,
@@ -330,10 +330,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-11-21T23:56:45.940Z",
-            "last_posted_at": "2026-11-21T23:56:45.971Z",
+            "created_at": "2026-11-23T16:08:36.074Z",
+            "last_posted_at": "2026-11-23T16:08:36.153Z",
             "bumped": true,
-            "bumped_at": "2026-11-21T23:56:45.971Z",
+            "bumped_at": "2026-11-23T16:08:36.153Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": false,
@@ -392,10 +392,10 @@
             "reply_count": 0,
             "highest_post_number": 5,
             "image_url": null,
-            "created_at": "2026-11-21T23:56:44.408Z",
-            "last_posted_at": "2026-11-21T23:56:51.452Z",
+            "created_at": "2026-11-23T16:08:31.048Z",
+            "last_posted_at": "2026-11-23T16:08:43.039Z",
             "bumped": true,
-            "bumped_at": "2026-11-21T23:56:51.452Z",
+            "bumped_at": "2026-11-23T16:08:43.039Z",
             "archetype": "regular",
             "unseen": false,
             "pinned": false,
@@ -492,21 +492,21 @@
           {
             "id": 37,
             "blurb": "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.",
-            "created_at": "2026-11-21T23:56:45.144Z",
+            "created_at": "2026-11-23T16:08:33.315Z",
             "url": "http://localhost:3042/t/parity-fixture-pinned-and-closed/37",
             "topic_id": 37
           },
           {
             "id": 41,
             "blurb": "An archived topic whose first post got a like, for like_count and op_like_count.",
-            "created_at": "2026-11-21T23:56:45.940Z",
+            "created_at": "2026-11-23T16:08:36.074Z",
             "url": "http://localhost:3042/t/parity-fixture-liked-and-archived/41",
             "topic_id": 41
           },
           {
             "id": 35,
             "blurb": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
-            "created_at": "2026-11-21T23:56:44.408Z",
+            "created_at": "2026-11-23T16:08:31.048Z",
             "url": "http://localhost:3042/t/parity-fixture-replies-and-posters/35",
             "topic_id": 35
           }
@@ -552,7 +552,7 @@
   },
   "recorded_from": {
     "case": "5516a8d9fb241c51db01a923310481a8e1c67c86597a57750b7d2de0265349d9",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

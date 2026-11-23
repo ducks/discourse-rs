@@ -1,7 +1,7 @@
 {
   "request": "GET /t/42/posts.json?post_ids[]=49",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-22T10:24:02.551972382+00:00",
+  "recorded_at": "2026-11-23T18:30:54.752329942+00:00",
   "status": 403,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"errors\":[\"You need to be logged in to do that.\"],\"error_type\":\"not_logged_in\"}"

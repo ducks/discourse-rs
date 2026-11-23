@@ -844,28 +844,11 @@
   },
   {
     "id": "post-38",
-    "raw": "The `download_remote_images_to_local` setting was disabled because the disk space limit at `download_remote_images_threshold` was reached.",
-    "topic_id": 36,
-    "user_id": -1,
-    "post": {
-      "post_id": 38,
-      "user_id": -1,
-      "omit_nofollow": true,
-      "cook_method": 1,
-      "post_cook": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>",
-      "stored": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>",
-      "processed": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>"
-    },
-    "markdown": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>",
-    "cooked": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>"
-  },
-  {
-    "id": "post-39",
     "raw": "Reply three from admin, also long enough to pass the minimum length check.",
     "topic_id": 35,
     "user_id": 1,
     "post": {
-      "post_id": 39,
+      "post_id": 38,
       "user_id": 1,
       "omit_nofollow": true,
       "cook_method": 1,
@@ -875,6 +858,23 @@
     },
     "markdown": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>",
     "cooked": "<p>Reply three from admin, also long enough to pass the minimum length check.</p>"
+  },
+  {
+    "id": "post-39",
+    "raw": "The `download_remote_images_to_local` setting was disabled because the disk space limit at `download_remote_images_threshold` was reached.",
+    "topic_id": 36,
+    "user_id": -1,
+    "post": {
+      "post_id": 39,
+      "user_id": -1,
+      "omit_nofollow": true,
+      "cook_method": 1,
+      "post_cook": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>",
+      "stored": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>",
+      "processed": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>"
+    },
+    "markdown": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>",
+    "cooked": "<p>The <code>download_remote_images_to_local</code> setting was disabled because the disk space limit at <code>download_remote_images_threshold</code> was reached.</p>"
   },
   {
     "id": "post-40",

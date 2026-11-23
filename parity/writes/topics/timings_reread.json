@@ -15,8 +15,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:51:18.357959",
-  "transaction_started_at": "2026-11-22T09:51:17.490156",
+  "started_at": "2026-11-23T18:00:14.218441",
+  "transaction_started_at": "2026-11-23T18:00:13.323001",
   "responses": [
     {
       "status": 200,
@@ -30,26 +30,26 @@
       "updated": [
         {
           "before": {
-            "id": 18,
+            "id": 15,
             "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":36,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"user0\",\"display_name\":\"User1\"}",
             "read": false,
             "user_id": 3,
             "topic_id": 35,
-            "created_at": "2026-11-21T23:56:51.650292",
-            "updated_at": "2026-11-21T23:56:51.650292",
+            "created_at": "2026-11-23T16:08:43.236748",
+            "updated_at": "2026-11-23T16:08:43.236748",
             "post_number": 2,
             "high_priority": false,
             "post_action_id": 2,
             "notification_type": 5
           },
           "after": {
-            "id": 18,
+            "id": 15,
             "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"original_post_id\":36,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"user0\",\"display_name\":\"User1\"}",
             "read": true,
             "user_id": 3,
             "topic_id": 35,
-            "created_at": "2026-11-21T23:56:51.650292",
-            "updated_at": "2026-11-21T23:56:51.650292",
+            "created_at": "2026-11-23T16:08:43.236748",
+            "updated_at": "2026-11-23T16:08:43.236748",
             "post_number": 2,
             "high_priority": false,
             "post_action_id": 2,
@@ -93,26 +93,26 @@
             "raw": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "wiki": false,
             "reads": 1,
-            "score": null,
+            "score": 0.2,
             "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
             "hidden": false,
             "locale": null,
             "user_id": 2,
             "version": 1,
-            "baked_at": "2026-11-21T23:56:44.45832",
+            "baked_at": "2026-11-23T16:08:31.163746",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-11-21T23:56:44.45838",
+            "created_at": "2026-11-23T16:08:31.163852",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-21T23:56:44.45838",
+            "updated_at": "2026-11-23T16:08:31.163852",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -121,7 +121,7 @@
             "quote_count": 0,
             "reply_count": 0,
             "locked_by_id": null,
-            "percent_rank": 1,
+            "percent_rank": 0.25,
             "reply_quoted": false,
             "user_deleted": false,
             "baked_version": 2,
@@ -132,7 +132,7 @@
             "last_editor_id": 2,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-11-21T23:56:44.47558",
+            "last_version_at": "2026-11-23T16:08:31.211869",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -148,26 +148,26 @@
             "raw": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "wiki": false,
             "reads": 2,
-            "score": null,
+            "score": 0.2,
             "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
             "hidden": false,
             "locale": null,
             "user_id": 2,
             "version": 1,
-            "baked_at": "2026-11-21T23:56:44.45832",
+            "baked_at": "2026-11-23T16:08:31.163746",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-11-21T23:56:44.45838",
+            "created_at": "2026-11-23T16:08:31.163852",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-21T23:56:44.45838",
+            "updated_at": "2026-11-23T16:08:31.163852",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -176,7 +176,7 @@
             "quote_count": 0,
             "reply_count": 0,
             "locked_by_id": null,
-            "percent_rank": 1,
+            "percent_rank": 0.25,
             "reply_quoted": false,
             "user_deleted": false,
             "baked_version": 2,
@@ -187,7 +187,7 @@
             "last_editor_id": 2,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-11-21T23:56:44.47558",
+            "last_version_at": "2026-11-23T16:08:31.211869",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
@@ -213,16 +213,16 @@
             "user_id": 3,
             "topic_id": 35,
             "bookmarked": true,
-            "last_posted_at": "2026-11-21T23:56:44.688359",
-            "last_visited_at": "2026-11-21T23:56:44.689516",
-            "first_visited_at": "2026-11-21T23:56:44.689516",
+            "last_posted_at": "2026-11-23T16:08:31.840182",
+            "last_visited_at": "2026-11-23T16:08:31.843299",
+            "first_visited_at": "2026-11-23T16:08:31.843299",
             "cleared_pinned_at": null,
             "notification_level": 2,
             "total_msecs_viewed": 0,
             "last_read_post_number": 2,
             "notifications_reason_id": 4,
             "last_emailed_post_number": null,
-            "notifications_changed_at": "2026-11-21T23:56:44.704071"
+            "notifications_changed_at": "2026-11-23T16:08:31.887999"
           },
           "after": {
             "id": 35,
@@ -231,16 +231,16 @@
             "user_id": 3,
             "topic_id": 35,
             "bookmarked": true,
-            "last_posted_at": "2026-11-21T23:56:44.688359",
-            "last_visited_at": "2026-11-21T23:56:44.689516",
-            "first_visited_at": "2026-11-21T23:56:44.689516",
+            "last_posted_at": "2026-11-23T16:08:31.840182",
+            "last_visited_at": "2026-11-23T16:08:31.843299",
+            "first_visited_at": "2026-11-23T16:08:31.843299",
             "cleared_pinned_at": null,
             "notification_level": 2,
             "total_msecs_viewed": 4000,
             "last_read_post_number": 2,
             "notifications_reason_id": 4,
             "last_emailed_post_number": null,
-            "notifications_changed_at": "2026-11-21T23:56:44.704071"
+            "notifications_changed_at": "2026-11-23T16:08:31.887999"
           }
         }
       ]
@@ -251,33 +251,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "QXieTRTHvfPBQx7owAW+2eBpgQE=",
-            "created_at": "2026-11-22T09:51:17.884031",
-            "rotated_at": "2026-11-22T09:51:17.883104",
-            "updated_at": "2026-11-22T09:51:17.884031",
+            "auth_token": "jNCLJrZCLn5VTGW5Q3LUwkqaiFc=",
+            "created_at": "2026-11-23T18:00:13.700611",
+            "rotated_at": "2026-11-23T18:00:13.699696",
+            "updated_at": "2026-11-23T18:00:13.700611",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "QXieTRTHvfPBQx7owAW+2eBpgQE=",
+            "prev_auth_token": "jNCLJrZCLn5VTGW5Q3LUwkqaiFc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:51:18.364338",
+            "id": 1,
+            "seen_at": "2026-11-23T18:00:14.225191",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "QXieTRTHvfPBQx7owAW+2eBpgQE=",
-            "created_at": "2026-11-22T09:51:17.884031",
-            "rotated_at": "2026-11-22T09:51:17.883104",
-            "updated_at": "2026-11-22T09:51:17.884031",
+            "auth_token": "jNCLJrZCLn5VTGW5Q3LUwkqaiFc=",
+            "created_at": "2026-11-23T18:00:13.700611",
+            "rotated_at": "2026-11-23T18:00:13.699696",
+            "updated_at": "2026-11-23T18:00:13.700611",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "QXieTRTHvfPBQx7owAW+2eBpgQE=",
+            "prev_auth_token": "jNCLJrZCLn5VTGW5Q3LUwkqaiFc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -300,7 +300,7 @@
             "likes_given": 1,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -313,7 +313,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:44.654494",
+            "first_post_created_at": "2026-11-23T16:08:31.648314",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -326,7 +326,7 @@
             "likes_given": 1,
             "topic_count": 1,
             "bounce_score": 0,
-            "days_visited": 2,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
             "likes_received": 1,
@@ -339,7 +339,7 @@
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-21T23:56:44.654494",
+            "first_post_created_at": "2026-11-23T16:08:31.648314",
             "reset_bounce_score_after": null
           }
         }
@@ -351,20 +351,20 @@
       "updated": [
         {
           "before": {
-            "id": 5,
+            "id": 2,
             "mobile": false,
             "user_id": 3,
             "time_read": 0,
             "posts_read": 0,
-            "visited_at": "2026-11-22"
+            "visited_at": "2026-11-23"
           },
           "after": {
-            "id": 5,
+            "id": 2,
             "mobile": false,
             "user_id": 3,
             "time_read": 0,
             "posts_read": 1,
-            "visited_at": "2026-11-22"
+            "visited_at": "2026-11-23"
           }
         }
       ]
@@ -374,7 +374,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "b0069fa50783bad6058076c819e6fa6e5e651d2fe0d21c4f7279bf73d7c999a6",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -11,8 +11,8 @@
       "path": "/admin/config/emoji.json"
     }
   ],
-  "started_at": "2026-11-22T08:49:11.568878",
-  "transaction_started_at": "2026-11-22T08:49:10.816334",
+  "started_at": "2026-11-23T16:53:43.246259",
+  "transaction_started_at": "2026-11-23T16:53:42.468944",
   "responses": [
     {
       "status": 200,
@@ -42,8 +42,8 @@
           "group": "party",
           "user_id": 1,
           "upload_id": 34,
-          "created_at": "2026-11-22T08:49:10.816334",
-          "updated_at": "2026-11-22T08:49:10.816334"
+          "created_at": "2026-11-23T16:53:42.468944",
+          "updated_at": "2026-11-23T16:53:42.468944"
         }
       ],
       "updated": []
@@ -55,8 +55,8 @@
           "id": 38,
           "target_id": 900,
           "upload_id": 34,
-          "created_at": "2026-11-22T08:49:10.816334",
-          "updated_at": "2026-11-22T08:49:10.816334",
+          "created_at": "2026-11-23T16:53:42.468944",
+          "updated_at": "2026-11-23T16:53:42.468944",
           "target_type": "CustomEmoji"
         }
       ],
@@ -68,33 +68,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ienwRio2v5UgJ+1ueyxIdjQSkWQ=",
-            "created_at": "2026-11-22T08:49:11.124896",
-            "rotated_at": "2026-11-22T08:49:11.124027",
-            "updated_at": "2026-11-22T08:49:11.124896",
+            "auth_token": "1iDOsIuWPS3X5snF2lZpHwIYaBI=",
+            "created_at": "2026-11-23T16:53:42.777071",
+            "rotated_at": "2026-11-23T16:53:42.776265",
+            "updated_at": "2026-11-23T16:53:42.777071",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ienwRio2v5UgJ+1ueyxIdjQSkWQ=",
+            "prev_auth_token": "1iDOsIuWPS3X5snF2lZpHwIYaBI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T08:49:11.575727",
+            "id": 1,
+            "seen_at": "2026-11-23T16:53:43.252276",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ienwRio2v5UgJ+1ueyxIdjQSkWQ=",
-            "created_at": "2026-11-22T08:49:11.124896",
-            "rotated_at": "2026-11-22T08:49:11.124027",
-            "updated_at": "2026-11-22T08:49:11.124896",
+            "auth_token": "1iDOsIuWPS3X5snF2lZpHwIYaBI=",
+            "created_at": "2026-11-23T16:53:42.777071",
+            "rotated_at": "2026-11-23T16:53:42.776265",
+            "updated_at": "2026-11-23T16:53:42.777071",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ienwRio2v5UgJ+1ueyxIdjQSkWQ=",
+            "prev_auth_token": "1iDOsIuWPS3X5snF2lZpHwIYaBI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -105,7 +105,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 113,
           "context": null,
@@ -115,10 +115,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-22T08:49:11.58636",
+          "created_at": "2026-11-23T16:53:43.262786",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T08:49:11.58636",
+          "updated_at": "2026-11-23T16:53:43.262786",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -140,7 +140,7 @@
     ]
   ],
   "next_ids": {
-    "user_histories": 72
+    "user_histories": 66
   },
   "setup": [
     "INSERT INTO custom_emojis (id, name, upload_id, created_at, updated_at, \"group\", user_id) VALUES (900, 'party_parrot', 34, now(), now(), 'party', 1), (901, 'blob', 35, now(), now(), NULL, 2)",
@@ -148,7 +148,7 @@
   ],
   "recorded_from": {
     "case": "58a99d31370fd9b7f292dfbd3c118bba06d78a9121c95d6b92eb133ca0248480",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

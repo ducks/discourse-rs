@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:54:56.137207",
-  "transaction_started_at": "2026-11-22T09:54:55.139564",
+  "started_at": "2026-11-23T18:04:03.131542",
+  "transaction_started_at": "2026-11-23T18:04:02.313889",
   "responses": [
     {
       "status": 200,
@@ -20,7 +20,7 @@
           "id": 37,
           "username": "user2",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-          "created_at": "2026-11-21T23:56:44.759Z",
+          "created_at": "2026-11-23T16:08:32.082Z",
           "cooked": "<p>Reply two from user2, also long enough to pass the minimum length check.</p>",
           "post_number": 3,
           "topic_id": 35,
@@ -35,8 +35,8 @@
         {
           "id": 1,
           "topic_id": 35,
-          "created_at": "2026-11-22T09:54:56.17451",
-          "updated_at": "2026-11-22T09:54:56.17451",
+          "created_at": "2026-11-23T18:04:03.164211",
+          "updated_at": "2026-11-23T18:04:03.164211",
           "answer_post_id": null,
           "topic_timer_id": 1,
           "accepter_user_id": null
@@ -49,8 +49,8 @@
       "inserted": [
         {
           "id": 1,
-          "created_at": "2026-11-22T09:54:56.193991",
-          "updated_at": "2026-11-22T09:54:56.193991",
+          "created_at": "2026-11-23T18:04:03.184621",
+          "updated_at": "2026-11-23T18:04:03.184621",
           "answer_post_id": 37,
           "solved_topic_id": 1,
           "accepter_user_id": 1
@@ -62,26 +62,26 @@
     "notifications": {
       "inserted": [
         {
-          "id": 34,
+          "id": 31,
           "data": "{\"message\":\"solved.accepted_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.title\"}",
           "read": false,
           "user_id": 4,
           "topic_id": 35,
-          "created_at": "2026-11-22T09:54:56.201604",
-          "updated_at": "2026-11-22T09:54:56.201604",
+          "created_at": "2026-11-23T18:04:03.190642",
+          "updated_at": "2026-11-23T18:04:03.190642",
           "post_number": 3,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 14
         },
         {
-          "id": 35,
+          "id": 32,
           "data": "{\"message\":\"solved.topic_solved_notification\",\"display_username\":\"admin\",\"topic_title\":\"Parity fixture: replies and posters\",\"title\":\"solved.notification.topic_solved_title\"}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-22T09:54:56.206274",
-          "updated_at": "2026-11-22T09:54:56.206274",
+          "created_at": "2026-11-23T18:04:03.195889",
+          "updated_at": "2026-11-23T18:04:03.195889",
           "post_number": 3,
           "high_priority": false,
           "post_action_id": null,
@@ -98,10 +98,10 @@
           "type": "TopicTimer",
           "user_id": -1,
           "topic_id": null,
-          "created_at": "2026-11-21T23:56:51.452828",
+          "created_at": "2026-11-23T16:08:43.039825",
           "deleted_at": null,
-          "execute_at": "2026-11-22T05:56:51.452828",
-          "updated_at": "2026-11-22T09:54:56.188634",
+          "execute_at": "2026-11-23T22:08:43.039825",
+          "updated_at": "2026-11-23T18:04:03.178665",
           "category_id": null,
           "public_type": true,
           "status_type": 8,
@@ -119,8 +119,8 @@
         {
           "id": 65,
           "user_id": 4,
-          "created_at": "2026-11-22T09:54:56.163162",
-          "updated_at": "2026-11-22T09:54:56.163162",
+          "created_at": "2026-11-23T18:04:03.154425",
+          "updated_at": "2026-11-23T18:04:03.154425",
           "action_type": 15,
           "acting_user_id": 1,
           "target_post_id": 37,
@@ -137,33 +137,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "DbIvZ1aptogEwvhFjVpEqxqoOZY=",
-            "created_at": "2026-11-22T09:54:55.504472",
-            "rotated_at": "2026-11-22T09:54:55.503409",
-            "updated_at": "2026-11-22T09:54:55.504472",
+            "auth_token": "88coXq7p3creSaSY86iGj6Q4XiE=",
+            "created_at": "2026-11-23T18:04:02.652798",
+            "rotated_at": "2026-11-23T18:04:02.65183",
+            "updated_at": "2026-11-23T18:04:02.652798",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "DbIvZ1aptogEwvhFjVpEqxqoOZY=",
+            "prev_auth_token": "88coXq7p3creSaSY86iGj6Q4XiE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:54:56.145164",
+            "id": 1,
+            "seen_at": "2026-11-23T18:04:03.138603",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "DbIvZ1aptogEwvhFjVpEqxqoOZY=",
-            "created_at": "2026-11-22T09:54:55.504472",
-            "rotated_at": "2026-11-22T09:54:55.503409",
-            "updated_at": "2026-11-22T09:54:55.504472",
+            "auth_token": "88coXq7p3creSaSY86iGj6Q4XiE=",
+            "created_at": "2026-11-23T18:04:02.652798",
+            "rotated_at": "2026-11-23T18:04:02.65183",
+            "updated_at": "2026-11-23T18:04:02.652798",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "DbIvZ1aptogEwvhFjVpEqxqoOZY=",
+            "prev_auth_token": "88coXq7p3creSaSY86iGj6Q4XiE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -176,7 +176,7 @@
   "next_ids": {
     "discourse_solved_solved_topics": 1,
     "discourse_solved_topic_answers": 1,
-    "notifications": 34,
+    "notifications": 31,
     "topic_timers": 1,
     "user_actions": 65
   },
@@ -188,7 +188,7 @@
   ],
   "recorded_from": {
     "case": "020f8c6195c6b42119f8beafa19cebd3df84d348dbea40d087e506483e8ac7be",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

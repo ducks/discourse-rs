@@ -2,8 +2,8 @@
   "name": "reindex_tag",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-22T09:31:28.561268",
-  "transaction_started_at": "2026-11-22T09:31:27.821231",
+  "started_at": "2026-11-23T17:38:28.282484",
+  "transaction_started_at": "2026-11-23T17:38:27.61526",
   "responses": [],
   "changes": {
     "tag_search_data": {
@@ -35,7 +35,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "26edc78ad2262c27b7ed47dbe91dba1f0eae7f47c5f218116fd6a224bfa74698",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

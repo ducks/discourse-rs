@@ -13,8 +13,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-11-22T09:20:07.517307",
-  "transaction_started_at": "2026-11-22T09:20:06.50477",
+  "started_at": "2026-11-23T17:26:15.668127",
+  "transaction_started_at": "2026-11-23T17:26:14.849885",
   "responses": [
     {
       "status": 200,
@@ -23,19 +23,19 @@
         "name": "User0",
         "username": "user0",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-        "created_at": "2026-11-21T23:56:51.452Z",
+        "created_at": "2026-11-23T16:08:43.039Z",
         "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
         "post_number": 5,
         "post_type": 1,
         "posts_count": 5,
-        "updated_at": "2026-11-21T23:56:51.452Z",
+        "updated_at": "2026-11-23T16:08:43.039Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
         "incoming_link_count": 0,
         "reads": 1,
         "readers_count": 0,
-        "score": 0,
+        "score": 0.2,
         "yours": false,
         "topic_id": 35,
         "topic_slug": "parity-fixture-replies-and-posters",
@@ -128,19 +128,19 @@
         "name": "User0",
         "username": "user0",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-        "created_at": "2026-11-21T23:56:51.452Z",
+        "created_at": "2026-11-23T16:08:43.039Z",
         "cooked": "<p>Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.</p>",
         "post_number": 5,
         "post_type": 1,
         "posts_count": 5,
-        "updated_at": "2026-11-21T23:56:51.452Z",
+        "updated_at": "2026-11-23T16:08:43.039Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
         "incoming_link_count": 0,
         "reads": 1,
         "readers_count": 0,
-        "score": 0,
+        "score": 0.2,
         "yours": false,
         "topic_id": 35,
         "topic_slug": "parity-fixture-replies-and-posters",
@@ -218,18 +218,6 @@
     }
   ],
   "changes": {
-    "given_daily_likes": {
-      "inserted": [
-        {
-          "user_id": 3,
-          "given_date": "2026-11-22",
-          "likes_given": 0,
-          "limit_reached": false
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
     "post_actions": {
       "inserted": [
         {
@@ -237,9 +225,9 @@
           "post_id": 52,
           "user_id": 3,
           "agreed_at": null,
-          "created_at": "2026-11-22T09:20:07.549002",
-          "deleted_at": "2026-11-22T09:20:07.732057",
-          "updated_at": "2026-11-22T09:20:07.563826",
+          "created_at": "2026-11-23T17:26:15.709994",
+          "deleted_at": "2026-11-23T17:26:15.904914",
+          "updated_at": "2026-11-23T17:26:15.719078",
           "deferred_at": null,
           "agreed_by_id": null,
           "disagreed_at": null,
@@ -261,33 +249,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "UeL+uIkUqXGbAyP71cvgc3phbEM=",
-            "created_at": "2026-11-22T09:20:07.053111",
-            "rotated_at": "2026-11-22T09:20:07.052234",
-            "updated_at": "2026-11-22T09:20:07.053111",
+            "auth_token": "GGcy2Ik5gX61jxuRxuXzhrAzjgE=",
+            "created_at": "2026-11-23T17:26:15.186895",
+            "rotated_at": "2026-11-23T17:26:15.186096",
+            "updated_at": "2026-11-23T17:26:15.186895",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "UeL+uIkUqXGbAyP71cvgc3phbEM=",
+            "prev_auth_token": "GGcy2Ik5gX61jxuRxuXzhrAzjgE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:20:07.524453",
+            "id": 1,
+            "seen_at": "2026-11-23T17:26:15.682211",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "UeL+uIkUqXGbAyP71cvgc3phbEM=",
-            "created_at": "2026-11-22T09:20:07.053111",
-            "rotated_at": "2026-11-22T09:20:07.052234",
-            "updated_at": "2026-11-22T09:20:07.053111",
+            "auth_token": "GGcy2Ik5gX61jxuRxuXzhrAzjgE=",
+            "created_at": "2026-11-23T17:26:15.186895",
+            "rotated_at": "2026-11-23T17:26:15.186096",
+            "updated_at": "2026-11-23T17:26:15.186895",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "UeL+uIkUqXGbAyP71cvgc3phbEM=",
+            "prev_auth_token": "GGcy2Ik5gX61jxuRxuXzhrAzjgE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -311,7 +299,7 @@
   },
   "recorded_from": {
     "case": "1db713db28d3ebc7ee779a8693f4052319d073bdb9241f23b46d58a1ffe00ee0",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -64,8 +64,8 @@
       "path": "/edit-directory-columns.json"
     }
   ],
-  "started_at": "2026-11-22T10:01:35.999783",
-  "transaction_started_at": "2026-11-22T10:01:35.002424",
+  "started_at": "2026-11-23T18:10:47.762418",
+  "transaction_started_at": "2026-11-23T18:10:46.954375",
   "responses": [
     {
       "status": 200,
@@ -596,7 +596,7 @@
           "type": 1,
           "enabled": false,
           "position": 11,
-          "created_at": "2026-11-22T10:01:35.002424",
+          "created_at": "2026-11-23T18:10:46.954375",
           "user_field_id": 1,
           "automatic_position": null
         },
@@ -607,7 +607,7 @@
           "type": 1,
           "enabled": true,
           "position": 2,
-          "created_at": "2026-11-22T10:01:35.002424",
+          "created_at": "2026-11-23T18:10:46.954375",
           "user_field_id": 2,
           "automatic_position": null
         }
@@ -670,33 +670,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Dw5xZ+yMBTbYL0AXPIOYdxnLXJY=",
-            "created_at": "2026-11-22T10:01:35.544288",
-            "rotated_at": "2026-11-22T10:01:35.543342",
-            "updated_at": "2026-11-22T10:01:35.544288",
+            "auth_token": "29mKbEAtmvtqCxRroP+4JopJ2XE=",
+            "created_at": "2026-11-23T18:10:47.310867",
+            "rotated_at": "2026-11-23T18:10:47.309693",
+            "updated_at": "2026-11-23T18:10:47.310867",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Dw5xZ+yMBTbYL0AXPIOYdxnLXJY=",
+            "prev_auth_token": "29mKbEAtmvtqCxRroP+4JopJ2XE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T10:01:36.008972",
+            "id": 1,
+            "seen_at": "2026-11-23T18:10:47.769018",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Dw5xZ+yMBTbYL0AXPIOYdxnLXJY=",
-            "created_at": "2026-11-22T10:01:35.544288",
-            "rotated_at": "2026-11-22T10:01:35.543342",
-            "updated_at": "2026-11-22T10:01:35.544288",
+            "auth_token": "29mKbEAtmvtqCxRroP+4JopJ2XE=",
+            "created_at": "2026-11-23T18:10:47.310867",
+            "rotated_at": "2026-11-23T18:10:47.309693",
+            "updated_at": "2026-11-23T18:10:47.310867",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Dw5xZ+yMBTbYL0AXPIOYdxnLXJY=",
+            "prev_auth_token": "29mKbEAtmvtqCxRroP+4JopJ2XE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -707,7 +707,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 72,
+          "id": 66,
           "email": null,
           "action": 23,
           "context": null,
@@ -717,10 +717,10 @@
           "topic_id": null,
           "new_value": "{\"name\":\"likes_received\",\"enabled\":\"true\"}{\"name\":\"likes_given\",\"position\":\"2\"}{\"name\":\"\",\"enabled\":\"false\",\"position\":\"10\"}",
           "admin_only": true,
-          "created_at": "2026-11-22T10:01:36.08598",
+          "created_at": "2026-11-23T18:10:47.839386",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-22T10:01:36.08598",
+          "updated_at": "2026-11-23T18:10:47.839386",
           "category_id": null,
           "custom_type": "update_directory_columns",
           "reviewable_id": null,
@@ -736,7 +736,7 @@
   "jobs": [],
   "next_ids": {
     "directory_columns": 36,
-    "user_histories": 72
+    "user_histories": 66
   },
   "setup": [
     "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Color', 'Your color', 0, true, true, false, false, 1, 0, now(), now()), (2, 'Langs', 'Languages', 3, true, false, true, true, 2, 0, now(), now()), (3, 'Secret', 'Staff only', 0, true, false, false, false, 3, 0, now(), now())",
@@ -745,7 +745,7 @@
   ],
   "recorded_from": {
     "case": "ad13c433d5a7d24c9c40f9c422c1d17756a5ad85c915d36dbf35e654c226ddbb",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

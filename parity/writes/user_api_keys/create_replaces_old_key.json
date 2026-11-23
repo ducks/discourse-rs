@@ -14,13 +14,13 @@
       }
     }
   ],
-  "started_at": "2026-11-22T09:59:39.604593",
-  "transaction_started_at": "2026-11-22T09:59:38.602293",
+  "started_at": "2026-11-23T18:08:52.409242",
+  "transaction_started_at": "2026-11-23T18:08:51.580111",
   "responses": [
     {
       "status": 200,
       "body": {
-        "payload": "U3SLcY5O+hBXGmG8u/AULxCwA9Uk1gYD3LdF4gnpAAiChm2yz44W3Lyv0Djm\n6EyhazpvBE1wjqSUuGWdXrMxFhpt0ie52dI9DgNdIpidl65w69+w8bpaNWeh\nodM0rWg56HsV29kKbHuOPIEnaOCfa/hma6xS7kQ9ovzyOJZVB3nm7NmedZa6\n40lunvI+/WjkXkj/ZJcnd3TVq4MUrC+RqM1hqsHxsHsaI5bji3iz/luqBMHz\nGTrvZW/+iBt3xDC0Rmq6bUNyEGaIr/rLqU44NG70QTLfc31V/sNeKgr440TE\ns3QqnqcwHb23dVSSUtAyD5iUOAIYxYVAP6EDfB2Pqw==\n",
+        "payload": "oF+BChkydRLDvWsRhQoXcY707RHmpVImFO9QC1e65lUhdqAt45QioO27AIK3\nH/lzouVQzGd9YFKZHfel/glPNOsLzHJLtrf9rXIMvyUbhKj88iiG7LZ1B/gF\nsBCljKRYxcqV62W3GheXVTwdAEnwUSARXUfMzQdkA2TjaSQkYgNlusy+NONZ\n3gNThxp0G/1y3arhXHQtfDxrVt9kh+guORseVDfAIaReYqjL8tadEd4v8ggF\nm17ZDsJoEgk6H+onEc0uItx0+LMrLkuNmxDP1pvZz8zRSUpnOxVNSS5cPSz3\nCz9WsaqHCMvO8SBrRp2NY2FwKfZ3KOHAP84N5nlEyQ==\n",
         "instructions": "We just generated a new user API key for you to use with \"Old Name\", please paste the following key into your application:"
       }
     }
@@ -31,16 +31,16 @@
         {
           "id": 1,
           "name": "read",
-          "created_at": "2026-11-22T09:59:39.627076",
-          "updated_at": "2026-11-22T09:59:39.627076",
+          "created_at": "2026-11-23T18:08:52.434335",
+          "updated_at": "2026-11-23T18:08:52.434335",
           "user_api_key_id": 1,
           "allowed_parameters": null
         },
         {
           "id": 2,
           "name": "write",
-          "created_at": "2026-11-22T09:59:39.628154",
-          "updated_at": "2026-11-22T09:59:39.628154",
+          "created_at": "2026-11-23T18:08:52.435571",
+          "updated_at": "2026-11-23T18:08:52.435571",
           "user_api_key_id": 1,
           "allowed_parameters": null
         }
@@ -49,8 +49,8 @@
         {
           "id": 9101,
           "name": "read",
-          "created_at": "2026-11-20T09:59:38.602293",
-          "updated_at": "2026-11-20T09:59:38.602293",
+          "created_at": "2026-11-21T18:08:51.580111",
+          "updated_at": "2026-11-21T18:08:51.580111",
           "user_api_key_id": 9101,
           "allowed_parameters": null
         }
@@ -62,14 +62,14 @@
         {
           "id": 1,
           "user_id": 3,
-          "key_hash": "89ebf3b943fcd20ffa3cfb7d028588878cdb86133df6e45df025fc1eeab541f1",
+          "key_hash": "9dc486626afc8b72f353aca3bf0ae61a81a8d6c5e0f0d8afddb23601610061ba",
           "push_url": null,
           "client_id": null,
-          "created_at": "2026-11-22T09:59:39.625958",
+          "created_at": "2026-11-23T18:08:52.432803",
           "expires_at": null,
           "revoked_at": null,
-          "updated_at": "2026-11-22T09:59:39.625958",
-          "last_used_at": "2026-11-22T09:59:38.602293",
+          "updated_at": "2026-11-23T18:08:52.432803",
+          "last_used_at": "2026-11-23T18:08:51.580111",
           "application_name": null,
           "user_api_key_client_id": 9101
         }
@@ -81,11 +81,11 @@
           "key_hash": "5e249ac43c6345bc022cfd360fb5ef6cd79caf7e75ed34482a8bf929a3d72511",
           "push_url": null,
           "client_id": null,
-          "created_at": "2026-11-20T09:59:38.602293",
+          "created_at": "2026-11-21T18:08:51.580111",
           "expires_at": null,
           "revoked_at": null,
-          "updated_at": "2026-11-20T09:59:38.602293",
-          "last_used_at": "2026-11-21T09:59:38.602293",
+          "updated_at": "2026-11-21T18:08:51.580111",
+          "last_used_at": "2026-11-22T18:08:51.580111",
           "application_name": null,
           "user_api_key_client_id": 9101
         }
@@ -98,33 +98,33 @@
       "updated": [
         {
           "before": {
-            "id": 9,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "mCKPUq5odIdVJzUvHGCo8TTXll4=",
-            "created_at": "2026-11-22T09:59:39.130259",
-            "rotated_at": "2026-11-22T09:59:39.129361",
-            "updated_at": "2026-11-22T09:59:39.130259",
+            "auth_token": "q6cLqCWzHE3S6TElw+SPi5z+9f8=",
+            "created_at": "2026-11-23T18:08:51.938026",
+            "rotated_at": "2026-11-23T18:08:51.937235",
+            "updated_at": "2026-11-23T18:08:51.938026",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "mCKPUq5odIdVJzUvHGCo8TTXll4=",
+            "prev_auth_token": "q6cLqCWzHE3S6TElw+SPi5z+9f8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 9,
-            "seen_at": "2026-11-22T09:59:39.610791",
+            "id": 1,
+            "seen_at": "2026-11-23T18:08:52.416217",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "mCKPUq5odIdVJzUvHGCo8TTXll4=",
-            "created_at": "2026-11-22T09:59:39.130259",
-            "rotated_at": "2026-11-22T09:59:39.129361",
-            "updated_at": "2026-11-22T09:59:39.130259",
+            "auth_token": "q6cLqCWzHE3S6TElw+SPi5z+9f8=",
+            "created_at": "2026-11-23T18:08:51.938026",
+            "rotated_at": "2026-11-23T18:08:51.937235",
+            "updated_at": "2026-11-23T18:08:51.938026",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "mCKPUq5odIdVJzUvHGCo8TTXll4=",
+            "prev_auth_token": "q6cLqCWzHE3S6TElw+SPi5z+9f8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -147,7 +147,7 @@
   ],
   "recorded_from": {
     "case": "29200261649a464043e4cedbce2dfd3bbd31cb0dab90d93706dc811d5014fc8f",
-    "seed": "6a5b95867b109b5e8059f9efbfdb5e43c6c8d66e6dbce40adb5f373d920afeb6",
+    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }
