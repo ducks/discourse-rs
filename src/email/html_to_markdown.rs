@@ -778,16 +778,17 @@ impl Converter {
 
     fn visit_li(&mut self, node: &Handle) -> String {
         let text = self.traverse(node, false);
-        let lists: Vec<Handle> = ancestors(node)
+        let list = ancestors(node)
             .into_iter()
-            .filter(|a| matches!(name(a), "ul" | "ol"))
-            .collect();
-        let marker = if lists.first().is_some_and(|l| name(l) == "ol") {
+            .find(|a| matches!(name(a), "ul" | "ol"));
+        let marker = if list.is_some_and(|l| name(&l) == "ol") {
             "1. "
         } else {
             "- "
         };
-        let indent = " ".repeat(marker.len()).repeat(lists.len().max(1));
+        // One step per level (Discourse 519583e9628), not one per ancestor
+        // list.
+        let indent = " ".repeat(marker.len());
         let last = parent(node)
             .and_then(|p| children(&p).into_iter().filter(is_element).last())
             .is_some_and(|l| Rc::ptr_eq(&l, node));
