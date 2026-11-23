@@ -345,10 +345,12 @@ async fn set_change(
     Ok(())
 }
 
-/// SiteSetting::Action::RemoveAndReplaceUncategorizedToggled: enabling
-/// demotes the special Uncategorized category in place (the site's state
-/// snapshotted onto the opt-in event first), disabling restores the
-/// snapshot's state.
+/// SiteSetting::Action::RemoveAndReplaceUncategorizedToggled (as of
+/// Discourse a9f8c119c71): enabling demotes the special Uncategorized
+/// category in place (the site's state snapshotted onto the newest opt-in
+/// event first), then deletes it when the site never allowed uncategorized
+/// topics and it is still the empty seed; disabling restores a snapshot
+/// that allowed them.
 async fn uncategorized_toggled(
     conn: &mut PgConnection,
     state: &AppState,
@@ -356,21 +358,26 @@ async fn uncategorized_toggled(
 ) -> Result<(), AppError> {
     const NAME: &str = "remove_and_replace_uncategorized";
     const SKIP_DEFINITION: &str = "skip_category_definition";
-    let defs = &state.site_setting_defs;
-    let settings = SiteSettings::load(&mut *conn, defs, &state.config.globals).await?;
-    // `order(created_at: :desc).first` follows UpcomingChangeEvent's
-    // default_scope `order(:created_at)`, so the oldest event is the one.
-    let snapshot: Option<(i64, Value)> = sqlx::query_as(
-        "SELECT id, event_data FROM upcoming_change_events WHERE upcoming_change_name = $1 \
-         AND event_type = ANY($2) AND event_data IS NOT NULL ORDER BY created_at, id LIMIT 1",
-    )
-    .bind(NAME)
-    .bind([
+    const SNAPSHOT_EVENTS: [i32; 2] = [
         event_types::MANUAL_OPT_IN,
         event_types::AUTOMATICALLY_PROMOTED,
-    ])
-    .fetch_optional(&mut *conn)
-    .await?;
+    ];
+    let defs = &state.site_setting_defs;
+    let settings = SiteSettings::load(&mut *conn, defs, &state.config.globals).await?;
+    // stored_snapshot: `snapshot_events.where.not(event_data: nil).last`,
+    // the newest under UpcomingChangeEvent's default_scope
+    // `order(:created_at)`.
+    async fn stored_snapshot(conn: &mut PgConnection) -> Result<Option<Value>, AppError> {
+        Ok(sqlx::query_scalar(
+            "SELECT event_data FROM upcoming_change_events WHERE upcoming_change_name = $1 \
+             AND event_type = ANY($2) AND event_data IS NOT NULL \
+             ORDER BY created_at DESC, id DESC LIMIT 1",
+        )
+        .bind(NAME)
+        .bind(SNAPSHOT_EVENTS)
+        .fetch_optional(&mut *conn)
+        .await?)
+    }
     // set_and_log by the system user, a no-op when the value is unchanged.
     async fn set(
         conn: &mut PgConnection,
@@ -412,88 +419,104 @@ async fn uncategorized_toggled(
     }
     if enabled {
         let former = settings.get("uncategorized_category_id")?.to_i();
-        if former == -1 {
-            return Ok(());
-        }
-        if snapshot.is_none() {
-            let data = json!({
-                "allow_uncategorized_topics": settings.get("allow_uncategorized_topics")?,
-                "default_composer_category": settings.get("default_composer_category")?,
-                "uncategorized_category_id": former,
-            });
-            sqlx::query(
-                "UPDATE upcoming_change_events SET event_data = $2, updated_at = now() WHERE id = \
-                 (SELECT id FROM upcoming_change_events WHERE upcoming_change_name = $1 \
-                  AND event_type = ANY($3) ORDER BY created_at, id LIMIT 1)",
+        // demote, when the category is still special.
+        let event: Option<i64> = if former == -1 {
+            None
+        } else {
+            sqlx::query_scalar(
+                "SELECT id FROM upcoming_change_events WHERE upcoming_change_name = $1 \
+                 AND event_type = ANY($2) ORDER BY created_at DESC, id DESC LIMIT 1",
             )
             .bind(NAME)
-            .bind(&data)
-            .bind([
-                event_types::MANUAL_OPT_IN,
-                event_types::AUTOMATICALLY_PROMOTED,
-            ])
-            .execute(&mut *conn)
-            .await?;
-        }
-        if settings.get("default_composer_category")?.is_blank() {
-            set(
-                conn,
-                state,
-                "default_composer_category",
-                SettingValue::Str(former.to_string()),
-            )
-            .await?;
-        }
-        set(
-            conn,
-            state,
-            "uncategorized_category_id",
-            SettingValue::Int(-1),
-        )
-        .await?;
-        set(
-            conn,
-            state,
-            "allow_uncategorized_topics",
-            SettingValue::Bool(false),
-        )
-        .await?;
-        // upsert_custom_fields: the row updated, else created.
-        let exists: bool =
-            sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE id = $1)")
-                .bind(former as i32)
-                .fetch_one(&mut *conn)
-                .await?;
-        if exists {
-            let updated = sqlx::query(
-                "UPDATE category_custom_fields SET value = 't', updated_at = now() \
-                 WHERE category_id = $1 AND name = $2",
-            )
-            .bind(former as i32)
-            .bind(SKIP_DEFINITION)
-            .execute(&mut *conn)
+            .bind(SNAPSHOT_EVENTS)
+            .fetch_optional(&mut *conn)
             .await?
-            .rows_affected();
-            if updated == 0 {
+        };
+        if let Some(event) = event {
+            let allow = settings.get("allow_uncategorized_topics")?.truthy();
+            let composer_default = settings.get("default_composer_category")?;
+            if stored_snapshot(&mut *conn).await?.is_none() {
+                let data = json!({
+                    "allow_uncategorized_topics": allow,
+                    "default_composer_category": composer_default,
+                    "uncategorized_category_id": former,
+                });
                 sqlx::query(
-                    "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) \
-                     VALUES ($1, $2, 't', now(), now())",
+                    "UPDATE upcoming_change_events SET event_data = $2, updated_at = now() WHERE id = $1",
+                )
+                .bind(event)
+                .bind(&data)
+                .execute(&mut *conn)
+                .await?;
+            }
+            if allow && composer_default.is_blank() {
+                set(
+                    conn,
+                    state,
+                    "default_composer_category",
+                    SettingValue::Str(former.to_string()),
+                )
+                .await?;
+            }
+            // upsert_custom_fields: the row updated, else created.
+            let exists: bool =
+                sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE id = $1)")
+                    .bind(former as i32)
+                    .fetch_one(&mut *conn)
+                    .await?;
+            if exists {
+                let updated = sqlx::query(
+                    "UPDATE category_custom_fields SET value = 't', updated_at = now() \
+                     WHERE category_id = $1 AND name = $2",
                 )
                 .bind(former as i32)
                 .bind(SKIP_DEFINITION)
                 .execute(&mut *conn)
-                .await?;
+                .await?
+                .rows_affected();
+                if updated == 0 {
+                    sqlx::query(
+                        "INSERT INTO category_custom_fields (category_id, name, value, created_at, updated_at) \
+                         VALUES ($1, $2, 't', now(), now())",
+                    )
+                    .bind(former as i32)
+                    .bind(SKIP_DEFINITION)
+                    .execute(&mut *conn)
+                    .await?;
+                }
             }
+            set(
+                conn,
+                state,
+                "uncategorized_category_id",
+                SettingValue::Int(-1),
+            )
+            .await?;
+            set(
+                conn,
+                state,
+                "allow_uncategorized_topics",
+                SettingValue::Bool(false),
+            )
+            .await?;
         }
-        return Ok(());
+        let snapshot = stored_snapshot(&mut *conn).await?;
+        return remove_unused_uncategorized(conn, state, snapshot).await;
     }
-    let Some((_, snapshot)) = snapshot else {
+    let Some(snapshot) = stored_snapshot(&mut *conn).await? else {
         return Ok(());
     };
     if snapshot["allow_uncategorized_topics"] != true {
         return Ok(());
     }
     let former = snapshot["uncategorized_category_id"].as_i64().unwrap_or(-1);
+    let exists: bool = sqlx::query_scalar("SELECT EXISTS (SELECT 1 FROM categories WHERE id = $1)")
+        .bind(former as i32)
+        .fetch_one(&mut *conn)
+        .await?;
+    if !exists {
+        return Ok(());
+    }
     set(
         conn,
         state,
@@ -519,6 +542,72 @@ async fn uncategorized_toggled(
         .execute(&mut *conn)
         .await?;
     Ok(())
+}
+
+/// remove_unused_category: a site that never allowed uncategorized topics
+/// loses the category once it is no longer special, if the system user may
+/// delete it (CategoryDestroyer) and it is pristine: the seed's name in the
+/// default locale, no group permissions, no topics, trashed ones included.
+async fn remove_unused_uncategorized(
+    conn: &mut PgConnection,
+    state: &AppState,
+    snapshot: Option<Value>,
+) -> Result<(), AppError> {
+    let Some(snapshot) = snapshot else {
+        return Ok(());
+    };
+    if snapshot["allow_uncategorized_topics"] == true {
+        return Ok(());
+    }
+    let Some(id) = snapshot["uncategorized_category_id"].as_i64() else {
+        return Ok(());
+    };
+    let Some(category) =
+        crate::categories::serializer::GuardedCategory::load(&mut *conn, id as i32).await?
+    else {
+        return Ok(());
+    };
+    let settings =
+        SiteSettings::load(&mut *conn, &state.site_setting_defs, &state.config.globals).await?;
+    let system = crate::session::current::SessionUser::load(&mut *conn, -1)
+        .await?
+        .ok_or(Unsupported("a site without its system user"))?;
+    let guardian = crate::guardian::Guardian::for_user(&mut *conn, &system).await?;
+    if !crate::categories::serializer::can_delete(&mut *conn, &settings, &guardian, &category)
+        .await?
+    {
+        return Ok(());
+    }
+    let seed_name = state
+        .i18n
+        .t("uncategorized_category_name")
+        .ok_or(Unsupported("a missing uncategorized_category_name"))?;
+    let pristine: bool = sqlx::query_scalar(
+        "SELECT c.name = $2 \
+           AND NOT EXISTS (SELECT 1 FROM category_groups WHERE category_id = c.id) \
+           AND NOT EXISTS (SELECT 1 FROM topics WHERE category_id = c.id) \
+         FROM categories c WHERE c.id = $1",
+    )
+    .bind(category.id)
+    .bind(seed_name)
+    .fetch_one(&mut *conn)
+    .await?;
+    if !pristine {
+        return Ok(());
+    }
+    let host = crate::pretty_text::Host::from_state(state);
+    let cx = crate::category_writes::Cx {
+        host: &host,
+        bus: &state.bus,
+        settings: &settings,
+    };
+    // CategoryDestroyer: category.lock!, the log, destroy!.
+    sqlx::query("SELECT 1 FROM categories WHERE id = $1 FOR UPDATE")
+        .bind(category.id)
+        .execute(&mut *conn)
+        .await?;
+    crate::category_writes::log_deletion(&mut *conn, &cx, -1, category.id).await?;
+    crate::category_writes::destroy(&mut *conn, &cx, category.id).await
 }
 
 /// PUT /admin/config/upcoming-changes/toggle(.json)
