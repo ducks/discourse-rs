@@ -98,7 +98,10 @@ async fn run(cli: Cli) -> Result<bool, String> {
                     if response.status != 429 {
                         break;
                     }
-                    println!("429       {}  (waiting {RATE_LIMIT_WAIT_SECS}s)", case.label());
+                    println!(
+                        "429       {}  (waiting {RATE_LIMIT_WAIT_SECS}s)",
+                        case.label()
+                    );
                     tokio::time::sleep(std::time::Duration::from_secs(RATE_LIMIT_WAIT_SECS)).await;
                     response = fetch(&client, rails, &mut rails_sessions, case).await?;
                 }
