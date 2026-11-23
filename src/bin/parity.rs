@@ -62,6 +62,9 @@ async fn main() -> ExitCode {
     }
 }
 
+const RATE_LIMIT_RETRIES: usize = 4;
+const RATE_LIMIT_WAIT_SECS: u64 = 30;
+
 async fn run(cli: Cli) -> Result<bool, String> {
     let mut cases = parity::load_cases(&cli.cases)?;
     if let Some(only) = &cli.only {
@@ -87,7 +90,21 @@ async fn run(cli: Cli) -> Result<bool, String> {
         }
         let outcome = match &cli.command {
             Command::Record { rails } => {
-                let response = fetch(&client, rails, &mut rails_sessions, case).await?;
+                // No golden is a rate limit: a 429 means the pass outran
+                // Rails' search or login limits (which a faster reference
+                // trips despite --delay-ms), so wait it out and ask again.
+                let mut response = fetch(&client, rails, &mut rails_sessions, case).await?;
+                for _ in 0..RATE_LIMIT_RETRIES {
+                    if response.status != 429 {
+                        break;
+                    }
+                    println!("429       {}  (waiting {RATE_LIMIT_WAIT_SECS}s)", case.label());
+                    tokio::time::sleep(std::time::Duration::from_secs(RATE_LIMIT_WAIT_SECS)).await;
+                    response = fetch(&client, rails, &mut rails_sessions, case).await?;
+                }
+                if response.status == 429 {
+                    return Err(format!("{}: still rate limited by Rails", case.label()));
+                }
                 let golden = Golden {
                     request: case.label(),
                     source: rails.trim_end_matches('/').to_string(),
