@@ -52,7 +52,6 @@ pub async fn show_by_id(
         },
         &state,
         None,
-        None,
         &id,
         None,
         &params,
@@ -103,7 +102,6 @@ pub async fn show_with_slug(
             incoming,
             &state,
             None,
-            Some(&slug),
             &slug,
             Some(route_post_number(&id)),
             &params,
@@ -111,17 +109,7 @@ pub async fn show_with_slug(
         )
         .await;
     }
-    show(
-        incoming,
-        &state,
-        Some(&slug),
-        Some(&id),
-        &id,
-        None,
-        &params,
-        json,
-    )
-    .await
+    show(incoming, &state, Some(&slug), &id, None, &params, json).await
 }
 
 /// `/t/:slug/:topic_id/:post_number`
@@ -147,7 +135,6 @@ pub async fn show_post(
         },
         &state,
         Some(&slug),
-        Some(&id),
         &id,
         Some(route_post_number(&post_number)),
         &params,
@@ -282,10 +269,9 @@ async fn topic_missing(
     incoming: &Incoming<'_>,
     slug: Option<&str>,
     id: &str,
-    topic_id_param: Option<&str>,
     page_slug: &str,
 ) -> Result<Response, AppError> {
-    if let Some(path) = permalink_path(state, incoming, slug, id, topic_id_param).await?
+    if let Some(path) = permalink_path(state, incoming, slug, id).await?
         && let Some(redirect) =
             crate::permalinks::check(state, incoming.guardian, incoming.headers, &path).await?
     {
@@ -301,7 +287,6 @@ async fn detailed_invalid_access(
     state: &AppState,
     incoming: &Incoming<'_>,
     topic_id: i32,
-    topic_id_param: Option<&str>,
     page_slug: &str,
 ) -> Result<Response, AppError> {
     let guardian = incoming.guardian;
@@ -314,15 +299,14 @@ async fn detailed_invalid_access(
         drop(conn);
         return topic_not_found(state, guardian, page_slug).await;
     };
-    // Notification.remove_for(current_user.id, params[:topic_id])
+    // Notification.remove_for(current_user.id, ex.obj.id): the refused
+    // topic's own (Discourse 2e7c7e3a2bd).
     if let Some(user_id) = guardian.user_id() {
-        sqlx::query(
-            "DELETE FROM notifications WHERE user_id = $1 AND topic_id IS NOT DISTINCT FROM $2",
-        )
-        .bind(user_id)
-        .bind(topic_id_param.map(|t| crate::ruby::to_i(t) as i32))
-        .execute(&mut *conn)
-        .await?;
+        sqlx::query("DELETE FROM notifications WHERE user_id = $1 AND topic_id = $2")
+            .bind(user_id)
+            .bind(topic_id)
+            .execute(&mut *conn)
+            .await?;
     }
     let secure = guardian.secure_category_ids(&mut conn, &settings).await?;
     let can_see = guardian.can_see_topic(&settings, &topic, true, &secure)?;
@@ -391,7 +375,6 @@ async fn permalink_path(
     incoming: &Incoming<'_>,
     slug: Option<&str>,
     id: &str,
-    topic_id_param: Option<&str>,
 ) -> Result<Option<String>, AppError> {
     let requested = match slug.filter(|s| !s.is_empty()) {
         Some(s) => format!("/t/{s}/{id}"),
@@ -424,17 +407,14 @@ async fn permalink_path(
     if guardian.can_see_topic(&settings, &topic, true, &secure)? {
         return Ok(Some(requested));
     }
-    // InvalidAccess: Notification.remove_for(current_user.id,
-    // params[:topic_id]). Without a topic_id param (`/t/:id`) that is
-    // `topic_id IS NULL`: every notification not about a topic.
+    // InvalidAccess: Notification.remove_for(current_user.id, ex.obj.id),
+    // the refused topic's own (Discourse 2e7c7e3a2bd).
     if let Some(user_id) = guardian.user_id() {
-        sqlx::query(
-            "DELETE FROM notifications WHERE user_id = $1 AND topic_id IS NOT DISTINCT FROM $2",
-        )
-        .bind(user_id)
-        .bind(topic_id_param.map(|t| crate::ruby::to_i(t) as i32))
-        .execute(&mut *conn)
-        .await?;
+        sqlx::query("DELETE FROM notifications WHERE user_id = $1 AND topic_id = $2")
+            .bind(user_id)
+            .bind(topic_id)
+            .execute(&mut *conn)
+            .await?;
     }
     // `deleted` decides, the topic's own URL is looked up.
     let deleted = guardian.can_see_topic(&settings, &topic, false, &secure)?
@@ -498,8 +478,6 @@ async fn show(
     incoming: Incoming<'_>,
     state: &AppState,
     slug: Option<&str>,
-    // params[:topic_id]: every route but `/t/:id` has one.
-    topic_id_param: Option<&str>,
     id: &str,
     post_number: Option<&str>,
     params: &ShowParams,
@@ -546,9 +524,7 @@ async fn show(
                     headers,
                     canonical(&base_path, &slug, id, None, page, format),
                 ),
-                None => {
-                    topic_missing(state, &incoming, slug, id, topic_id_param, &page_slug).await?
-                }
+                None => topic_missing(state, &incoming, slug, id, &page_slug).await?,
             });
         }
     };
@@ -590,13 +566,12 @@ async fn show(
         Err(TopicViewError::NotFound) => {
             drop(view);
             drop(conn);
-            return topic_missing(state, &incoming, slug, id, topic_id_param, &page_slug).await;
+            return topic_missing(state, &incoming, slug, id, &page_slug).await;
         }
         Err(TopicViewError::InvalidAccess) => {
             drop(view);
             drop(conn);
-            return detailed_invalid_access(state, &incoming, topic_id, topic_id_param, &page_slug)
-                .await;
+            return detailed_invalid_access(state, &incoming, topic_id, &page_slug).await;
         }
         Err(TopicViewError::NotLoggedIn) => {
             // detailed_404 re-raises NotLoggedIn: a 403 with the
