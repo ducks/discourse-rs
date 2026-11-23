@@ -598,6 +598,10 @@ pub async fn post(
         }
     }
     new_names.retain(|n| !synonym_names.contains(n));
+    // Nor in another letter case (Discourse ba3bd0d0d47): a hidden tag
+    // stays out of add_or_create_synonyms.
+    let existing: Vec<String> = synonym_names.iter().map(|n| n.to_lowercase()).collect();
+    new_names.retain(|n| !existing.contains(&n.to_lowercase()));
     let result = crate::tag_writes::add_or_create_synonyms(
         &mut tx,
         &s,
