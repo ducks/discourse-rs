@@ -2007,6 +2007,26 @@ pub async fn after_tags_saved(conn: &mut PgConnection, topic_id: i32) -> Result<
     Ok(())
 }
 
+/// `SearchIndexer.queue_tags_posts_reindex` (Discourse 452a0dadea5): the
+/// posts of topics carrying the tags (or the tags they are synonyms of)
+/// queued for a reindex, their tag weight (C) dropped meanwhile.
+pub async fn queue_tags_posts_reindex(
+    conn: &mut PgConnection,
+    tag_ids: &[i32],
+) -> Result<(), sqlx::Error> {
+    sqlx::query(
+        "UPDATE post_search_data SET version = $2, search_data = ts_filter(search_data, '{A,B,D}') \
+         FROM posts INNER JOIN topic_tags ON topic_tags.topic_id = posts.topic_id \
+         WHERE post_search_data.post_id = posts.id \
+         AND topic_tags.tag_id IN (SELECT COALESCE(target_tag_id, id) FROM tags WHERE id = ANY($1))",
+    )
+    .bind(tag_ids)
+    .bind(REINDEX_VERSION)
+    .execute(&mut *conn)
+    .await?;
+    Ok(())
+}
+
 /// `SearchIndexer::REINDEX_VERSION`
 const REINDEX_VERSION: i32 = 0;
 /// `NotificationLevels`

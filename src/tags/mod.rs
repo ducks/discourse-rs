@@ -51,6 +51,49 @@ pub fn visible_tags_where(
     ))
 }
 
+/// `TagGroup.visible(guardian)` as a WHERE fragment over `tag_groups` (its
+/// columns unqualified): everything for admins; otherwise the groups
+/// restricted to a category the user may see or to none, that a
+/// permitted group may see.
+pub fn visible_tag_groups_where(
+    guardian: &Guardian,
+    settings: &SiteSettings,
+) -> Result<String, SettingError> {
+    if guardian.is_admin() {
+        return Ok("TRUE".to_string());
+    }
+    let allowed = guardian.allowed_category_ids_sql(settings)?;
+    let groups = crate::tagging::permitted_group_ids(guardian)
+        .iter()
+        .map(i64::to_string)
+        .collect::<Vec<_>>()
+        .join(",");
+    Ok(format!(
+        "(id IN (SELECT tag_group_id FROM category_tag_groups WHERE category_id IN ({allowed})) \
+          OR id NOT IN (SELECT tag_group_id FROM category_tag_groups)) \
+         AND id IN (SELECT tag_group_id FROM tag_group_permissions WHERE group_id IN ({groups}))"
+    ))
+}
+
+/// `DiscourseTagging.visible_tag_ids_resolving_synonyms`: the visible
+/// tags named (any case), each synonym as its target, the targets kept
+/// only if visible too. `visible` is visible_tags_where's fragment.
+pub async fn visible_tag_ids_resolving_synonyms(
+    conn: &mut sqlx::PgConnection,
+    visible: &str,
+    names: &[String],
+) -> Result<Vec<i32>, sqlx::Error> {
+    let lowered: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
+    sqlx::query_scalar(&format!(
+        "SELECT tags.id FROM tags WHERE {visible} AND tags.id IN ( \
+           SELECT COALESCE(target_tag_id, id) FROM tags WHERE {visible} AND lower(name) = ANY($1)) \
+         ORDER BY tags.id"
+    ))
+    .bind(&lowered)
+    .fetch_all(&mut *conn)
+    .await
+}
+
 /// `tags.id IN (visible tag ids)`, for joins from topic_tags.
 pub fn visible_tag_ids_subquery(
     guardian: &Guardian,

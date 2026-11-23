@@ -97,15 +97,23 @@ pub async fn index_post(
 /// The indexer's tag names for the topic `topic` (an SQL expression), as
 /// a subquery: `topic.tags.select(:id, :name)`, which Postgres reads
 /// through topic_tags' (topic_id, tag_id) index, so by tag id; then the
-/// names of their synonyms, in the table's order; space separated.
-pub fn topic_tag_names_sql(topic: &str) -> String {
-    format!(
+/// names of their synonyms, in the table's order; space separated. Only
+/// tags everyone may see, and their visible synonyms (Discourse
+/// 452a0dadea5: `SearchIndexer.hidden_tags` left out).
+pub fn topic_tag_names_sql(
+    topic: &str,
+    settings: &SiteSettings,
+) -> Result<String, crate::site_settings::SettingError> {
+    let visible =
+        crate::tags::visible_tag_ids_subquery(&crate::guardian::Guardian::anonymous(), settings)?;
+    Ok(format!(
         "(SELECT string_agg(name, ' ' ORDER BY part, ord) FROM ( \
            SELECT tg.name, 0 AS part, tt.tag_id::bigint AS ord FROM topic_tags tt \
-             JOIN tags tg ON tg.id = tt.tag_id WHERE tt.topic_id = {topic} \
+             JOIN tags tg ON tg.id = tt.tag_id WHERE tt.topic_id = {topic} AND tg.id IN {visible} \
            UNION ALL SELECT s.name, 1, row_number() OVER (ORDER BY s.ctid) FROM tags s \
-             WHERE s.target_tag_id IN (SELECT tag_id FROM topic_tags WHERE topic_id = {topic})) n)"
-    )
+             WHERE s.id IN {visible} AND s.target_tag_id IN (SELECT tag_id FROM topic_tags \
+               WHERE topic_id = {topic} AND tag_id IN {visible})) n)"
+    ))
 }
 
 /// `SearchIndexer.index(post, force: true)` from the post's rows: its
@@ -134,7 +142,7 @@ pub async fn reindex_post(
                 (SELECT name FROM categories WHERE id = t.category_id) AS category_name, \
                 {} AS tag_names \
          FROM posts p JOIN topics t ON t.id = p.topic_id WHERE p.id = $1",
-        topic_tag_names_sql("t.id")
+        topic_tag_names_sql("t.id", settings)?
     ))
     .bind(post_id)
     .fetch_optional(&mut *conn)

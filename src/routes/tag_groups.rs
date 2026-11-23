@@ -413,17 +413,7 @@ pub async fn search(
     };
     let mut wheres: Vec<String> = Vec::new();
     if !guardian.is_admin() {
-        let allowed = guardian.allowed_category_ids_sql(&s)?;
-        let groups = crate::tagging::permitted_group_ids(&guardian)
-            .iter()
-            .map(i64::to_string)
-            .collect::<Vec<_>>()
-            .join(",");
-        wheres.push(format!(
-            "(id IN (SELECT tag_group_id FROM category_tag_groups WHERE category_id IN ({allowed})) \
-              OR id NOT IN (SELECT tag_group_id FROM category_tag_groups)) \
-             AND id IN (SELECT tag_group_id FROM tag_group_permissions WHERE group_id IN ({groups}))"
-        ));
+        wheres.push(crate::tags::visible_tag_groups_where(&guardian, &s)?);
     }
     let q = crate::params::string(&p, "q").filter(|q| !q.trim().is_empty());
     if q.is_some() {

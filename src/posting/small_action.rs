@@ -589,7 +589,7 @@ async fn index_message(
         sqlx::query_as(&format!(
             "SELECT t.title, (SELECT name FROM categories WHERE id = t.category_id), {} \
              FROM topics t WHERE t.id = $1",
-            super::search_index::topic_tag_names_sql("t.id")
+            super::search_index::topic_tag_names_sql("t.id", s)?
         ))
         .bind(topic_id)
         .fetch_one(&mut *conn)

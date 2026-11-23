@@ -763,24 +763,26 @@ impl Search<'_> {
             q.and(format!("topics.category_id IN ({})", id_list(&ids)));
             return Ok(());
         }
-        // A tag, or the tag its synonym points to.
-        let tag: Option<(i32, Option<i32>)> = sqlx::query_as(
-            "SELECT id, target_tag_id FROM tags WHERE lower(tags.name) IN ($1) LIMIT 1",
+        // A visible tag, or the visible tag its synonym points to (Discourse
+        // 452a0dadea5).
+        let visible = crate::tags::visible_tags_where(self.guardian, self.settings)?;
+        let tag = crate::tags::visible_tag_ids_resolving_synonyms(
+            &mut *self.conn,
+            &visible,
+            std::slice::from_ref(&category_slug),
         )
-        .bind(category_slug.to_lowercase())
-        .fetch_optional(&mut *self.conn)
         .await?;
-        if let Some((id, target)) = tag {
+        if let Some(id) = tag.first() {
             q.and(format!(
-                "topics.id IN (SELECT DISTINCT(tt.topic_id) FROM topic_tags tt WHERE tt.tag_id = {})",
-                target.unwrap_or(id)
+                "topics.id IN (SELECT DISTINCT(tt.topic_id) FROM topic_tags tt WHERE tt.tag_id = {id})"
             ));
             return Ok(());
         }
         if let Some(group_id) = self.tag_group_id_by_slug(&category_slug).await? {
             q.and(format!(
                 "topics.id IN (SELECT DISTINCT(tt.topic_id) FROM topic_tags tt \
-                 WHERE tt.tag_id in (SELECT tag_id FROM tag_group_memberships WHERE tag_group_id = {group_id}))"
+                 WHERE tt.tag_id in (SELECT tag_id FROM tag_group_memberships WHERE tag_group_id = {group_id}) \
+                 AND tt.tag_id IN (SELECT tags.id FROM tags WHERE {visible}))"
             ));
             return Ok(());
         }
@@ -795,12 +797,14 @@ impl Search<'_> {
         Ok(())
     }
 
-    /// `TagGroup.find_id_by_slug`: the first group whose name's
-    /// `Slug.for` is the slug.
+    /// `TagGroup.visible(guardian).find_id_by_slug`: the first group the
+    /// searcher may see whose name's `Slug.for` is the slug.
     async fn tag_group_id_by_slug(&mut self, slug: &str) -> Result<Option<i32>, SearchError> {
-        let groups: Vec<(i32, String)> = sqlx::query_as("SELECT id, name FROM tag_groups")
-            .fetch_all(&mut *self.conn)
-            .await?;
+        let visible = crate::tags::visible_tag_groups_where(self.guardian, self.settings)?;
+        let groups: Vec<(i32, String)> =
+            sqlx::query_as(&format!("SELECT id, name FROM tag_groups WHERE {visible}"))
+                .fetch_all(&mut *self.conn)
+                .await?;
         if groups.is_empty() {
             return Ok(None);
         }
