@@ -128,7 +128,7 @@ async fn category_page_renders_the_category_navigation() {
     // The category selected, its subcategories, then the tags.
     assert!(html.contains(r#"data-name="General" data-value="4" title="General""#));
     assert!(html.contains(r#"category-breadcrumb__subcategory-selector"#));
-    assert!(html.contains(r#"data-name="subcategories" title="subcategories""#));
+    assert!(html.contains(r#"data-name="Subcategories" title="Subcategories""#));
     assert!(html.contains(r#"href="/c/general/4/l/latest""#));
     assert!(!html.contains("nav-item_categories"));
     assert!(html.contains("About the General category"));

@@ -227,7 +227,7 @@ test("a staff member chooses the topic an invite arrives at, and takes it away",
   await chooser.locator("summary").click();
   const filter = chooser.locator(".filter-input");
   await expect(filter).toBeFocused();
-  await expect(filter).toHaveAttribute("placeholder", "type the topic title, url or id here");
+  await expect(filter).toHaveAttribute("placeholder", "Type the topic title, URL or ID here");
   // By id (searchForId), then by title.
   await filter.fill(String(t.id));
   await expect(chooser.locator(".select-kit-row .topic-title")).toHaveText([title]);

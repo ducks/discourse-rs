@@ -474,7 +474,7 @@ async fn tag_pages_render_html() {
     let (status, _, html) = get(&db.pool, "/tags").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("<title>Tags - Discourse</title>"));
-    assert!(html.contains("<h3>Other Tags</h3>"));
+    assert!(html.contains("<h3>Other tags</h3>"));
     assert!(html.contains(r#"<a href="/tag/1" class="discourse-tag simple">howto</a>"#));
     assert!(html.contains(r#"<span class="tag-count">x 2</span>"#));
 }
@@ -525,7 +525,7 @@ async fn a_tag_in_a_category_draws_the_category_navigation() {
     let (status, _, html) = get(&db.pool, "/tags/c/general/4/none").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("tag-drop tag-none"));
-    assert!(html.contains(r#"data-name="no tags" data-value="""#));
+    assert!(html.contains(r#"data-name="No tags" data-value="""#));
     assert!(html.contains(r#"href="/tags/c/general/4/none/l/latest""#));
 
     // What navigation-bar.js links from the drops with both selected.
@@ -707,7 +707,7 @@ async fn the_untagged_list_draws_its_navigation() {
     assert!(html.contains(
         r#"<details class="select-kit single-select combobox combo-box tag-drop tag-none">"#
     ));
-    assert!(html.contains(r#"data-name="no tags" data-value="""#));
+    assert!(html.contains(r#"data-name="No tags" data-value="""#));
     assert!(
         html.contains(
             r#"<a aria-current="page" class="active" href="/tag/none/l/latest">Latest</a>"#
