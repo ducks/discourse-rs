@@ -1616,8 +1616,9 @@ async fn admin_silences() {
     ok("PUT unsilence", &back);
 }
 
-/// Silencing sends the member a system message, which notifies them, and
-/// the account_silenced email.
+/// Silencing sends the member one moderator_silence system message, which
+/// notifies them; the account_silenced email is gone (Discourse
+/// ea0efdc105e).
 #[tokio::test]
 async fn a_silenced_member_is_told() {
     let (db, state) = app().await;
@@ -1652,7 +1653,7 @@ async fn a_silenced_member_is_told() {
     .fetch_one(&db.pool)
     .await
     .unwrap();
-    assert!(emailed, "no account_silenced email was sent");
+    assert!(!emailed, "an account_silenced email was sent");
 }
 
 #[tokio::test]
