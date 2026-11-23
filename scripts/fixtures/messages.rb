@@ -16,8 +16,14 @@
 # PostAlerter is called directly after each post so the notifications exist
 # when the script ends (the post_alert job is also enqueued for Sidekiq;
 # PostAlerter skips a second unread notification of the same type on the same
-# post, so running both is safe). Jobs.run_immediately! was tried first and
-# lost jobs silently ("can't alloc thread" in the container).
+# post, so running both one after the other is safe). Jobs.run_immediately!
+# was tried first and lost jobs silently ("can't alloc thread" in the
+# container).
+#
+# Sidekiq is paused while the posts are made (2026-11-23): its post_alert
+# raced the direct PostAlerter call on the 2026-11-23 agent, both found no
+# notification and user0 got PM (a)'s twice. The jobs run once it resumes,
+# after these notifications exist.
 
 admin = User.find_by!(username: "admin")
 u0, u1, u2 = %w[user0 user1 user2].map { |n| User.find_by!(username: n) }
@@ -25,6 +31,9 @@ u0, u1, u2 = %w[user0 user1 user2].map { |n| User.find_by!(username: n) }
 marker = "Parity fixture: PM user1 to user0"
 
 unless Topic.exists?(title: marker)
+  Sidekiq.pause!
+  at_exit { Sidekiq.unpause! }
+
   def alerted(post)
     PostAlerter.post_created(post)
     post

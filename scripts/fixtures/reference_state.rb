@@ -51,6 +51,15 @@ Sitemap.regenerate_sitemaps
 # Topic#title= nulls fancy_title and the getter writes it back on first read;
 # the fixtures reassign titles, and browsing had filled them on the old agent.
 Topic.with_deleted.find_each(&:fancy_title)
+# Eighth pass (2026-11-23): the gravatar attempt every user's update_gravatar
+# job stamps, without the download (the fixture emails have no gravatar, so
+# the old agent's job had stamped the attempt and found nothing). On the
+# 2026-11-23 agent user3's job had not run by the snapshot, so every save of
+# user3 in a write case enqueued update_gravatar on Rails only.
+UserAvatar
+  .where(last_gravatar_download_attempt: nil)
+  .where("user_id > 0")
+  .find_each { |avatar| avatar.update!(last_gravatar_download_attempt: Time.zone.now) }
 
 puts({
   user_badges: UserBadge.count,
@@ -60,4 +69,5 @@ puts({
   topic_hot_scores: TopicHotScore.count,
   category_featured_topics: CategoryFeaturedTopic.count,
   sitemaps: Sitemap.count,
+  gravatars_unattempted: UserAvatar.where(last_gravatar_download_attempt: nil).count,
 }.inspect)
