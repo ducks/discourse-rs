@@ -28,15 +28,16 @@ const GOOGLE_TOKEN_INFO_URL: &str = "https://www.googleapis.com/oauth2/v3/tokeni
 const GOOGLE_OAUTH2_BASE_URL: &str = "https://oauth2.googleapis.com";
 const GOOGLE_GROUPS_URL: &str = "https://admin.googleapis.com/admin/directory/v1/groups";
 const GOOGLE_GROUPS_SCOPE: &str = "https://www.googleapis.com/auth/admin.directory.group.readonly";
-/// GoogleOauth2's AUTHORIZE_OPTIONS, which request params may override.
-const GOOGLE_AUTHORIZE_OPTIONS: [&str; 13] = [
+/// GoogleOauth2's AUTHORIZE_OPTIONS, which request params may override,
+/// less `state`: the CSRF nonce stays server-generated (Discourse
+/// 088778c7af1).
+const GOOGLE_AUTHORIZE_OPTIONS: [&str; 12] = [
     "access_type",
     "hd",
     "login_hint",
     "prompt",
     "request_visible_actions",
     "scope",
-    "state",
     "redirect_uri",
     "include_granted_scopes",
     "enable_granular_consent",
