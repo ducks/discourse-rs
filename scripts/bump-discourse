@@ -272,6 +272,21 @@ step parity-environment sed -i -E \
 echo
 [ "$dry" -eq 1 ] && echo "reference and seeds:"
 step reference-env scripts/reference-env "$agent" || die "reference-env failed"
+# PullHotlinkedImages turns download_remote_images_to_local off, and sends
+# the admin a message, when public/uploads' filesystem is more than
+# 100 - download_remote_images_threshold (90) percent used. The agent
+# shares the host's disk, so a full disk lands in the seed and shifts the
+# fixtures' ids. Refuse a disk that full, and a database it already reached.
+if [ "$dry" -eq 0 ]; then
+  used="$(dv run --name "$agent" -- df -P /var/www/discourse/public/uploads \
+    | awk 'NR == 2 { sub("%", "", $5); print $5 }')"
+  [ -n "$used" ] && [ "$used" -le 90 ] \
+    || die "the agent's public/uploads is ${used:-?}% used; Rails disables remote image downloads past 90%"
+  overridden="$(dv run --name "$agent" -- psql -X -At -d discourse_development -c \
+    "SELECT count(*) FROM site_settings WHERE name = 'download_remote_images_to_local'")"
+  [ "$overridden" = "0" ] \
+    || die "agent $agent overrides download_remote_images_to_local (a full disk?); rebuild its database"
+fi
 step snapshot-fresh scripts/snapshot-dv "$agent" || die "snapshot of seed/fresh_install.sql failed"
 step snapshot-clean scripts/snapshot-dv --clean "$agent" || die "snapshot of seed/clean_install.sql failed"
 # Not resumable: the recorders after it need the agent on the seed now.
