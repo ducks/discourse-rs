@@ -2,32 +2,32 @@
   "name": "notification_schedules_extend_previous",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:35:52.58471",
-  "transaction_started_at": "2026-11-23T17:35:51.63252",
+  "started_at": "2026-11-24T01:10:44.673391",
+  "transaction_started_at": "2026-11-24T01:10:41.082128",
   "responses": [],
   "changes": {
     "do_not_disturb_timings": {
       "inserted": [
         {
           "id": 2,
-          "ends_at": "2026-11-24T07:59:00",
-          "user_id": 3,
-          "scheduled": true,
-          "starts_at": "2026-11-23T17:00:00"
-        },
-        {
-          "id": 3,
           "ends_at": "2026-11-25T07:59:00",
           "user_id": 3,
           "scheduled": true,
           "starts_at": "2026-11-24T17:00:00"
         },
         {
-          "id": 4,
-          "ends_at": "2026-11-25T23:59:59.999999",
+          "id": 3,
+          "ends_at": "2026-11-26T07:59:00",
           "user_id": 3,
           "scheduled": true,
           "starts_at": "2026-11-25T17:00:00"
+        },
+        {
+          "id": 4,
+          "ends_at": "2026-11-26T23:59:59.999999",
+          "user_id": 3,
+          "scheduled": true,
+          "starts_at": "2026-11-26T17:00:00"
         }
       ],
       "deleted": [],
@@ -35,17 +35,17 @@
         {
           "before": {
             "id": 1,
-            "ends_at": "2026-11-22T23:59:59.999999",
+            "ends_at": "2026-11-23T23:59:59.999999",
             "user_id": 3,
             "scheduled": true,
-            "starts_at": "2026-11-22T17:35:51.63252"
+            "starts_at": "2026-11-23T01:10:41.082128"
           },
           "after": {
             "id": 1,
-            "ends_at": "2026-11-23T07:59:00",
+            "ends_at": "2026-11-24T07:59:00",
             "user_id": 3,
             "scheduled": true,
-            "starts_at": "2026-11-22T17:35:51.63252"
+            "starts_at": "2026-11-23T01:10:41.082128"
           }
         }
       ]
@@ -68,7 +68,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "2d61f272442c30036bc321b97ecdd2fdcd765957123fb7b8bf83e47eaa02c585",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

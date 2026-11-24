@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T16:14:33.02863",
-  "transaction_started_at": "2026-11-23T16:14:32.169738",
+  "started_at": "2026-11-23T21:37:42.50942",
+  "transaction_started_at": "2026-11-23T21:37:38.794088",
   "responses": [
     {
       "status": 200,
@@ -30,26 +30,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 31,
+          "id": 32,
           "data": "{\"badge_id\":100,\"badge_name\":\"Certified\",\"badge_slug\":\"certified\",\"badge_title\":false,\"username\":\"user2\"}",
           "read": false,
           "user_id": 4,
           "topic_id": null,
-          "created_at": "2026-11-23T16:14:33.072616",
-          "updated_at": "2026-11-23T16:14:33.072616",
-          "post_number": null,
-          "high_priority": false,
-          "post_action_id": null,
-          "notification_type": 12
-        },
-        {
-          "id": 32,
-          "data": "{\"badge_id\":100,\"badge_name\":\"Certified\",\"badge_slug\":\"certified\",\"badge_title\":false,\"username\":\"user3\"}",
-          "read": false,
-          "user_id": 5,
-          "topic_id": null,
-          "created_at": "2026-11-23T16:14:33.083074",
-          "updated_at": "2026-11-23T16:14:33.083074",
+          "created_at": "2026-11-23T21:37:42.624983",
+          "updated_at": "2026-11-23T21:37:42.624983",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
@@ -57,12 +44,25 @@
         },
         {
           "id": 33,
+          "data": "{\"badge_id\":100,\"badge_name\":\"Certified\",\"badge_slug\":\"certified\",\"badge_title\":false,\"username\":\"user3\"}",
+          "read": false,
+          "user_id": 5,
+          "topic_id": null,
+          "created_at": "2026-11-23T21:37:42.651487",
+          "updated_at": "2026-11-23T21:37:42.651487",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        },
+        {
+          "id": 34,
           "data": "{\"badge_id\":100,\"badge_name\":\"Certified\",\"badge_slug\":\"certified\",\"badge_title\":false,\"username\":\"user0\"}",
           "read": false,
           "user_id": 2,
           "topic_id": null,
-          "created_at": "2026-11-23T16:14:33.091262",
-          "updated_at": "2026-11-23T16:14:33.091262",
+          "created_at": "2026-11-23T21:37:42.677799",
+          "updated_at": "2026-11-23T21:37:42.677799",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
@@ -82,29 +82,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "raV8TIH12RL9ePjHd5S7e2pr+Lk=",
-            "created_at": "2026-11-23T16:14:32.494232",
-            "rotated_at": "2026-11-23T16:14:32.493318",
-            "updated_at": "2026-11-23T16:14:32.494232",
+            "auth_token": "t+zRKqWwHYQ8A2Uzli0pG0XgRh8=",
+            "created_at": "2026-11-23T21:37:40.342511",
+            "rotated_at": "2026-11-23T21:37:40.338642",
+            "updated_at": "2026-11-23T21:37:40.342511",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "raV8TIH12RL9ePjHd5S7e2pr+Lk=",
+            "prev_auth_token": "t+zRKqWwHYQ8A2Uzli0pG0XgRh8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:14:33.036853",
+            "seen_at": "2026-11-23T21:37:42.538585",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "raV8TIH12RL9ePjHd5S7e2pr+Lk=",
-            "created_at": "2026-11-23T16:14:32.494232",
-            "rotated_at": "2026-11-23T16:14:32.493318",
-            "updated_at": "2026-11-23T16:14:32.494232",
+            "auth_token": "t+zRKqWwHYQ8A2Uzli0pG0XgRh8=",
+            "created_at": "2026-11-23T21:37:40.342511",
+            "rotated_at": "2026-11-23T21:37:40.338642",
+            "updated_at": "2026-11-23T21:37:40.342511",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "raV8TIH12RL9ePjHd5S7e2pr+Lk=",
+            "prev_auth_token": "t+zRKqWwHYQ8A2Uzli0pG0XgRh8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -115,26 +115,13 @@
     "user_badges": {
       "inserted": [
         {
-          "id": 19,
+          "id": 20,
           "seq": 0,
           "post_id": null,
           "user_id": 4,
           "badge_id": 100,
-          "created_at": "2026-11-23T16:14:33.071171",
-          "granted_at": "2026-11-23T16:14:33.071171",
-          "is_favorite": null,
-          "featured_rank": 2,
-          "granted_by_id": -1,
-          "notification_id": 31
-        },
-        {
-          "id": 20,
-          "seq": 0,
-          "post_id": null,
-          "user_id": 5,
-          "badge_id": 100,
-          "created_at": "2026-11-23T16:14:33.082208",
-          "granted_at": "2026-11-23T16:14:33.082208",
+          "created_at": "2026-11-23T21:37:42.618968",
+          "granted_at": "2026-11-23T21:37:42.618968",
           "is_favorite": null,
           "featured_rank": 2,
           "granted_by_id": -1,
@@ -144,72 +131,113 @@
           "id": 21,
           "seq": 0,
           "post_id": null,
-          "user_id": 2,
+          "user_id": 5,
           "badge_id": 100,
-          "created_at": "2026-11-23T16:14:33.090718",
-          "granted_at": "2026-11-23T16:14:33.090718",
+          "created_at": "2026-11-23T21:37:42.649122",
+          "granted_at": "2026-11-23T21:37:42.649122",
           "is_favorite": null,
           "featured_rank": 2,
           "granted_by_id": -1,
           "notification_id": 33
+        },
+        {
+          "id": 22,
+          "seq": 0,
+          "post_id": null,
+          "user_id": 2,
+          "badge_id": 100,
+          "created_at": "2026-11-23T21:37:42.675503",
+          "granted_at": "2026-11-23T21:37:42.675503",
+          "is_favorite": null,
+          "featured_rank": 2,
+          "granted_by_id": -1,
+          "notification_id": 34
         }
       ],
       "deleted": [],
       "updated": [
         {
           "before": {
-            "id": 7,
+            "id": 8,
             "seq": 0,
             "post_id": null,
             "user_id": 4,
             "badge_id": 2,
-            "created_at": "2026-11-23T16:08:49.815478",
-            "granted_at": "2026-11-23T16:08:49.815478",
+            "created_at": "2026-11-23T20:51:34.164956",
+            "granted_at": "2026-11-23T20:51:34.164956",
             "is_favorite": null,
-            "featured_rank": null,
+            "featured_rank": 2,
             "granted_by_id": -1,
-            "notification_id": 21
+            "notification_id": 10
           },
           "after": {
-            "id": 7,
+            "id": 8,
             "seq": 0,
             "post_id": null,
             "user_id": 4,
             "badge_id": 2,
-            "created_at": "2026-11-23T16:08:49.815478",
-            "granted_at": "2026-11-23T16:08:49.815478",
+            "created_at": "2026-11-23T20:51:34.164956",
+            "granted_at": "2026-11-23T20:51:34.164956",
             "is_favorite": null,
             "featured_rank": 1,
             "granted_by_id": -1,
-            "notification_id": 21
+            "notification_id": 10
           }
         },
         {
           "before": {
-            "id": 2,
+            "id": 5,
             "seq": 0,
             "post_id": null,
-            "user_id": 4,
+            "user_id": 5,
             "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
+            "created_at": "2026-11-23T20:51:22.940459",
+            "granted_at": "2026-11-23T20:51:22.940459",
             "is_favorite": null,
-            "featured_rank": null,
+            "featured_rank": 4,
             "granted_by_id": -1,
-            "notification_id": 17
+            "notification_id": 4
           },
           "after": {
-            "id": 2,
+            "id": 5,
             "seq": 0,
             "post_id": null,
-            "user_id": 4,
+            "user_id": 5,
             "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
+            "created_at": "2026-11-23T20:51:22.940459",
+            "granted_at": "2026-11-23T20:51:22.940459",
+            "is_favorite": null,
+            "featured_rank": 5,
+            "granted_by_id": -1,
+            "notification_id": 4
+          }
+        },
+        {
+          "before": {
+            "id": 9,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 5,
+            "badge_id": 2,
+            "created_at": "2026-11-23T20:51:34.164956",
+            "granted_at": "2026-11-23T20:51:34.164956",
             "is_favorite": null,
             "featured_rank": 3,
             "granted_by_id": -1,
-            "notification_id": 17
+            "notification_id": 11
+          },
+          "after": {
+            "id": 9,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 5,
+            "badge_id": 2,
+            "created_at": "2026-11-23T20:51:34.164956",
+            "granted_at": "2026-11-23T20:51:34.164956",
+            "is_favorite": null,
+            "featured_rank": 4,
+            "granted_by_id": -1,
+            "notification_id": 11
           }
         },
         {
@@ -218,11 +246,11 @@
             "seq": 0,
             "post_id": null,
             "user_id": 5,
-            "badge_id": 4,
-            "created_at": "2026-11-23T16:08:49.852315",
-            "granted_at": "2026-11-23T16:08:49.852315",
+            "badge_id": 3,
+            "created_at": "2026-11-23T20:53:22.84671",
+            "granted_at": "2026-11-23T20:53:22.84671",
             "is_favorite": null,
-            "featured_rank": null,
+            "featured_rank": 2,
             "granted_by_id": -1,
             "notification_id": 25
           },
@@ -231,181 +259,69 @@
             "seq": 0,
             "post_id": null,
             "user_id": 5,
-            "badge_id": 4,
-            "created_at": "2026-11-23T16:08:49.852315",
-            "granted_at": "2026-11-23T16:08:49.852315",
+            "badge_id": 3,
+            "created_at": "2026-11-23T20:53:22.84671",
+            "granted_at": "2026-11-23T20:53:22.84671",
             "is_favorite": null,
-            "featured_rank": 1,
+            "featured_rank": 3,
             "granted_by_id": -1,
             "notification_id": 25
           }
         },
         {
           "before": {
-            "id": 10,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 3,
-            "created_at": "2026-11-23T16:08:49.841615",
-            "granted_at": "2026-11-23T16:08:49.841615",
-            "is_favorite": null,
-            "featured_rank": null,
-            "granted_by_id": -1,
-            "notification_id": 24
-          },
-          "after": {
-            "id": 10,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 3,
-            "created_at": "2026-11-23T16:08:49.841615",
-            "granted_at": "2026-11-23T16:08:49.841615",
-            "is_favorite": null,
-            "featured_rank": 3,
-            "granted_by_id": -1,
-            "notification_id": 24
-          }
-        },
-        {
-          "before": {
-            "id": 6,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 2,
-            "created_at": "2026-11-23T16:08:49.815478",
-            "granted_at": "2026-11-23T16:08:49.815478",
-            "is_favorite": null,
-            "featured_rank": null,
-            "granted_by_id": -1,
-            "notification_id": 22
-          },
-          "after": {
-            "id": 6,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 2,
-            "created_at": "2026-11-23T16:08:49.815478",
-            "granted_at": "2026-11-23T16:08:49.815478",
-            "is_favorite": null,
-            "featured_rank": 4,
-            "granted_by_id": -1,
-            "notification_id": 22
-          }
-        },
-        {
-          "before": {
-            "id": 1,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
-            "is_favorite": null,
-            "featured_rank": null,
-            "granted_by_id": -1,
-            "notification_id": 18
-          },
-          "after": {
-            "id": 1,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
-            "is_favorite": null,
-            "featured_rank": 5,
-            "granted_by_id": -1,
-            "notification_id": 18
-          }
-        },
-        {
-          "before": {
-            "id": 3,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 2,
-            "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
-            "is_favorite": null,
-            "featured_rank": 4,
-            "granted_by_id": -1,
-            "notification_id": 20
-          },
-          "after": {
-            "id": 3,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 2,
-            "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
-            "is_favorite": null,
-            "featured_rank": 1,
-            "granted_by_id": -1,
-            "notification_id": 20
-          }
-        },
-        {
-          "before": {
-            "id": 14,
+            "id": 15,
             "seq": 0,
             "post_id": 36,
             "user_id": 2,
             "badge_id": 11,
-            "created_at": "2026-11-23T16:08:49.882484",
-            "granted_at": "2026-11-23T16:08:43.180139",
+            "created_at": "2026-11-23T20:53:28.348272",
+            "granted_at": "2026-11-23T20:53:21.124098",
             "is_favorite": null,
             "featured_rank": null,
             "granted_by_id": -1,
-            "notification_id": 27
+            "notification_id": 28
           },
           "after": {
-            "id": 14,
+            "id": 15,
             "seq": 0,
             "post_id": 36,
             "user_id": 2,
             "badge_id": 11,
-            "created_at": "2026-11-23T16:08:49.882484",
-            "granted_at": "2026-11-23T16:08:43.180139",
+            "created_at": "2026-11-23T20:53:28.348272",
+            "granted_at": "2026-11-23T20:53:21.124098",
             "is_favorite": null,
-            "featured_rank": 4,
+            "featured_rank": 3,
             "granted_by_id": -1,
-            "notification_id": 27
+            "notification_id": 28
           }
         },
         {
           "before": {
-            "id": 16,
+            "id": 17,
             "seq": 0,
             "post_id": 46,
             "user_id": 2,
             "badge_id": 5,
-            "created_at": "2026-11-23T16:08:49.940299",
-            "granted_at": "2026-11-23T16:08:36.321974",
+            "created_at": "2026-11-23T20:53:28.427183",
+            "granted_at": "2026-11-23T20:53:12.898658",
             "is_favorite": null,
-            "featured_rank": 3,
+            "featured_rank": 2,
             "granted_by_id": -1,
-            "notification_id": 29
+            "notification_id": 30
           },
           "after": {
-            "id": 16,
+            "id": 17,
             "seq": 0,
             "post_id": 46,
             "user_id": 2,
             "badge_id": 5,
-            "created_at": "2026-11-23T16:08:49.940299",
-            "granted_at": "2026-11-23T16:08:36.321974",
+            "created_at": "2026-11-23T20:53:28.427183",
+            "granted_at": "2026-11-23T20:53:12.898658",
             "is_favorite": null,
-            "featured_rank": 5,
+            "featured_rank": 4,
             "granted_by_id": -1,
-            "notification_id": 29
+            "notification_id": 30
           }
         }
       ]
@@ -438,8 +354,8 @@
     ]
   ],
   "next_ids": {
-    "notifications": 31,
-    "user_badges": 19
+    "notifications": 32,
+    "user_badges": 20
   },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",
@@ -450,7 +366,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "faa5ccb06cf41d3bc622bfba64c8299acf6afec094f21e21df283ea505d08fe8",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

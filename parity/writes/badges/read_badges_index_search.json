@@ -7,8 +7,8 @@
       "path": "/badges.json?search=first"
     }
   ],
-  "started_at": "2026-11-23T16:31:25.317329",
-  "transaction_started_at": "2026-11-23T16:31:24.18008",
+  "started_at": "2026-11-23T21:45:47.293434",
+  "transaction_started_at": "2026-11-23T21:45:46.018528",
   "responses": [
     {
       "status": 200,
@@ -111,26 +111,6 @@
             "badge_type_id": 3
           },
           {
-            "id": 11,
-            "name": "First Like",
-            "description": "Liked a post",
-            "grant_count": 2,
-            "allow_title": false,
-            "multiple_grant": false,
-            "icon": "heart",
-            "image_url": null,
-            "listable": true,
-            "enabled": true,
-            "badge_grouping_id": 1,
-            "system": true,
-            "long_description": "This badge is granted the first time you like a post using the :heart: button. Liking posts is a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun. Share the love!\n",
-            "slug": "first-like",
-            "has_badge": true,
-            "manually_grantable": false,
-            "show_in_post_header": false,
-            "badge_type_id": 3
-          },
-          {
             "id": 41,
             "name": "First Emoji",
             "description": "Used an Emoji in a Post",
@@ -211,6 +191,26 @@
             "badge_type_id": 3
           },
           {
+            "id": 11,
+            "name": "First Like",
+            "description": "Liked a post",
+            "grant_count": 2,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "heart",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you like a post using the :heart: button. Liking posts is a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun. Share the love!\n",
+            "slug": "first-like",
+            "has_badge": true,
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
             "id": 40,
             "name": "First Mention",
             "description": "Mentioned a user in a post",
@@ -245,29 +245,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "dzrfgy9tryQea8CiEcHU4BTfROY=",
-            "created_at": "2026-11-23T16:31:24.749194",
-            "rotated_at": "2026-11-23T16:31:24.748268",
-            "updated_at": "2026-11-23T16:31:24.749194",
+            "auth_token": "WzacGGgpUa8YT+5jk340o4SLA+k=",
+            "created_at": "2026-11-23T21:45:46.428901",
+            "rotated_at": "2026-11-23T21:45:46.427513",
+            "updated_at": "2026-11-23T21:45:46.428901",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "dzrfgy9tryQea8CiEcHU4BTfROY=",
+            "prev_auth_token": "WzacGGgpUa8YT+5jk340o4SLA+k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:31:25.324188",
+            "seen_at": "2026-11-23T21:45:47.303359",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "dzrfgy9tryQea8CiEcHU4BTfROY=",
-            "created_at": "2026-11-23T16:31:24.749194",
-            "rotated_at": "2026-11-23T16:31:24.748268",
-            "updated_at": "2026-11-23T16:31:24.749194",
+            "auth_token": "WzacGGgpUa8YT+5jk340o4SLA+k=",
+            "created_at": "2026-11-23T21:45:46.428901",
+            "rotated_at": "2026-11-23T21:45:46.427513",
+            "updated_at": "2026-11-23T21:45:46.428901",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "dzrfgy9tryQea8CiEcHU4BTfROY=",
+            "prev_auth_token": "WzacGGgpUa8YT+5jk340o4SLA+k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -286,7 +286,7 @@
   ],
   "recorded_from": {
     "case": "8ea22bfee5aadf421eb6cffa800da99258ba3c9f910cee2fced0020c8a943b75",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

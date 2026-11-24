@@ -2,8 +2,8 @@
   "name": "top_refresh_today",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:37:09.269775",
-  "transaction_started_at": "2026-11-23T17:37:08.571447",
+  "started_at": "2026-11-24T01:12:50.012699",
+  "transaction_started_at": "2026-11-24T01:12:45.1145",
   "responses": [],
   "changes": {
     "top_topics": {
@@ -94,7 +94,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "69c239b7ef6bb64d72d3c1bc8998f7b850b2e92e2e5d60babcfbeef026f8acdb",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

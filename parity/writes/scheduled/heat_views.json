@@ -2,8 +2,8 @@
   "name": "heat_views",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:35:28.086894",
-  "transaction_started_at": "2026-11-23T17:35:27.436693",
+  "started_at": "2026-11-24T01:08:10.356039",
+  "transaction_started_at": "2026-11-24T01:08:04.068132",
   "responses": [],
   "changes": {
     "site_settings": {
@@ -13,24 +13,24 @@
           "name": "topic_views_heat_high",
           "value": "5600",
           "data_type": 3,
-          "created_at": "2026-11-23T17:35:28.089368",
-          "updated_at": "2026-11-23T17:35:28.089368"
+          "created_at": "2026-11-24T01:08:10.371147",
+          "updated_at": "2026-11-24T01:08:10.371147"
         },
         {
           "id": 38,
           "name": "topic_views_heat_medium",
           "value": "2300",
           "data_type": 3,
-          "created_at": "2026-11-23T17:35:28.095562",
-          "updated_at": "2026-11-23T17:35:28.095562"
+          "created_at": "2026-11-24T01:08:10.448189",
+          "updated_at": "2026-11-24T01:08:10.448189"
         },
         {
           "id": 39,
           "name": "topic_views_heat_low",
           "value": "1200",
           "data_type": 3,
-          "created_at": "2026-11-23T17:35:28.103871",
-          "updated_at": "2026-11-23T17:35:28.103871"
+          "created_at": "2026-11-24T01:08:10.507936",
+          "updated_at": "2026-11-24T01:08:10.507936"
         }
       ],
       "deleted": [],
@@ -39,7 +39,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 3,
           "context": null,
@@ -49,10 +49,10 @@
           "topic_id": null,
           "new_value": "5600",
           "admin_only": true,
-          "created_at": "2026-11-23T17:35:28.092273",
+          "created_at": "2026-11-24T01:08:10.406049",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:35:28.092273",
+          "updated_at": "2026-11-24T01:08:10.406049",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -61,7 +61,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 3,
           "context": null,
@@ -71,10 +71,10 @@
           "topic_id": null,
           "new_value": "2300",
           "admin_only": true,
-          "created_at": "2026-11-23T17:35:28.100523",
+          "created_at": "2026-11-24T01:08:10.49099",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:35:28.100523",
+          "updated_at": "2026-11-24T01:08:10.49099",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -83,7 +83,7 @@
           "target_user_id": null
         },
         {
-          "id": 68,
+          "id": 71,
           "email": null,
           "action": 3,
           "context": null,
@@ -93,10 +93,10 @@
           "topic_id": null,
           "new_value": "1200",
           "admin_only": true,
-          "created_at": "2026-11-23T17:35:28.106362",
+          "created_at": "2026-11-24T01:08:10.540119",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:35:28.106362",
+          "updated_at": "2026-11-24T01:08:10.540119",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -112,7 +112,7 @@
   "jobs": [],
   "next_ids": {
     "site_settings": 37,
-    "user_histories": 66
+    "user_histories": 69
   },
   "setup": [
     "UPDATE topics SET views = x.v FROM (VALUES (35,9000),(37,5678),(38,4000),(41,3500),(34,2345),(1,2000),(2,1500),(3,1300),(4,1234),(5,10),(6,5)) AS x(id,v) WHERE topics.id = x.id"
@@ -126,7 +126,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "8a3bee198eaa71361a84c267d109fb6060d3b7df84454d0274b6eb38a98c0dfb",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

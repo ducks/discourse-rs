@@ -35,8 +35,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T18:12:57.113087",
-  "transaction_started_at": "2026-11-23T18:12:56.066201",
+  "started_at": "2026-11-24T01:24:19.616804",
+  "transaction_started_at": "2026-11-24T01:24:18.375349",
   "responses": [
     {
       "status": 200,
@@ -50,8 +50,8 @@
           "email": "user1@example.com",
           "secondary_emails": [],
           "unconfirmed_emails": [],
-          "last_posted_at": "2026-11-23T16:08:34.354Z",
-          "last_seen_at": "2026-11-23T16:08:49.527Z",
+          "last_posted_at": "2026-11-23T20:53:10.659Z",
+          "last_seen_at": "2026-11-23T20:53:28.144Z",
           "created_at": "2026-11-03T05:08:00.404Z",
           "ignored": false,
           "muted": false,
@@ -63,7 +63,7 @@
           "moderator": false,
           "admin": false,
           "title": null,
-          "badge_count": 0,
+          "badge_count": 2,
           "custom_fields": {},
           "time_read": 0,
           "recent_time_read": 0,
@@ -129,8 +129,8 @@
               "device": "unknown device",
               "os": "unknown operating system",
               "icon": "question",
-              "created_at": "2026-11-23T18:12:56.501Z",
-              "seen_at": "2026-11-23T18:12:57.136Z",
+              "created_at": "2026-11-24T01:24:18.991Z",
+              "seen_at": "2026-11-24T01:24:19.626Z",
               "is_active": true
             }
           ],
@@ -168,7 +168,10 @@
           "display_sidebar_tags": true,
           "can_pick_theme_with_custom_homepage": false,
           "accepted_answers": 0,
-          "featured_user_badge_ids": [],
+          "featured_user_badge_ids": [
+            7,
+            3
+          ],
           "invited_by": null,
           "groups": [
             {
@@ -365,8 +368,8 @@
           "email": "user1@example.com",
           "secondary_emails": [],
           "unconfirmed_emails": [],
-          "last_posted_at": "2026-11-23T16:08:34.354Z",
-          "last_seen_at": "2026-11-23T16:08:49.527Z",
+          "last_posted_at": "2026-11-23T20:53:10.659Z",
+          "last_seen_at": "2026-11-23T20:53:28.144Z",
           "created_at": "2026-11-03T05:08:00.404Z",
           "ignored": false,
           "muted": false,
@@ -378,7 +381,7 @@
           "moderator": false,
           "admin": false,
           "title": null,
-          "badge_count": 0,
+          "badge_count": 2,
           "custom_fields": {},
           "time_read": 0,
           "recent_time_read": 0,
@@ -444,8 +447,8 @@
               "device": "unknown device",
               "os": "unknown operating system",
               "icon": "question",
-              "created_at": "2026-11-23T18:12:56.501Z",
-              "seen_at": "2026-11-23T18:12:57.136Z",
+              "created_at": "2026-11-24T01:24:18.991Z",
+              "seen_at": "2026-11-24T01:24:19.626Z",
               "is_active": true
             }
           ],
@@ -474,7 +477,10 @@
           "display_sidebar_tags": true,
           "can_pick_theme_with_custom_homepage": false,
           "accepted_answers": 0,
-          "featured_user_badge_ids": [],
+          "featured_user_badge_ids": [
+            7,
+            3
+          ],
           "invited_by": null,
           "groups": [
             {
@@ -671,8 +677,8 @@
           "email": "user1@example.com",
           "secondary_emails": [],
           "unconfirmed_emails": [],
-          "last_posted_at": "2026-11-23T16:08:34.354Z",
-          "last_seen_at": "2026-11-23T16:08:49.527Z",
+          "last_posted_at": "2026-11-23T20:53:10.659Z",
+          "last_seen_at": "2026-11-23T20:53:28.144Z",
           "created_at": "2026-11-03T05:08:00.404Z",
           "ignored": false,
           "muted": false,
@@ -684,7 +690,7 @@
           "moderator": false,
           "admin": false,
           "title": null,
-          "badge_count": 0,
+          "badge_count": 2,
           "custom_fields": {},
           "time_read": 0,
           "recent_time_read": 0,
@@ -750,8 +756,8 @@
               "device": "unknown device",
               "os": "unknown operating system",
               "icon": "question",
-              "created_at": "2026-11-23T18:12:56.501Z",
-              "seen_at": "2026-11-23T18:12:57.136Z",
+              "created_at": "2026-11-24T01:24:18.991Z",
+              "seen_at": "2026-11-24T01:24:19.626Z",
               "is_active": true
             }
           ],
@@ -778,7 +784,10 @@
           "display_sidebar_tags": true,
           "can_pick_theme_with_custom_homepage": false,
           "accepted_answers": 0,
-          "featured_user_badge_ids": [],
+          "featured_user_badge_ids": [
+            7,
+            3
+          ],
           "invited_by": null,
           "groups": [
             {
@@ -1011,29 +1020,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "BwRqFVf8FOINGYMK7rA10RQkkH8=",
-            "created_at": "2026-11-23T18:12:56.501127",
-            "rotated_at": "2026-11-23T18:12:56.500195",
-            "updated_at": "2026-11-23T18:12:56.501127",
+            "auth_token": "tuc1VcM1gyzfnuPBrSH3B37QKTI=",
+            "created_at": "2026-11-24T01:24:18.991996",
+            "rotated_at": "2026-11-24T01:24:18.990503",
+            "updated_at": "2026-11-24T01:24:18.991996",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "BwRqFVf8FOINGYMK7rA10RQkkH8=",
+            "prev_auth_token": "tuc1VcM1gyzfnuPBrSH3B37QKTI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T18:12:57.136424",
+            "seen_at": "2026-11-24T01:24:19.626147",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "BwRqFVf8FOINGYMK7rA10RQkkH8=",
-            "created_at": "2026-11-23T18:12:56.501127",
-            "rotated_at": "2026-11-23T18:12:56.500195",
-            "updated_at": "2026-11-23T18:12:56.501127",
+            "auth_token": "tuc1VcM1gyzfnuPBrSH3B37QKTI=",
+            "created_at": "2026-11-24T01:24:18.991996",
+            "rotated_at": "2026-11-24T01:24:18.990503",
+            "updated_at": "2026-11-24T01:24:18.991996",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "BwRqFVf8FOINGYMK7rA10RQkkH8=",
+            "prev_auth_token": "tuc1VcM1gyzfnuPBrSH3B37QKTI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -1046,7 +1055,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "485a92a48738e8bafeb8aafce185367b9035472e27a879f763be4d2d516fe78e",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -16,8 +16,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T16:32:48.417758",
-  "transaction_started_at": "2026-11-23T16:32:47.462154",
+  "started_at": "2026-11-23T21:45:57.578225",
+  "transaction_started_at": "2026-11-23T21:45:56.422267",
   "responses": [
     {
       "status": 403,
@@ -38,13 +38,13 @@
           "name": "Parity fixture: reminder sent",
           "pinned": null,
           "user_id": 3,
-          "created_at": "2026-11-23T16:08:46.279144",
-          "updated_at": "2026-11-23T16:08:46.294482",
+          "created_at": "2026-11-23T20:53:24.517724",
+          "updated_at": "2026-11-23T20:53:24.536299",
           "reminder_at": null,
           "bookmarkable_id": 52,
           "reminder_set_at": null,
           "bookmarkable_type": "Post",
-          "reminder_last_sent_at": "2026-11-23T16:08:46.293611",
+          "reminder_last_sent_at": "2026-11-23T20:53:24.534914",
           "auto_delete_preference": 3
         }
       ],
@@ -54,13 +54,13 @@
       "inserted": [],
       "deleted": [
         {
-          "id": 16,
+          "id": 26,
           "data": "{\"title\":\"Parity fixture: replies and posters\",\"bookmarkable_url\":\"/t/parity-fixture-replies-and-posters/35/5\",\"display_username\":\"user1\",\"bookmark_name\":\"Parity fixture: reminder sent\",\"bookmark_id\":5,\"bookmarkable_type\":\"Post\",\"bookmarkable_id\":52}",
           "read": false,
           "user_id": 3,
           "topic_id": 35,
-          "created_at": "2026-11-23T16:08:46.291942",
-          "updated_at": "2026-11-23T16:08:46.291942",
+          "created_at": "2026-11-23T20:53:24.532877",
+          "updated_at": "2026-11-23T20:53:24.532877",
           "post_number": 5,
           "high_priority": true,
           "post_action_id": null,
@@ -79,29 +79,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "iu+9aQhAsBzBlHqgnAscRVbugto=",
-            "created_at": "2026-11-23T16:32:47.780993",
-            "rotated_at": "2026-11-23T16:32:47.779882",
-            "updated_at": "2026-11-23T16:32:47.780993",
+            "auth_token": "j7a93WNUGwr5zTJ5GZr9o3CQQAc=",
+            "created_at": "2026-11-23T21:45:56.841643",
+            "rotated_at": "2026-11-23T21:45:56.840004",
+            "updated_at": "2026-11-23T21:45:56.841643",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "iu+9aQhAsBzBlHqgnAscRVbugto=",
+            "prev_auth_token": "j7a93WNUGwr5zTJ5GZr9o3CQQAc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:32:48.425626",
+            "seen_at": "2026-11-23T21:45:57.589029",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "iu+9aQhAsBzBlHqgnAscRVbugto=",
-            "created_at": "2026-11-23T16:32:47.780993",
-            "rotated_at": "2026-11-23T16:32:47.779882",
-            "updated_at": "2026-11-23T16:32:47.780993",
+            "auth_token": "j7a93WNUGwr5zTJ5GZr9o3CQQAc=",
+            "created_at": "2026-11-23T21:45:56.841643",
+            "rotated_at": "2026-11-23T21:45:56.840004",
+            "updated_at": "2026-11-23T21:45:56.841643",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "iu+9aQhAsBzBlHqgnAscRVbugto=",
+            "prev_auth_token": "j7a93WNUGwr5zTJ5GZr9o3CQQAc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -114,7 +114,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "4eef010c379246409fd0ef24b75986ccb220d7cd3196664bbf4ca9ecf0c44a88",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

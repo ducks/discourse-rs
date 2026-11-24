@@ -7,8 +7,8 @@
       "path": "/admin/users/4/groups/9001.json"
     }
   ],
-  "started_at": "2026-11-23T16:58:04.549201",
-  "transaction_started_at": "2026-11-23T16:58:03.572941",
+  "started_at": "2026-11-23T21:53:52.5262",
+  "transaction_started_at": "2026-11-23T21:53:48.622796",
   "responses": [
     {
       "status": 200,
@@ -24,9 +24,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-23T16:58:04.60002",
+          "created_at": "2026-11-23T21:53:52.666031",
           "prev_value": null,
-          "updated_at": "2026-11-23T16:58:04.60002",
+          "updated_at": "2026-11-23T21:53:52.666031",
           "acting_user_id": 1,
           "target_user_id": 4
         }
@@ -44,7 +44,7 @@
           "group_id": 9001,
           "created_at": "2026-10-01T10:00:00",
           "updated_at": "2026-10-01T10:00:00",
-          "first_unread_pm_at": "2026-11-23T16:58:03.572941",
+          "first_unread_pm_at": "2026-11-23T21:53:48.622796",
           "notification_level": 3
         }
       ],
@@ -176,29 +176,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "SQQejW0s8ab+6Z9IGR3UnlNquTc=",
-            "created_at": "2026-11-23T16:58:04.008672",
-            "rotated_at": "2026-11-23T16:58:04.007519",
-            "updated_at": "2026-11-23T16:58:04.008672",
+            "auth_token": "pJUHohLKUBWXNG8n8L4ljZ3FtTQ=",
+            "created_at": "2026-11-23T21:53:50.251244",
+            "rotated_at": "2026-11-23T21:53:50.248176",
+            "updated_at": "2026-11-23T21:53:50.251244",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "SQQejW0s8ab+6Z9IGR3UnlNquTc=",
+            "prev_auth_token": "pJUHohLKUBWXNG8n8L4ljZ3FtTQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:58:04.557309",
+            "seen_at": "2026-11-23T21:53:52.543541",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "SQQejW0s8ab+6Z9IGR3UnlNquTc=",
-            "created_at": "2026-11-23T16:58:04.008672",
-            "rotated_at": "2026-11-23T16:58:04.007519",
-            "updated_at": "2026-11-23T16:58:04.008672",
+            "auth_token": "pJUHohLKUBWXNG8n8L4ljZ3FtTQ=",
+            "created_at": "2026-11-23T21:53:50.251244",
+            "rotated_at": "2026-11-23T21:53:50.248176",
+            "updated_at": "2026-11-23T21:53:50.251244",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "SQQejW0s8ab+6Z9IGR3UnlNquTc=",
+            "prev_auth_token": "pJUHohLKUBWXNG8n8L4ljZ3FtTQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -219,7 +219,7 @@
           "created_at": "2026-10-01T10:00:00",
           "updated_at": "2026-10-01T10:00:00",
           "muted_until": null,
-          "last_viewed_at": "2026-11-23T16:58:03.572941",
+          "last_viewed_at": "2026-11-23T21:53:48.622796",
           "chat_channel_id": 1,
           "notification_level": 1,
           "last_viewed_pins_at": null,
@@ -234,7 +234,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 23,
           "context": null,
@@ -244,10 +244,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-23T16:58:04.596169",
+          "created_at": "2026-11-23T21:53:52.655465",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T16:58:04.596169",
+          "updated_at": "2026-11-23T21:53:52.655465",
           "category_id": null,
           "custom_type": "chat_auto_remove_membership",
           "reviewable_id": null,
@@ -273,7 +273,7 @@
   ],
   "next_ids": {
     "group_histories": 1,
-    "user_histories": 66
+    "user_histories": 69
   },
   "setup": [
     "INSERT INTO groups (id, name, user_count, created_at, updated_at) VALUES (9001, 'staff_readers', 1, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
@@ -283,7 +283,7 @@
   ],
   "recorded_from": {
     "case": "0d2f826ebd3ac18689468c15d2a553bda23096024aaea07f1c018a091cdff8b1",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

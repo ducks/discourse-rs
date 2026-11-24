@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T18:09:14.722625",
-  "transaction_started_at": "2026-11-23T18:09:14.062079",
+  "started_at": "2026-11-24T01:23:26.820839",
+  "transaction_started_at": "2026-11-24T01:23:25.890126",
   "responses": [
     {
       "status": 200,
@@ -22,9 +22,9 @@
           "username": "user1",
           "name": "User1",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-          "unread_notifications": 6,
+          "unread_notifications": 5,
           "unread_high_priority_notifications": 4,
-          "all_unread_notifications_count": 10,
+          "all_unread_notifications_count": 9,
           "read_first_notification": false,
           "admin": false,
           "notification_channel_position": null,
@@ -100,15 +100,15 @@
             "24": 1,
             "6": 3,
             "1": 1,
-            "12": 4,
+            "12": 3,
             "5": 1
           },
           "available_notification_types": [
-            1,
-            5,
+            24,
             6,
+            1,
             12,
-            24
+            5
           ],
           "display_sidebar_tags": true,
           "sidebar_tags": [],
@@ -310,9 +310,9 @@
         {
           "id": 1,
           "client_id": "a-new-device",
-          "created_at": "2026-11-23T18:09:14.735997",
+          "created_at": "2026-11-24T01:23:26.853474",
           "public_key": null,
-          "updated_at": "2026-11-23T18:09:14.735997",
+          "updated_at": "2026-11-24T01:23:26.853474",
           "auth_redirect": null,
           "application_name": "Parity App"
         }
@@ -331,11 +331,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-21T18:09:14.062079",
+            "created_at": "2026-11-22T01:23:25.890126",
             "expires_at": null,
             "revoked_at": null,
-            "updated_at": "2026-11-21T18:09:14.062079",
-            "last_used_at": "2026-11-22T18:09:14.062079",
+            "updated_at": "2026-11-22T01:23:25.890126",
+            "last_used_at": "2026-11-23T01:23:25.890126",
             "application_name": null,
             "user_api_key_client_id": 9101
           },
@@ -345,11 +345,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-21T18:09:14.062079",
+            "created_at": "2026-11-22T01:23:25.890126",
             "expires_at": null,
             "revoked_at": null,
-            "updated_at": "2026-11-21T18:09:14.062079",
-            "last_used_at": "2026-11-23T18:09:14.735001",
+            "updated_at": "2026-11-22T01:23:25.890126",
+            "last_used_at": "2026-11-24T01:23:26.848216",
             "application_name": null,
             "user_api_key_client_id": 1
           }
@@ -368,7 +368,7 @@
   ],
   "recorded_from": {
     "case": "a65fe4618f1f151fa5e8fa2302e3a7f58a29a969ad09a5799cddf5d38cae4ec5",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

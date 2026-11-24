@@ -59,8 +59,8 @@
       "stylesheet": "common_theme"
     }
   ],
-  "started_at": "2026-11-23T17:49:42.034194",
-  "transaction_started_at": "2026-11-23T17:49:41.111905",
+  "started_at": "2026-11-24T01:18:03.092991",
+  "transaction_started_at": "2026-11-24T01:18:02.138732",
   "responses": [
     {
       "status": 201,
@@ -69,8 +69,8 @@
           "id": 1,
           "name": "Objects",
           "description": null,
-          "created_at": "2026-11-23T17:49:42.050Z",
-          "updated_at": "2026-11-23T17:49:42.050Z",
+          "created_at": "2026-11-24T01:18:03.111Z",
+          "updated_at": "2026-11-24T01:18:03.111Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -218,8 +218,8 @@
           "id": 1,
           "name": "Objects",
           "description": null,
-          "created_at": "2026-11-23T17:49:42.050Z",
-          "updated_at": "2026-11-23T17:49:42.050Z",
+          "created_at": "2026-11-24T01:18:03.111Z",
+          "updated_at": "2026-11-24T01:18:03.111Z",
           "default": true,
           "component": false,
           "color_scheme_id": null,
@@ -363,7 +363,7 @@
     },
     {
       "status": 200,
-      "body": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_91af922a5982ceb0629178b40c987251c9a8b097.css.map?__ws=localhost */\n"
+      "body": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_ab391cfe7426b43bc94266f995bc03abe632cb3a.css.map?__ws=localhost */\n"
     },
     {
       "status": 200,
@@ -391,7 +391,7 @@
     },
     {
       "status": 200,
-      "body": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_f043d0c76c45f960cabf6e2b14add67179ddb0fb.css.map?__ws=localhost */\n"
+      "body": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_eb1a73a7b2efb8619f4cf94d473e6cfb0586f4ab.css.map?__ws=localhost */\n"
     }
   ],
   "changes": {
@@ -414,7 +414,7 @@
             "value": "1",
             "data_type": 3,
             "created_at": "2026-11-03T05:07:17.745255",
-            "updated_at": "2026-11-23T17:49:42.670446"
+            "updated_at": "2026-11-24T01:18:03.874842"
           }
         }
       ]
@@ -423,23 +423,23 @@
       "inserted": [
         {
           "id": 36,
-          "digest": "91af922a5982ceb0629178b40c987251c9a8b097",
+          "digest": "ab391cfe7426b43bc94266f995bc03abe632cb3a",
           "target": "common_theme_1",
-          "content": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_91af922a5982ceb0629178b40c987251c9a8b097.css.map?__ws=localhost */",
+          "content": ".objects::after{content:'[{\"name\" => \"Home\", \"url\" => \"/latest\"}]'}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_ab391cfe7426b43bc94266f995bc03abe632cb3a.css.map?__ws=localhost */",
           "theme_id": -1,
-          "created_at": "2026-11-23T17:49:42.486368",
-          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_5bc83d668be3b06680b2690adb2f76bd/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,kDAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
-          "updated_at": "2026-11-23T17:49:42.486368"
+          "created_at": "2026-11-24T01:18:03.663178",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_726677082950624b2b54e2b5eca50d14/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,kDAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
+          "updated_at": "2026-11-24T01:18:03.663178"
         },
         {
           "id": 37,
-          "digest": "f043d0c76c45f960cabf6e2b14add67179ddb0fb",
+          "digest": "eb1a73a7b2efb8619f4cf94d473e6cfb0586f4ab",
           "target": "common_theme_1",
-          "content": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_f043d0c76c45f960cabf6e2b14add67179ddb0fb.css.map?__ws=localhost */",
+          "content": ".objects::after{content:\"[{\\\"url\\\" => \\\"https://example.com/a?b=c\\\", \\\"flag\\\" => false, \\\"name\\\" => \\\"It's \\\\\\\"quoted\\\\\\\" \\\\\\\\ \\\\#{x}\\\", \\\"ratio\\\" => 1.5, \\\"weight\\\" => 3, \\\"children\\\" => [{\\\"label\\\" => \\\"Kid\\\"}]}, {\\\"flag\\\" => true, \\\"name\\\" => \\\"Second\\\", \\\"ratio\\\" => 2.0}]\"}.objects-empty::after{content:\"[]\"}\n/*# sourceMappingURL=common_theme_1_eb1a73a7b2efb8619f4cf94d473e6cfb0586f4ab.css.map?__ws=localhost */",
           "theme_id": -1,
-          "created_at": "2026-11-23T17:49:43.656754",
-          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_e521766b39feb4cdd5a96f5dd5a48380/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,qQAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
-          "updated_at": "2026-11-23T17:49:43.656754"
+          "created_at": "2026-11-24T01:18:05.277588",
+          "source_map": "{\"version\":3,\"sources\":[\"../../../tmp/discourse_theme_e7c4875f95fadd83e3c37c8a09c4ed49/discourse-objects/_entry_loadpath/theme-entrypoint/common.scss\"],\"names\":[],\"mappings\":\"AAAA,gBAAA,qQAAA,CACA,sBAAA,YAAA\",\"file\":\"output.css\",\"sourcesContent\":[\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\"]}",
+          "updated_at": "2026-11-24T01:18:05.277588"
         }
       ],
       "deleted": [],
@@ -456,8 +456,8 @@
           "theme_id": 1,
           "target_id": 3,
           "upload_id": null,
-          "created_at": "2026-11-23T17:49:42.052311",
-          "updated_at": "2026-11-23T17:49:42.052311",
+          "created_at": "2026-11-24T01:18:03.113451",
+          "updated_at": "2026-11-24T01:18:03.113451",
           "value_baked": "baked",
           "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         },
@@ -470,9 +470,9 @@
           "theme_id": 1,
           "target_id": 0,
           "upload_id": null,
-          "created_at": "2026-11-23T17:49:42.055377",
-          "updated_at": "2026-11-23T17:49:42.055377",
-          "value_baked": "217f8f595250e5a1b6721cffb0228e6c46216149",
+          "created_at": "2026-11-24T01:18:03.117519",
+          "updated_at": "2026-11-24T01:18:03.117519",
+          "value_baked": "831fe066ed15a17678da3e25029d23b7dff40a8a",
           "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         }
       ],
@@ -507,7 +507,7 @@
           "value": null,
           "theme_id": 1,
           "data_type": 7,
-          "created_at": "2026-11-23T17:49:43.423693",
+          "created_at": "2026-11-24T01:18:04.998227",
           "json_value": [
             {
               "url": "https://example.com/a?b=c",
@@ -527,7 +527,7 @@
               "ratio": 2.0
             }
           ],
-          "updated_at": "2026-11-23T17:49:43.423693"
+          "updated_at": "2026-11-24T01:18:04.998227"
         }
       ],
       "deleted": [],
@@ -542,8 +542,8 @@
           "enabled": true,
           "user_id": 1,
           "component": false,
-          "created_at": "2026-11-23T17:49:42.050213",
-          "updated_at": "2026-11-23T17:49:42.050213",
+          "created_at": "2026-11-24T01:18:03.111567",
+          "updated_at": "2026-11-24T01:18:03.111567",
           "auto_update": true,
           "color_scheme_id": null,
           "remote_theme_id": null,
@@ -565,29 +565,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "rkNTdDppgpONvljSCShVbVlmpKY=",
-            "created_at": "2026-11-23T17:49:41.558293",
-            "rotated_at": "2026-11-23T17:49:41.557454",
-            "updated_at": "2026-11-23T17:49:41.558293",
+            "auth_token": "QbN+WnGsMgycm8AzRBXAb2iC6k4=",
+            "created_at": "2026-11-24T01:18:02.540007",
+            "rotated_at": "2026-11-24T01:18:02.539078",
+            "updated_at": "2026-11-24T01:18:02.540007",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "rkNTdDppgpONvljSCShVbVlmpKY=",
+            "prev_auth_token": "QbN+WnGsMgycm8AzRBXAb2iC6k4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:49:42.040254",
+            "seen_at": "2026-11-24T01:18:03.10068",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "rkNTdDppgpONvljSCShVbVlmpKY=",
-            "created_at": "2026-11-23T17:49:41.558293",
-            "rotated_at": "2026-11-23T17:49:41.557454",
-            "updated_at": "2026-11-23T17:49:41.558293",
+            "auth_token": "QbN+WnGsMgycm8AzRBXAb2iC6k4=",
+            "created_at": "2026-11-24T01:18:02.540007",
+            "rotated_at": "2026-11-24T01:18:02.539078",
+            "updated_at": "2026-11-24T01:18:02.540007",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "rkNTdDppgpONvljSCShVbVlmpKY=",
+            "prev_auth_token": "QbN+WnGsMgycm8AzRBXAb2iC6k4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -598,7 +598,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 4,
           "context": null,
@@ -606,12 +606,12 @@
           "post_id": null,
           "subject": "Objects",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Objects\",\"description\":null,\"created_at\":\"2026-11-23T17:49:42.050Z\",\"updated_at\":\"2026-11-23T17:49:42.050Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true},\"url\":{\"type\":\"string\"},\"weight\":{\"type\":\"integer\"},\"ratio\":{\"type\":\"float\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true}}}}}}},{\"setting\":\"empty_links\",\"humanized_name\":\"Empty links\",\"type\":\"objects\",\"default\":[],\"value\":[],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\"}}}}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"links:\\n  type: objects\\n  default:\\n    - name: Home\\n      url: /latest\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n        required: true\\n      url:\\n        type: string\\n      weight:\\n        type: integer\\n      ratio:\\n        type: float\\n      flag:\\n        type: boolean\\n      children:\\n        type: objects\\n        schema:\\n          name: child\\n          properties:\\n            label:\\n              type: string\\n              required: true\\nempty_links:\\n  type: objects\\n  default: []\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "new_value": "{\"id\":1,\"name\":\"Objects\",\"description\":null,\"created_at\":\"2026-11-24T01:18:03.111Z\",\"updated_at\":\"2026-11-24T01:18:03.111Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"links\",\"humanized_name\":\"Links\",\"type\":\"objects\",\"default\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"value\":[{\"name\":\"Home\",\"url\":\"/latest\"}],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\",\"required\":true},\"url\":{\"type\":\"string\"},\"weight\":{\"type\":\"integer\"},\"ratio\":{\"type\":\"float\"},\"flag\":{\"type\":\"boolean\"},\"children\":{\"type\":\"objects\",\"schema\":{\"name\":\"child\",\"properties\":{\"label\":{\"type\":\"string\",\"required\":true}}}}}}},{\"setting\":\"empty_links\",\"humanized_name\":\"Empty links\",\"type\":\"objects\",\"default\":[],\"value\":[],\"objects_schema\":{\"name\":\"link\",\"properties\":{\"name\":{\"type\":\"string\"}}}}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"scss\",\"target\":\"common\",\"value\":\".objects::after { content: \\\"#{$links}\\\"; }\\n.objects-empty::after { content: \\\"#{$empty_links}\\\"; }\\n\",\"type_id\":1,\"file_path\":\"common/common.scss\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"links:\\n  type: objects\\n  default:\\n    - name: Home\\n      url: /latest\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n        required: true\\n      url:\\n        type: string\\n      weight:\\n        type: integer\\n      ratio:\\n        type: float\\n      flag:\\n        type: boolean\\n      children:\\n        type: objects\\n        schema:\\n          name: child\\n          properties:\\n            label:\\n              type: string\\n              required: true\\nempty_links:\\n  type: objects\\n  default: []\\n  schema:\\n    name: link\\n    properties:\\n      name:\\n        type: string\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "admin_only": true,
-          "created_at": "2026-11-23T17:49:42.297451",
+          "created_at": "2026-11-24T01:18:03.407552",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:49:42.297451",
+          "updated_at": "2026-11-24T01:18:03.407552",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -620,7 +620,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 4,
           "context": null,
@@ -630,10 +630,10 @@
           "topic_id": null,
           "new_value": "{\"id\":1,\"name\":\"Objects\",\"default\":true}",
           "admin_only": true,
-          "created_at": "2026-11-23T17:49:42.694519",
+          "created_at": "2026-11-24T01:18:03.913978",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:49:42.694519",
+          "updated_at": "2026-11-24T01:18:03.913978",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -642,7 +642,7 @@
           "target_user_id": null
         },
         {
-          "id": 68,
+          "id": 71,
           "email": null,
           "action": 77,
           "context": null,
@@ -652,16 +652,90 @@
           "topic_id": null,
           "new_value": "[{\"name\": \"It's \\\"quoted\\\" \\\\ #{x}\", \"url\": \"https://example.com/a?b=c\", \"weight\": 3, \"ratio\": 1.5, \"flag\": false, \"children\": [{\"label\": \"Kid\"}]}, {\"name\": \"Second\", \"ratio\": 2.0, \"flag\": true}]",
           "admin_only": true,
-          "created_at": "2026-11-23T17:49:43.495853",
+          "created_at": "2026-11-24T01:18:05.087614",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:49:43.495853",
+          "updated_at": "2026-11-24T01:18:05.087614",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
           "acting_user_id": 1,
           "previous_value": "[{\"name\" => \"Home\", \"url\" => \"/latest\"}]",
           "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_stats": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:07:59.663488",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 1,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-03T05:07:59.53259",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-11-03T05:07:59.53259",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-23T20:53:08.716971",
+            "reset_bounce_score_after": null
+          },
+          "after": {
+            "user_id": 1,
+            "read_faq": null,
+            "new_since": "2026-11-03T05:07:59.663488",
+            "time_read": 0,
+            "post_count": 1,
+            "draft_count": 0,
+            "likes_given": 0,
+            "topic_count": 1,
+            "bounce_score": 0,
+            "days_visited": 2,
+            "flags_agreed": 0,
+            "flags_ignored": 0,
+            "likes_received": 0,
+            "topics_entered": 0,
+            "first_unread_at": "2026-11-03T05:07:59.53259",
+            "flags_disagreed": 0,
+            "post_edits_count": null,
+            "posts_read_count": 6,
+            "first_unread_pm_at": "2026-11-03T05:07:59.53259",
+            "digest_attempted_at": null,
+            "pending_posts_count": 0,
+            "distinct_badge_count": 4,
+            "first_post_created_at": "2026-11-23T20:53:08.716971",
+            "reset_bounce_score_after": null
+          }
+        }
+      ]
+    },
+    "user_visits": {
+      "inserted": [
+        {
+          "id": 4,
+          "mobile": false,
+          "user_id": 1,
+          "time_read": 0,
+          "posts_read": 0,
+          "visited_at": "2026-11-24"
         }
       ],
       "deleted": [],
@@ -687,17 +761,17 @@
             "created_at": "2026-11-03T05:07:59.531425",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-23T16:08:34.844104",
+            "updated_at": "2026-11-23T20:53:11.158567",
             "approved_at": "2026-11-03T05:07:59.903079",
             "trust_level": 4,
-            "last_seen_at": "2026-11-23T16:08:49.565015",
+            "last_seen_at": "2026-11-23T20:53:28.16989",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-23T16:08:49.565015",
+            "first_seen_at": "2026-11-23T20:53:28.16989",
             "silenced_till": null,
             "approved_by_id": -1,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T16:08:34.728995",
+            "last_posted_at": "2026-11-23T20:53:11.044536",
             "suspended_till": null,
             "username_lower": "admin",
             "last_emailed_at": null,
@@ -727,22 +801,22 @@
             "created_at": "2026-11-03T05:07:59.531425",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-23T16:08:34.844104",
+            "updated_at": "2026-11-23T20:53:11.158567",
             "approved_at": "2026-11-03T05:07:59.903079",
             "trust_level": 4,
-            "last_seen_at": "2026-11-23T17:49:43.342832",
+            "last_seen_at": "2026-11-24T01:18:04.88409",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-23T16:08:49.565015",
+            "first_seen_at": "2026-11-23T20:53:28.16989",
             "silenced_till": null,
             "approved_by_id": -1,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T16:08:34.728995",
+            "last_posted_at": "2026-11-23T20:53:11.044536",
             "suspended_till": null,
             "username_lower": "admin",
             "last_emailed_at": null,
             "primary_group_id": null,
-            "previous_visit_at": "2026-11-23T16:08:49.565015",
+            "previous_visit_at": "2026-11-23T20:53:28.16989",
             "secure_identifier": null,
             "uploaded_avatar_id": null,
             "seen_notification_id": 0,
@@ -768,14 +842,15 @@
     "theme_modifier_sets": 3,
     "theme_settings": 1,
     "themes": 1,
-    "user_histories": 66
+    "user_histories": 69,
+    "user_visits": 4
   },
   "digests": [
     "theme_fields.value_baked"
   ],
   "recorded_from": {
     "case": "15a6f3fb2c978d784b824be8ac3981ce80d4489a59360294194aa95572404d30",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

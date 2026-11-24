@@ -11,14 +11,14 @@
       "path": "/auth/oauth2_basic/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
     }
   ],
-  "started_at": "2026-11-23T16:54:58.874435",
-  "transaction_started_at": "2026-11-23T16:54:58.16332",
+  "started_at": "2026-11-23T21:51:21.288943",
+  "transaction_started_at": "2026-11-23T21:51:19.962042",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=648a65a89738b0ae2bb3903fd435399579b568c3a5d03328...",
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=a22ae0f58a0710e90b2532f644a5d9579a1e0dd3bb670e8b...",
       "headers": {
-        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=648a65a89738b0ae2bb3903fd435399579b568c3a5d03328"
+        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&scope=read&state=a22ae0f58a0710e90b2532f644a5d9579a1e0dd3bb670e8b"
       }
     },
     {
@@ -70,7 +70,7 @@
   ],
   "recorded_from": {
     "case": "04adcd2a08ae2939b683693ff8202c172c0371cc7d6c85013ccbbbcede335f76",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

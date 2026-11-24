@@ -2,8 +2,8 @@
   "name": "notification_schedules_denver",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:35:49.364515",
-  "transaction_started_at": "2026-11-23T17:35:48.673969",
+  "started_at": "2026-11-24T01:10:30.126657",
+  "transaction_started_at": "2026-11-24T01:10:25.994567",
   "responses": [],
   "changes": {
     "do_not_disturb_timings": {
@@ -57,7 +57,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "4b9cdaf9138b03451ed5858accaea9fd058e07242e4ef388b6ed3392637eb1fb",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

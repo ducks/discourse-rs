@@ -13,8 +13,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T17:18:29.380691",
-  "transaction_started_at": "2026-11-23T17:18:28.515446",
+  "started_at": "2026-11-23T22:20:35.326947",
+  "transaction_started_at": "2026-11-23T22:20:31.110376",
   "responses": [
     {
       "status": 200,
@@ -23,12 +23,12 @@
         "name": "User1",
         "username": "user1",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-        "created_at": "2026-11-23T17:18:29.557Z",
+        "created_at": "2026-11-23T22:20:36.033Z",
         "cooked": "<p>Hello moderators, this message mentions <a class=\"mention\" href=\"/u/user2\">@user2</a>, a member watching the group’s messages.</p>",
         "post_number": 1,
         "post_type": 1,
         "posts_count": 1,
-        "updated_at": "2026-11-23T17:18:29.557Z",
+        "updated_at": "2026-11-23T22:20:36.033Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
@@ -132,11 +132,11 @@
           "user_id": 4,
           "topic_id": 45,
           "bounce_key": null,
-          "created_at": "2026-11-23T17:18:29.845356",
+          "created_at": "2026-11-23T22:20:37.241391",
           "email_type": "user_mentioned",
           "message_id": "discourse/post/53@localhost",
           "to_address": "user2@example.com",
-          "updated_at": "2026-11-23T17:18:29.845356",
+          "updated_at": "2026-11-23T22:20:37.241391",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -152,11 +152,11 @@
           "user_id": 5,
           "topic_id": 45,
           "bounce_key": null,
-          "created_at": "2026-11-23T17:18:29.936089",
+          "created_at": "2026-11-23T22:20:37.651814",
           "email_type": "user_private_message",
           "message_id": "discourse/post/53@localhost",
           "to_address": "user3@example.com",
-          "updated_at": "2026-11-23T17:18:29.936089",
+          "updated_at": "2026-11-23T22:20:37.651814",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -287,26 +287,26 @@
     "notifications": {
       "inserted": [
         {
-          "id": 31,
+          "id": 32,
           "data": "{\"topic_title\":\"A message to the moderators group, pm group alert mention\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\"}",
           "read": false,
           "user_id": 4,
           "topic_id": 45,
-          "created_at": "2026-11-23T17:18:29.718977",
-          "updated_at": "2026-11-23T17:18:29.718977",
+          "created_at": "2026-11-23T22:20:36.706887",
+          "updated_at": "2026-11-23T22:20:36.706887",
           "post_number": 1,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 1
         },
         {
-          "id": 32,
+          "id": 33,
           "data": "{\"topic_title\":\"A message to the moderators group, pm group alert mention\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user1\",\"revision_number\":null,\"display_username\":\"user1\",\"display_name\":\"User1\"}",
           "read": false,
           "user_id": 5,
           "topic_id": 45,
-          "created_at": "2026-11-23T17:18:29.746272",
-          "updated_at": "2026-11-23T17:18:29.746272",
+          "created_at": "2026-11-23T22:20:36.832161",
+          "updated_at": "2026-11-23T22:20:36.832161",
           "post_number": 1,
           "high_priority": true,
           "post_action_id": null,
@@ -335,8 +335,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-11-23T17:18:29.588714",
-          "updated_at": "2026-11-23T17:18:29.588714",
+          "created_at": "2026-11-23T22:20:36.145244",
+          "updated_at": "2026-11-23T22:20:36.145244",
           "drafts_saved": 0,
           "writing_device": "unknown",
           "composer_version": null,
@@ -373,20 +373,20 @@
           "locale": null,
           "user_id": 3,
           "version": 1,
-          "baked_at": "2026-11-23T17:18:29.557435",
+          "baked_at": "2026-11-23T22:20:36.033213",
           "topic_id": 45,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-11-23T17:18:29.557489",
+          "created_at": "2026-11-23T22:20:36.033354",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 1,
           "spam_count": 0,
-          "updated_at": "2026-11-23T17:18:29.557489",
+          "updated_at": "2026-11-23T22:20:36.033354",
           "word_count": 13,
           "action_code": null,
           "cook_method": 1,
@@ -406,7 +406,7 @@
           "last_editor_id": 3,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-11-23T17:18:29.586595",
+          "last_version_at": "2026-11-23T22:20:36.136304",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -438,8 +438,8 @@
           "id": 9,
           "user_id": 3,
           "topic_id": 45,
-          "created_at": "2026-11-23T17:18:29.502756",
-          "updated_at": "2026-11-23T17:18:29.502756"
+          "created_at": "2026-11-23T22:20:35.810451",
+          "updated_at": "2026-11-23T22:20:35.810451"
         }
       ],
       "deleted": [],
@@ -461,6 +461,24 @@
     "topic_users": {
       "inserted": [
         {
+          "id": 57,
+          "liked": false,
+          "posted": false,
+          "user_id": 5,
+          "topic_id": 45,
+          "bookmarked": false,
+          "last_posted_at": null,
+          "last_visited_at": "2026-11-23T22:20:35.937133",
+          "first_visited_at": "2026-11-23T22:20:35.937133",
+          "cleared_pinned_at": null,
+          "notification_level": 2,
+          "total_msecs_viewed": 0,
+          "last_read_post_number": null,
+          "notifications_reason_id": 2,
+          "last_emailed_post_number": 1,
+          "notifications_changed_at": "2026-11-23T22:20:35.931165"
+        },
+        {
           "id": 58,
           "liked": false,
           "posted": false,
@@ -468,15 +486,15 @@
           "topic_id": 45,
           "bookmarked": false,
           "last_posted_at": null,
-          "last_visited_at": "2026-11-23T17:18:29.539491",
-          "first_visited_at": "2026-11-23T17:18:29.539491",
+          "last_visited_at": "2026-11-23T22:20:35.956912",
+          "first_visited_at": "2026-11-23T22:20:35.956912",
           "cleared_pinned_at": null,
           "notification_level": 1,
           "total_msecs_viewed": 0,
           "last_read_post_number": null,
           "notifications_reason_id": 2,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-11-23T17:18:29.538334"
+          "notifications_changed_at": "2026-11-23T22:20:35.951721"
         },
         {
           "id": 55,
@@ -485,16 +503,16 @@
           "user_id": 3,
           "topic_id": 45,
           "bookmarked": false,
-          "last_posted_at": "2026-11-23T17:18:29.594564",
-          "last_visited_at": "2026-11-23T17:18:29.519571",
-          "first_visited_at": "2026-11-23T17:18:29.519571",
+          "last_posted_at": "2026-11-23T22:20:36.167903",
+          "last_visited_at": "2026-11-23T22:20:35.870102",
+          "first_visited_at": "2026-11-23T22:20:35.870102",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": 1,
           "notifications_reason_id": 1,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-11-23T17:18:29.518295"
+          "notifications_changed_at": "2026-11-23T22:20:35.866442"
         },
         {
           "id": 56,
@@ -504,33 +522,15 @@
           "topic_id": 45,
           "bookmarked": false,
           "last_posted_at": null,
-          "last_visited_at": "2026-11-23T17:18:29.530722",
-          "first_visited_at": "2026-11-23T17:18:29.530722",
+          "last_visited_at": "2026-11-23T22:20:35.918318",
+          "first_visited_at": "2026-11-23T22:20:35.918318",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": null,
           "notifications_reason_id": 2,
           "last_emailed_post_number": 1,
-          "notifications_changed_at": "2026-11-23T17:18:29.529589"
-        },
-        {
-          "id": 57,
-          "liked": false,
-          "posted": false,
-          "user_id": 5,
-          "topic_id": 45,
-          "bookmarked": false,
-          "last_posted_at": null,
-          "last_visited_at": "2026-11-23T17:18:29.535223",
-          "first_visited_at": "2026-11-23T17:18:29.535223",
-          "cleared_pinned_at": null,
-          "notification_level": 2,
-          "total_msecs_viewed": 0,
-          "last_read_post_number": null,
-          "notifications_reason_id": 2,
-          "last_emailed_post_number": 1,
-          "notifications_changed_at": "2026-11-23T17:18:29.534007"
+          "notifications_changed_at": "2026-11-23T22:20:35.913642"
         }
       ],
       "deleted": [],
@@ -552,13 +552,13 @@
           "visible": true,
           "archived": false,
           "archetype": "private_message",
-          "bumped_at": "2026-11-23T17:18:29.557489",
+          "bumped_at": "2026-11-23T22:20:36.033354",
           "pinned_at": null,
-          "created_at": "2026-11-23T17:18:29.498164",
+          "created_at": "2026-11-23T22:20:35.793264",
           "deleted_at": null,
           "like_count": 0,
           "spam_count": 0,
-          "updated_at": "2026-11-23T17:18:29.59911",
+          "updated_at": "2026-11-23T22:20:36.192345",
           "word_count": 13,
           "category_id": null,
           "external_id": null,
@@ -571,7 +571,7 @@
           "deleted_by_id": null,
           "featured_link": null,
           "bannered_until": null,
-          "last_posted_at": "2026-11-23T17:18:29.557489",
+          "last_posted_at": "2026-11-23T22:20:36.033354",
           "image_upload_id": null,
           "pinned_globally": false,
           "reviewable_score": 0,
@@ -597,21 +597,21 @@
     "unsubscribe_keys": {
       "inserted": [
         {
-          "key": "4e5a9e520b527cea70bb945cb9bcbbc1ad2b134c212cf6ac90f76685906e51da",
+          "key": "7950e3effae5b347586dba4a43c63e191c1d15ffe4a0a7b8d312944b4848b07d",
           "post_id": 53,
           "user_id": 4,
           "topic_id": 45,
-          "created_at": "2026-11-23T17:18:29.793637",
-          "updated_at": "2026-11-23T17:18:29.793637",
+          "created_at": "2026-11-23T22:20:37.032463",
+          "updated_at": "2026-11-23T22:20:37.032463",
           "unsubscribe_key_type": "topic"
         },
         {
-          "key": "1fda487378df573b40977def9cc2abedad832e9bfbb519eeb6e9b20e2b4d4353",
+          "key": "312c0e6fc3353ce948622c97b19e8291f5c46058b33ab391ab2896708903ef12",
           "post_id": 53,
           "user_id": 5,
           "topic_id": 45,
-          "created_at": "2026-11-23T17:18:29.868561",
-          "updated_at": "2026-11-23T17:18:29.868561",
+          "created_at": "2026-11-23T22:20:37.346335",
+          "updated_at": "2026-11-23T22:20:37.346335",
           "unsubscribe_key_type": "topic"
         }
       ],
@@ -623,8 +623,8 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-11-23T17:18:29.498164",
-          "updated_at": "2026-11-23T17:18:29.548411",
+          "created_at": "2026-11-23T22:20:35.793264",
+          "updated_at": "2026-11-23T22:20:35.989797",
           "action_type": 12,
           "acting_user_id": 3,
           "target_post_id": -1,
@@ -634,8 +634,8 @@
         {
           "id": 66,
           "user_id": 4,
-          "created_at": "2026-11-23T17:18:29.714732",
-          "updated_at": "2026-11-23T17:18:29.714732",
+          "created_at": "2026-11-23T22:20:36.688969",
+          "updated_at": "2026-11-23T22:20:36.688969",
           "action_type": 7,
           "acting_user_id": 3,
           "target_post_id": 53,
@@ -656,29 +656,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "dfcG91jinqMzt417KkFPSiS98Kc=",
-            "created_at": "2026-11-23T17:18:28.869812",
-            "rotated_at": "2026-11-23T17:18:28.868791",
-            "updated_at": "2026-11-23T17:18:28.869812",
+            "auth_token": "TUsnBEU5CBBpuF13uKFNNbjBehQ=",
+            "created_at": "2026-11-23T22:20:32.72227",
+            "rotated_at": "2026-11-23T22:20:32.716849",
+            "updated_at": "2026-11-23T22:20:32.72227",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "dfcG91jinqMzt417KkFPSiS98Kc=",
+            "prev_auth_token": "TUsnBEU5CBBpuF13uKFNNbjBehQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:18:29.386488",
+            "seen_at": "2026-11-23T22:20:35.358341",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "dfcG91jinqMzt417KkFPSiS98Kc=",
-            "created_at": "2026-11-23T17:18:28.869812",
-            "rotated_at": "2026-11-23T17:18:28.868791",
-            "updated_at": "2026-11-23T17:18:28.869812",
+            "auth_token": "TUsnBEU5CBBpuF13uKFNNbjBehQ=",
+            "created_at": "2026-11-23T22:20:32.72227",
+            "rotated_at": "2026-11-23T22:20:32.716849",
+            "updated_at": "2026-11-23T22:20:32.72227",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "dfcG91jinqMzt417KkFPSiS98Kc=",
+            "prev_auth_token": "TUsnBEU5CBBpuF13uKFNNbjBehQ=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -706,7 +706,7 @@
             "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-23T16:08:49.356684",
+            "updated_at": "2026-11-23T20:53:27.948368",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
@@ -716,7 +716,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T16:08:32.082365",
+            "last_posted_at": "2026-11-23T20:53:07.76738",
             "suspended_till": null,
             "username_lower": "user2",
             "last_emailed_at": null,
@@ -746,7 +746,7 @@
             "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-23T16:08:49.356684",
+            "updated_at": "2026-11-23T20:53:27.948368",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
@@ -756,10 +756,10 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T16:08:32.082365",
+            "last_posted_at": "2026-11-23T20:53:07.76738",
             "suspended_till": null,
             "username_lower": "user2",
-            "last_emailed_at": "2026-11-23T17:18:28.515446",
+            "last_emailed_at": "2026-11-23T22:20:31.110376",
             "primary_group_id": null,
             "previous_visit_at": null,
             "secure_identifier": null,
@@ -841,7 +841,7 @@
             "last_posted_at": null,
             "suspended_till": null,
             "username_lower": "user3",
-            "last_emailed_at": "2026-11-23T17:18:28.515446",
+            "last_emailed_at": "2026-11-23T22:20:31.110376",
             "primary_group_id": null,
             "previous_visit_at": null,
             "secure_identifier": null,
@@ -932,7 +932,7 @@
   "next_ids": {
     "draft_sequences": 1,
     "email_logs": 1,
-    "notifications": 31,
+    "notifications": 32,
     "post_stats": 52,
     "posts": 53,
     "topic_allowed_groups": 1,
@@ -951,7 +951,7 @@
       {
         "type": "user_mentioned",
         "user_id": 4,
-        "notification_id": 31,
+        "notification_id": 32,
         "notification_data_hash": {
           "topic_title": "A message to the moderators group, pm group alert mention",
           "original_post_id": 53,
@@ -970,7 +970,7 @@
       {
         "type": "user_private_message",
         "user_id": 5,
-        "notification_id": 32,
+        "notification_id": 33,
         "notification_data_hash": {
           "topic_title": "A message to the moderators group, pm group alert mention",
           "original_post_id": 53,
@@ -1015,7 +1015,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b047565cb839_9296f384e4"
+          "multipart/alternative; boundary=--==_mimepart_6b04bc3531ccc_40edf38579f2"
         ],
         [
           "Content-Transfer-Encoding",
@@ -1023,7 +1023,7 @@
         ],
         [
           "List-Unsubscribe",
-          "<http://localhost:3042/email/unsubscribe/4e5a9e520b527cea70bb945cb9bcbbc1ad2b134c212cf6ac90f76685906e51da>"
+          "<http://localhost:3042/email/unsubscribe/7950e3effae5b347586dba4a43c63e191c1d15ffe4a0a7b8d312944b4848b07d>"
         ],
         [
           "List-Unsubscribe-Post",
@@ -1066,8 +1066,8 @@
           "http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45"
         ]
       ],
-      "text": "\n\nHello moderators, this message mentions @user2, a member watching the group's messages.\n\n\n\n\n\n---\n[Visit Message](http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1) to respond to [Moderators (4)](http://localhost:3042/g/moderators), [user1](http://localhost:3042/u/user1).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/4e5a9e520b527cea70bb945cb9bcbbc1ad2b134c212cf6ac90f76685906e51da).\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 23</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">Hello moderators, this message mentions <a class=\"mention\" href=\"http://localhost:3042/u/user2\" style=\"text-decoration:none;font-weight:bold;color:#006699\">@user2</a>, a member watching the group’s messages.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Message</a> to respond to <a href=\"http://localhost:3042/g/moderators\" style=\"font-weight:bold;text-decoration:none;color:#666\">Moderators (4)</a>, <a href=\"http://localhost:3042/u/user1\" style=\"font-weight:bold;text-decoration:none;color:#666\">user1</a>.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/4e5a9e520b527cea70bb945cb9bcbbc1ad2b134c212cf6ac90f76685906e51da\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "\n\nHello moderators, this message mentions @user2, a member watching the group's messages.\n\n\n\n\n\n---\n[Visit Message](http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1) to respond to [Moderators (4)](http://localhost:3042/g/moderators), [user1](http://localhost:3042/u/user1).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/7950e3effae5b347586dba4a43c63e191c1d15ffe4a0a7b8d312944b4848b07d).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 23</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">Hello moderators, this message mentions <a class=\"mention\" href=\"http://localhost:3042/u/user2\" style=\"text-decoration:none;font-weight:bold;color:#006699\">@user2</a>, a member watching the group’s messages.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Message</a> to respond to <a href=\"http://localhost:3042/g/moderators\" style=\"font-weight:bold;text-decoration:none;color:#666\">Moderators (4)</a>, <a href=\"http://localhost:3042/u/user1\" style=\"font-weight:bold;text-decoration:none;color:#666\">user1</a>.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/7950e3effae5b347586dba4a43c63e191c1d15ffe4a0a7b8d312944b4848b07d\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     },
     {
       "headers": [
@@ -1097,7 +1097,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b047565e1d85_9296f3853c"
+          "multipart/alternative; boundary=--==_mimepart_6b04bc3590f34_40edf3858064"
         ],
         [
           "Content-Transfer-Encoding",
@@ -1109,7 +1109,7 @@
         ],
         [
           "List-Unsubscribe",
-          "<http://localhost:3042/email/unsubscribe/1fda487378df573b40977def9cc2abedad832e9bfbb519eeb6e9b20e2b4d4353>"
+          "<http://localhost:3042/email/unsubscribe/312c0e6fc3353ce948622c97b19e8291f5c46058b33ab391ab2896708903ef12>"
         ],
         [
           "List-Unsubscribe-Post",
@@ -1152,13 +1152,13 @@
           "http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45"
         ]
       ],
-      "text": "\n\nHello moderators, this message mentions @user2, a member watching the group's messages.\n\n\n\n\n\n---\n[Visit Message](http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1) to respond to [Moderators (4)](http://localhost:3042/g/moderators), [user1](http://localhost:3042/u/user1).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/1fda487378df573b40977def9cc2abedad832e9bfbb519eeb6e9b20e2b4d4353).\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone sent you a PM.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 23</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">Hello moderators, this message mentions <a class=\"mention\" href=\"http://localhost:3042/u/user2\" style=\"text-decoration:none;font-weight:bold;color:#006699\">@user2</a>, a member watching the group’s messages.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Message</a> to respond to <a href=\"http://localhost:3042/g/moderators\" style=\"font-weight:bold;text-decoration:none;color:#666\">Moderators (4)</a>, <a href=\"http://localhost:3042/u/user1\" style=\"font-weight:bold;text-decoration:none;color:#666\">user1</a>.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/1fda487378df573b40977def9cc2abedad832e9bfbb519eeb6e9b20e2b4d4353\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "\n\nHello moderators, this message mentions @user2, a member watching the group's messages.\n\n\n\n\n\n---\n[Visit Message](http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1) to respond to [Moderators (4)](http://localhost:3042/g/moderators), [user1](http://localhost:3042/u/user1).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/312c0e6fc3353ce948622c97b19e8291f5c46058b33ab391ab2896708903ef12).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone sent you a PM.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/5daacb/45.png\" title=\"user1\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user1\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user1</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 23</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">Hello moderators, this message mentions <a class=\"mention\" href=\"http://localhost:3042/u/user2\" style=\"text-decoration:none;font-weight:bold;color:#006699\">@user2</a>, a member watching the group’s messages.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Message</a> to respond to <a href=\"http://localhost:3042/g/moderators\" style=\"font-weight:bold;text-decoration:none;color:#666\">Moderators (4)</a>, <a href=\"http://localhost:3042/u/user1\" style=\"font-weight:bold;text-decoration:none;color:#666\">user1</a>.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/312c0e6fc3353ce948622c97b19e8291f5c46058b33ab391ab2896708903ef12\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/a-message-to-the-moderators-group-pm-group-alert-mention/45/1\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "85d4bdf2e2e68a5e461232a07e39538c5e99483e560e1458b3985c8ea27d5777",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "heat_within_5pct",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:35:28.978159",
-  "transaction_started_at": "2026-11-23T17:35:28.358687",
+  "started_at": "2026-11-24T01:08:18.884439",
+  "transaction_started_at": "2026-11-24T01:08:13.173151",
   "responses": [],
   "changes": {
     "site_settings": {
@@ -13,16 +13,16 @@
           "name": "topic_views_heat_medium",
           "value": "2300",
           "data_type": 3,
-          "created_at": "2026-11-23T17:35:28.980863",
-          "updated_at": "2026-11-23T17:35:28.980863"
+          "created_at": "2026-11-24T01:08:18.902671",
+          "updated_at": "2026-11-24T01:08:18.902671"
         },
         {
           "id": 39,
           "name": "topic_views_heat_low",
           "value": "1200",
           "data_type": 3,
-          "created_at": "2026-11-23T17:35:28.988327",
-          "updated_at": "2026-11-23T17:35:28.988327"
+          "created_at": "2026-11-24T01:08:18.950652",
+          "updated_at": "2026-11-24T01:08:18.950652"
         }
       ],
       "deleted": [],
@@ -31,7 +31,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 3,
           "context": null,
@@ -41,10 +41,10 @@
           "topic_id": null,
           "new_value": "2300",
           "admin_only": true,
-          "created_at": "2026-11-23T17:35:28.984348",
+          "created_at": "2026-11-24T01:08:18.922899",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:35:28.984348",
+          "updated_at": "2026-11-24T01:08:18.922899",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -53,7 +53,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 3,
           "context": null,
@@ -63,10 +63,10 @@
           "topic_id": null,
           "new_value": "1200",
           "admin_only": true,
-          "created_at": "2026-11-23T17:35:28.991384",
+          "created_at": "2026-11-24T01:08:18.981744",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:35:28.991384",
+          "updated_at": "2026-11-24T01:08:18.981744",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -82,7 +82,7 @@
   "jobs": [],
   "next_ids": {
     "site_settings": 38,
-    "user_histories": 66
+    "user_histories": 69
   },
   "settings": {
     "topic_views_heat_high": 5500
@@ -99,7 +99,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "236e67172eacf1d0ea98e6a8a929b69c15914e03ad3ac304035cd4005cc1a80e",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

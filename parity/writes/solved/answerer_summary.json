@@ -8,8 +8,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-11-23T17:47:10.887816",
-  "transaction_started_at": "2026-11-23T17:47:09.963085",
+  "started_at": "2026-11-24T01:17:07.992808",
+  "transaction_started_at": "2026-11-24T01:17:06.786801",
   "responses": [
     {
       "status": 200,
@@ -23,7 +23,7 @@
             "posts_count": 1,
             "category_id": 34,
             "like_count": 0,
-            "created_at": "2026-11-23T16:08:34.219Z",
+            "created_at": "2026-11-23T20:53:10.444Z",
             "has_accepted_answer": false
           },
           {
@@ -34,8 +34,71 @@
             "posts_count": 5,
             "category_id": 4,
             "like_count": 1,
-            "created_at": "2026-11-23T16:08:31.048Z",
+            "created_at": "2026-11-23T20:53:06.673Z",
             "has_accepted_answer": true
+          }
+        ],
+        "badges": [
+          {
+            "id": 2,
+            "name": "Member",
+            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> invitations, group messaging, more likes",
+            "grant_count": 4,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "user",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 4,
+            "system": true,
+            "slug": "member",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 1,
+            "name": "Basic",
+            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> all essential community functions",
+            "grant_count": 5,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "user",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 4,
+            "system": true,
+            "slug": "basic",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          }
+        ],
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "users": [
+          {
+            "id": 3,
+            "username": "user1",
+            "name": "User1",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
+            "trust_level": 2
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
           }
         ],
         "user_summary": {
@@ -59,7 +122,7 @@
             {
               "post_number": 2,
               "like_count": 1,
-              "created_at": "2026-11-23T16:08:31.648Z",
+              "created_at": "2026-11-23T20:53:07.408Z",
               "topic_id": 35
             }
           ],
@@ -99,7 +162,26 @@
             }
           ],
           "most_replied_to_users": [],
-          "badges": [],
+          "badges": [
+            {
+              "id": 7,
+              "granted_at": "2026-11-23T20:51:34.164Z",
+              "created_at": "2026-11-23T20:51:34.164Z",
+              "count": 1,
+              "badge_id": 2,
+              "user_id": 3,
+              "granted_by_id": -1
+            },
+            {
+              "id": 3,
+              "granted_at": "2026-11-23T20:51:22.940Z",
+              "created_at": "2026-11-23T20:51:22.940Z",
+              "count": 1,
+              "badge_id": 1,
+              "user_id": 3,
+              "granted_by_id": -1
+            }
+          ],
           "top_categories": [
             {
               "topic_count": 0,
@@ -145,29 +227,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "JPEwZthtX6GqiFGTMn3uJ9FhXoA=",
-            "created_at": "2026-11-23T17:47:10.34457",
-            "rotated_at": "2026-11-23T17:47:10.343722",
-            "updated_at": "2026-11-23T17:47:10.34457",
+            "auth_token": "RQYi79AQjwAtur5P3etZwEpSN2w=",
+            "created_at": "2026-11-24T01:17:07.255917",
+            "rotated_at": "2026-11-24T01:17:07.253007",
+            "updated_at": "2026-11-24T01:17:07.255917",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "JPEwZthtX6GqiFGTMn3uJ9FhXoA=",
+            "prev_auth_token": "RQYi79AQjwAtur5P3etZwEpSN2w=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:47:10.900063",
+            "seen_at": "2026-11-24T01:17:08.00663",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "JPEwZthtX6GqiFGTMn3uJ9FhXoA=",
-            "created_at": "2026-11-23T17:47:10.34457",
-            "rotated_at": "2026-11-23T17:47:10.343722",
-            "updated_at": "2026-11-23T17:47:10.34457",
+            "auth_token": "RQYi79AQjwAtur5P3etZwEpSN2w=",
+            "created_at": "2026-11-24T01:17:07.255917",
+            "rotated_at": "2026-11-24T01:17:07.253007",
+            "updated_at": "2026-11-24T01:17:07.255917",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "JPEwZthtX6GqiFGTMn3uJ9FhXoA=",
+            "prev_auth_token": "RQYi79AQjwAtur5P3etZwEpSN2w=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -184,7 +266,7 @@
   ],
   "recorded_from": {
     "case": "bcb59c06b7419a0d1c4ae40b7d3800f35f81c85898b041174d9118d3fa2e6a9f",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

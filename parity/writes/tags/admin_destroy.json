@@ -11,8 +11,8 @@
       "path": "/tag/999.json"
     }
   ],
-  "started_at": "2026-11-23T17:50:41.09531",
-  "transaction_started_at": "2026-11-23T17:50:38.614292",
+  "started_at": "2026-11-24T01:18:44.376607",
+  "transaction_started_at": "2026-11-24T01:18:43.410274",
   "responses": [
     {
       "status": 200,
@@ -55,8 +55,8 @@
         {
           "id": 1,
           "tag_id": 1,
-          "created_at": "2026-11-23T17:50:38.614292",
-          "updated_at": "2026-11-23T17:50:38.614292",
+          "created_at": "2026-11-24T01:18:43.410274",
+          "updated_at": "2026-11-24T01:18:43.410274",
           "category_id": 4
         }
       ],
@@ -68,15 +68,15 @@
         {
           "id": 1,
           "tag_id": 1,
-          "created_at": "2026-11-23T17:50:38.614292",
-          "updated_at": "2026-11-23T17:50:38.614292",
+          "created_at": "2026-11-24T01:18:43.410274",
+          "updated_at": "2026-11-24T01:18:43.410274",
           "tag_group_id": 9601
         },
         {
           "id": 2,
           "tag_id": 9601,
-          "created_at": "2026-11-23T17:50:38.614292",
-          "updated_at": "2026-11-23T17:50:38.614292",
+          "created_at": "2026-11-24T01:18:43.410274",
+          "updated_at": "2026-11-24T01:18:43.410274",
           "tag_group_id": 9601
         }
       ],
@@ -102,8 +102,8 @@
           "id": 1,
           "tag_id": 1,
           "user_id": 3,
-          "created_at": "2026-11-23T17:50:38.614292",
-          "updated_at": "2026-11-23T17:50:38.614292",
+          "created_at": "2026-11-24T01:18:43.410274",
+          "updated_at": "2026-11-24T01:18:43.410274",
           "notification_level": 3
         }
       ],
@@ -117,23 +117,23 @@
           "name": "howto",
           "slug": "howto",
           "locale": null,
-          "created_at": "2026-11-23T16:08:34.074098",
-          "updated_at": "2026-11-23T16:08:34.074098",
+          "created_at": "2026-11-23T20:53:10.258391",
+          "updated_at": "2026-11-23T20:53:10.258391",
           "description": null,
           "target_tag_id": null,
           "pm_topic_count": 0,
           "staff_topic_count": 2,
           "description_cooked": null,
           "public_topic_count": 2,
-          "description_cooked_version": 1
+          "description_cooked_version": null
         },
         {
           "id": 9601,
           "name": "how-to",
           "slug": "how-to",
           "locale": null,
-          "created_at": "2026-11-23T17:50:38.614292",
-          "updated_at": "2026-11-23T17:50:38.614292",
+          "created_at": "2026-11-24T01:18:43.410274",
+          "updated_at": "2026-11-24T01:18:43.410274",
           "description": null,
           "target_tag_id": 1,
           "pm_topic_count": 0,
@@ -152,15 +152,15 @@
           "id": 1,
           "tag_id": 1,
           "topic_id": 38,
-          "created_at": "2026-11-23T16:08:34.224868",
-          "updated_at": "2026-11-23T16:08:34.224868"
+          "created_at": "2026-11-23T20:53:10.451263",
+          "updated_at": "2026-11-23T20:53:10.451263"
         },
         {
           "id": 3,
           "tag_id": 1,
           "topic_id": 41,
-          "created_at": "2026-11-23T16:08:36.939278",
-          "updated_at": "2026-11-23T16:08:36.939278"
+          "created_at": "2026-11-23T20:53:13.705091",
+          "updated_at": "2026-11-23T20:53:13.705091"
         }
       ],
       "updated": []
@@ -175,29 +175,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Lz+VpF52a7Lq0mNePMzKQqb9gGk=",
-            "created_at": "2026-11-23T17:50:39.697101",
-            "rotated_at": "2026-11-23T17:50:39.693722",
-            "updated_at": "2026-11-23T17:50:39.697101",
+            "auth_token": "JseVrIMNLIoRR//iZykG+1eAqzI=",
+            "created_at": "2026-11-24T01:18:43.795571",
+            "rotated_at": "2026-11-24T01:18:43.794386",
+            "updated_at": "2026-11-24T01:18:43.795571",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Lz+VpF52a7Lq0mNePMzKQqb9gGk=",
+            "prev_auth_token": "JseVrIMNLIoRR//iZykG+1eAqzI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:50:41.132159",
+            "seen_at": "2026-11-24T01:18:44.43624",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Lz+VpF52a7Lq0mNePMzKQqb9gGk=",
-            "created_at": "2026-11-23T17:50:39.697101",
-            "rotated_at": "2026-11-23T17:50:39.693722",
-            "updated_at": "2026-11-23T17:50:39.697101",
+            "auth_token": "JseVrIMNLIoRR//iZykG+1eAqzI=",
+            "created_at": "2026-11-24T01:18:43.795571",
+            "rotated_at": "2026-11-24T01:18:43.794386",
+            "updated_at": "2026-11-24T01:18:43.795571",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Lz+VpF52a7Lq0mNePMzKQqb9gGk=",
+            "prev_auth_token": "JseVrIMNLIoRR//iZykG+1eAqzI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -208,7 +208,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 23,
           "context": null,
@@ -218,10 +218,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-23T17:50:41.311892",
+          "created_at": "2026-11-24T01:18:44.536524",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:50:41.311892",
+          "updated_at": "2026-11-24T01:18:44.536524",
           "category_id": null,
           "custom_type": "deleted_tag",
           "reviewable_id": null,
@@ -257,7 +257,7 @@
     ]
   ],
   "next_ids": {
-    "user_histories": 66
+    "user_histories": 69
   },
   "setup": [
     "INSERT INTO web_hooks (id, payload_url, content_type, last_delivery_status, status, secret, wildcard_web_hook, verify_certificate, active, created_at, updated_at) VALUES (9001, 'http://fixtures.localhost:8099/hook', 1, 1, 1, '', false, true, true, '2026-10-01 10:00:00', '2026-10-01 10:00:00')",
@@ -270,7 +270,7 @@
   ],
   "recorded_from": {
     "case": "fd86122fb13b1fc9d1741f20b57ee1ab88f1fed328208d5cd1e052034254741c",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

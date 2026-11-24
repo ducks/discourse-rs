@@ -11,14 +11,14 @@
       "path": "/auth/linkedin_oidc/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
     }
   ],
-  "started_at": "2026-11-23T16:54:52.709425",
-  "transaction_started_at": "2026-11-23T16:54:52.028506",
+  "started_at": "2026-11-23T21:55:03.337035",
+  "transaction_started_at": "2026-11-23T21:54:58.799935",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=5f57ea965dddd0f095e00f6a41fd8715c240225cb9e8aaa1...",
+      "body": "Redirecting to http://fixtures.localhost:8099/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=d890ac74c61b49a00349e0e9c304258fe648ee1266a27e22...",
       "headers": {
-        "Location": "/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=5f57ea965dddd0f095e00f6a41fd8715c240225cb9e8aaa1"
+        "Location": "/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=d890ac74c61b49a00349e0e9c304258fe648ee1266a27e22"
       }
     },
     {
@@ -56,9 +56,9 @@
             }
           },
           "user_id": 5,
-          "last_used": "2026-11-23T16:54:52.777097",
-          "created_at": "2026-11-23T16:54:52.778445",
-          "updated_at": "2026-11-23T16:54:52.778445",
+          "last_used": "2026-11-23T21:55:03.471936",
+          "created_at": "2026-11-23T21:55:03.47826",
+          "updated_at": "2026-11-23T21:55:03.47826",
           "credentials": {
             "token": "li-token",
             "expires": false
@@ -79,8 +79,8 @@
           "action": "generate",
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "46KW3dBF8LAZLWQcDO0CKZM1w5Y=",
-          "created_at": "2026-11-23T16:54:52.821222",
+          "auth_token": "X9ICZM7grN0aQdsZcnas02/ij3Y=",
+          "created_at": "2026-11-23T21:55:03.712952",
           "user_agent": null,
           "user_auth_token_id": 1
         }
@@ -95,13 +95,13 @@
           "seen_at": null,
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "46KW3dBF8LAZLWQcDO0CKZM1w5Y=",
-          "created_at": "2026-11-23T16:54:52.818089",
-          "rotated_at": "2026-11-23T16:54:52.817127",
-          "updated_at": "2026-11-23T16:54:52.818089",
+          "auth_token": "X9ICZM7grN0aQdsZcnas02/ij3Y=",
+          "created_at": "2026-11-23T21:55:03.696687",
+          "rotated_at": "2026-11-23T21:55:03.693016",
+          "updated_at": "2026-11-23T21:55:03.696687",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "46KW3dBF8LAZLWQcDO0CKZM1w5Y=",
+          "prev_auth_token": "X9ICZM7grN0aQdsZcnas02/ij3Y=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": true,
           "impersonation_expires_at": null
@@ -170,7 +170,7 @@
             "created_at": "2026-11-03T05:08:00.934987",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-23T16:54:52.798228",
+            "updated_at": "2026-11-23T21:55:03.581089",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -206,13 +206,6 @@
         "url": "http://fixtures.localhost:8099/li.png",
         "user_id": 5,
         "associated_account_id": 1
-      }
-    ],
-    [
-      "update_gravatar in 1s",
-      {
-        "user_id": 5,
-        "avatar_id": 7
       }
     ]
   ],
@@ -252,7 +245,7 @@
   ],
   "recorded_from": {
     "case": "4210d7e27b02bb327203dae95b340d5104ac9beda686f07dd2bab5fe0695dbaf",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -7,8 +7,8 @@
       "path": "/admin/email/templates/system_messages.pending_users_reminder"
     }
   ],
-  "started_at": "2026-11-23T16:20:29.533697",
-  "transaction_started_at": "2026-11-23T16:20:28.737577",
+  "started_at": "2026-11-23T21:42:49.51507",
+  "transaction_started_at": "2026-11-23T21:42:46.105574",
   "responses": [
     {
       "status": 200,
@@ -38,29 +38,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "AR7osc05p4PVwSnIGwPbTTG6Ljs=",
-            "created_at": "2026-11-23T16:20:29.06158",
-            "rotated_at": "2026-11-23T16:20:29.060486",
-            "updated_at": "2026-11-23T16:20:29.06158",
+            "auth_token": "UdUFWFsa32uGzk6lxgvl9sFQF+E=",
+            "created_at": "2026-11-23T21:42:47.556511",
+            "rotated_at": "2026-11-23T21:42:47.553257",
+            "updated_at": "2026-11-23T21:42:47.556511",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "AR7osc05p4PVwSnIGwPbTTG6Ljs=",
+            "prev_auth_token": "UdUFWFsa32uGzk6lxgvl9sFQF+E=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:20:29.539163",
+            "seen_at": "2026-11-23T21:42:49.535948",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "AR7osc05p4PVwSnIGwPbTTG6Ljs=",
-            "created_at": "2026-11-23T16:20:29.06158",
-            "rotated_at": "2026-11-23T16:20:29.060486",
-            "updated_at": "2026-11-23T16:20:29.06158",
+            "auth_token": "UdUFWFsa32uGzk6lxgvl9sFQF+E=",
+            "created_at": "2026-11-23T21:42:47.556511",
+            "rotated_at": "2026-11-23T21:42:47.553257",
+            "updated_at": "2026-11-23T21:42:47.556511",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "AR7osc05p4PVwSnIGwPbTTG6Ljs=",
+            "prev_auth_token": "UdUFWFsa32uGzk6lxgvl9sFQF+E=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -71,7 +71,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 29,
           "context": null,
@@ -81,10 +81,10 @@
           "topic_id": null,
           "new_value": "{one: \"%{count} user waiting for approval\", other: \"%{count} users waiting for approval\"}",
           "admin_only": true,
-          "created_at": "2026-11-23T16:20:29.60879",
+          "created_at": "2026-11-23T21:42:49.773934",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T16:20:29.60879",
+          "updated_at": "2026-11-23T21:42:49.773934",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -93,7 +93,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 29,
           "context": null,
@@ -103,10 +103,10 @@
           "topic_id": null,
           "new_value": "There are new user signups waiting to be approved (or rejected) before they can access this forum.\n\n[Please review them](%{base_url}/review).\n",
           "admin_only": true,
-          "created_at": "2026-11-23T16:20:29.611591",
+          "created_at": "2026-11-23T21:42:49.783402",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T16:20:29.611591",
+          "updated_at": "2026-11-23T21:42:49.783402",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -121,11 +121,11 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 66
+    "user_histories": 69
   },
   "recorded_from": {
     "case": "b8d57455d1b71624f88cd4eba294cb90cbb5be6ba8d84fbddb44748365b9711c",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

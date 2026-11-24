@@ -67,8 +67,8 @@
       "path": "/groups.json?filter=member&type=close"
     }
   ],
-  "started_at": "2026-11-23T16:58:19.85585",
-  "transaction_started_at": "2026-11-23T16:58:19.103482",
+  "started_at": "2026-11-23T21:55:05.83563",
+  "transaction_started_at": "2026-11-23T21:55:02.188884",
   "responses": [
     {
       "status": 200,
@@ -505,7 +505,7 @@
   ],
   "recorded_from": {
     "case": "948f60c0d53705c0b0a2a572c392f816cd9424a4a902bc6c4a06a45078d05c56",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

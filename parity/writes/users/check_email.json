@@ -23,8 +23,8 @@
       "path": "/u/check_email.json"
     }
   ],
-  "started_at": "2026-11-23T18:11:41.056186",
-  "transaction_started_at": "2026-11-23T18:11:40.42724",
+  "started_at": "2026-11-24T01:24:03.958713",
+  "transaction_started_at": "2026-11-24T01:24:03.123811",
   "responses": [
     {
       "status": 200,
@@ -75,7 +75,7 @@
   },
   "recorded_from": {
     "case": "d2e67934b5399e43146db235b5d3f2058ccfda19b20baeef8b424bf24a2457bf",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

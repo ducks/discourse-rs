@@ -7,8 +7,8 @@
       "path": "/admin/email/templates/test_mailer"
     }
   ],
-  "started_at": "2026-11-23T16:20:28.409287",
-  "transaction_started_at": "2026-11-23T16:20:27.632466",
+  "started_at": "2026-11-23T21:42:44.889102",
+  "transaction_started_at": "2026-11-23T21:42:40.743062",
   "responses": [
     {
       "status": 200,
@@ -39,29 +39,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "HdwZ/NO2uCpVJQyZWAiEPdiYNFo=",
-            "created_at": "2026-11-23T16:20:27.929194",
-            "rotated_at": "2026-11-23T16:20:27.928391",
-            "updated_at": "2026-11-23T16:20:27.929194",
+            "auth_token": "u+Z+F/YH9Sag+nBigGJn52Ahhpc=",
+            "created_at": "2026-11-23T21:42:42.250492",
+            "rotated_at": "2026-11-23T21:42:42.247014",
+            "updated_at": "2026-11-23T21:42:42.250492",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "HdwZ/NO2uCpVJQyZWAiEPdiYNFo=",
+            "prev_auth_token": "u+Z+F/YH9Sag+nBigGJn52Ahhpc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:20:28.41625",
+            "seen_at": "2026-11-23T21:42:44.90586",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "HdwZ/NO2uCpVJQyZWAiEPdiYNFo=",
-            "created_at": "2026-11-23T16:20:27.929194",
-            "rotated_at": "2026-11-23T16:20:27.928391",
-            "updated_at": "2026-11-23T16:20:27.929194",
+            "auth_token": "u+Z+F/YH9Sag+nBigGJn52Ahhpc=",
+            "created_at": "2026-11-23T21:42:42.250492",
+            "rotated_at": "2026-11-23T21:42:42.247014",
+            "updated_at": "2026-11-23T21:42:42.250492",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "HdwZ/NO2uCpVJQyZWAiEPdiYNFo=",
+            "prev_auth_token": "u+Z+F/YH9Sag+nBigGJn52Ahhpc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -72,7 +72,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 29,
           "context": null,
@@ -82,10 +82,10 @@
           "topic_id": null,
           "new_value": "[%{email_prefix}] Email Deliverability Test",
           "admin_only": true,
-          "created_at": "2026-11-23T16:20:28.531461",
+          "created_at": "2026-11-23T21:42:45.170304",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T16:20:28.531461",
+          "updated_at": "2026-11-23T21:42:45.170304",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -94,7 +94,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 29,
           "context": null,
@@ -104,10 +104,10 @@
           "topic_id": null,
           "new_value": "This is a test email from\n\n[**%{base_url}**][0]\n\nWe hope you received this email deliverability test OK!\n\nHere is a [handy checklist for verifying email delivery configuration][1].\n\nGood luck,\n\nYour friends at [Discourse](https://www.discourse.org)\n\n[0]: %{base_url}\n[1]: https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\n",
           "admin_only": true,
-          "created_at": "2026-11-23T16:20:28.535032",
+          "created_at": "2026-11-23T21:42:45.1808",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T16:20:28.535032",
+          "updated_at": "2026-11-23T21:42:45.1808",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -122,11 +122,11 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 66
+    "user_histories": 69
   },
   "recorded_from": {
     "case": "22071dfd7215787b089f5bbed849ccb876e6b832d1a38fe1778214e3950bb6aa",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

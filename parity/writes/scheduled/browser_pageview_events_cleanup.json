@@ -2,8 +2,8 @@
   "name": "browser_pageview_events_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:34:23.26877",
-  "transaction_started_at": "2026-11-23T17:34:22.594551",
+  "started_at": "2026-11-24T01:08:58.631835",
+  "transaction_started_at": "2026-11-24T01:08:54.449642",
   "responses": [],
   "changes": {
     "browser_pageview_event_scores": {
@@ -42,7 +42,7 @@
           "language": null,
           "referrer": null,
           "topic_id": 35,
-          "created_at": "2026-08-15T17:34:22.594551",
+          "created_at": "2026-08-16T01:08:54.449642",
           "ip_address": "10.0.0.1",
           "session_id": "s1",
           "user_agent": "Mozilla/5.0",
@@ -61,10 +61,10 @@
       "deleted": [
         {
           "id": 1,
-          "created_at": "2026-08-15T17:34:22.594551",
+          "created_at": "2026-08-16T01:08:54.449642",
           "key_events": 0,
           "session_id": "s1",
-          "updated_at": "2026-08-15T17:34:22.594551",
+          "updated_at": "2026-08-16T01:08:54.449642",
           "click_events": 0,
           "touch_events": 0,
           "scroll_events": 0,
@@ -93,7 +93,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "e1e8558052c2d345bee1e777571ef9aa775f3f7b39a6a2e8192625a3fb63e9e8",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

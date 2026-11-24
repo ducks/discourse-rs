@@ -57,8 +57,8 @@
       "path": "/admin/config/about/localizations.json"
     }
   ],
-  "started_at": "2026-11-23T16:17:53.283674",
-  "transaction_started_at": "2026-11-23T16:17:52.394047",
+  "started_at": "2026-11-23T21:38:16.871568",
+  "transaction_started_at": "2026-11-23T21:38:12.833883",
   "responses": [
     {
       "status": 200,
@@ -147,8 +147,8 @@
           "value": "Nous parlons de **canards**.",
           "cooked": "<p>Nous parlons de <strong>canards</strong>.</p>",
           "locale": "fr",
-          "created_at": "2026-11-23T16:17:53.375192",
-          "updated_at": "2026-11-23T16:17:53.375192",
+          "created_at": "2026-11-23T21:38:17.140641",
+          "updated_at": "2026-11-23T21:38:17.140641",
           "setting_name": "extended_site_description",
           "localizer_user_id": 1
         }
@@ -166,29 +166,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "apG/tBU/1FXjN/FGfs86EaqTLEY=",
-            "created_at": "2026-11-23T16:17:52.667099",
-            "rotated_at": "2026-11-23T16:17:52.666262",
-            "updated_at": "2026-11-23T16:17:52.667099",
+            "auth_token": "VK/hA/boonE9WqkW1YGvW1MxRAI=",
+            "created_at": "2026-11-23T21:38:14.616072",
+            "rotated_at": "2026-11-23T21:38:14.612968",
+            "updated_at": "2026-11-23T21:38:14.616072",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "apG/tBU/1FXjN/FGfs86EaqTLEY=",
+            "prev_auth_token": "VK/hA/boonE9WqkW1YGvW1MxRAI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:17:53.295738",
+            "seen_at": "2026-11-23T21:38:16.893876",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "apG/tBU/1FXjN/FGfs86EaqTLEY=",
-            "created_at": "2026-11-23T16:17:52.667099",
-            "rotated_at": "2026-11-23T16:17:52.666262",
-            "updated_at": "2026-11-23T16:17:52.667099",
+            "auth_token": "VK/hA/boonE9WqkW1YGvW1MxRAI=",
+            "created_at": "2026-11-23T21:38:14.616072",
+            "rotated_at": "2026-11-23T21:38:14.612968",
+            "updated_at": "2026-11-23T21:38:14.616072",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "apG/tBU/1FXjN/FGfs86EaqTLEY=",
+            "prev_auth_token": "VK/hA/boonE9WqkW1YGvW1MxRAI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -199,7 +199,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 23,
           "context": null,
@@ -209,10 +209,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-23T16:17:53.379477",
+          "created_at": "2026-11-23T21:38:17.155593",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T16:17:53.379477",
+          "updated_at": "2026-11-23T21:38:17.155593",
           "category_id": null,
           "custom_type": "update_site_setting_localizations",
           "reviewable_id": null,
@@ -221,7 +221,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 23,
           "context": null,
@@ -231,10 +231,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-23T16:17:53.422169",
+          "created_at": "2026-11-23T21:38:17.376495",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T16:17:53.422169",
+          "updated_at": "2026-11-23T21:38:17.376495",
           "category_id": null,
           "custom_type": "update_site_setting_localizations",
           "reviewable_id": null,
@@ -250,7 +250,7 @@
   "jobs": [],
   "next_ids": {
     "site_setting_localizations": 1,
-    "user_histories": 66
+    "user_histories": 69
   },
   "settings": {
     "content_localization_enabled": true,
@@ -258,7 +258,7 @@
   },
   "recorded_from": {
     "case": "fbda1bd2aa30db03de8888934ca9e4fb5cd08e9140528a2780c0ce450db277d4",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

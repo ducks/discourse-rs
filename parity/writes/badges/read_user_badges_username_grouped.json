@@ -7,8 +7,8 @@
       "path": "/user-badges/user0.json?grouped=true"
     }
   ],
-  "started_at": "2026-11-23T16:31:38.953432",
-  "transaction_started_at": "2026-11-23T16:31:38.237692",
+  "started_at": "2026-11-23T21:46:03.991029",
+  "transaction_started_at": "2026-11-23T21:46:02.931451",
   "responses": [
     {
       "status": 200,
@@ -67,24 +67,6 @@
             "manually_grantable": false,
             "show_in_post_header": false,
             "badge_type_id": 3
-          },
-          {
-            "id": 40,
-            "name": "First Mention",
-            "description": "Mentioned a user in a post",
-            "grant_count": 0,
-            "allow_title": false,
-            "multiple_grant": false,
-            "icon": "at",
-            "image_url": null,
-            "listable": true,
-            "enabled": true,
-            "badge_grouping_id": 1,
-            "system": true,
-            "slug": "first-mention",
-            "manually_grantable": false,
-            "show_in_post_header": false,
-            "badge_type_id": 3
           }
         ],
         "badge_types": [
@@ -107,8 +89,8 @@
         ],
         "user_badges": [
           {
-            "id": 3,
-            "granted_at": "2026-11-23T16:08:49.743Z",
+            "id": 2,
+            "granted_at": "2026-11-23T20:51:22.940Z",
             "count": 1,
             "grouping_position": 13,
             "is_favorite": null,
@@ -117,8 +99,8 @@
             "granted_by_id": -1
           },
           {
-            "id": 16,
-            "granted_at": "2026-11-23T16:08:36.321Z",
+            "id": 17,
+            "granted_at": "2026-11-23T20:53:12.898Z",
             "count": 1,
             "grouping_position": 11,
             "post_number": 1,
@@ -130,8 +112,8 @@
             "granted_by_id": -1
           },
           {
-            "id": 14,
-            "granted_at": "2026-11-23T16:08:43.180Z",
+            "id": 15,
+            "granted_at": "2026-11-23T20:53:21.124Z",
             "count": 1,
             "grouping_position": 10,
             "post_number": 2,
@@ -140,19 +122,6 @@
             "is_favorite": null,
             "can_favorite": false,
             "badge_id": 11,
-            "granted_by_id": -1
-          },
-          {
-            "id": 18,
-            "granted_at": "2026-11-23T16:08:43.039Z",
-            "count": 1,
-            "grouping_position": 10,
-            "post_number": 5,
-            "topic_id": 35,
-            "topic_title": "Parity fixture: replies and posters",
-            "is_favorite": null,
-            "can_favorite": false,
-            "badge_id": 40,
             "granted_by_id": -1
           }
         ]
@@ -170,7 +139,7 @@
   ],
   "recorded_from": {
     "case": "6be4597cf34a3c1767d2af4710a093f2165f7ccb354d80bbcb954ff646d302c9",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

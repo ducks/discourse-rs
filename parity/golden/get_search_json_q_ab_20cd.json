@@ -1,7 +1,7 @@
 {
   "request": "GET /search.json?q=ab%20cd",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-23T18:24:27.822592110+00:00",
+  "recorded_at": "2026-11-24T01:32:07.594389912+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"grouped_search_result\":null}"

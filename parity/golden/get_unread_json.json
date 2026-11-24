@@ -1,7 +1,7 @@
 {
   "request": "GET /unread.json",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-23T18:26:49.451104387+00:00",
+  "recorded_at": "2026-11-24T01:35:51.233659920+00:00",
   "status": 403,
   "content_type": "application/json; charset=utf-8",
   "body": "{\"errors\":[\"You need to be logged in to do that.\"],\"error_type\":\"not_logged_in\"}"

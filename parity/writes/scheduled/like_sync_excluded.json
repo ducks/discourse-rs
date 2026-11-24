@@ -2,8 +2,8 @@
   "name": "like_sync_excluded",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:35:44.336798",
-  "transaction_started_at": "2026-11-23T17:35:43.66815",
+  "started_at": "2026-11-24T01:10:02.767975",
+  "transaction_started_at": "2026-11-24T01:09:59.078276",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -29,7 +29,7 @@
   ],
   "recorded_from": {
     "case": "12a9d21726d0eafb160dc2e96fc1437638494ba4099a5dd985ac9753254b9ee7",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -7,8 +7,8 @@
       "path": "/user_badges.json?badge_id=1"
     }
   ],
-  "started_at": "2026-11-23T16:31:32.838977",
-  "transaction_started_at": "2026-11-23T16:31:32.168024",
+  "started_at": "2026-11-23T21:45:56.365893",
+  "transaction_started_at": "2026-11-23T21:45:55.430243",
   "responses": [
     {
       "status": 200,
@@ -43,11 +43,10 @@
         ],
         "users": [
           {
-            "id": 1,
-            "username": "admin",
-            "name": "Admin",
-            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
-            "admin": true,
+            "id": 5,
+            "username": "user3",
+            "name": "User3",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
             "trust_level": 4
           },
           {
@@ -58,6 +57,13 @@
             "admin": true,
             "moderator": true,
             "trust_level": 4
+          },
+          {
+            "id": 4,
+            "username": "user2",
+            "name": "User2",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
+            "trust_level": 2
           },
           {
             "id": 3,
@@ -74,17 +80,11 @@
             "trust_level": 1
           },
           {
-            "id": 4,
-            "username": "user2",
-            "name": "User2",
-            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ecb155/{size}.png",
-            "trust_level": 2
-          },
-          {
-            "id": 5,
-            "username": "user3",
-            "name": "User3",
-            "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
+            "id": 1,
+            "username": "admin",
+            "name": "Admin",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+            "admin": true,
             "trust_level": 4
           }
         ],
@@ -94,42 +94,42 @@
           "user_badges": [
             {
               "id": 5,
-              "granted_at": "2026-11-23T16:08:49.743Z",
-              "created_at": "2026-11-23T16:08:49.743Z",
+              "granted_at": "2026-11-23T20:51:22.940Z",
+              "created_at": "2026-11-23T20:51:22.940Z",
               "badge_id": 1,
-              "user_id": 1,
+              "user_id": 5,
               "granted_by_id": -1
             },
             {
               "id": 4,
-              "granted_at": "2026-11-23T16:08:49.743Z",
-              "created_at": "2026-11-23T16:08:49.743Z",
-              "badge_id": 1,
-              "user_id": 3,
-              "granted_by_id": -1
-            },
-            {
-              "id": 3,
-              "granted_at": "2026-11-23T16:08:49.743Z",
-              "created_at": "2026-11-23T16:08:49.743Z",
-              "badge_id": 1,
-              "user_id": 2,
-              "granted_by_id": -1
-            },
-            {
-              "id": 2,
-              "granted_at": "2026-11-23T16:08:49.743Z",
-              "created_at": "2026-11-23T16:08:49.743Z",
+              "granted_at": "2026-11-23T20:51:22.940Z",
+              "created_at": "2026-11-23T20:51:22.940Z",
               "badge_id": 1,
               "user_id": 4,
               "granted_by_id": -1
             },
             {
-              "id": 1,
-              "granted_at": "2026-11-23T16:08:49.743Z",
-              "created_at": "2026-11-23T16:08:49.743Z",
+              "id": 3,
+              "granted_at": "2026-11-23T20:51:22.940Z",
+              "created_at": "2026-11-23T20:51:22.940Z",
               "badge_id": 1,
-              "user_id": 5,
+              "user_id": 3,
+              "granted_by_id": -1
+            },
+            {
+              "id": 2,
+              "granted_at": "2026-11-23T20:51:22.940Z",
+              "created_at": "2026-11-23T20:51:22.940Z",
+              "badge_id": 1,
+              "user_id": 2,
+              "granted_by_id": -1
+            },
+            {
+              "id": 1,
+              "granted_at": "2026-11-23T20:51:22.940Z",
+              "created_at": "2026-11-23T20:51:22.940Z",
+              "badge_id": 1,
+              "user_id": 1,
               "granted_by_id": -1
             }
           ]
@@ -148,7 +148,7 @@
   ],
   "recorded_from": {
     "case": "4e31d0e4db001862e9167767d524f2fd55b89493fa933fe201314cf04a4df710",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

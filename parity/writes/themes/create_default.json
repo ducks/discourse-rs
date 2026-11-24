@@ -28,8 +28,8 @@
       "path": "/admin/config/customize/themes.json"
     }
   ],
-  "started_at": "2026-11-23T17:53:46.74433",
-  "transaction_started_at": "2026-11-23T17:53:45.929395",
+  "started_at": "2026-11-24T01:18:50.59081",
+  "transaction_started_at": "2026-11-24T01:18:49.489303",
   "responses": [
     {
       "status": 201,
@@ -38,8 +38,8 @@
           "id": 1,
           "name": "Main",
           "description": null,
-          "created_at": "2026-11-23T17:53:46.757Z",
-          "updated_at": "2026-11-23T17:53:46.757Z",
+          "created_at": "2026-11-24T01:18:50.610Z",
+          "updated_at": "2026-11-24T01:18:50.610Z",
           "default": true,
           "component": false,
           "color_scheme_id": null,
@@ -241,8 +241,8 @@
             "id": 1,
             "name": "Main",
             "description": null,
-            "created_at": "2026-11-23T17:53:46.757Z",
-            "updated_at": "2026-11-23T17:53:46.757Z",
+            "created_at": "2026-11-24T01:18:50.610Z",
+            "updated_at": "2026-11-24T01:18:50.610Z",
             "default": true,
             "component": false,
             "user_selectable": false,
@@ -279,7 +279,7 @@
             "value": "1",
             "data_type": 3,
             "created_at": "2026-11-03T05:07:17.745255",
-            "updated_at": "2026-11-23T17:53:46.768747"
+            "updated_at": "2026-11-24T01:18:50.625509"
           }
         }
       ]
@@ -313,8 +313,8 @@
           "enabled": true,
           "user_id": 1,
           "component": false,
-          "created_at": "2026-11-23T17:53:46.757675",
-          "updated_at": "2026-11-23T17:53:46.757675",
+          "created_at": "2026-11-24T01:18:50.610133",
+          "updated_at": "2026-11-24T01:18:50.610133",
           "auto_update": true,
           "color_scheme_id": null,
           "remote_theme_id": null,
@@ -336,29 +336,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "BfpHZP1lgA7kUSqu+ou6QhMmV04=",
-            "created_at": "2026-11-23T17:53:46.266554",
-            "rotated_at": "2026-11-23T17:53:46.265654",
-            "updated_at": "2026-11-23T17:53:46.266554",
+            "auth_token": "tsAfjc0uvQZnUm+C46bCCAAis44=",
+            "created_at": "2026-11-24T01:18:49.896856",
+            "rotated_at": "2026-11-24T01:18:49.895358",
+            "updated_at": "2026-11-24T01:18:49.896856",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "BfpHZP1lgA7kUSqu+ou6QhMmV04=",
+            "prev_auth_token": "tsAfjc0uvQZnUm+C46bCCAAis44=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:53:46.749858",
+            "seen_at": "2026-11-24T01:18:50.59887",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "BfpHZP1lgA7kUSqu+ou6QhMmV04=",
-            "created_at": "2026-11-23T17:53:46.266554",
-            "rotated_at": "2026-11-23T17:53:46.265654",
-            "updated_at": "2026-11-23T17:53:46.266554",
+            "auth_token": "tsAfjc0uvQZnUm+C46bCCAAis44=",
+            "created_at": "2026-11-24T01:18:49.896856",
+            "rotated_at": "2026-11-24T01:18:49.895358",
+            "updated_at": "2026-11-24T01:18:49.896856",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "BfpHZP1lgA7kUSqu+ou6QhMmV04=",
+            "prev_auth_token": "tsAfjc0uvQZnUm+C46bCCAAis44=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -369,7 +369,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 4,
           "context": null,
@@ -377,12 +377,12 @@
           "post_id": null,
           "subject": "Main",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Main\",\"description\":null,\"created_at\":\"2026-11-23T17:53:46.757Z\",\"updated_at\":\"2026-11-23T17:53:46.757Z\",\"default\":true,\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "new_value": "{\"id\":1,\"name\":\"Main\",\"description\":null,\"created_at\":\"2026-11-24T01:18:50.610Z\",\"updated_at\":\"2026-11-24T01:18:50.610Z\",\"default\":true,\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":true,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "admin_only": true,
-          "created_at": "2026-11-23T17:53:46.781668",
+          "created_at": "2026-11-24T01:18:50.644273",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:53:46.781668",
+          "updated_at": "2026-11-24T01:18:50.644273",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -399,11 +399,11 @@
   "next_ids": {
     "theme_modifier_sets": 3,
     "themes": 1,
-    "user_histories": 66
+    "user_histories": 69
   },
   "recorded_from": {
     "case": "253ff179bc0a53a1341a0d37c7902802ac028ba0f111672c77b0550cfb54665f",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "reindex_chat_off",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:38:23.018453",
-  "transaction_started_at": "2026-11-23T17:38:22.331553",
+  "started_at": "2026-11-24T01:12:46.137813",
+  "transaction_started_at": "2026-11-24T01:12:41.667254",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -23,7 +23,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "64aeb7f0bb4ac708ace4804f0f945b4fad37e5f6a8e2dc77faa39effb3068934",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

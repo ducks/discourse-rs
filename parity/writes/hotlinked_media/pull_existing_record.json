@@ -2,8 +2,8 @@
   "name": "pull_existing_record",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:00:51.974011",
-  "transaction_started_at": "2026-11-23T17:00:51.322581",
+  "started_at": "2026-11-23T21:55:34.847196",
+  "transaction_started_at": "2026-11-23T21:55:31.988977",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -34,7 +34,7 @@
   ],
   "recorded_from": {
     "case": "925610ab0872a5bfbb11f009516c7802fa01ab0afaf66f3f60672da55a05cdc2",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -19,8 +19,8 @@
       "path": "/posts/nobody-193f/deleted.json"
     }
   ],
-  "started_at": "2026-11-23T18:11:49.417884",
-  "transaction_started_at": "2026-11-23T18:11:48.51617",
+  "started_at": "2026-11-24T01:24:14.964798",
+  "transaction_started_at": "2026-11-24T01:24:13.634176",
   "responses": [
     {
       "status": 200,
@@ -28,7 +28,7 @@
         {
           "excerpt": "A private message from user1 to user0, long enough to be a real post body.",
           "id": 48,
-          "created_at": "2026-11-23T16:08:42.194Z",
+          "created_at": "2026-11-23T20:53:20.121Z",
           "post_number": 1,
           "post_id": 48,
           "name": "User1",
@@ -41,7 +41,7 @@
           "hidden": false,
           "moderator_action": false,
           "deleted": true,
-          "deleted_at": "2026-11-23T16:11:48.516Z",
+          "deleted_at": "2026-11-23T23:24:13.634Z",
           "deleted_by": {
             "id": 1,
             "username": "admin",
@@ -54,7 +54,7 @@
         {
           "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
           "id": 36,
-          "created_at": "2026-11-23T16:08:31.648Z",
+          "created_at": "2026-11-23T20:53:07.408Z",
           "post_number": 2,
           "post_id": 36,
           "name": "User1",
@@ -67,7 +67,7 @@
           "hidden": false,
           "moderator_action": false,
           "deleted": true,
-          "deleted_at": "2026-11-23T16:11:48.516Z",
+          "deleted_at": "2026-11-23T23:24:13.634Z",
           "deleted_by": {
             "id": 1,
             "username": "admin",
@@ -85,7 +85,7 @@
         {
           "excerpt": "Reply one from user1, also long enough to pass the minimum length check.",
           "id": 36,
-          "created_at": "2026-11-23T16:08:31.648Z",
+          "created_at": "2026-11-23T20:53:07.408Z",
           "post_number": 2,
           "post_id": 36,
           "name": "User1",
@@ -98,7 +98,7 @@
           "hidden": false,
           "moderator_action": false,
           "deleted": true,
-          "deleted_at": "2026-11-23T16:11:48.516Z",
+          "deleted_at": "2026-11-23T23:24:13.634Z",
           "deleted_by": {
             "id": 1,
             "username": "admin",
@@ -140,29 +140,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "PGK53PnKGWZjvw4P5J/bF4NgD8g=",
-            "created_at": "2026-11-23T18:11:48.912575",
-            "rotated_at": "2026-11-23T18:11:48.911628",
-            "updated_at": "2026-11-23T18:11:48.912575",
+            "auth_token": "bnntw8V3RAdrXMlCKJiSQrwQxwA=",
+            "created_at": "2026-11-24T01:24:14.088842",
+            "rotated_at": "2026-11-24T01:24:14.087792",
+            "updated_at": "2026-11-24T01:24:14.088842",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "PGK53PnKGWZjvw4P5J/bF4NgD8g=",
+            "prev_auth_token": "bnntw8V3RAdrXMlCKJiSQrwQxwA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T18:11:49.431002",
+            "seen_at": "2026-11-24T01:24:15.037413",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "PGK53PnKGWZjvw4P5J/bF4NgD8g=",
-            "created_at": "2026-11-23T18:11:48.912575",
-            "rotated_at": "2026-11-23T18:11:48.911628",
-            "updated_at": "2026-11-23T18:11:48.912575",
+            "auth_token": "bnntw8V3RAdrXMlCKJiSQrwQxwA=",
+            "created_at": "2026-11-24T01:24:14.088842",
+            "rotated_at": "2026-11-24T01:24:14.087792",
+            "updated_at": "2026-11-24T01:24:14.088842",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "PGK53PnKGWZjvw4P5J/bF4NgD8g=",
+            "prev_auth_token": "bnntw8V3RAdrXMlCKJiSQrwQxwA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -178,7 +178,7 @@
   ],
   "recorded_from": {
     "case": "667cac2c07b8ba235e2969ef80627acc34917b4555730cd7b5a17f37886daa8e",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,35 +2,35 @@
   "name": "deliver_success",
   "user": "admin",
   "requests": [],
-  "started_at": "2026-11-23T18:20:04.948195",
-  "transaction_started_at": "2026-11-23T18:20:04.020888",
+  "started_at": "2026-11-24T01:26:04.302624",
+  "transaction_started_at": "2026-11-24T01:26:03.214306",
   "responses": [],
   "changes": {
     "web_hook_events": {
       "inserted": [
         {
-          "id": 2,
-          "status": 201,
-          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"18\",\"Content-Type\":\"application/x-www-form-urlencoded\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"2\",\"X-Discourse-Event-Type\":\"topic\",\"X-Discourse-Event\":\"topic_closed_status_updated\"}",
-          "payload": "{\"topic\":{\"id\":3}}",
-          "duration": 14,
-          "created_at": "2026-11-23T18:20:04.997033",
-          "updated_at": "2026-11-23T18:20:05.014535",
-          "web_hook_id": 9002,
-          "response_body": "",
-          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"0\"}"
-        },
-        {
           "id": 1,
           "status": 200,
           "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"57\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"1\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\",\"X-Discourse-Event-Signature\":\"sha256=59fc0b4fbb498b4ec01e385a54b28b256bf0998107d47bfc0161d6561fb940d0\"}",
           "payload": "{\"post\":{\"id\":7,\"raw\":\"héllo ☃\",\"nested\":{\"a\":[1,2]}}}",
-          "duration": 33,
-          "created_at": "2026-11-23T18:20:04.952951",
-          "updated_at": "2026-11-23T18:20:04.991385",
+          "duration": 26,
+          "created_at": "2026-11-24T01:26:04.308652",
+          "updated_at": "2026-11-24T01:26:04.340744",
           "web_hook_id": 9001,
           "response_body": "{\"ok\":true}",
           "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"11\",\"content-type\":\"application/json\",\"x-thing\":\"a\"}"
+        },
+        {
+          "id": 2,
+          "status": 201,
+          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"18\",\"Content-Type\":\"application/x-www-form-urlencoded\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"2\",\"X-Discourse-Event-Type\":\"topic\",\"X-Discourse-Event\":\"topic_closed_status_updated\"}",
+          "payload": "{\"topic\":{\"id\":3}}",
+          "duration": 20,
+          "created_at": "2026-11-24T01:26:04.348651",
+          "updated_at": "2026-11-24T01:26:04.371164",
+          "web_hook_id": 9002,
+          "response_body": "",
+          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"0\"}"
         }
       ],
       "deleted": [],
@@ -60,7 +60,7 @@
             "secret": "abcdefghijklmnop",
             "status": 1,
             "created_at": "2026-10-01T10:00:00",
-            "updated_at": "2026-11-23T18:20:04.992525",
+            "updated_at": "2026-11-24T01:26:04.342166",
             "payload_url": "http://fixtures.localhost:8099/hook?x=1",
             "content_type": 1,
             "wildcard_web_hook": false,
@@ -88,7 +88,7 @@
             "secret": "",
             "status": 1,
             "created_at": "2026-10-01T10:00:00",
-            "updated_at": "2026-11-23T18:20:05.015555",
+            "updated_at": "2026-11-24T01:26:04.37315",
             "payload_url": "http://fixtures.localhost:8099/form",
             "content_type": 2,
             "wildcard_web_hook": true,
@@ -163,7 +163,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "ca63dc5718fe1ffb007a4d5d38455d410ef3d199107cf50627040431998496b2",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

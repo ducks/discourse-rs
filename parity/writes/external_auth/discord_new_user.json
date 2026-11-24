@@ -15,14 +15,14 @@
       "path": "/session/current.json"
     }
   ],
-  "started_at": "2026-11-23T16:54:35.380281",
-  "transaction_started_at": "2026-11-23T16:54:34.78902",
+  "started_at": "2026-11-23T21:53:36.338999",
+  "transaction_started_at": "2026-11-23T21:53:32.038418",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/discord/oauth2/authorize?client_id=discord-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fdiscord%2Fcallback&response_type=code&scope=identify%20email%20guilds&state=694e0a04d8c6f0b75320b47d204a8cb5cb1371f6ac339410...",
+      "body": "Redirecting to http://fixtures.localhost:8099/discord/oauth2/authorize?client_id=discord-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fdiscord%2Fcallback&response_type=code&scope=identify%20email%20guilds&state=7533a9beca38cd3bad4b8dfb75736d0fdc98ea8d872c5e49...",
       "headers": {
-        "Location": "/discord/oauth2/authorize?client_id=discord-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fdiscord%2Fcallback&response_type=code&scope=identify%20email%20guilds&state=694e0a04d8c6f0b75320b47d204a8cb5cb1371f6ac339410"
+        "Location": "/discord/oauth2/authorize?client_id=discord-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fdiscord%2Fcallback&response_type=code&scope=identify%20email%20guilds&state=7533a9beca38cd3bad4b8dfb75736d0fdc98ea8d872c5e49"
       }
     },
     {
@@ -67,9 +67,9 @@
             }
           },
           "user_id": null,
-          "last_used": "2026-11-23T16:54:35.441896",
-          "created_at": "2026-11-23T16:54:35.443131",
-          "updated_at": "2026-11-23T16:54:35.443131",
+          "last_used": "2026-11-23T21:53:36.494761",
+          "created_at": "2026-11-23T21:53:36.503668",
+          "updated_at": "2026-11-23T21:53:36.503668",
           "credentials": {
             "token": "discord-token",
             "expires": false
@@ -125,7 +125,7 @@
   ],
   "recorded_from": {
     "case": "05d39929e337f0622e12d8998b115a02e8fa9e14744f1ea85a001b112ca6eda1",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -15,8 +15,8 @@
       "path": "/admin/customize/site_texts/js.composer.reply.json?locale=en"
     }
   ],
-  "started_at": "2026-11-23T17:46:16.53491",
-  "transaction_started_at": "2026-11-23T17:46:15.539911",
+  "started_at": "2026-11-24T01:17:38.205589",
+  "transaction_started_at": "2026-11-24T01:17:37.152509",
   "responses": [
     {
       "status": 200,
@@ -79,8 +79,8 @@
           "value": "Start a discussion",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-11-23T17:46:15.539911",
-          "updated_at": "2026-11-23T17:46:15.539911",
+          "created_at": "2026-11-24T01:17:37.152509",
+          "updated_at": "2026-11-24T01:17:37.152509",
           "translation_key": "js.topic.create",
           "original_translation": "New Topic"
         },
@@ -89,8 +89,8 @@
           "value": "Liked once",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-11-23T17:46:15.539911",
-          "updated_at": "2026-11-23T17:46:15.539911",
+          "created_at": "2026-11-24T01:17:37.152509",
+          "updated_at": "2026-11-24T01:17:37.152509",
           "translation_key": "badges.first_like.description",
           "original_translation": "Liked a post"
         }
@@ -107,29 +107,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ABeaYPg0FCTPsRgSUWq3Aaq3izU=",
-            "created_at": "2026-11-23T17:46:15.940433",
-            "rotated_at": "2026-11-23T17:46:15.93887",
-            "updated_at": "2026-11-23T17:46:15.940433",
+            "auth_token": "QDol8vLzs7HiPx4PO0eNlkzIREg=",
+            "created_at": "2026-11-24T01:17:37.547826",
+            "rotated_at": "2026-11-24T01:17:37.546536",
+            "updated_at": "2026-11-24T01:17:37.547826",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ABeaYPg0FCTPsRgSUWq3Aaq3izU=",
+            "prev_auth_token": "QDol8vLzs7HiPx4PO0eNlkzIREg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:46:16.542161",
+            "seen_at": "2026-11-24T01:17:38.214447",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ABeaYPg0FCTPsRgSUWq3Aaq3izU=",
-            "created_at": "2026-11-23T17:46:15.940433",
-            "rotated_at": "2026-11-23T17:46:15.93887",
-            "updated_at": "2026-11-23T17:46:15.940433",
+            "auth_token": "QDol8vLzs7HiPx4PO0eNlkzIREg=",
+            "created_at": "2026-11-24T01:17:37.547826",
+            "rotated_at": "2026-11-24T01:17:37.546536",
+            "updated_at": "2026-11-24T01:17:37.547826",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ABeaYPg0FCTPsRgSUWq3Aaq3izU=",
+            "prev_auth_token": "QDol8vLzs7HiPx4PO0eNlkzIREg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -140,7 +140,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 29,
           "context": null,
@@ -150,10 +150,10 @@
           "topic_id": null,
           "new_value": "New Topic",
           "admin_only": true,
-          "created_at": "2026-11-23T17:46:16.630535",
+          "created_at": "2026-11-24T01:17:38.31734",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:46:16.630535",
+          "updated_at": "2026-11-24T01:17:38.31734",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -162,7 +162,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 29,
           "context": null,
@@ -172,10 +172,10 @@
           "topic_id": null,
           "new_value": "Liked a post",
           "admin_only": true,
-          "created_at": "2026-11-23T17:46:16.727338",
+          "created_at": "2026-11-24T01:17:38.426702",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:46:16.727338",
+          "updated_at": "2026-11-24T01:17:38.426702",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -184,7 +184,7 @@
           "target_user_id": null
         },
         {
-          "id": 68,
+          "id": 71,
           "email": null,
           "action": 29,
           "context": null,
@@ -194,10 +194,10 @@
           "topic_id": null,
           "new_value": "Reply",
           "admin_only": true,
-          "created_at": "2026-11-23T17:46:16.812864",
+          "created_at": "2026-11-24T01:17:38.534467",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:46:16.812864",
+          "updated_at": "2026-11-24T01:17:38.534467",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -220,7 +220,7 @@
     ]
   ],
   "next_ids": {
-    "user_histories": 66
+    "user_histories": 69
   },
   "setup": [
     "INSERT INTO translation_overrides (locale, translation_key, value, original_translation, status, created_at, updated_at) VALUES ('en', 'js.topic.create', 'Start a discussion', 'New Topic', 0, now(), now())",
@@ -228,7 +228,7 @@
   ],
   "recorded_from": {
     "case": "0bc61119d13da1d26a08d8aa31c520f1251cb392dc60b6783778f63998bd7f49",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,59 +2,14 @@
   "name": "category_activity_rollups_rebuild",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:34:27.528229",
-  "transaction_started_at": "2026-11-23T17:34:26.851435",
+  "started_at": "2026-11-24T01:09:22.023493",
+  "transaction_started_at": "2026-11-24T01:09:17.751804",
   "responses": [],
   "changes": {
     "category_activity_daily_rollups": {
       "inserted": [
         {
           "id": 2,
-          "date": "2026-11-23",
-          "posts": 1,
-          "topics": 1,
-          "page_views": 10,
-          "category_id": 34,
-          "likely_crawler_page_views": 0
-        },
-        {
-          "id": 3,
-          "date": "2026-11-22",
-          "posts": 1,
-          "topics": 1,
-          "page_views": 0,
-          "category_id": 34,
-          "likely_crawler_page_views": 0
-        },
-        {
-          "id": 4,
-          "date": "2026-11-03",
-          "posts": 2,
-          "topics": 2,
-          "page_views": 0,
-          "category_id": 4,
-          "likely_crawler_page_views": 0
-        },
-        {
-          "id": 5,
-          "date": "2026-09-30",
-          "posts": 0,
-          "topics": 0,
-          "page_views": 7,
-          "category_id": 4,
-          "likely_crawler_page_views": 0
-        },
-        {
-          "id": 6,
-          "date": "2026-11-23",
-          "posts": 1,
-          "topics": 1,
-          "page_views": 0,
-          "category_id": 2,
-          "likely_crawler_page_views": 0
-        },
-        {
-          "id": 7,
           "date": "2026-11-03",
           "posts": 4,
           "topics": 3,
@@ -63,7 +18,7 @@
           "likely_crawler_page_views": 0
         },
         {
-          "id": 8,
+          "id": 3,
           "date": "2026-11-03",
           "posts": 1,
           "topics": 1,
@@ -72,12 +27,57 @@
           "likely_crawler_page_views": 0
         },
         {
-          "id": 9,
+          "id": 4,
           "date": "2026-11-23",
           "posts": 7,
           "topics": 3,
           "page_views": 0,
           "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 5,
+          "date": "2026-11-23",
+          "posts": 2,
+          "topics": 2,
+          "page_views": 0,
+          "category_id": 34,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 6,
+          "date": "2026-11-03",
+          "posts": 2,
+          "topics": 2,
+          "page_views": 0,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 7,
+          "date": "2026-09-30",
+          "posts": 0,
+          "topics": 0,
+          "page_views": 7,
+          "category_id": 4,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 8,
+          "date": "2026-11-23",
+          "posts": 1,
+          "topics": 1,
+          "page_views": 0,
+          "category_id": 2,
+          "likely_crawler_page_views": 0
+        },
+        {
+          "id": 9,
+          "date": "2026-11-24",
+          "posts": 0,
+          "topics": 0,
+          "page_views": 10,
+          "category_id": 34,
           "likely_crawler_page_views": 0
         }
       ],
@@ -114,7 +114,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "9834584bdeccd7f232faa361747ad52f38ee18a8ff17469aa79da89d5184eb19",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -26,8 +26,8 @@
       "path": "/u/discobot.json"
     }
   ],
-  "started_at": "2026-11-23T16:29:37.505184",
-  "transaction_started_at": "2026-11-23T16:29:36.568738",
+  "started_at": "2026-11-23T21:45:13.296839",
+  "transaction_started_at": "2026-11-23T21:45:11.848509",
   "responses": [
     {
       "status": 200,
@@ -584,8 +584,8 @@
           "watched_first_post_category_ids": [],
           "system_avatar_upload_id": null,
           "system_avatar_template": "/letter_avatar_proxy/v4/letter/d/a9adbd/{size}.png",
-          "gravatar_avatar_upload_id": 35,
-          "gravatar_avatar_template": "/user_avatar/localhost/discobot/{size}/35_2.png",
+          "gravatar_avatar_upload_id": 34,
+          "gravatar_avatar_template": "/user_avatar/localhost/discobot/{size}/34_2.png",
           "associated_account_avatars": [],
           "selected_user_associated_account_id": null,
           "muted_usernames": [],
@@ -967,22 +967,55 @@
           "name": "use_site_small_logo_as_system_avatar",
           "value": "f",
           "data_type": 5,
-          "created_at": "2026-11-23T16:29:37.540994",
-          "updated_at": "2026-11-23T16:29:37.540994"
+          "created_at": "2026-11-23T21:45:13.351436",
+          "updated_at": "2026-11-23T21:45:13.351436"
         }
       ],
       "deleted": [],
       "updated": []
     },
     "upload_references": {
-      "inserted": [],
+      "inserted": [
+        {
+          "id": 38,
+          "target_id": 1,
+          "upload_id": 34,
+          "created_at": "2026-11-23T21:45:13.328206",
+          "updated_at": "2026-11-23T21:45:13.328233",
+          "target_type": "UserAvatar"
+        },
+        {
+          "id": 39,
+          "target_id": -1,
+          "upload_id": 34,
+          "created_at": "2026-11-23T21:45:13.344321",
+          "updated_at": "2026-11-23T21:45:13.344353",
+          "target_type": "User"
+        }
+      ],
       "deleted": [
         {
-          "id": 37,
+          "id": 35,
           "target_id": -2,
+          "upload_id": 34,
+          "created_at": "2026-11-23T20:51:36.894941",
+          "updated_at": "2026-11-23T20:51:36.895031",
+          "target_type": "User"
+        },
+        {
+          "id": 36,
+          "target_id": 1,
           "upload_id": 35,
-          "created_at": "2026-11-23T16:07:31.543729",
-          "updated_at": "2026-11-23T16:07:31.543788",
+          "created_at": "2026-11-23T20:51:37.639474",
+          "updated_at": "2026-11-23T20:51:37.639579",
+          "target_type": "UserAvatar"
+        },
+        {
+          "id": 37,
+          "target_id": -1,
+          "upload_id": 35,
+          "created_at": "2026-11-23T20:51:37.768802",
+          "updated_at": "2026-11-23T20:51:37.768892",
           "target_type": "User"
         }
       ],
@@ -998,32 +1031,60 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "AXz2PmM13amlBzlcXuy4xH5s464=",
-            "created_at": "2026-11-23T16:29:36.915612",
-            "rotated_at": "2026-11-23T16:29:36.914676",
-            "updated_at": "2026-11-23T16:29:36.915612",
+            "auth_token": "aZICt51D2svzawWOlo22EwNKgkg=",
+            "created_at": "2026-11-23T21:45:12.421326",
+            "rotated_at": "2026-11-23T21:45:12.416873",
+            "updated_at": "2026-11-23T21:45:12.421326",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "AXz2PmM13amlBzlcXuy4xH5s464=",
+            "prev_auth_token": "aZICt51D2svzawWOlo22EwNKgkg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:29:37.513582",
+            "seen_at": "2026-11-23T21:45:13.307743",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "AXz2PmM13amlBzlcXuy4xH5s464=",
-            "created_at": "2026-11-23T16:29:36.915612",
-            "rotated_at": "2026-11-23T16:29:36.914676",
-            "updated_at": "2026-11-23T16:29:36.915612",
+            "auth_token": "aZICt51D2svzawWOlo22EwNKgkg=",
+            "created_at": "2026-11-23T21:45:12.421326",
+            "rotated_at": "2026-11-23T21:45:12.416873",
+            "updated_at": "2026-11-23T21:45:12.421326",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "AXz2PmM13amlBzlcXuy4xH5s464=",
+            "prev_auth_token": "aZICt51D2svzawWOlo22EwNKgkg=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_avatars": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 1,
+            "user_id": -1,
+            "created_at": "2026-11-03T05:07:10.580523",
+            "updated_at": "2026-11-23T20:51:37.62045",
+            "custom_upload_id": null,
+            "gravatar_upload_id": 35,
+            "last_gravatar_download_attempt": "2026-11-23T20:51:34.237456",
+            "selected_user_associated_account_id": null
+          },
+          "after": {
+            "id": 1,
+            "user_id": -1,
+            "created_at": "2026-11-03T05:07:10.580523",
+            "updated_at": "2026-11-23T21:45:13.325934",
+            "custom_upload_id": null,
+            "gravatar_upload_id": 34,
+            "last_gravatar_download_attempt": "2026-11-23T20:51:34.237456",
+            "selected_user_associated_account_id": null
           }
         }
       ]
@@ -1033,14 +1094,14 @@
         {
           "id": 1,
           "user_id": 1,
-          "viewed_at": "2026-11-23T16:29:37.707779",
+          "viewed_at": "2026-11-23T21:45:13.572084",
           "ip_address": null,
           "user_profile_id": -1
         },
         {
           "id": 2,
           "user_id": 1,
-          "viewed_at": "2026-11-23T16:29:37.850697",
+          "viewed_at": "2026-11-23T21:45:13.782944",
           "ip_address": null,
           "user_profile_id": -2
         }
@@ -1061,7 +1122,7 @@
             "location": null,
             "bio_cooked": null,
             "featured_topic_id": null,
-            "bio_cooked_version": 1,
+            "bio_cooked_version": null,
             "dismissed_banner_key": null,
             "granted_title_badge_id": null,
             "card_background_upload_id": null,
@@ -1075,7 +1136,7 @@
             "location": null,
             "bio_cooked": null,
             "featured_topic_id": null,
-            "bio_cooked_version": 1,
+            "bio_cooked_version": null,
             "dismissed_banner_key": null,
             "granted_title_badge_id": null,
             "card_background_upload_id": null,
@@ -1120,6 +1181,88 @@
       "updated": [
         {
           "before": {
+            "id": -1,
+            "name": "system",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "system",
+            "moderator": true,
+            "created_at": "2026-11-03T05:07:10.272522",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-11-23T20:51:37.711222",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-11-03T05:07:24.677747",
+            "suspended_till": null,
+            "username_lower": "system",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": 35,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          },
+          "after": {
+            "id": -1,
+            "name": "system",
+            "admin": true,
+            "title": null,
+            "views": 0,
+            "active": true,
+            "locale": null,
+            "staged": false,
+            "approved": true,
+            "username": "system",
+            "moderator": true,
+            "created_at": "2026-11-03T05:07:10.272522",
+            "flag_level": 0,
+            "ip_address": null,
+            "updated_at": "2026-11-23T21:45:13.33662",
+            "approved_at": null,
+            "trust_level": 4,
+            "last_seen_at": null,
+            "suspended_at": null,
+            "date_of_birth": null,
+            "first_seen_at": null,
+            "silenced_till": null,
+            "approved_by_id": null,
+            "flair_group_id": null,
+            "last_posted_at": "2026-11-03T05:07:24.677747",
+            "suspended_till": null,
+            "username_lower": "system",
+            "last_emailed_at": null,
+            "primary_group_id": null,
+            "previous_visit_at": null,
+            "secure_identifier": null,
+            "uploaded_avatar_id": 34,
+            "seen_notification_id": 0,
+            "last_seen_reviewable_id": null,
+            "registration_ip_address": null,
+            "required_fields_version": null,
+            "group_locked_trust_level": null,
+            "manual_locked_trust_level": null
+          }
+        },
+        {
+          "before": {
             "id": -2,
             "name": "discobot",
             "admin": true,
@@ -1134,7 +1277,7 @@
             "created_at": "2026-11-03T05:07:25.57085",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-23T16:07:31.509292",
+            "updated_at": "2026-11-23T20:51:36.844388",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -1151,7 +1294,7 @@
             "primary_group_id": null,
             "previous_visit_at": null,
             "secure_identifier": null,
-            "uploaded_avatar_id": 35,
+            "uploaded_avatar_id": 34,
             "seen_notification_id": 0,
             "last_seen_reviewable_id": null,
             "registration_ip_address": null,
@@ -1174,7 +1317,7 @@
             "created_at": "2026-11-03T05:07:25.57085",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-23T16:29:37.736914",
+            "updated_at": "2026-11-23T21:45:13.617816",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -1207,17 +1350,24 @@
     [
       "rebake_quoted_posts_for_user",
       {
+        "user_id": -1
+      }
+    ],
+    [
+      "rebake_quoted_posts_for_user",
+      {
         "user_id": -2
       }
     ]
   ],
   "next_ids": {
     "site_settings": 37,
+    "upload_references": 38,
     "user_profile_views": 1
   },
   "recorded_from": {
     "case": "fe007377140801821a4817bde750bd021f5cc0966b15b12ec82d86203656d470",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

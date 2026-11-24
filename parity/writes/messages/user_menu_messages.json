@@ -11,8 +11,8 @@
       "path": "/u/user2/user-menu-private-messages.json"
     }
   ],
-  "started_at": "2026-11-23T17:08:16.741032",
-  "transaction_started_at": "2026-11-23T17:08:15.683341",
+  "started_at": "2026-11-23T22:00:27.185588",
+  "transaction_started_at": "2026-11-23T22:00:21.537356",
   "responses": [
     {
       "status": 200,
@@ -20,12 +20,12 @@
         "unread_notifications": [
           {
             "fancy_title": "Parity fixture: PM user2 to user1, archived",
-            "id": 13,
+            "id": 21,
             "user_id": 3,
             "notification_type": 6,
             "read": false,
             "high_priority": true,
-            "created_at": "2026-11-23T16:08:42.998Z",
+            "created_at": "2026-11-23T20:53:20.933Z",
             "post_number": 1,
             "topic_id": 44,
             "slug": "parity-fixture-pm-user2-to-user1-archived",
@@ -41,12 +41,12 @@
           },
           {
             "fancy_title": "Parity fixture: PM admin to user1 and user2",
-            "id": 11,
+            "id": 19,
             "user_id": 3,
             "notification_type": 6,
             "read": false,
             "high_priority": true,
-            "created_at": "2026-11-23T16:08:42.699Z",
+            "created_at": "2026-11-23T20:53:20.648Z",
             "post_number": 1,
             "topic_id": 43,
             "slug": "parity-fixture-pm-admin-to-user1-and-user2",
@@ -62,12 +62,12 @@
           },
           {
             "fancy_title": "Parity fixture: PM user1 to user0",
-            "id": 10,
+            "id": 18,
             "user_id": 3,
             "notification_type": 6,
             "read": false,
             "high_priority": true,
-            "created_at": "2026-11-23T16:08:42.560Z",
+            "created_at": "2026-11-23T20:53:20.475Z",
             "post_number": 2,
             "topic_id": 42,
             "slug": "parity-fixture-pm-user1-to-user0",
@@ -107,29 +107,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "ejMdW2zYObPDfDbbQ3TAp8gWLu8=",
-            "created_at": "2026-11-23T17:08:16.193978",
-            "rotated_at": "2026-11-23T17:08:16.191169",
-            "updated_at": "2026-11-23T17:08:16.193978",
+            "auth_token": "uSOEFhCN8GXb/bY1Muk3XkC/laA=",
+            "created_at": "2026-11-23T22:00:23.686589",
+            "rotated_at": "2026-11-23T22:00:23.680316",
+            "updated_at": "2026-11-23T22:00:23.686589",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ejMdW2zYObPDfDbbQ3TAp8gWLu8=",
+            "prev_auth_token": "uSOEFhCN8GXb/bY1Muk3XkC/laA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:08:16.750781",
+            "seen_at": "2026-11-23T22:00:27.227751",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "ejMdW2zYObPDfDbbQ3TAp8gWLu8=",
-            "created_at": "2026-11-23T17:08:16.193978",
-            "rotated_at": "2026-11-23T17:08:16.191169",
-            "updated_at": "2026-11-23T17:08:16.193978",
+            "auth_token": "uSOEFhCN8GXb/bY1Muk3XkC/laA=",
+            "created_at": "2026-11-23T22:00:23.686589",
+            "rotated_at": "2026-11-23T22:00:23.680316",
+            "updated_at": "2026-11-23T22:00:23.686589",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ejMdW2zYObPDfDbbQ3TAp8gWLu8=",
+            "prev_auth_token": "uSOEFhCN8GXb/bY1Muk3XkC/laA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -142,7 +142,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "350f9d62fb7fc779848031317988f1fb4e555ce0e40adf39d57501057ef9488d",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

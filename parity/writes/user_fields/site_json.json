@@ -7,8 +7,8 @@
       "path": "/site.json"
     }
   ],
-  "started_at": "2026-11-23T18:11:05.641344",
-  "transaction_started_at": "2026-11-23T18:11:04.896642",
+  "started_at": "2026-11-24T01:23:54.173852",
+  "transaction_started_at": "2026-11-24T01:23:53.362238",
   "responses": [
     {
       "status": 200,
@@ -393,10 +393,9 @@
           }
         ],
         "topic_featured_link_allowed_category_ids": [
-          1,
+          2,
           3,
           4,
-          2,
           34
         ],
         "user_themes": [
@@ -502,76 +501,6 @@
         "watched_words_link": null,
         "categories": [
           {
-            "id": 1,
-            "name": "Uncategorized",
-            "color": "0088CC",
-            "text_color": "FFFFFF",
-            "style_type": "emoji",
-            "icon": null,
-            "emoji": "card_file_box",
-            "slug": "uncategorized",
-            "topic_count": 0,
-            "post_count": 0,
-            "position": 0,
-            "description": null,
-            "description_text": null,
-            "description_excerpt": null,
-            "topic_url": "/t/",
-            "read_restricted": false,
-            "permission": null,
-            "notification_level": 1,
-            "topic_template": null,
-            "topic_title_placeholder": null,
-            "has_children": false,
-            "subcategory_count": null,
-            "sort_order": null,
-            "sort_ascending": null,
-            "show_subcategory_list": false,
-            "num_featured_topics": 3,
-            "default_view": null,
-            "subcategory_list_style": "rows_with_featured_topics",
-            "default_top_period": "all",
-            "default_list_filter": "all",
-            "minimum_required_tags": 0,
-            "navigate_to_first_post_after_read": false,
-            "custom_fields": {
-              "has_chat_enabled": null,
-              "enable_unassigned_filter": null,
-              "additional_assign_allowed_on_groups": null,
-              "sort_topics_by_event_start_date": null,
-              "disable_topic_resorting": null,
-              "create_as_post_voting_default": null,
-              "only_post_voting_in_this_category": null,
-              "enable_accepted_answers": null,
-              "notify_on_staff_accept_solved": null,
-              "empty_box_on_unsolved": null,
-              "enable_shared_issues": null,
-              "enable_topic_voting": null
-            },
-            "allow_global_tags": false,
-            "read_only_banner": null,
-            "form_template_ids": [],
-            "required_tag_groups": [],
-            "category_types": {
-              "discussion": {
-                "id": "discussion",
-                "name": "Discussion",
-                "title": "discussion",
-                "description": "A standard category with all the essentials for conversation.",
-                "icon": "memo",
-                "svg_icon": "comment",
-                "available": true,
-                "visible": true,
-                "configuration_schema": {}
-              }
-            },
-            "uploaded_logo": null,
-            "uploaded_logo_dark": null,
-            "uploaded_background": null,
-            "uploaded_background_dark": null,
-            "can_edit": false
-          },
-          {
             "id": 2,
             "name": "Site Feedback",
             "color": "808281",
@@ -581,7 +510,7 @@
             "emoji": "thought_balloon",
             "slug": "site-feedback",
             "topic_count": 1,
-            "post_count": 0,
+            "post_count": 1,
             "position": 1,
             "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
             "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
@@ -651,7 +580,7 @@
             "emoji": "blue_book",
             "slug": "general",
             "topic_count": 3,
-            "post_count": 0,
+            "post_count": 7,
             "position": 3,
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -721,8 +650,8 @@
             "emoji": null,
             "slug": "sub-general",
             "topic_count": 1,
-            "post_count": 0,
-            "position": 4,
+            "post_count": 1,
+            "position": 3,
             "description": null,
             "description_text": null,
             "description_excerpt": null,
@@ -1055,7 +984,7 @@
   ],
   "recorded_from": {
     "case": "68b36ccf9adf07e10dad13bacfd945208523ebf6626668d00e8fecf7a8035c82",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

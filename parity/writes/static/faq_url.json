@@ -15,8 +15,8 @@
       "path": "/guidelines"
     }
   ],
-  "started_at": "2026-11-23T17:48:29.534385",
-  "transaction_started_at": "2026-11-23T17:48:28.881337",
+  "started_at": "2026-11-24T01:17:08.129461",
+  "transaction_started_at": "2026-11-24T01:17:07.065626",
   "responses": [
     {
       "status": 302,
@@ -48,7 +48,7 @@
   ],
   "recorded_from": {
     "case": "1569547b276a4c42895d4f731ad93435ed5c70251f3874c65ba1bdf0ac576161",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

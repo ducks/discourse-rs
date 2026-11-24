@@ -7,8 +7,8 @@
       "path": "/user-badges/user3.json"
     }
   ],
-  "started_at": "2026-11-23T16:31:41.300573",
-  "transaction_started_at": "2026-11-23T16:31:40.392667",
+  "started_at": "2026-11-23T21:46:06.744616",
+  "transaction_started_at": "2026-11-23T21:46:05.654625",
   "responses": [
     {
       "status": 200,
@@ -33,24 +33,6 @@
             "badge_type_id": 3
           },
           {
-            "id": 2,
-            "name": "Member",
-            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> invitations, group messaging, more likes",
-            "grant_count": 4,
-            "allow_title": false,
-            "multiple_grant": false,
-            "icon": "user",
-            "image_url": null,
-            "listable": true,
-            "enabled": true,
-            "badge_grouping_id": 4,
-            "system": true,
-            "slug": "member",
-            "manually_grantable": false,
-            "show_in_post_header": false,
-            "badge_type_id": 3
-          },
-          {
             "id": 4,
             "name": "Leader",
             "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> global edit, pin, close, archive, split and merge, more likes",
@@ -67,6 +49,24 @@
             "manually_grantable": false,
             "show_in_post_header": false,
             "badge_type_id": 1
+          },
+          {
+            "id": 2,
+            "name": "Member",
+            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> invitations, group messaging, more likes",
+            "grant_count": 4,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "user",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 4,
+            "system": true,
+            "slug": "member",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
           },
           {
             "id": 3,
@@ -117,8 +117,8 @@
         ],
         "user_badges": [
           {
-            "id": 1,
-            "granted_at": "2026-11-23T16:08:49.743Z",
+            "id": 5,
+            "granted_at": "2026-11-23T20:51:22.940Z",
             "grouping_position": 13,
             "is_favorite": null,
             "can_favorite": false,
@@ -126,8 +126,17 @@
             "granted_by_id": -1
           },
           {
-            "id": 6,
-            "granted_at": "2026-11-23T16:08:49.815Z",
+            "id": 11,
+            "granted_at": "2026-11-23T20:51:47.574Z",
+            "grouping_position": 13,
+            "is_favorite": null,
+            "can_favorite": false,
+            "badge_id": 4,
+            "granted_by_id": -1
+          },
+          {
+            "id": 9,
+            "granted_at": "2026-11-23T20:51:34.164Z",
             "grouping_position": 13,
             "is_favorite": null,
             "can_favorite": false,
@@ -136,16 +145,7 @@
           },
           {
             "id": 12,
-            "granted_at": "2026-11-23T16:08:49.852Z",
-            "grouping_position": 13,
-            "is_favorite": null,
-            "can_favorite": false,
-            "badge_id": 4,
-            "granted_by_id": -1
-          },
-          {
-            "id": 10,
-            "granted_at": "2026-11-23T16:08:49.841Z",
+            "granted_at": "2026-11-23T20:53:22.846Z",
             "grouping_position": 13,
             "is_favorite": null,
             "can_favorite": false,
@@ -167,29 +167,29 @@
             "seen_at": null,
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "D9nTLy5ffsLmYvVpL9fi1EKsjbM=",
-            "created_at": "2026-11-23T16:31:40.749236",
-            "rotated_at": "2026-11-23T16:31:40.748187",
-            "updated_at": "2026-11-23T16:31:40.749236",
+            "auth_token": "FQrnMgxU2KHAo0G8Gvs144Ita9U=",
+            "created_at": "2026-11-23T21:46:06.068782",
+            "rotated_at": "2026-11-23T21:46:06.067731",
+            "updated_at": "2026-11-23T21:46:06.068782",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "D9nTLy5ffsLmYvVpL9fi1EKsjbM=",
+            "prev_auth_token": "FQrnMgxU2KHAo0G8Gvs144Ita9U=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:31:41.307991",
+            "seen_at": "2026-11-23T21:46:06.754963",
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "D9nTLy5ffsLmYvVpL9fi1EKsjbM=",
-            "created_at": "2026-11-23T16:31:40.749236",
-            "rotated_at": "2026-11-23T16:31:40.748187",
-            "updated_at": "2026-11-23T16:31:40.749236",
+            "auth_token": "FQrnMgxU2KHAo0G8Gvs144Ita9U=",
+            "created_at": "2026-11-23T21:46:06.068782",
+            "rotated_at": "2026-11-23T21:46:06.067731",
+            "updated_at": "2026-11-23T21:46:06.068782",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "D9nTLy5ffsLmYvVpL9fi1EKsjbM=",
+            "prev_auth_token": "FQrnMgxU2KHAo0G8Gvs144Ita9U=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -208,7 +208,7 @@
   ],
   "recorded_from": {
     "case": "b3c3e4bcd1863ba4cd64d11810c7f6e8033a819b1aef667a9924ac31f7caa676",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

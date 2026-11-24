@@ -8,8 +8,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-11-23T16:52:09.551667",
-  "transaction_started_at": "2026-11-23T16:52:08.869746",
+  "started_at": "2026-11-23T21:52:33.330211",
+  "transaction_started_at": "2026-11-23T21:52:30.208161",
   "responses": [
     {
       "status": 302,
@@ -30,7 +30,7 @@
   ],
   "recorded_from": {
     "case": "2821a85d0969a0b123cc401525db2caec8a94982b0c9230142b083584c359599",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

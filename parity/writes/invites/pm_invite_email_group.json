@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T17:03:58.501049",
-  "transaction_started_at": "2026-11-23T17:03:57.583258",
+  "started_at": "2026-11-23T21:59:12.117155",
+  "transaction_started_at": "2026-11-23T21:59:10.783384",
   "responses": [
     {
       "status": 200,
@@ -28,8 +28,8 @@
           "id": 1,
           "group_id": 9001,
           "invite_id": 1,
-          "created_at": "2026-11-23T17:03:58.532716",
-          "updated_at": "2026-11-23T17:03:58.532716"
+          "created_at": "2026-11-23T21:59:12.160411",
+          "updated_at": "2026-11-23T21:59:12.160411"
         }
       ],
       "deleted": [],
@@ -43,13 +43,13 @@
           "email": "outsider@example.com",
           "domain": null,
           "moderator": false,
-          "created_at": "2026-11-23T17:03:58.523805",
+          "created_at": "2026-11-23T21:59:12.146623",
           "deleted_at": null,
-          "expires_at": "2027-02-21T17:03:58.521123",
-          "invite_key": "knjLPJd1Dc",
-          "updated_at": "2026-11-23T17:03:58.523805",
+          "expires_at": "2027-02-21T21:59:12.142272",
+          "invite_key": "bJUnq1qfua",
+          "updated_at": "2026-11-23T21:59:12.146623",
           "description": null,
-          "email_token": "81813ba9d2413e949d7f407de57c789b",
+          "email_token": "d366a7974589b1ed829452b54bf4ff06",
           "deleted_by_id": null,
           "invited_by_id": 1,
           "custom_message": null,
@@ -68,8 +68,8 @@
           "id": 1,
           "topic_id": 43,
           "invite_id": 1,
-          "created_at": "2026-11-23T17:03:58.529425",
-          "updated_at": "2026-11-23T17:03:58.529425"
+          "created_at": "2026-11-23T21:59:12.154416",
+          "updated_at": "2026-11-23T21:59:12.154416"
         }
       ],
       "deleted": [],
@@ -85,29 +85,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "p3iW4pG3Oete0ommCoesHOn9164=",
-            "created_at": "2026-11-23T17:03:57.938019",
-            "rotated_at": "2026-11-23T17:03:57.937192",
-            "updated_at": "2026-11-23T17:03:57.938019",
+            "auth_token": "QoXXtu7ECTJG+nim4xYu/2Tpa1U=",
+            "created_at": "2026-11-23T21:59:11.185282",
+            "rotated_at": "2026-11-23T21:59:11.184414",
+            "updated_at": "2026-11-23T21:59:11.185282",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "p3iW4pG3Oete0ommCoesHOn9164=",
+            "prev_auth_token": "QoXXtu7ECTJG+nim4xYu/2Tpa1U=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:03:58.507651",
+            "seen_at": "2026-11-23T21:59:12.12617",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "p3iW4pG3Oete0ommCoesHOn9164=",
-            "created_at": "2026-11-23T17:03:57.938019",
-            "rotated_at": "2026-11-23T17:03:57.937192",
-            "updated_at": "2026-11-23T17:03:57.938019",
+            "auth_token": "QoXXtu7ECTJG+nim4xYu/2Tpa1U=",
+            "created_at": "2026-11-23T21:59:11.185282",
+            "rotated_at": "2026-11-23T21:59:11.184414",
+            "updated_at": "2026-11-23T21:59:11.185282",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "p3iW4pG3Oete0ommCoesHOn9164=",
+            "prev_auth_token": "QoXXtu7ECTJG+nim4xYu/2Tpa1U=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -135,7 +135,7 @@
   ],
   "recorded_from": {
     "case": "c375206cae2f7f9e23344be1bc476a711866bda25a8db8f27aa4f0a0b54fe49f",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

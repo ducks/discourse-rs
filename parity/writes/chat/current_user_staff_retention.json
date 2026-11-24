@@ -7,8 +7,8 @@
       "path": "/session/current.json"
     }
   ],
-  "started_at": "2026-11-23T16:37:10.645856",
-  "transaction_started_at": "2026-11-23T16:37:09.452072",
+  "started_at": "2026-11-23T21:47:27.241525",
+  "transaction_started_at": "2026-11-23T21:47:26.141106",
   "responses": [
     {
       "status": 200,
@@ -332,29 +332,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "OxAcdqIt1C5FzorY/Wga933DNSc=",
-            "created_at": "2026-11-23T16:37:09.788972",
-            "rotated_at": "2026-11-23T16:37:09.787917",
-            "updated_at": "2026-11-23T16:37:09.788972",
+            "auth_token": "t4Xvzt2UgXvsoAx1854OxmznFQ8=",
+            "created_at": "2026-11-23T21:47:26.521914",
+            "rotated_at": "2026-11-23T21:47:26.51977",
+            "updated_at": "2026-11-23T21:47:26.521914",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "OxAcdqIt1C5FzorY/Wga933DNSc=",
+            "prev_auth_token": "t4Xvzt2UgXvsoAx1854OxmznFQ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:37:10.654964",
+            "seen_at": "2026-11-23T21:47:27.250258",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "OxAcdqIt1C5FzorY/Wga933DNSc=",
-            "created_at": "2026-11-23T16:37:09.788972",
-            "rotated_at": "2026-11-23T16:37:09.787917",
-            "updated_at": "2026-11-23T16:37:09.788972",
+            "auth_token": "t4Xvzt2UgXvsoAx1854OxmznFQ8=",
+            "created_at": "2026-11-23T21:47:26.521914",
+            "rotated_at": "2026-11-23T21:47:26.51977",
+            "updated_at": "2026-11-23T21:47:26.521914",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "OxAcdqIt1C5FzorY/Wga933DNSc=",
+            "prev_auth_token": "t4Xvzt2UgXvsoAx1854OxmznFQ8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -375,7 +375,7 @@
   },
   "recorded_from": {
     "case": "62bd028c47ea1c5fe598de59cf1f88848774477ca81e3a50d82d31aa2736e39c",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

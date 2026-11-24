@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T18:09:19.143576",
-  "transaction_started_at": "2026-11-23T18:09:18.345794",
+  "started_at": "2026-11-24T01:22:55.505051",
+  "transaction_started_at": "2026-11-24T01:22:54.167287",
   "responses": [
     {
       "status": 200,
@@ -21,9 +21,9 @@
           "username": "user1",
           "name": "User1",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-          "unread_notifications": 6,
+          "unread_notifications": 5,
           "unread_high_priority_notifications": 4,
-          "all_unread_notifications_count": 10,
+          "all_unread_notifications_count": 9,
           "read_first_notification": false,
           "admin": false,
           "notification_channel_position": null,
@@ -99,7 +99,7 @@
             "24": 1,
             "6": 3,
             "1": 1,
-            "12": 4,
+            "12": 3,
             "5": 1
           },
           "available_notification_types": [
@@ -315,11 +315,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-21T18:09:18.345794",
-            "expires_at": "2026-11-24T18:09:18.345794",
+            "created_at": "2026-11-22T01:22:54.167287",
+            "expires_at": "2026-11-25T01:22:54.167287",
             "revoked_at": null,
-            "updated_at": "2026-11-21T18:09:18.345794",
-            "last_used_at": "2026-11-22T18:09:18.345794",
+            "updated_at": "2026-11-22T01:22:54.167287",
+            "last_used_at": "2026-11-23T01:22:54.167287",
             "application_name": null,
             "user_api_key_client_id": 9101
           },
@@ -329,11 +329,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-21T18:09:18.345794",
-            "expires_at": "2026-11-24T18:09:18.345794",
+            "created_at": "2026-11-22T01:22:54.167287",
+            "expires_at": "2026-11-25T01:22:54.167287",
             "revoked_at": null,
-            "updated_at": "2026-11-21T18:09:18.345794",
-            "last_used_at": "2026-11-23T18:09:19.153109",
+            "updated_at": "2026-11-22T01:22:54.167287",
+            "last_used_at": "2026-11-24T01:22:56.14284",
             "application_name": null,
             "user_api_key_client_id": 9101
           }
@@ -350,7 +350,7 @@
   ],
   "recorded_from": {
     "case": "67a01b22efb0652cb0e88f02cd71fa179a24e22fc6b2df4be42e16d38ebd1953",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

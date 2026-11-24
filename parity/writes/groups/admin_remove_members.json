@@ -29,8 +29,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T16:57:47.935804",
-  "transaction_started_at": "2026-11-23T16:57:47.140994",
+  "started_at": "2026-11-23T21:52:23.267674",
+  "transaction_started_at": "2026-11-23T21:52:19.111352",
   "responses": [
     {
       "status": 200,
@@ -83,9 +83,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-23T16:57:47.998762",
+          "created_at": "2026-11-23T21:52:23.409222",
           "prev_value": null,
-          "updated_at": "2026-11-23T16:57:47.998762",
+          "updated_at": "2026-11-23T21:52:23.409222",
           "acting_user_id": 1,
           "target_user_id": 3
         },
@@ -95,9 +95,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-23T16:57:48.105335",
+          "created_at": "2026-11-23T21:52:23.602415",
           "prev_value": null,
-          "updated_at": "2026-11-23T16:57:48.105335",
+          "updated_at": "2026-11-23T21:52:23.602415",
           "acting_user_id": 1,
           "target_user_id": 4
         }
@@ -115,7 +115,7 @@
           "group_id": 9001,
           "created_at": "2026-10-01T10:00:00",
           "updated_at": "2026-10-01T10:00:00",
-          "first_unread_pm_at": "2026-11-23T16:57:47.140994",
+          "first_unread_pm_at": "2026-11-23T21:52:19.111352",
           "notification_level": 3
         },
         {
@@ -125,7 +125,7 @@
           "group_id": 9001,
           "created_at": "2026-10-01T10:00:00",
           "updated_at": "2026-10-01T10:00:00",
-          "first_unread_pm_at": "2026-11-23T16:57:47.140994",
+          "first_unread_pm_at": "2026-11-23T21:52:19.111352",
           "notification_level": 3
         }
       ],
@@ -257,29 +257,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Eml3gHH4AGlvtImexQ14n02n44A=",
-            "created_at": "2026-11-23T16:57:47.434445",
-            "rotated_at": "2026-11-23T16:57:47.433487",
-            "updated_at": "2026-11-23T16:57:47.434445",
+            "auth_token": "RF9iz6wOsQVBRXtHk0Ex5mwq868=",
+            "created_at": "2026-11-23T21:52:20.648132",
+            "rotated_at": "2026-11-23T21:52:20.644285",
+            "updated_at": "2026-11-23T21:52:20.648132",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Eml3gHH4AGlvtImexQ14n02n44A=",
+            "prev_auth_token": "RF9iz6wOsQVBRXtHk0Ex5mwq868=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:57:47.944174",
+            "seen_at": "2026-11-23T21:52:23.29196",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Eml3gHH4AGlvtImexQ14n02n44A=",
-            "created_at": "2026-11-23T16:57:47.434445",
-            "rotated_at": "2026-11-23T16:57:47.433487",
-            "updated_at": "2026-11-23T16:57:47.434445",
+            "auth_token": "RF9iz6wOsQVBRXtHk0Ex5mwq868=",
+            "created_at": "2026-11-23T21:52:20.648132",
+            "rotated_at": "2026-11-23T21:52:20.644285",
+            "updated_at": "2026-11-23T21:52:20.648132",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Eml3gHH4AGlvtImexQ14n02n44A=",
+            "prev_auth_token": "RF9iz6wOsQVBRXtHk0Ex5mwq868=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -299,7 +299,7 @@
   ],
   "recorded_from": {
     "case": "3b86a04b57bbbb9d27986099984b7aa10d7d052aac8cbfd2561708d28bfc295e",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

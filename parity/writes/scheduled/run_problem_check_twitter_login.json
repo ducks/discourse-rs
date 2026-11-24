@@ -2,8 +2,8 @@
   "name": "run_problem_check_twitter_login",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:36:38.821932",
-  "transaction_started_at": "2026-11-23T17:36:38.138502",
+  "started_at": "2026-11-24T01:11:17.500933",
+  "transaction_started_at": "2026-11-24T01:11:11.343765",
   "responses": [],
   "changes": {
     "admin_notices": {
@@ -16,9 +16,9 @@
           },
           "subject": 0,
           "priority": 1,
-          "created_at": "2026-11-23T17:36:38.901776",
+          "created_at": "2026-11-24T01:11:17.919441",
           "identifier": "twitter_login",
-          "updated_at": "2026-11-23T17:36:38.901776"
+          "updated_at": "2026-11-24T01:11:17.919441"
         }
       ],
       "deleted": [],
@@ -35,9 +35,9 @@
           },
           "identifier": "twitter_login",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T17:36:38.898591",
-          "next_run_at": "2026-11-24T17:36:38.894497",
-          "last_problem_at": "2026-11-23T17:36:38.898591",
+          "last_run_at": "2026-11-24T01:11:17.889339",
+          "next_run_at": "2026-11-25T01:11:17.869589",
+          "last_problem_at": "2026-11-24T01:11:17.889339",
           "last_success_at": null
         }
       ],
@@ -99,7 +99,7 @@
   ],
   "recorded_from": {
     "case": "cb21672560b0ae9d01084219b99242703de3ea0b1b43c0fb15fb4f50e7f2ad01",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "heat_off",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:35:26.330848",
-  "transaction_started_at": "2026-11-23T17:35:25.508296",
+  "started_at": "2026-11-24T01:07:56.25261",
+  "transaction_started_at": "2026-11-24T01:07:52.150701",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -23,7 +23,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "76acbb1c7f4680d7b2984e23979eb5160fe6c834b69a96d28d5364d7f05eb687",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

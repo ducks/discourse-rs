@@ -25,8 +25,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T16:15:05.800338",
-  "transaction_started_at": "2026-11-23T16:15:04.690777",
+  "started_at": "2026-11-23T21:36:04.183831",
+  "transaction_started_at": "2026-11-23T21:35:58.977842",
   "responses": [
     {
       "status": 200,
@@ -97,7 +97,7 @@
             "name": "Community!",
             "position": 0,
             "created_at": "2026-11-03T05:07:09.664559",
-            "updated_at": "2026-11-23T16:15:05.817289",
+            "updated_at": "2026-11-23T21:36:04.261546",
             "description": null
           }
         },
@@ -115,7 +115,7 @@
             "name": "Getting Started",
             "position": 1,
             "created_at": "2026-11-03T05:07:09.656567",
-            "updated_at": "2026-11-23T16:15:05.82025",
+            "updated_at": "2026-11-23T21:36:04.277119",
             "description": null
           }
         },
@@ -133,7 +133,7 @@
             "name": "Posting",
             "position": 2,
             "created_at": "2026-11-03T05:07:09.674059",
-            "updated_at": "2026-11-23T16:15:05.822669",
+            "updated_at": "2026-11-23T21:36:04.292649",
             "description": null
           }
         },
@@ -151,7 +151,7 @@
             "name": "Trust Level",
             "position": 3,
             "created_at": "2026-11-03T05:07:09.683169",
-            "updated_at": "2026-11-23T16:15:05.825276",
+            "updated_at": "2026-11-23T21:36:04.309301",
             "description": null
           }
         },
@@ -169,7 +169,7 @@
             "name": "Other",
             "position": 4,
             "created_at": "2026-11-03T05:07:09.691556",
-            "updated_at": "2026-11-23T16:15:05.827866",
+            "updated_at": "2026-11-23T21:36:04.325203",
             "description": null
           }
         },
@@ -187,7 +187,7 @@
             "name": "Voice",
             "position": 5,
             "created_at": "2026-11-03T05:07:25.90933",
-            "updated_at": "2026-11-23T16:15:05.830803",
+            "updated_at": "2026-11-23T21:36:04.341671",
             "description": null
           }
         }
@@ -203,29 +203,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "mZTAb1SMk3QHIwxuf7NptPU1vXU=",
-            "created_at": "2026-11-23T16:15:05.293184",
-            "rotated_at": "2026-11-23T16:15:05.292029",
-            "updated_at": "2026-11-23T16:15:05.293184",
+            "auth_token": "DPd42ac+FBZB93mG0E0rNE0PNgk=",
+            "created_at": "2026-11-23T21:36:00.930455",
+            "rotated_at": "2026-11-23T21:36:00.925822",
+            "updated_at": "2026-11-23T21:36:00.930455",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "mZTAb1SMk3QHIwxuf7NptPU1vXU=",
+            "prev_auth_token": "DPd42ac+FBZB93mG0E0rNE0PNgk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:15:05.808285",
+            "seen_at": "2026-11-23T21:36:04.210378",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "mZTAb1SMk3QHIwxuf7NptPU1vXU=",
-            "created_at": "2026-11-23T16:15:05.293184",
-            "rotated_at": "2026-11-23T16:15:05.292029",
-            "updated_at": "2026-11-23T16:15:05.293184",
+            "auth_token": "DPd42ac+FBZB93mG0E0rNE0PNgk=",
+            "created_at": "2026-11-23T21:36:00.930455",
+            "rotated_at": "2026-11-23T21:36:00.925822",
+            "updated_at": "2026-11-23T21:36:00.930455",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "mZTAb1SMk3QHIwxuf7NptPU1vXU=",
+            "prev_auth_token": "DPd42ac+FBZB93mG0E0rNE0PNgk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -244,7 +244,7 @@
   ],
   "recorded_from": {
     "case": "933eff54e32d97825fa3c6e45b60a91bec80c870f569fe5f0ce107a54e57ab99",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

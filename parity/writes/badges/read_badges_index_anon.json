@@ -7,8 +7,8 @@
       "path": "/badges.json"
     }
   ],
-  "started_at": "2026-11-23T16:31:22.736451",
-  "transaction_started_at": "2026-11-23T16:31:22.008054",
+  "started_at": "2026-11-23T21:45:44.231276",
+  "transaction_started_at": "2026-11-23T21:45:43.420884",
   "responses": [
     {
       "status": 200,
@@ -347,25 +347,6 @@
             "badge_type_id": 3
           },
           {
-            "id": 2,
-            "name": "Member",
-            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> invitations, group messaging, more likes",
-            "grant_count": 4,
-            "allow_title": false,
-            "multiple_grant": false,
-            "icon": "user",
-            "image_url": null,
-            "listable": true,
-            "enabled": true,
-            "badge_grouping_id": 4,
-            "system": true,
-            "long_description": "This badge is granted when you reach trust level 2. Thanks for participating over a period of weeks to truly join our community. You can now send invitations from your user page or individual topics, create group personal messages, and have more likes per day.\n",
-            "slug": "member",
-            "manually_grantable": false,
-            "show_in_post_header": false,
-            "badge_type_id": 3
-          },
-          {
             "id": 4,
             "name": "Leader",
             "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> global edit, pin, close, archive, split and merge, more likes",
@@ -385,20 +366,20 @@
             "badge_type_id": 1
           },
           {
-            "id": 11,
-            "name": "First Like",
-            "description": "Liked a post",
-            "grant_count": 2,
+            "id": 48,
+            "name": "Wiki Editor",
+            "description": "First wiki edit",
+            "grant_count": 0,
             "allow_title": false,
             "multiple_grant": false,
-            "icon": "heart",
+            "icon": "far-pen-to-square",
             "image_url": null,
             "listable": true,
             "enabled": true,
             "badge_grouping_id": 1,
             "system": true,
-            "long_description": "This badge is granted the first time you like a post using the :heart: button. Liking posts is a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun. Share the love!\n",
-            "slug": "first-like",
+            "long_description": "This badge is granted the first time you edit one wiki post.\n",
+            "slug": "wiki-editor",
             "manually_grantable": false,
             "show_in_post_header": false,
             "badge_type_id": 3
@@ -418,25 +399,6 @@
             "system": true,
             "long_description": "This badge is granted when you receive your first like on a post. Congratulations, you’ve posted something that your fellow community members found interesting, cool, or useful!\n",
             "slug": "welcome",
-            "manually_grantable": false,
-            "show_in_post_header": false,
-            "badge_type_id": 3
-          },
-          {
-            "id": 48,
-            "name": "Wiki Editor",
-            "description": "First wiki edit",
-            "grant_count": 0,
-            "allow_title": false,
-            "multiple_grant": false,
-            "icon": "far-pen-to-square",
-            "image_url": null,
-            "listable": true,
-            "enabled": true,
-            "badge_grouping_id": 1,
-            "system": true,
-            "long_description": "This badge is granted the first time you edit one wiki post.\n",
-            "slug": "wiki-editor",
             "manually_grantable": false,
             "show_in_post_header": false,
             "badge_type_id": 3
@@ -1145,6 +1107,44 @@
             "badge_type_id": 1
           },
           {
+            "id": 2,
+            "name": "Member",
+            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> invitations, group messaging, more likes",
+            "grant_count": 4,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "user",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 4,
+            "system": true,
+            "long_description": "This badge is granted when you reach trust level 2. Thanks for participating over a period of weeks to truly join our community. You can now send invitations from your user page or individual topics, create group personal messages, and have more likes per day.\n",
+            "slug": "member",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
+            "id": 11,
+            "name": "First Like",
+            "description": "Liked a post",
+            "grant_count": 2,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "heart",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 1,
+            "system": true,
+            "long_description": "This badge is granted the first time you like a post using the :heart: button. Liking posts is a great way to let your fellow community members know that what they posted was interesting, useful, cool, or fun. Share the love!\n",
+            "slug": "first-like",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          },
+          {
             "id": 3,
             "name": "Regular",
             "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> recategorize, rename, followed links, wiki, more likes",
@@ -1197,7 +1197,7 @@
   ],
   "recorded_from": {
     "case": "53e8dd593d6824b42e67a01441aa72022e548f03afed273390c413bc78b4f87f",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

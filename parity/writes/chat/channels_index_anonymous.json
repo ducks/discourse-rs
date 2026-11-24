@@ -7,8 +7,8 @@
       "path": "/chat/api/channels.json"
     }
   ],
-  "started_at": "2026-11-23T16:36:29.061909",
-  "transaction_started_at": "2026-11-23T16:36:28.22997",
+  "started_at": "2026-11-23T21:46:44.367696",
+  "transaction_started_at": "2026-11-23T21:46:43.345764",
   "responses": [
     {
       "status": 403,
@@ -26,7 +26,7 @@
   "setup": [],
   "recorded_from": {
     "case": "9aeed050821fa257ed6761cb9f62fc9fac25dc67d8b7ceb4d6c998c8d9fdd292",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

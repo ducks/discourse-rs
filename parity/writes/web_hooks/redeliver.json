@@ -36,8 +36,8 @@
       "path": "/admin/api/web_hooks/9001/events/failed_redeliver.json"
     }
   ],
-  "started_at": "2026-11-23T18:20:42.878032",
-  "transaction_started_at": "2026-11-23T18:20:41.942807",
+  "started_at": "2026-11-24T01:26:01.241235",
+  "transaction_started_at": "2026-11-24T01:25:58.272447",
   "responses": [
     {
       "status": 200,
@@ -51,7 +51,7 @@
           "status": 200,
           "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"6\",\"content-type\":\"text/plain\"}",
           "response_body": "thanks",
-          "duration": 26,
+          "duration": 34,
           "created_at": "2026-10-02T10:00:00.000Z",
           "redelivering": false
         }
@@ -98,9 +98,9 @@
       "inserted": [
         {
           "id": 1,
-          "created_at": "2026-11-23T18:20:42.977527",
+          "created_at": "2026-11-24T01:26:01.495571",
           "processing": false,
-          "updated_at": "2026-11-23T18:20:42.977527",
+          "updated_at": "2026-11-24T01:26:01.495571",
           "web_hook_event_id": 9003
         }
       ],
@@ -117,29 +117,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "uM1iuwHeXZ30XpSZ7eY+Jo+D9zA=",
-            "created_at": "2026-11-23T18:20:42.34894",
-            "rotated_at": "2026-11-23T18:20:42.347901",
-            "updated_at": "2026-11-23T18:20:42.34894",
+            "auth_token": "pRehS3dqKcnukdphOmGwz/zVJec=",
+            "created_at": "2026-11-24T01:25:59.63485",
+            "rotated_at": "2026-11-24T01:25:59.629561",
+            "updated_at": "2026-11-24T01:25:59.63485",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "uM1iuwHeXZ30XpSZ7eY+Jo+D9zA=",
+            "prev_auth_token": "pRehS3dqKcnukdphOmGwz/zVJec=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T18:20:42.883857",
+            "seen_at": "2026-11-24T01:26:01.269366",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "uM1iuwHeXZ30XpSZ7eY+Jo+D9zA=",
-            "created_at": "2026-11-23T18:20:42.34894",
-            "rotated_at": "2026-11-23T18:20:42.347901",
-            "updated_at": "2026-11-23T18:20:42.34894",
+            "auth_token": "pRehS3dqKcnukdphOmGwz/zVJec=",
+            "created_at": "2026-11-24T01:25:59.63485",
+            "rotated_at": "2026-11-24T01:25:59.629561",
+            "updated_at": "2026-11-24T01:25:59.63485",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "uM1iuwHeXZ30XpSZ7eY+Jo+D9zA=",
+            "prev_auth_token": "pRehS3dqKcnukdphOmGwz/zVJec=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -169,9 +169,9 @@
             "status": 200,
             "headers": "{\"Accept\":\"*/*\",\"Content-Type\":\"application/json\",\"X-Discourse-Event-Id\":\"9001\",\"X-Discourse-Event-Type\":\"post\"}",
             "payload": "{\"post\":{\"id\":1}}",
-            "duration": 26,
+            "duration": 34,
             "created_at": "2026-10-02T10:00:00",
-            "updated_at": "2026-11-23T18:20:42.922457",
+            "updated_at": "2026-11-24T01:26:01.399612",
             "web_hook_id": 9001,
             "response_body": "thanks",
             "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"6\",\"content-type\":\"text/plain\"}"
@@ -203,7 +203,7 @@
             "secret": "",
             "status": 1,
             "created_at": "2026-10-01T10:00:00",
-            "updated_at": "2026-11-23T18:20:42.927547",
+            "updated_at": "2026-11-24T01:26:01.408481",
             "payload_url": "http://fixtures.localhost:8099/hook",
             "content_type": 1,
             "wildcard_web_hook": false,
@@ -241,7 +241,7 @@
   },
   "recorded_from": {
     "case": "83329374548fd8f9f741a05d83336be17bb107a52303fa4145389d3c3416c3b7",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

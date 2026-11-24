@@ -7,8 +7,8 @@
       "path": "/groups/9001/join.json"
     }
   ],
-  "started_at": "2026-11-23T16:58:13.50169",
-  "transaction_started_at": "2026-11-23T16:58:12.881728",
+  "started_at": "2026-11-23T21:54:32.307182",
+  "transaction_started_at": "2026-11-23T21:54:29.036526",
   "responses": [
     {
       "status": 403,
@@ -28,7 +28,7 @@
   ],
   "recorded_from": {
     "case": "c7e238a27a268c51025408d574b8bf1408e80148779c5d5ba4627e488ac82cac",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

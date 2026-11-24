@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T17:14:55.897517",
-  "transaction_started_at": "2026-11-23T17:14:54.851921",
+  "started_at": "2026-11-23T22:12:48.625507",
+  "transaction_started_at": "2026-11-23T22:12:42.831598",
   "responses": [
     {
       "status": 200,
@@ -29,8 +29,8 @@
           "name": "notice",
           "value": "{\"type\":\"custom\",\"raw\":\"New note\",\"cooked\":\"\\u003cp\\u003eNew note\\u003c/p\\u003e\",\"created_by_user_id\":1}",
           "post_id": 36,
-          "created_at": "2026-11-23T17:14:56.9975",
-          "updated_at": "2026-11-23T17:14:56.9975"
+          "created_at": "2026-11-23T22:12:54.484149",
+          "updated_at": "2026-11-23T22:12:54.484149"
         }
       ],
       "deleted": [
@@ -39,7 +39,7 @@
           "name": "notice",
           "value": "{\"type\":\"custom\",\"raw\":\"Old note\",\"cooked\":\"<p>Old note</p>\",\"created_by_user_id\":1}",
           "post_id": 36,
-          "created_at": "2026-11-23T16:08:31.799533",
+          "created_at": "2026-11-23T20:53:07.493576",
           "updated_at": "2026-10-05T10:00:00"
         }
       ],
@@ -55,29 +55,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Shhkl1fg0z5DLhQBoYggQLyUCqE=",
-            "created_at": "2026-11-23T17:14:55.226921",
-            "rotated_at": "2026-11-23T17:14:55.2257",
-            "updated_at": "2026-11-23T17:14:55.226921",
+            "auth_token": "dOhPoL3NyTOivQ37VWLyAVxlB8s=",
+            "created_at": "2026-11-23T22:12:44.937762",
+            "rotated_at": "2026-11-23T22:12:44.932457",
+            "updated_at": "2026-11-23T22:12:44.937762",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Shhkl1fg0z5DLhQBoYggQLyUCqE=",
+            "prev_auth_token": "dOhPoL3NyTOivQ37VWLyAVxlB8s=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:14:55.904563",
+            "seen_at": "2026-11-23T22:12:48.666192",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Shhkl1fg0z5DLhQBoYggQLyUCqE=",
-            "created_at": "2026-11-23T17:14:55.226921",
-            "rotated_at": "2026-11-23T17:14:55.2257",
-            "updated_at": "2026-11-23T17:14:55.226921",
+            "auth_token": "dOhPoL3NyTOivQ37VWLyAVxlB8s=",
+            "created_at": "2026-11-23T22:12:44.937762",
+            "rotated_at": "2026-11-23T22:12:44.932457",
+            "updated_at": "2026-11-23T22:12:44.937762",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Shhkl1fg0z5DLhQBoYggQLyUCqE=",
+            "prev_auth_token": "dOhPoL3NyTOivQ37VWLyAVxlB8s=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -88,7 +88,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 95,
           "context": null,
@@ -98,10 +98,10 @@
           "topic_id": null,
           "new_value": "New note",
           "admin_only": false,
-          "created_at": "2026-11-23T17:14:57.001238",
+          "created_at": "2026-11-23T22:12:54.502499",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:14:57.001238",
+          "updated_at": "2026-11-23T22:12:54.502499",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -117,14 +117,14 @@
   "jobs": [],
   "next_ids": {
     "post_custom_fields": 4,
-    "user_histories": 66
+    "user_histories": 69
   },
   "setup": [
     "UPDATE post_custom_fields SET value = '{\"type\":\"custom\",\"raw\":\"Old note\",\"cooked\":\"<p>Old note</p>\",\"created_by_user_id\":1}', updated_at = '2026-10-05 10:00:00' WHERE post_id = 36 AND name = 'notice'"
   ],
   "recorded_from": {
     "case": "967aa7880ad623d16af8b242545ce69047d7ffb680d11aa047dc026834854db9",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

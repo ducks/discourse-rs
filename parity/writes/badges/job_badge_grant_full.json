@@ -2,64 +2,14 @@
   "name": "job_badge_grant_full",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T16:31:08.298976",
-  "transaction_started_at": "2026-11-23T16:31:07.680774",
+  "started_at": "2026-11-23T21:45:30.293209",
+  "transaction_started_at": "2026-11-23T21:45:29.473147",
   "responses": [],
   "changes": {
     "badges": {
       "inserted": [],
       "deleted": [],
       "updated": [
-        {
-          "before": {
-            "id": 40,
-            "icon": "at",
-            "name": "First Mention",
-            "query": "SELECT acting_user_id AS user_id, min(target_post_id) AS post_id, min(p.created_at) AS granted_at\nFROM user_actions\nJOIN posts p ON p.id = target_post_id\nJOIN topics t ON t.id = topic_id\nJOIN categories c on c.id = category_id\nWHERE action_type = 7\n  AND NOT read_restricted\n  AND p.deleted_at IS  NULL\n  AND t.deleted_at IS  NULL\n  AND t.visible\n  AND t.archetype <> 'private_message'\n  AND (:backfill OR p.id IN (:post_ids))\nGROUP BY acting_user_id\n",
-            "system": true,
-            "enabled": true,
-            "trigger": 2,
-            "listable": true,
-            "created_at": "2026-11-03T05:07:09.938947",
-            "show_posts": true,
-            "updated_at": "2026-11-23T16:08:50.082589",
-            "allow_title": false,
-            "auto_revoke": true,
-            "description": null,
-            "grant_count": 0,
-            "target_posts": true,
-            "badge_type_id": 3,
-            "multiple_grant": false,
-            "image_upload_id": null,
-            "long_description": null,
-            "badge_grouping_id": 1,
-            "show_in_post_header": false
-          },
-          "after": {
-            "id": 40,
-            "icon": "at",
-            "name": "First Mention",
-            "query": "SELECT acting_user_id AS user_id, min(target_post_id) AS post_id, min(p.created_at) AS granted_at\nFROM user_actions\nJOIN posts p ON p.id = target_post_id\nJOIN topics t ON t.id = topic_id\nJOIN categories c on c.id = category_id\nWHERE action_type = 7\n  AND NOT read_restricted\n  AND p.deleted_at IS  NULL\n  AND t.deleted_at IS  NULL\n  AND t.visible\n  AND t.archetype <> 'private_message'\n  AND (:backfill OR p.id IN (:post_ids))\nGROUP BY acting_user_id\n",
-            "system": true,
-            "enabled": true,
-            "trigger": 2,
-            "listable": true,
-            "created_at": "2026-11-03T05:07:09.938947",
-            "show_posts": true,
-            "updated_at": "2026-11-23T16:31:08.543849",
-            "allow_title": false,
-            "auto_revoke": true,
-            "description": null,
-            "grant_count": 1,
-            "target_posts": true,
-            "badge_type_id": 3,
-            "multiple_grant": false,
-            "image_upload_id": null,
-            "long_description": null,
-            "badge_grouping_id": 1,
-            "show_in_post_header": false
-          }
-        },
         {
           "before": {
             "id": 11,
@@ -72,7 +22,7 @@
             "listable": true,
             "created_at": "2026-11-03T05:07:09.797126",
             "show_posts": true,
-            "updated_at": "2026-11-23T16:08:49.907488",
+            "updated_at": "2026-11-23T20:53:28.388417",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
@@ -96,7 +46,7 @@
             "listable": true,
             "created_at": "2026-11-03T05:07:09.797126",
             "show_posts": true,
-            "updated_at": "2026-11-23T16:31:08.550921",
+            "updated_at": "2026-11-23T21:45:30.624409",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
@@ -109,11 +59,94 @@
             "badge_grouping_id": 1,
             "show_in_post_header": false
           }
+        },
+        {
+          "before": {
+            "id": 40,
+            "icon": "at",
+            "name": "First Mention",
+            "query": "SELECT acting_user_id AS user_id, min(target_post_id) AS post_id, min(p.created_at) AS granted_at\nFROM user_actions\nJOIN posts p ON p.id = target_post_id\nJOIN topics t ON t.id = topic_id\nJOIN categories c on c.id = category_id\nWHERE action_type = 7\n  AND NOT read_restricted\n  AND p.deleted_at IS  NULL\n  AND t.deleted_at IS  NULL\n  AND t.visible\n  AND t.archetype <> 'private_message'\n  AND (:backfill OR p.id IN (:post_ids))\nGROUP BY acting_user_id\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 2,
+            "listable": true,
+            "created_at": "2026-11-03T05:07:09.938947",
+            "show_posts": true,
+            "updated_at": "2026-11-23T20:53:28.599528",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 0,
+            "target_posts": true,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          },
+          "after": {
+            "id": 40,
+            "icon": "at",
+            "name": "First Mention",
+            "query": "SELECT acting_user_id AS user_id, min(target_post_id) AS post_id, min(p.created_at) AS granted_at\nFROM user_actions\nJOIN posts p ON p.id = target_post_id\nJOIN topics t ON t.id = topic_id\nJOIN categories c on c.id = category_id\nWHERE action_type = 7\n  AND NOT read_restricted\n  AND p.deleted_at IS  NULL\n  AND t.deleted_at IS  NULL\n  AND t.visible\n  AND t.archetype <> 'private_message'\n  AND (:backfill OR p.id IN (:post_ids))\nGROUP BY acting_user_id\n",
+            "system": true,
+            "enabled": true,
+            "trigger": 2,
+            "listable": true,
+            "created_at": "2026-11-03T05:07:09.938947",
+            "show_posts": true,
+            "updated_at": "2026-11-23T21:45:30.649305",
+            "allow_title": false,
+            "auto_revoke": true,
+            "description": null,
+            "grant_count": 1,
+            "target_posts": true,
+            "badge_type_id": 3,
+            "multiple_grant": false,
+            "image_upload_id": null,
+            "long_description": null,
+            "badge_grouping_id": 1,
+            "show_in_post_header": false
+          }
         }
       ]
     },
+    "notifications": {
+      "inserted": [
+        {
+          "id": 32,
+          "data": "{\"badge_id\":40,\"badge_name\":\"First Mention\",\"badge_slug\":\"first-mention\",\"badge_title\":false,\"username\":\"user0\"}",
+          "read": false,
+          "user_id": 2,
+          "topic_id": null,
+          "created_at": "2026-11-23T21:45:30.631837",
+          "updated_at": "2026-11-23T21:45:30.631837",
+          "post_number": null,
+          "high_priority": false,
+          "post_action_id": null,
+          "notification_type": 12
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
     "user_badges": {
-      "inserted": [],
+      "inserted": [
+        {
+          "id": 20,
+          "seq": 0,
+          "post_id": 52,
+          "user_id": 2,
+          "badge_id": 40,
+          "created_at": "2026-11-23T21:45:29.473147",
+          "granted_at": "2026-11-23T20:53:20.972537",
+          "is_favorite": null,
+          "featured_rank": 2,
+          "granted_by_id": -1,
+          "notification_id": 32
+        }
+      ],
       "deleted": [
         {
           "id": 901,
@@ -121,8 +154,8 @@
           "post_id": 52,
           "user_id": 5,
           "badge_id": 11,
-          "created_at": "2026-11-20T16:31:07.680774",
-          "granted_at": "2026-11-20T16:31:07.680774",
+          "created_at": "2026-11-20T21:45:29.473147",
+          "granted_at": "2026-11-20T21:45:29.473147",
           "is_favorite": null,
           "featured_rank": null,
           "granted_by_id": -1,
@@ -132,114 +165,58 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 15,
             "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
+            "post_id": 36,
+            "user_id": 2,
+            "badge_id": 11,
+            "created_at": "2026-11-23T20:53:28.348272",
+            "granted_at": "2026-11-23T20:53:21.124098",
             "is_favorite": null,
             "featured_rank": null,
             "granted_by_id": -1,
-            "notification_id": 18
+            "notification_id": 28
           },
           "after": {
-            "id": 1,
+            "id": 15,
             "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
-            "is_favorite": null,
-            "featured_rank": 4,
-            "granted_by_id": -1,
-            "notification_id": 18
-          }
-        },
-        {
-          "before": {
-            "id": 6,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 2,
-            "created_at": "2026-11-23T16:08:49.815478",
-            "granted_at": "2026-11-23T16:08:49.815478",
-            "is_favorite": null,
-            "featured_rank": null,
-            "granted_by_id": -1,
-            "notification_id": 22
-          },
-          "after": {
-            "id": 6,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 2,
-            "created_at": "2026-11-23T16:08:49.815478",
-            "granted_at": "2026-11-23T16:08:49.815478",
+            "post_id": 36,
+            "user_id": 2,
+            "badge_id": 11,
+            "created_at": "2026-11-23T20:53:28.348272",
+            "granted_at": "2026-11-23T20:53:21.124098",
             "is_favorite": null,
             "featured_rank": 3,
             "granted_by_id": -1,
-            "notification_id": 22
+            "notification_id": 28
           }
         },
         {
           "before": {
-            "id": 10,
+            "id": 17,
             "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 3,
-            "created_at": "2026-11-23T16:08:49.841615",
-            "granted_at": "2026-11-23T16:08:49.841615",
-            "is_favorite": null,
-            "featured_rank": null,
-            "granted_by_id": -1,
-            "notification_id": 24
-          },
-          "after": {
-            "id": 10,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 3,
-            "created_at": "2026-11-23T16:08:49.841615",
-            "granted_at": "2026-11-23T16:08:49.841615",
+            "post_id": 46,
+            "user_id": 2,
+            "badge_id": 5,
+            "created_at": "2026-11-23T20:53:28.427183",
+            "granted_at": "2026-11-23T20:53:12.898658",
             "is_favorite": null,
             "featured_rank": 2,
             "granted_by_id": -1,
-            "notification_id": 24
-          }
-        },
-        {
-          "before": {
-            "id": 12,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 4,
-            "created_at": "2026-11-23T16:08:49.852315",
-            "granted_at": "2026-11-23T16:08:49.852315",
-            "is_favorite": null,
-            "featured_rank": null,
-            "granted_by_id": -1,
-            "notification_id": 25
+            "notification_id": 30
           },
           "after": {
-            "id": 12,
+            "id": 17,
             "seq": 0,
-            "post_id": null,
-            "user_id": 5,
-            "badge_id": 4,
-            "created_at": "2026-11-23T16:08:49.852315",
-            "granted_at": "2026-11-23T16:08:49.852315",
+            "post_id": 46,
+            "user_id": 2,
+            "badge_id": 5,
+            "created_at": "2026-11-23T20:53:28.427183",
+            "granted_at": "2026-11-23T20:53:12.898658",
             "is_favorite": null,
-            "featured_rank": 1,
+            "featured_rank": 4,
             "granted_by_id": -1,
-            "notification_id": 25
+            "notification_id": 30
           }
         }
       ]
@@ -250,55 +227,55 @@
       "updated": [
         {
           "before": {
-            "user_id": 5,
+            "user_id": 2,
             "read_faq": null,
-            "new_since": "2026-11-03T05:08:01.056554",
+            "new_since": "2026-11-03T05:08:00.230026",
             "time_read": 0,
-            "post_count": 0,
+            "post_count": 1,
             "draft_count": 0,
-            "likes_given": 0,
-            "topic_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 0,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
-            "likes_received": 0,
+            "likes_received": 1,
             "topics_entered": 0,
-            "first_unread_at": "2026-11-03T05:08:00.933794",
+            "first_unread_at": "2026-11-03T05:08:00.103863",
             "flags_disagreed": 0,
             "post_edits_count": null,
-            "posts_read_count": 0,
-            "first_unread_pm_at": "2026-11-03T05:08:00.933794",
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
-            "distinct_badge_count": 0,
-            "first_post_created_at": null,
+            "distinct_badge_count": 3,
+            "first_post_created_at": "2026-11-23T20:53:06.839754",
             "reset_bounce_score_after": null
           },
           "after": {
-            "user_id": 5,
+            "user_id": 2,
             "read_faq": null,
-            "new_since": "2026-11-03T05:08:01.056554",
+            "new_since": "2026-11-03T05:08:00.230026",
             "time_read": 0,
-            "post_count": 0,
+            "post_count": 1,
             "draft_count": 0,
-            "likes_given": 0,
-            "topic_count": 0,
+            "likes_given": 1,
+            "topic_count": 2,
             "bounce_score": 0,
-            "days_visited": 0,
+            "days_visited": 1,
             "flags_agreed": 0,
             "flags_ignored": 0,
-            "likes_received": 0,
+            "likes_received": 1,
             "topics_entered": 0,
-            "first_unread_at": "2026-11-03T05:08:00.933794",
+            "first_unread_at": "2026-11-03T05:08:00.103863",
             "flags_disagreed": 0,
             "post_edits_count": null,
-            "posts_read_count": 0,
-            "first_unread_pm_at": "2026-11-03T05:08:00.933794",
+            "posts_read_count": 3,
+            "first_unread_pm_at": "2026-11-03T05:08:00.103863",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
             "distinct_badge_count": 4,
-            "first_post_created_at": null,
+            "first_post_created_at": "2026-11-23T20:53:06.839754",
             "reset_bounce_score_after": null
           }
         }
@@ -306,7 +283,10 @@
     }
   },
   "jobs": [],
-  "next_ids": {},
+  "next_ids": {
+    "notifications": 32,
+    "user_badges": 20
+  },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",
     "UPDATE badges SET grant_count = 0 WHERE id = 40",
@@ -415,25 +395,19 @@
     [
       "backfill_badge",
       {
-        "badge_id": 2
-      }
-    ],
-    [
-      "backfill_badge",
-      {
         "badge_id": 4
       }
     ],
     [
       "backfill_badge",
       {
-        "badge_id": 5
+        "badge_id": 48
       }
     ],
     [
       "backfill_badge",
       {
-        "badge_id": 48
+        "badge_id": 5
       }
     ],
     [
@@ -661,13 +635,13 @@
     [
       "backfill_badge",
       {
-        "badge_id": 3
+        "badge_id": 2
       }
     ],
     [
       "backfill_badge",
       {
-        "badge_id": 40
+        "badge_id": 3
       }
     ],
     [
@@ -675,11 +649,17 @@
       {
         "badge_id": 11
       }
+    ],
+    [
+      "backfill_badge",
+      {
+        "badge_id": 40
+      }
     ]
   ],
   "recorded_from": {
     "case": "133c32ec0dc51650a3780be474f2162bcdea7a47ad66fbe67e0fbce974aa6d5d",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

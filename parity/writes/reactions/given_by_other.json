@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T17:25:36.672131",
-  "transaction_started_at": "2026-11-23T17:25:35.761302",
+  "started_at": "2026-11-23T22:25:10.27953",
+  "transaction_started_at": "2026-11-23T22:25:09.213358",
   "responses": [
     {
       "status": 200,
@@ -20,7 +20,7 @@
           "id": 5,
           "user_id": 3,
           "post_id": 52,
-          "created_at": "2026-11-23T17:05:35.761Z",
+          "created_at": "2026-11-23T22:05:09.213Z",
           "user": {
             "id": 3,
             "username": "user1",
@@ -32,7 +32,7 @@
           "post": {
             "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
             "id": 52,
-            "created_at": "2026-11-23T16:08:43.039Z",
+            "created_at": "2026-11-23T20:53:20.972Z",
             "topic_id": 35,
             "topic_title": "Parity fixture: replies and posters",
             "topic_slug": "parity-fixture-replies-and-posters",
@@ -70,14 +70,14 @@
             "reaction_type": "emoji",
             "reaction_value": "hugs",
             "reaction_users_count": 1,
-            "created_at": "2026-11-23T17:05:35.761Z"
+            "created_at": "2026-11-23T22:05:09.213Z"
           }
         },
         {
           "id": 1,
           "user_id": 3,
           "post_id": 35,
-          "created_at": "2026-11-23T16:25:35.761Z",
+          "created_at": "2026-11-23T21:25:09.213Z",
           "user": {
             "id": 3,
             "username": "user1",
@@ -89,7 +89,7 @@
           "post": {
             "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "id": 35,
-            "created_at": "2026-11-23T16:08:31.163Z",
+            "created_at": "2026-11-23T20:53:06.839Z",
             "topic_id": 35,
             "topic_title": "Parity fixture: replies and posters",
             "topic_slug": "parity-fixture-replies-and-posters",
@@ -127,7 +127,7 @@
             "reaction_type": "emoji",
             "reaction_value": "clap",
             "reaction_users_count": 2,
-            "created_at": "2026-11-23T16:25:35.761Z"
+            "created_at": "2026-11-23T21:25:09.213Z"
           }
         }
       ]
@@ -144,29 +144,29 @@
             "seen_at": null,
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "t6pYE0KKEqLWCZibfDCTqLraT9A=",
-            "created_at": "2026-11-23T17:25:36.144779",
-            "rotated_at": "2026-11-23T17:25:36.143884",
-            "updated_at": "2026-11-23T17:25:36.144779",
+            "auth_token": "1gyoKlhIvB7xWSCpVNp2xMpt6kk=",
+            "created_at": "2026-11-23T22:25:09.601896",
+            "rotated_at": "2026-11-23T22:25:09.60076",
+            "updated_at": "2026-11-23T22:25:09.601896",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "t6pYE0KKEqLWCZibfDCTqLraT9A=",
+            "prev_auth_token": "1gyoKlhIvB7xWSCpVNp2xMpt6kk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:25:36.681191",
+            "seen_at": "2026-11-23T22:25:10.291673",
             "user_id": 4,
             "client_ip": "127.0.0.1",
-            "auth_token": "t6pYE0KKEqLWCZibfDCTqLraT9A=",
-            "created_at": "2026-11-23T17:25:36.144779",
-            "rotated_at": "2026-11-23T17:25:36.143884",
-            "updated_at": "2026-11-23T17:25:36.144779",
+            "auth_token": "1gyoKlhIvB7xWSCpVNp2xMpt6kk=",
+            "created_at": "2026-11-23T22:25:09.601896",
+            "rotated_at": "2026-11-23T22:25:09.60076",
+            "updated_at": "2026-11-23T22:25:09.601896",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "t6pYE0KKEqLWCZibfDCTqLraT9A=",
+            "prev_auth_token": "1gyoKlhIvB7xWSCpVNp2xMpt6kk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -204,7 +204,7 @@
   ],
   "recorded_from": {
     "case": "588f234066c0907b3f4242705640c40cbde51cba81fe3981b26d95075fc7310a",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

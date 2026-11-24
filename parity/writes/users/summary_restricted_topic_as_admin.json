@@ -11,8 +11,8 @@
       "path": "/user_actions.json?username=user0&filter=4,5"
     }
   ],
-  "started_at": "2026-11-23T18:13:29.782934",
-  "transaction_started_at": "2026-11-23T18:13:28.836663",
+  "started_at": "2026-11-24T01:24:57.540648",
+  "transaction_started_at": "2026-11-24T01:24:56.504042",
   "responses": [
     {
       "status": 200,
@@ -26,7 +26,7 @@
             "posts_count": 1,
             "category_id": 3,
             "like_count": 1,
-            "created_at": "2026-11-23T16:08:36.074Z",
+            "created_at": "2026-11-23T20:53:12.478Z",
             "has_accepted_answer": false
           },
           {
@@ -37,8 +37,53 @@
             "posts_count": 5,
             "category_id": 4,
             "like_count": 1,
-            "created_at": "2026-11-23T16:08:31.048Z",
+            "created_at": "2026-11-23T20:53:06.673Z",
             "has_accepted_answer": false
+          }
+        ],
+        "badges": [
+          {
+            "id": 1,
+            "name": "Basic",
+            "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> all essential community functions",
+            "grant_count": 5,
+            "allow_title": false,
+            "multiple_grant": false,
+            "icon": "user",
+            "image_url": null,
+            "listable": true,
+            "enabled": true,
+            "badge_grouping_id": 4,
+            "system": true,
+            "slug": "basic",
+            "manually_grantable": false,
+            "show_in_post_header": false,
+            "badge_type_id": 3
+          }
+        ],
+        "badge_types": [
+          {
+            "id": 3,
+            "name": "Bronze",
+            "sort_order": 7
+          }
+        ],
+        "users": [
+          {
+            "id": 2,
+            "username": "user0",
+            "name": "User0",
+            "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
+            "trust_level": 1
+          },
+          {
+            "id": -1,
+            "username": "system",
+            "name": "system",
+            "avatar_template": "/images/discourse-logo-sketch-small.png",
+            "admin": true,
+            "moderator": true,
+            "trust_level": 4
           }
         ],
         "user_summary": {
@@ -62,7 +107,7 @@
             {
               "post_number": 5,
               "like_count": 0,
-              "created_at": "2026-11-23T16:08:43.039Z",
+              "created_at": "2026-11-23T20:53:20.972Z",
               "topic_id": 35
             }
           ],
@@ -102,7 +147,17 @@
             }
           ],
           "most_replied_to_users": [],
-          "badges": [],
+          "badges": [
+            {
+              "id": 2,
+              "granted_at": "2026-11-23T20:51:22.940Z",
+              "created_at": "2026-11-23T20:51:22.940Z",
+              "count": 1,
+              "badge_id": 1,
+              "user_id": 2,
+              "granted_by_id": -1
+            }
+          ],
           "top_categories": [
             {
               "topic_count": 1,
@@ -143,7 +198,7 @@
           {
             "excerpt": "Reply from user0 mentioning <a class=\"mention\" href=\"/u/user1\">@user1</a> so a mention notification exists.",
             "action_type": 5,
-            "created_at": "2026-11-23T16:08:43.039Z",
+            "created_at": "2026-11-23T20:53:20.972Z",
             "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "acting_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "slug": "parity-fixture-replies-and-posters",
@@ -172,7 +227,7 @@
           {
             "excerpt": "An archived topic whose first post got a like, for like_count and op_like_count.",
             "action_type": 4,
-            "created_at": "2026-11-23T16:08:36.074Z",
+            "created_at": "2026-11-23T20:53:12.478Z",
             "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "acting_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "slug": "parity-fixture-liked-and-archived",
@@ -200,7 +255,7 @@
           {
             "excerpt": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "action_type": 4,
-            "created_at": "2026-11-23T16:08:31.048Z",
+            "created_at": "2026-11-23T20:53:06.673Z",
             "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "acting_avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
             "slug": "parity-fixture-replies-and-posters",
@@ -240,29 +295,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ph1N67AA+BVjMoJZbq4qJCNwJzE=",
-            "created_at": "2026-11-23T18:13:29.254972",
-            "rotated_at": "2026-11-23T18:13:29.252986",
-            "updated_at": "2026-11-23T18:13:29.254972",
+            "auth_token": "Wv4Wr8t1RnLxaWPg+HiIhmlXfxk=",
+            "created_at": "2026-11-24T01:24:56.895446",
+            "rotated_at": "2026-11-24T01:24:56.893271",
+            "updated_at": "2026-11-24T01:24:56.895446",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ph1N67AA+BVjMoJZbq4qJCNwJzE=",
+            "prev_auth_token": "Wv4Wr8t1RnLxaWPg+HiIhmlXfxk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T18:13:29.790358",
+            "seen_at": "2026-11-24T01:24:57.551359",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ph1N67AA+BVjMoJZbq4qJCNwJzE=",
-            "created_at": "2026-11-23T18:13:29.254972",
-            "rotated_at": "2026-11-23T18:13:29.252986",
-            "updated_at": "2026-11-23T18:13:29.254972",
+            "auth_token": "Wv4Wr8t1RnLxaWPg+HiIhmlXfxk=",
+            "created_at": "2026-11-24T01:24:56.895446",
+            "rotated_at": "2026-11-24T01:24:56.893271",
+            "updated_at": "2026-11-24T01:24:56.895446",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ph1N67AA+BVjMoJZbq4qJCNwJzE=",
+            "prev_auth_token": "Wv4Wr8t1RnLxaWPg+HiIhmlXfxk=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -278,7 +333,7 @@
   ],
   "recorded_from": {
     "case": "0c5b222cd5c7948ff0a93e6c51e2a05a43b5bc0b785e8cd1340eccec5d0653c2",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

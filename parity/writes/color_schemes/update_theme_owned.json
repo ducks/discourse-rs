@@ -66,8 +66,8 @@
       "path": "/admin/color_schemes/3.json"
     }
   ],
-  "started_at": "2026-11-23T16:46:22.912377",
-  "transaction_started_at": "2026-11-23T16:46:22.044979",
+  "started_at": "2026-11-23T21:50:15.089729",
+  "transaction_started_at": "2026-11-23T21:50:13.66444",
   "responses": [
     {
       "status": 200,
@@ -480,104 +480,104 @@
           "id": 325,
           "hex": "1a1a1a",
           "name": "primary",
-          "created_at": "2026-11-23T16:46:24.627704",
-          "updated_at": "2026-11-23T16:46:24.627704",
+          "created_at": "2026-11-23T21:50:17.221968",
+          "updated_at": "2026-11-23T21:50:17.221968",
           "color_scheme_id": 19
         },
         {
           "id": 326,
           "hex": "ffffff",
           "name": "secondary",
-          "created_at": "2026-11-23T16:46:24.629127",
-          "updated_at": "2026-11-23T16:46:24.629127",
+          "created_at": "2026-11-23T21:50:17.223624",
+          "updated_at": "2026-11-23T21:50:17.223624",
           "color_scheme_id": 19
         },
         {
           "id": 327,
           "hex": "1f7bc1",
           "name": "tertiary",
-          "created_at": "2026-11-23T16:46:24.630587",
-          "updated_at": "2026-11-23T16:46:24.630587",
+          "created_at": "2026-11-23T21:50:17.224992",
+          "updated_at": "2026-11-23T21:50:17.224992",
           "color_scheme_id": 19
         },
         {
           "id": 328,
           "hex": "e45735",
           "name": "quaternary",
-          "created_at": "2026-11-23T16:46:24.631834",
-          "updated_at": "2026-11-23T16:46:24.631834",
+          "created_at": "2026-11-23T21:50:17.226836",
+          "updated_at": "2026-11-23T21:50:17.226836",
           "color_scheme_id": 19
         },
         {
           "id": 329,
           "hex": "ffffff",
           "name": "header_background",
-          "created_at": "2026-11-23T16:46:24.633211",
-          "updated_at": "2026-11-23T16:46:24.633211",
+          "created_at": "2026-11-23T21:50:17.227877",
+          "updated_at": "2026-11-23T21:50:17.227877",
           "color_scheme_id": 19
         },
         {
           "id": 330,
           "hex": "1a1a1a",
           "name": "header_primary",
-          "created_at": "2026-11-23T16:46:24.634293",
-          "updated_at": "2026-11-23T16:46:24.634293",
+          "created_at": "2026-11-23T21:50:17.229264",
+          "updated_at": "2026-11-23T21:50:17.229264",
           "color_scheme_id": 19
         },
         {
           "id": 331,
           "hex": "ffff4d",
           "name": "highlight",
-          "created_at": "2026-11-23T16:46:24.635332",
-          "updated_at": "2026-11-23T16:46:24.635332",
+          "created_at": "2026-11-23T21:50:17.231175",
+          "updated_at": "2026-11-23T21:50:17.231175",
           "color_scheme_id": 19
         },
         {
           "id": 332,
           "hex": "c7e3ff",
           "name": "selected",
-          "created_at": "2026-11-23T16:46:24.636703",
-          "updated_at": "2026-11-23T16:46:24.636703",
+          "created_at": "2026-11-23T21:50:17.233483",
+          "updated_at": "2026-11-23T21:50:17.233483",
           "color_scheme_id": 19
         },
         {
           "id": 333,
           "hex": "d6ebff",
           "name": "hover",
-          "created_at": "2026-11-23T16:46:24.638115",
-          "updated_at": "2026-11-23T16:46:24.638115",
+          "created_at": "2026-11-23T21:50:17.235698",
+          "updated_at": "2026-11-23T21:50:17.235698",
           "color_scheme_id": 19
         },
         {
           "id": 334,
           "hex": "c80001",
           "name": "danger",
-          "created_at": "2026-11-23T16:46:24.639378",
-          "updated_at": "2026-11-23T16:46:24.639378",
+          "created_at": "2026-11-23T21:50:17.239118",
+          "updated_at": "2026-11-23T21:50:17.239118",
           "color_scheme_id": 19
         },
         {
           "id": 335,
           "hex": "090",
           "name": "success",
-          "created_at": "2026-11-23T16:46:24.640746",
-          "updated_at": "2026-11-23T16:46:24.640746",
+          "created_at": "2026-11-23T21:50:17.241506",
+          "updated_at": "2026-11-23T21:50:17.241506",
           "color_scheme_id": 19
         },
         {
           "id": 336,
           "hex": "fa6c8d",
           "name": "love",
-          "created_at": "2026-11-23T16:46:24.641881",
-          "updated_at": "2026-11-23T16:46:24.641881",
+          "created_at": "2026-11-23T21:50:17.244262",
+          "updated_at": "2026-11-23T21:50:17.244262",
           "color_scheme_id": 19
         },
         {
           "id": 337,
           "hex": "1f7bc1",
           "name": "tertiary-med-or-tertiary",
-          "created_at": "2026-11-23T16:46:24.642953",
-          "updated_at": "2026-11-23T16:46:24.642953",
+          "created_at": "2026-11-23T21:50:17.24654",
+          "updated_at": "2026-11-23T21:50:17.24654",
           "color_scheme_id": 19
         }
       ],
@@ -597,7 +597,7 @@
             "hex": "123456",
             "name": "primary",
             "created_at": "2026-11-03T05:07:14.624",
-            "updated_at": "2026-11-23T16:46:24.64842",
+            "updated_at": "2026-11-23T21:50:17.256569",
             "color_scheme_id": 3
           }
         },
@@ -615,7 +615,7 @@
             "hex": "fefefe",
             "name": "secondary",
             "created_at": "2026-11-03T05:07:14.625547",
-            "updated_at": "2026-11-23T16:46:24.736432",
+            "updated_at": "2026-11-23T21:50:17.398944",
             "color_scheme_id": 3
           }
         }
@@ -628,8 +628,8 @@
           "name": "Royal",
           "version": 1,
           "theme_id": -2,
-          "created_at": "2026-11-23T16:46:24.626191",
-          "updated_at": "2026-11-23T16:46:24.626191",
+          "created_at": "2026-11-23T21:50:17.220169",
+          "updated_at": "2026-11-23T21:50:17.220169",
           "via_wizard": false,
           "remote_copy": true,
           "base_scheme_id": null,
@@ -657,7 +657,7 @@
             "version": 4,
             "theme_id": -2,
             "created_at": "2026-11-03T05:07:14.622576",
-            "updated_at": "2026-11-23T16:46:24.737897",
+            "updated_at": "2026-11-23T21:50:17.401909",
             "via_wizard": false,
             "remote_copy": false,
             "base_scheme_id": 19,
@@ -676,29 +676,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "GbQtlXcvVe2L+0X1tEdpWSuOSDU=",
-            "created_at": "2026-11-23T16:46:22.413881",
-            "rotated_at": "2026-11-23T16:46:22.412978",
-            "updated_at": "2026-11-23T16:46:22.413881",
+            "auth_token": "qS0cBc8atOCoQeVGRpPhmw4D+a8=",
+            "created_at": "2026-11-23T21:50:14.335094",
+            "rotated_at": "2026-11-23T21:50:14.333297",
+            "updated_at": "2026-11-23T21:50:14.335094",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "GbQtlXcvVe2L+0X1tEdpWSuOSDU=",
+            "prev_auth_token": "qS0cBc8atOCoQeVGRpPhmw4D+a8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:46:22.91826",
+            "seen_at": "2026-11-23T21:50:15.099363",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "GbQtlXcvVe2L+0X1tEdpWSuOSDU=",
-            "created_at": "2026-11-23T16:46:22.413881",
-            "rotated_at": "2026-11-23T16:46:22.412978",
-            "updated_at": "2026-11-23T16:46:22.413881",
+            "auth_token": "qS0cBc8atOCoQeVGRpPhmw4D+a8=",
+            "created_at": "2026-11-23T21:50:14.335094",
+            "rotated_at": "2026-11-23T21:50:14.333297",
+            "updated_at": "2026-11-23T21:50:14.335094",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "GbQtlXcvVe2L+0X1tEdpWSuOSDU=",
+            "prev_auth_token": "qS0cBc8atOCoQeVGRpPhmw4D+a8=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -714,7 +714,7 @@
   },
   "recorded_from": {
     "case": "81e79a2109cbb4984038b7fd6d275889df1c51f403cc21ae5faa4492fba2c6f2",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

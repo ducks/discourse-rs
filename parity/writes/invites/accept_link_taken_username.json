@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T17:02:22.753602",
-  "transaction_started_at": "2026-11-23T17:02:22.112167",
+  "started_at": "2026-11-23T21:58:32.816551",
+  "transaction_started_at": "2026-11-23T21:58:29.993977",
   "responses": [
     {
       "status": 200,
@@ -33,9 +33,9 @@
           "expired": false,
           "user_id": 6,
           "confirmed": false,
-          "created_at": "2026-11-23T17:02:23.067989",
-          "token_hash": "64f51dd8557b07d4bebb1cb3dd3cd807f2af2be46a9634087315588e27b8c6a4",
-          "updated_at": "2026-11-23T17:02:23.067989"
+          "created_at": "2026-11-23T21:58:33.853083",
+          "token_hash": "6abeaf1bed258daee08792d03771422a4640d12ccc86e5d38c4fd7f6ee397644",
+          "updated_at": "2026-11-23T21:58:33.853083"
         },
         {
           "id": 13,
@@ -44,9 +44,9 @@
           "expired": true,
           "user_id": 6,
           "confirmed": false,
-          "created_at": "2026-11-23T17:02:22.952765",
-          "token_hash": "262882132e1bbbb38ede635106776c987ad21445e4d29b65702f63fe248b140b",
-          "updated_at": "2026-11-23T17:02:22.952765"
+          "created_at": "2026-11-23T21:58:33.343267",
+          "token_hash": "bf34cc64dd8d1c5c77faca0de41a20fc50f3fa7f09fcf10330c2df974f4309a4",
+          "updated_at": "2026-11-23T21:58:33.343267"
         }
       ],
       "deleted": [],
@@ -60,9 +60,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-23T17:02:23.025388",
+          "created_at": "2026-11-23T21:58:33.635771",
           "prev_value": null,
-          "updated_at": "2026-11-23T17:02:23.025388",
+          "updated_at": "2026-11-23T21:58:33.635771",
           "acting_user_id": 3,
           "target_user_id": 6
         }
@@ -77,9 +77,9 @@
           "owner": false,
           "user_id": 6,
           "group_id": 10,
-          "created_at": "2026-11-23T17:02:22.976439",
-          "updated_at": "2026-11-23T17:02:22.976439",
-          "first_unread_pm_at": "2026-11-23T17:02:22.112167",
+          "created_at": "2026-11-23T21:58:33.422519",
+          "updated_at": "2026-11-23T21:58:33.422519",
+          "first_unread_pm_at": "2026-11-23T21:58:29.993977",
           "notification_level": 3
         },
         {
@@ -87,9 +87,9 @@
           "owner": false,
           "user_id": 6,
           "group_id": 11,
-          "created_at": "2026-11-23T17:02:22.99052",
-          "updated_at": "2026-11-23T17:02:22.99052",
-          "first_unread_pm_at": "2026-11-23T17:02:22.112167",
+          "created_at": "2026-11-23T21:58:33.479087",
+          "updated_at": "2026-11-23T21:58:33.479087",
+          "first_unread_pm_at": "2026-11-23T21:58:29.993977",
           "notification_level": 3
         },
         {
@@ -97,9 +97,9 @@
           "owner": false,
           "user_id": 6,
           "group_id": 9001,
-          "created_at": "2026-11-23T17:02:23.022161",
-          "updated_at": "2026-11-23T17:02:23.022161",
-          "first_unread_pm_at": "2026-11-23T17:02:22.112167",
+          "created_at": "2026-11-23T21:58:33.624231",
+          "updated_at": "2026-11-23T21:58:33.624231",
+          "first_unread_pm_at": "2026-11-23T21:58:29.993977",
           "notification_level": 3
         }
       ],
@@ -342,9 +342,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-03T17:02:22.112167",
+            "created_at": "2026-11-03T21:58:29.993977",
             "flair_icon": null,
-            "updated_at": "2026-11-03T17:02:22.112167",
+            "updated_at": "2026-11-03T21:58:29.993977",
             "user_count": 0,
             "flair_color": null,
             "imap_server": null,
@@ -396,9 +396,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-11-03T17:02:22.112167",
+            "created_at": "2026-11-03T21:58:29.993977",
             "flair_icon": null,
-            "updated_at": "2026-11-03T17:02:22.112167",
+            "updated_at": "2026-11-03T21:58:29.993977",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -448,9 +448,9 @@
           "id": 1,
           "user_id": 6,
           "invite_id": 900,
-          "created_at": "2026-11-23T17:02:22.787072",
-          "updated_at": "2026-11-23T17:02:23.035303",
-          "redeemed_at": "2026-11-23T17:02:22.784275"
+          "created_at": "2026-11-23T21:58:32.891144",
+          "updated_at": "2026-11-23T21:58:33.676994",
+          "redeemed_at": "2026-11-23T21:58:32.884198"
         }
       ],
       "deleted": [],
@@ -467,11 +467,11 @@
             "email": null,
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-20T17:02:22.112167",
+            "created_at": "2026-11-20T21:58:29.993977",
             "deleted_at": null,
-            "expires_at": "2026-12-23T17:02:22.112167",
+            "expires_at": "2026-12-23T21:58:29.993977",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-20T17:02:22.112167",
+            "updated_at": "2026-11-20T21:58:29.993977",
             "description": "for the book club",
             "email_token": null,
             "deleted_by_id": null,
@@ -488,11 +488,11 @@
             "email": null,
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-20T17:02:22.112167",
+            "created_at": "2026-11-20T21:58:29.993977",
             "deleted_at": null,
-            "expires_at": "2026-12-23T17:02:22.112167",
+            "expires_at": "2026-12-23T21:58:29.993977",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-20T17:02:22.112167",
+            "updated_at": "2026-11-20T21:58:29.993977",
             "description": "for the book club",
             "email_token": null,
             "deleted_by_id": null,
@@ -509,26 +509,26 @@
     "notifications": {
       "inserted": [
         {
-          "id": 31,
+          "id": 32,
           "data": "{\"display_username\":\"user4\"}",
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-23T17:02:23.037055",
-          "updated_at": "2026-11-23T17:02:23.037055",
+          "created_at": "2026-11-23T21:58:33.684156",
+          "updated_at": "2026-11-23T21:58:33.684156",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 8
         },
         {
-          "id": 32,
+          "id": 33,
           "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"display_username\":\"user1\",\"original_user_id\":3,\"original_username\":\"user1\"}",
           "read": false,
           "user_id": 6,
           "topic_id": 35,
-          "created_at": "2026-11-23T17:02:23.079544",
-          "updated_at": "2026-11-23T17:02:23.079544",
+          "created_at": "2026-11-23T21:58:33.904584",
+          "updated_at": "2026-11-23T21:58:33.904584",
           "post_number": 1,
           "high_priority": false,
           "post_action_id": null,
@@ -544,9 +544,9 @@
           "id": 28,
           "user_id": 6,
           "position": 0,
-          "created_at": "2026-11-23T17:02:22.112167",
-          "updated_at": "2026-11-23T17:02:22.112167",
-          "linkable_id": 3,
+          "created_at": "2026-11-23T21:58:29.993977",
+          "updated_at": "2026-11-23T21:58:29.993977",
+          "linkable_id": 2,
           "linkable_type": "Category",
           "sidebar_section_id": null
         },
@@ -554,9 +554,9 @@
           "id": 29,
           "user_id": 6,
           "position": 0,
-          "created_at": "2026-11-23T17:02:22.112167",
-          "updated_at": "2026-11-23T17:02:22.112167",
-          "linkable_id": 4,
+          "created_at": "2026-11-23T21:58:29.993977",
+          "updated_at": "2026-11-23T21:58:29.993977",
+          "linkable_id": 3,
           "linkable_type": "Category",
           "sidebar_section_id": null
         },
@@ -564,9 +564,9 @@
           "id": 30,
           "user_id": 6,
           "position": 0,
-          "created_at": "2026-11-23T17:02:22.112167",
-          "updated_at": "2026-11-23T17:02:22.112167",
-          "linkable_id": 2,
+          "created_at": "2026-11-23T21:58:29.993977",
+          "updated_at": "2026-11-23T21:58:29.993977",
+          "linkable_id": 4,
           "linkable_type": "Category",
           "sidebar_section_id": null
         }
@@ -579,8 +579,8 @@
         {
           "id": 8,
           "user_id": 6,
-          "created_at": "2026-11-23T17:02:23.009924",
-          "updated_at": "2026-11-23T17:02:23.009924",
+          "created_at": "2026-11-23T21:58:33.569676",
+          "updated_at": "2026-11-23T21:58:33.569676",
           "custom_upload_id": null,
           "gravatar_upload_id": null,
           "last_gravatar_download_attempt": null,
@@ -597,8 +597,8 @@
           "email": "newbie@example.com",
           "primary": true,
           "user_id": 6,
-          "created_at": "2026-11-23T17:02:22.882196",
-          "updated_at": "2026-11-23T17:02:22.882196",
+          "created_at": "2026-11-23T21:58:33.047364",
+          "updated_at": "2026-11-23T21:58:33.047364",
           "normalized_email": "newbie@example.com"
         }
       ],
@@ -703,10 +703,10 @@
         {
           "id": 8,
           "user_id": 6,
-          "created_at": "2026-11-23T17:02:22.949888",
-          "updated_at": "2026-11-23T17:02:22.949888",
-          "password_hash": "c2a144fa133c9fff706fd5ceba459a2f6ab154688cd55b4b7f3082d3ec67885a",
-          "password_salt": "626f72e0cce3fcc03e9a2f5c4c9a899e",
+          "created_at": "2026-11-23T21:58:33.333395",
+          "updated_at": "2026-11-23T21:58:33.333395",
+          "password_hash": "d9fd5f2fc55a3474eb42c44e23cf21bd9d7140eae8b13e67628eabbd21d6c707",
+          "password_salt": "6a115626c147bb4e4a9c84ab73577cad",
           "password_algorithm": "$pbkdf2-sha256$i=600000,l=32$",
           "password_expired_at": null
         }
@@ -752,7 +752,7 @@
         {
           "user_id": 6,
           "read_faq": null,
-          "new_since": "2026-11-23T17:02:22.958589",
+          "new_since": "2026-11-23T21:58:33.355891",
           "time_read": 0,
           "post_count": 0,
           "draft_count": 0,
@@ -764,11 +764,11 @@
           "flags_ignored": 0,
           "likes_received": 0,
           "topics_entered": 0,
-          "first_unread_at": "2026-11-23T17:02:22.112167",
+          "first_unread_at": "2026-11-23T21:58:29.993977",
           "flags_disagreed": 0,
           "post_edits_count": null,
           "posts_read_count": 0,
-          "first_unread_pm_at": "2026-11-23T17:02:22.112167",
+          "first_unread_pm_at": "2026-11-23T21:58:29.993977",
           "digest_attempted_at": null,
           "pending_posts_count": 0,
           "distinct_badge_count": 0,
@@ -793,10 +793,10 @@
           "approved": false,
           "username": "user4",
           "moderator": false,
-          "created_at": "2026-11-23T17:02:22.873875",
+          "created_at": "2026-11-23T21:58:33.036395",
           "flag_level": 0,
           "ip_address": "127.0.0.1",
-          "updated_at": "2026-11-23T17:02:22.873875",
+          "updated_at": "2026-11-23T21:58:33.036395",
           "approved_at": null,
           "trust_level": 1,
           "last_seen_at": null,
@@ -839,7 +839,7 @@
       {
         "type": "signup",
         "user_id": 6,
-        "email_token": "4e2e0eb3ca364d3077df4e97a8699ddd",
+        "email_token": "c0a2299ab6caf225a7a3f1db749d4cee",
         "to_address": null
       }
     ]
@@ -849,7 +849,7 @@
     "group_histories": 1,
     "group_users": 38,
     "invited_users": 1,
-    "notifications": 31,
+    "notifications": 32,
     "sidebar_section_links": 28,
     "user_avatars": 8,
     "user_emails": 6,
@@ -869,7 +869,7 @@
   ],
   "recorded_from": {
     "case": "4b42e2c962c82c6b136d902d516d188468233890126a6fa4550c23e1993851c5",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

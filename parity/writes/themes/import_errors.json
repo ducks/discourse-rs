@@ -66,8 +66,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T17:53:59.038588",
-  "transaction_started_at": "2026-11-23T17:53:58.103201",
+  "started_at": "2026-11-24T01:19:06.841359",
+  "transaction_started_at": "2026-11-24T01:19:05.697977",
   "responses": [
     {
       "status": 422,
@@ -116,8 +116,8 @@
           "id": 1,
           "name": "Bad modifier",
           "description": null,
-          "created_at": "2026-11-23T17:53:59.150Z",
-          "updated_at": "2026-11-23T17:53:59.150Z",
+          "created_at": "2026-11-24T01:19:06.999Z",
+          "updated_at": "2026-11-24T01:19:06.999Z",
           "component": false,
           "color_scheme_id": null,
           "dark_color_scheme_id": null,
@@ -202,9 +202,9 @@
           "branch": null,
           "authors": null,
           "about_url": null,
-          "created_at": "2026-11-23T17:53:59.1488",
+          "created_at": "2026-11-24T01:19:06.99706",
           "remote_url": "",
-          "updated_at": "2026-11-23T17:53:59.1488",
+          "updated_at": "2026-11-24T01:19:06.99706",
           "license_url": null,
           "private_key": null,
           "local_version": null,
@@ -233,8 +233,8 @@
           "theme_id": 1,
           "target_id": 9,
           "upload_id": null,
-          "created_at": "2026-11-23T17:53:59.151379",
-          "updated_at": "2026-11-23T17:53:59.151379",
+          "created_at": "2026-11-24T01:19:07.001618",
+          "updated_at": "2026-11-24T01:19:07.001618",
           "value_baked": null,
           "compiler_version": "0"
         }
@@ -271,8 +271,8 @@
           "enabled": true,
           "user_id": 1,
           "component": false,
-          "created_at": "2026-11-23T17:53:59.15025",
-          "updated_at": "2026-11-23T17:53:59.15025",
+          "created_at": "2026-11-24T01:19:06.999398",
+          "updated_at": "2026-11-24T01:19:06.999398",
           "auto_update": false,
           "color_scheme_id": null,
           "remote_theme_id": null,
@@ -294,29 +294,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "u3Sc224xbM5pmqYixRH9SzbTheo=",
-            "created_at": "2026-11-23T17:53:58.510905",
-            "rotated_at": "2026-11-23T17:53:58.509949",
-            "updated_at": "2026-11-23T17:53:58.510905",
+            "auth_token": "k+nhspbQmx6nUlQ3+dLpRezEAG4=",
+            "created_at": "2026-11-24T01:19:06.181918",
+            "rotated_at": "2026-11-24T01:19:06.180488",
+            "updated_at": "2026-11-24T01:19:06.181918",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "u3Sc224xbM5pmqYixRH9SzbTheo=",
+            "prev_auth_token": "k+nhspbQmx6nUlQ3+dLpRezEAG4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T17:53:59.048813",
+            "seen_at": "2026-11-24T01:19:06.850316",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "u3Sc224xbM5pmqYixRH9SzbTheo=",
-            "created_at": "2026-11-23T17:53:58.510905",
-            "rotated_at": "2026-11-23T17:53:58.509949",
-            "updated_at": "2026-11-23T17:53:58.510905",
+            "auth_token": "k+nhspbQmx6nUlQ3+dLpRezEAG4=",
+            "created_at": "2026-11-24T01:19:06.181918",
+            "rotated_at": "2026-11-24T01:19:06.180488",
+            "updated_at": "2026-11-24T01:19:06.181918",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "u3Sc224xbM5pmqYixRH9SzbTheo=",
+            "prev_auth_token": "k+nhspbQmx6nUlQ3+dLpRezEAG4=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -327,7 +327,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 4,
           "context": null,
@@ -335,12 +335,12 @@
           "post_id": null,
           "subject": "Bad modifier",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Bad modifier\",\"description\":null,\"created_at\":\"2026-11-23T17:53:59.150Z\",\"updated_at\":\"2026-11-23T17:53:59.150Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\\"name\\\": \\\"Bad modifier\\\", \\\"modifiers\\\": {\\\"serialize_topic_excerpts\\\": \\\"yes\\\"}}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "new_value": "{\"id\":1,\"name\":\"Bad modifier\",\"description\":null,\"created_at\":\"2026-11-24T01:19:06.999Z\",\"updated_at\":\"2026-11-24T01:19:06.999Z\",\"component\":false,\"color_scheme_id\":null,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"true\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\\"name\\\": \\\"Bad modifier\\\", \\\"modifiers\\\": {\\\"serialize_topic_excerpts\\\": \\\"yes\\\"}}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":null,\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "admin_only": true,
-          "created_at": "2026-11-23T17:53:59.207205",
+          "created_at": "2026-11-24T01:19:07.101429",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:53:59.207205",
+          "updated_at": "2026-11-24T01:19:07.101429",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -359,11 +359,11 @@
     "theme_fields": 163,
     "theme_modifier_sets": 3,
     "themes": 1,
-    "user_histories": 66
+    "user_histories": 69
   },
   "recorded_from": {
     "case": "c165aed4cb75bf69740529c9d7c60d8554973075650fc5bcfd3df3cc18cfbe0f",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

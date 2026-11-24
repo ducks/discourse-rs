@@ -2,8 +2,8 @@
   "name": "tl3_demote",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:37:02.007656",
-  "transaction_started_at": "2026-11-23T17:37:01.328902",
+  "started_at": "2026-11-24T01:12:06.016446",
+  "transaction_started_at": "2026-11-24T01:12:02.080808",
   "responses": [],
   "changes": {
     "group_users": {
@@ -14,9 +14,9 @@
           "owner": false,
           "user_id": 3,
           "group_id": 13,
-          "created_at": "2026-11-23T17:37:01.328902",
-          "updated_at": "2026-11-23T17:37:01.328902",
-          "first_unread_pm_at": "2026-11-23T17:37:01.328902",
+          "created_at": "2026-11-24T01:12:02.080808",
+          "updated_at": "2026-11-24T01:12:02.080808",
+          "first_unread_pm_at": "2026-11-24T01:12:02.080808",
           "notification_level": 2
         }
       ],
@@ -25,7 +25,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 15,
           "context": null,
@@ -35,10 +35,10 @@
           "topic_id": null,
           "new_value": "2",
           "admin_only": false,
-          "created_at": "2026-11-23T17:37:02.015194",
+          "created_at": "2026-11-24T01:12:06.085797",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:37:02.015194",
+          "updated_at": "2026-11-24T01:12:06.085797",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -70,17 +70,17 @@
             "created_at": "2026-11-03T05:08:00.404788",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-23T16:08:34.465774",
+            "updated_at": "2026-11-23T20:53:10.769723",
             "approved_at": null,
             "trust_level": 3,
-            "last_seen_at": "2026-11-23T16:08:49.527573",
+            "last_seen_at": "2026-11-23T20:53:28.144434",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-23T16:08:49.527573",
+            "first_seen_at": "2026-11-23T20:53:28.144434",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T16:08:34.354373",
+            "last_posted_at": "2026-11-23T20:53:10.659906",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
@@ -110,17 +110,17 @@
             "created_at": "2026-11-03T05:08:00.404788",
             "flag_level": 0,
             "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-23T17:37:02.018839",
+            "updated_at": "2026-11-24T01:12:06.137075",
             "approved_at": null,
             "trust_level": 2,
-            "last_seen_at": "2026-11-23T16:08:49.527573",
+            "last_seen_at": "2026-11-23T20:53:28.144434",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-23T16:08:49.527573",
+            "first_seen_at": "2026-11-23T20:53:28.144434",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T16:08:34.354373",
+            "last_posted_at": "2026-11-23T20:53:10.659906",
             "suspended_till": null,
             "username_lower": "user1",
             "last_emailed_at": null,
@@ -141,7 +141,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 66
+    "user_histories": 69
   },
   "setup": [
     "UPDATE users SET trust_level = 3 WHERE id = 3",
@@ -164,7 +164,7 @@
   ],
   "recorded_from": {
     "case": "dd444d21c4ce662a9de9168f61c01af838d6d8bb0d2e8f3877216245e1a4d8e5",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

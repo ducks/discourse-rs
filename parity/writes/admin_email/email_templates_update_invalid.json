@@ -57,8 +57,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T16:20:34.624158",
-  "transaction_started_at": "2026-11-23T16:20:33.743866",
+  "started_at": "2026-11-23T21:43:09.38458",
+  "transaction_started_at": "2026-11-23T21:43:05.889559",
   "responses": [
     {
       "status": 422,
@@ -2040,8 +2040,8 @@
           "value": "First",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-11-23T16:20:34.983978",
-          "updated_at": "2026-11-23T16:20:34.983978",
+          "created_at": "2026-11-23T21:43:10.979057",
+          "updated_at": "2026-11-23T21:43:10.979057",
           "translation_key": "test_mailer.subject_template",
           "original_translation": "[%{email_prefix}] Email Deliverability Test"
         },
@@ -2050,8 +2050,8 @@
           "value": "First body",
           "locale": "en",
           "status": 0,
-          "created_at": "2026-11-23T16:20:35.056894",
-          "updated_at": "2026-11-23T16:20:35.300185",
+          "created_at": "2026-11-23T21:43:11.233198",
+          "updated_at": "2026-11-23T21:43:12.140528",
           "translation_key": "test_mailer.text_body_template",
           "original_translation": "This is a test email from\n\n[**%{base_url}**][0]\n\nWe hope you received this email deliverability test OK!\n\nHere is a [handy checklist for verifying email delivery configuration][1].\n\nGood luck,\n\nYour friends at [Discourse](https://www.discourse.org)\n\n[0]: %{base_url}\n[1]: https://meta.discourse.org/t/email-delivery-configuration-checklist/209839\n"
         }
@@ -2069,29 +2069,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "dP5e8gpRlZb1NY0Ewluv7SbBkSU=",
-            "created_at": "2026-11-23T16:20:34.086954",
-            "rotated_at": "2026-11-23T16:20:34.085866",
-            "updated_at": "2026-11-23T16:20:34.086954",
+            "auth_token": "izfOGnB1D6TqW/8sA9b3hapmN3g=",
+            "created_at": "2026-11-23T21:43:06.929291",
+            "rotated_at": "2026-11-23T21:43:06.927575",
+            "updated_at": "2026-11-23T21:43:06.929291",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "dP5e8gpRlZb1NY0Ewluv7SbBkSU=",
+            "prev_auth_token": "izfOGnB1D6TqW/8sA9b3hapmN3g=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:20:34.630909",
+            "seen_at": "2026-11-23T21:43:09.428839",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "dP5e8gpRlZb1NY0Ewluv7SbBkSU=",
-            "created_at": "2026-11-23T16:20:34.086954",
-            "rotated_at": "2026-11-23T16:20:34.085866",
-            "updated_at": "2026-11-23T16:20:34.086954",
+            "auth_token": "izfOGnB1D6TqW/8sA9b3hapmN3g=",
+            "created_at": "2026-11-23T21:43:06.929291",
+            "rotated_at": "2026-11-23T21:43:06.927575",
+            "updated_at": "2026-11-23T21:43:06.929291",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "dP5e8gpRlZb1NY0Ewluv7SbBkSU=",
+            "prev_auth_token": "izfOGnB1D6TqW/8sA9b3hapmN3g=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -2102,7 +2102,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 29,
           "context": null,
@@ -2112,10 +2112,10 @@
           "topic_id": null,
           "new_value": "First",
           "admin_only": true,
-          "created_at": "2026-11-23T16:20:35.131984",
+          "created_at": "2026-11-23T21:43:11.522636",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T16:20:35.131984",
+          "updated_at": "2026-11-23T21:43:11.522636",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2124,7 +2124,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 29,
           "context": null,
@@ -2134,10 +2134,10 @@
           "topic_id": null,
           "new_value": "First body",
           "admin_only": true,
-          "created_at": "2026-11-23T16:20:35.135497",
+          "created_at": "2026-11-23T21:43:11.538885",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T16:20:35.135497",
+          "updated_at": "2026-11-23T21:43:11.538885",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -2153,11 +2153,11 @@
   "jobs": [],
   "next_ids": {
     "translation_overrides": 1,
-    "user_histories": 66
+    "user_histories": 69
   },
   "recorded_from": {
     "case": "b6d4b2c31c6c037045c604c8c280142b42a0784d8c1398a086cd35317fc50a8c",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

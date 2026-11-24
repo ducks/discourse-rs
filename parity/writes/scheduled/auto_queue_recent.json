@@ -2,8 +2,8 @@
   "name": "auto_queue_recent",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:33:59.979601",
-  "transaction_started_at": "2026-11-23T17:33:59.143522",
+  "started_at": "2026-11-24T01:06:48.638367",
+  "transaction_started_at": "2026-11-24T01:06:44.716969",
   "responses": [],
   "changes": {},
   "jobs": [],
@@ -25,7 +25,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "fc9084e910c9ea881f69f72a60a19689a802c8d4eac2d8a4e28e3bc9764246a8",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

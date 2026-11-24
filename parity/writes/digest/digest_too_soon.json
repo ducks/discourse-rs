@@ -2,8 +2,8 @@
   "name": "digest_too_soon",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T16:47:17.369615",
-  "transaction_started_at": "2026-11-23T16:47:16.48311",
+  "started_at": "2026-11-23T21:50:49.443549",
+  "transaction_started_at": "2026-11-23T21:50:48.616239",
   "responses": [],
   "changes": {
     "user_stats": {
@@ -31,10 +31,10 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": "2026-11-23T15:47:16.48311",
+            "digest_attempted_at": "2026-11-23T20:50:48.616239",
             "pending_posts_count": 0,
-            "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-23T16:08:31.163852",
+            "distinct_badge_count": 1,
+            "first_post_created_at": "2026-11-23T20:53:06.839754",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -57,10 +57,10 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": "2026-11-23T16:47:17.373574",
+            "digest_attempted_at": "2026-11-23T21:50:49.456245",
             "pending_posts_count": 0,
-            "distinct_badge_count": 0,
-            "first_post_created_at": "2026-11-23T16:08:31.163852",
+            "distinct_badge_count": 1,
+            "first_post_created_at": "2026-11-23T20:53:06.839754",
             "reset_bounce_score_after": null
           }
         }
@@ -87,7 +87,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "7c15f4b0fbd192d820c5568663249c8acd90615951d067bd8f241b0e82a52ac3",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

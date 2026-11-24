@@ -2,20 +2,20 @@
   "name": "mass_award",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T18:20:28.918362",
-  "transaction_started_at": "2026-11-23T18:20:27.990434",
+  "started_at": "2026-11-24T01:26:28.787728",
+  "transaction_started_at": "2026-11-24T01:26:28.127537",
   "responses": [],
   "changes": {
     "notifications": {
       "inserted": [
         {
-          "id": 31,
+          "id": 32,
           "data": "{\"badge_id\":6,\"badge_name\":\"Nice Reply\",\"badge_slug\":\"nice-reply\",\"badge_title\":false,\"username\":\"user1\"}",
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-23T18:20:28.923447",
-          "updated_at": "2026-11-23T18:20:28.923447",
+          "created_at": "2026-11-24T01:26:28.792025",
+          "updated_at": "2026-11-24T01:26:28.792025",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
@@ -28,144 +28,88 @@
     "user_badges": {
       "inserted": [
         {
-          "id": 19,
+          "id": 20,
           "seq": 1,
           "post_id": null,
           "user_id": 3,
           "badge_id": 6,
-          "created_at": "2026-11-23T18:20:28.921583",
-          "granted_at": "2026-11-23T18:20:28.921583",
+          "created_at": "2026-11-24T01:26:28.790569",
+          "granted_at": "2026-11-24T01:26:28.790569",
           "is_favorite": null,
           "featured_rank": 2,
           "granted_by_id": -1,
-          "notification_id": 31
+          "notification_id": 32
         },
         {
-          "id": 20,
+          "id": 21,
           "seq": 2,
           "post_id": null,
           "user_id": 3,
           "badge_id": 6,
-          "created_at": "2026-11-23T18:20:28.921583",
-          "granted_at": "2026-11-23T18:20:28.921583",
+          "created_at": "2026-11-24T01:26:28.790569",
+          "granted_at": "2026-11-24T01:26:28.790569",
           "is_favorite": null,
           "featured_rank": 2,
           "granted_by_id": -1,
-          "notification_id": 31
+          "notification_id": 32
         }
       ],
       "deleted": [],
       "updated": [
         {
           "before": {
-            "id": 4,
+            "id": 3,
             "seq": 0,
             "post_id": null,
             "user_id": 3,
             "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
-            "is_favorite": null,
-            "featured_rank": null,
-            "granted_by_id": -1,
-            "notification_id": 19
-          },
-          "after": {
-            "id": 4,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 3,
-            "badge_id": 1,
-            "created_at": "2026-11-23T16:08:49.743805",
-            "granted_at": "2026-11-23T16:08:49.743805",
-            "is_favorite": null,
-            "featured_rank": 5,
-            "granted_by_id": -1,
-            "notification_id": 19
-          }
-        },
-        {
-          "before": {
-            "id": 8,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 3,
-            "badge_id": 2,
-            "created_at": "2026-11-23T16:08:49.815478",
-            "granted_at": "2026-11-23T16:08:49.815478",
-            "is_favorite": null,
-            "featured_rank": null,
-            "granted_by_id": -1,
-            "notification_id": 23
-          },
-          "after": {
-            "id": 8,
-            "seq": 0,
-            "post_id": null,
-            "user_id": 3,
-            "badge_id": 2,
-            "created_at": "2026-11-23T16:08:49.815478",
-            "granted_at": "2026-11-23T16:08:49.815478",
-            "is_favorite": null,
-            "featured_rank": 1,
-            "granted_by_id": -1,
-            "notification_id": 23
-          }
-        },
-        {
-          "before": {
-            "id": 15,
-            "seq": 0,
-            "post_id": 46,
-            "user_id": 3,
-            "badge_id": 11,
-            "created_at": "2026-11-23T16:08:49.882484",
-            "granted_at": "2026-11-23T16:08:36.321974",
-            "is_favorite": null,
-            "featured_rank": null,
-            "granted_by_id": -1,
-            "notification_id": 26
-          },
-          "after": {
-            "id": 15,
-            "seq": 0,
-            "post_id": 46,
-            "user_id": 3,
-            "badge_id": 11,
-            "created_at": "2026-11-23T16:08:49.882484",
-            "granted_at": "2026-11-23T16:08:36.321974",
-            "is_favorite": null,
-            "featured_rank": 3,
-            "granted_by_id": -1,
-            "notification_id": 26
-          }
-        },
-        {
-          "before": {
-            "id": 17,
-            "seq": 0,
-            "post_id": 36,
-            "user_id": 3,
-            "badge_id": 5,
-            "created_at": "2026-11-23T16:08:49.940299",
-            "granted_at": "2026-11-23T16:08:43.180139",
-            "is_favorite": null,
-            "featured_rank": 2,
-            "granted_by_id": -1,
-            "notification_id": 28
-          },
-          "after": {
-            "id": 17,
-            "seq": 0,
-            "post_id": 36,
-            "user_id": 3,
-            "badge_id": 5,
-            "created_at": "2026-11-23T16:08:49.940299",
-            "granted_at": "2026-11-23T16:08:43.180139",
+            "created_at": "2026-11-23T20:51:22.940459",
+            "granted_at": "2026-11-23T20:51:22.940459",
             "is_favorite": null,
             "featured_rank": 4,
             "granted_by_id": -1,
-            "notification_id": 28
+            "notification_id": 2
+          },
+          "after": {
+            "id": 3,
+            "seq": 0,
+            "post_id": null,
+            "user_id": 3,
+            "badge_id": 1,
+            "created_at": "2026-11-23T20:51:22.940459",
+            "granted_at": "2026-11-23T20:51:22.940459",
+            "is_favorite": null,
+            "featured_rank": 5,
+            "granted_by_id": -1,
+            "notification_id": 2
+          }
+        },
+        {
+          "before": {
+            "id": 18,
+            "seq": 0,
+            "post_id": 36,
+            "user_id": 3,
+            "badge_id": 5,
+            "created_at": "2026-11-23T20:53:28.427183",
+            "granted_at": "2026-11-23T20:53:21.124098",
+            "is_favorite": null,
+            "featured_rank": 3,
+            "granted_by_id": -1,
+            "notification_id": 29
+          },
+          "after": {
+            "id": 18,
+            "seq": 0,
+            "post_id": 36,
+            "user_id": 3,
+            "badge_id": 5,
+            "created_at": "2026-11-23T20:53:28.427183",
+            "granted_at": "2026-11-23T20:53:21.124098",
+            "is_favorite": null,
+            "featured_rank": 4,
+            "granted_by_id": -1,
+            "notification_id": 29
           }
         },
         {
@@ -193,7 +137,7 @@
             "is_favorite": null,
             "featured_rank": 2,
             "granted_by_id": -1,
-            "notification_id": 31
+            "notification_id": 32
           }
         }
       ]
@@ -201,8 +145,8 @@
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 31,
-    "user_badges": 19
+    "notifications": 32,
+    "user_badges": 20
   },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",
@@ -226,7 +170,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "239151418e14a41692b453d6a137c5adb0c2530f177f515fc8ffa364514beae8",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

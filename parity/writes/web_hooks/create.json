@@ -44,8 +44,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T18:19:55.212678",
-  "transaction_started_at": "2026-11-23T18:19:54.275669",
+  "started_at": "2026-11-24T01:25:46.880921",
+  "transaction_started_at": "2026-11-24T01:25:43.315322",
   "responses": [
     {
       "status": 200,
@@ -61,7 +61,7 @@
             "emoji": "blue_book",
             "slug": "general",
             "topic_count": 3,
-            "post_count": 0,
+            "post_count": 7,
             "position": 3,
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -207,29 +207,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "myJQtdno3lHVJj1hOELTK0CGxqw=",
-            "created_at": "2026-11-23T18:19:54.679586",
-            "rotated_at": "2026-11-23T18:19:54.678531",
-            "updated_at": "2026-11-23T18:19:54.679586",
+            "auth_token": "8iF3+4noL8DQeruRu2xi6lm4MOM=",
+            "created_at": "2026-11-24T01:25:44.656616",
+            "rotated_at": "2026-11-24T01:25:44.652406",
+            "updated_at": "2026-11-24T01:25:44.656616",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "myJQtdno3lHVJj1hOELTK0CGxqw=",
+            "prev_auth_token": "8iF3+4noL8DQeruRu2xi6lm4MOM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T18:19:55.218231",
+            "seen_at": "2026-11-24T01:25:46.901378",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "myJQtdno3lHVJj1hOELTK0CGxqw=",
-            "created_at": "2026-11-23T18:19:54.679586",
-            "rotated_at": "2026-11-23T18:19:54.678531",
-            "updated_at": "2026-11-23T18:19:54.679586",
+            "auth_token": "8iF3+4noL8DQeruRu2xi6lm4MOM=",
+            "created_at": "2026-11-24T01:25:44.656616",
+            "rotated_at": "2026-11-24T01:25:44.652406",
+            "updated_at": "2026-11-24T01:25:44.656616",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "myJQtdno3lHVJj1hOELTK0CGxqw=",
+            "prev_auth_token": "8iF3+4noL8DQeruRu2xi6lm4MOM=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -240,7 +240,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 70,
           "context": "webhook_id: 1, payload_url: http://fixtures.localhost:8099/hook",
@@ -250,10 +250,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-23T18:19:55.310646",
+          "created_at": "2026-11-24T01:25:47.381774",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T18:19:55.310646",
+          "updated_at": "2026-11-24T01:25:47.381774",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -262,7 +262,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 70,
           "context": "webhook_id: 2, payload_url: http://fixtures.localhost:8099/all",
@@ -272,10 +272,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-23T18:19:55.355722",
+          "created_at": "2026-11-24T01:25:47.50426",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T18:19:55.355722",
+          "updated_at": "2026-11-24T01:25:47.50426",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -308,8 +308,8 @@
           "active": true,
           "secret": "a-very-secret-key",
           "status": 1,
-          "created_at": "2026-11-23T18:19:55.299082",
-          "updated_at": "2026-11-23T18:19:55.299082",
+          "created_at": "2026-11-24T01:25:47.328817",
+          "updated_at": "2026-11-24T01:25:47.328817",
           "payload_url": "http://fixtures.localhost:8099/hook",
           "content_type": 1,
           "wildcard_web_hook": false,
@@ -321,8 +321,8 @@
           "active": false,
           "secret": "",
           "status": 1,
-          "created_at": "2026-11-23T18:19:55.352175",
-          "updated_at": "2026-11-23T18:19:55.352175",
+          "created_at": "2026-11-24T01:25:47.490445",
+          "updated_at": "2026-11-24T01:25:47.490445",
           "payload_url": "http://fixtures.localhost:8099/all",
           "content_type": 2,
           "wildcard_web_hook": true,
@@ -336,7 +336,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 66,
+    "user_histories": 69,
     "web_hooks": 1
   },
   "settings": {
@@ -344,7 +344,7 @@
   },
   "recorded_from": {
     "case": "ca0a0dc06887d06910d56152d03e9886c54ce5368fa5d995ef26cec6ac866c72",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

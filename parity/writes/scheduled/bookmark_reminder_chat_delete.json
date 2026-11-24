@@ -2,8 +2,8 @@
   "name": "bookmark_reminder_chat_delete",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:34:06.474441",
-  "transaction_started_at": "2026-11-23T17:34:05.760382",
+  "started_at": "2026-11-24T01:07:20.519635",
+  "transaction_started_at": "2026-11-24T01:07:16.994957",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -16,9 +16,9 @@
           "user_id": 3,
           "created_at": "2026-10-02T11:01:00",
           "updated_at": "2026-10-02T11:01:00",
-          "reminder_at": "2026-11-23T17:29:05.760382",
+          "reminder_at": "2026-11-24T01:02:16.994957",
           "bookmarkable_id": 2,
-          "reminder_set_at": "2026-11-22T17:34:05.760382",
+          "reminder_set_at": "2026-11-23T01:07:16.994957",
           "bookmarkable_type": "ChatMessage",
           "reminder_last_sent_at": null,
           "auto_delete_preference": 1
@@ -29,13 +29,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 31,
+          "id": 32,
           "data": "{\"title\":\"message in General\",\"bookmarkable_url\":\"/chat/c/-/2/2\",\"display_username\":\"user1\",\"bookmark_name\":null,\"bookmark_id\":11,\"bookmarkable_type\":\"ChatMessage\",\"bookmarkable_id\":2}",
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-23T17:34:06.481713",
-          "updated_at": "2026-11-23T17:34:06.481713",
+          "created_at": "2026-11-24T01:07:20.555123",
+          "updated_at": "2026-11-24T01:07:20.555123",
           "post_number": null,
           "high_priority": true,
           "post_action_id": null,
@@ -48,7 +48,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "notifications": 31
+    "notifications": 32
   },
   "setup": [
     "INSERT INTO direct_message_channels (id, \"group\", created_at, updated_at) VALUES (1, false, '2026-10-02 09:00:00', '2026-10-02 09:00:00')",
@@ -72,7 +72,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "94556eff45fca7f63ee17a3fcc6c4a76fb5c7f620b36dc775f0d06660fc88207",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -10,8 +10,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T18:19:49.780558",
-  "transaction_started_at": "2026-11-23T18:19:48.855148",
+  "started_at": "2026-11-24T01:25:32.592658",
+  "transaction_started_at": "2026-11-24T01:25:31.447363",
   "responses": [
     {
       "status": 200,
@@ -27,8 +27,8 @@
         {
           "id": 2,
           "user_id": 3,
-          "created_at": "2026-11-23T18:19:49.873224",
-          "updated_at": "2026-11-23T18:19:49.873224",
+          "created_at": "2026-11-24T01:25:32.696375",
+          "updated_at": "2026-11-24T01:25:32.696375",
           "new_message": "edited **now**",
           "old_message": "/me waves",
           "chat_message_id": 5
@@ -64,9 +64,9 @@
             "user_id": 3,
             "streaming": false,
             "thread_id": null,
-            "created_at": "2026-11-23T18:04:48.855148",
+            "created_at": "2026-11-24T01:10:31.447363",
             "deleted_at": null,
-            "updated_at": "2026-11-23T18:04:48.855148",
+            "updated_at": "2026-11-24T01:10:31.447363",
             "broadcasted": false,
             "deleted_by_id": null,
             "cooked_version": 1,
@@ -84,9 +84,9 @@
             "user_id": 3,
             "streaming": false,
             "thread_id": null,
-            "created_at": "2026-11-23T18:04:48.855148",
+            "created_at": "2026-11-24T01:10:31.447363",
             "deleted_at": null,
-            "updated_at": "2026-11-23T18:19:49.868672",
+            "updated_at": "2026-11-24T01:25:32.691109",
             "broadcasted": false,
             "deleted_by_id": null,
             "cooked_version": 2,
@@ -108,29 +108,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "JU0X+FpunEKBBX6wMseoxrBAamo=",
-            "created_at": "2026-11-23T18:19:49.254495",
-            "rotated_at": "2026-11-23T18:19:49.253433",
-            "updated_at": "2026-11-23T18:19:49.254495",
+            "auth_token": "S3fL3nKf2TnOKcSu3Xg7AgiSi+0=",
+            "created_at": "2026-11-24T01:25:31.915555",
+            "rotated_at": "2026-11-24T01:25:31.914196",
+            "updated_at": "2026-11-24T01:25:31.915555",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "JU0X+FpunEKBBX6wMseoxrBAamo=",
+            "prev_auth_token": "S3fL3nKf2TnOKcSu3Xg7AgiSi+0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T18:19:49.789963",
+            "seen_at": "2026-11-24T01:25:32.60178",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "JU0X+FpunEKBBX6wMseoxrBAamo=",
-            "created_at": "2026-11-23T18:19:49.254495",
-            "rotated_at": "2026-11-23T18:19:49.253433",
-            "updated_at": "2026-11-23T18:19:49.254495",
+            "auth_token": "S3fL3nKf2TnOKcSu3Xg7AgiSi+0=",
+            "created_at": "2026-11-24T01:25:31.915555",
+            "rotated_at": "2026-11-24T01:25:31.914196",
+            "updated_at": "2026-11-24T01:25:31.915555",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "JU0X+FpunEKBBX6wMseoxrBAamo=",
+            "prev_auth_token": "S3fL3nKf2TnOKcSu3Xg7AgiSi+0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -143,7 +143,7 @@
     [
       "emit_web_hook_event",
       {
-        "payload": "{\"message\":{\"id\":5,\"message\":\"edited **now**\",\"cooked\":\"\\u003cp\\u003eedited \\u003cstrong\\u003enow\\u003c/strong\\u003e\\u003c/p\\u003e\",\"created_at\":\"2026-11-23T18:04:48Z\",\"excerpt\":\"edited now\",\"chat_channel_id\":2,\"streaming\":false,\"user\":{\"id\":3,\"username\":\"user1\",\"name\":\"User1\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"can_chat\":null,\"has_chat_enabled\":null,\"moderator\":false,\"admin\":false,\"staff\":false,\"new_user\":false,\"primary_group_name\":null},\"mentioned_users\":[],\"available_flags\":[],\"edited\":true,\"blocks\":[],\"pinned\":false,\"is_action\":false,\"chat_webhook_event\":null,\"uploads\":[]},\"channel\":{\"id\":2,\"allow_channel_wide_mentions\":true,\"chatable\":{\"id\":4,\"name\":\"General\",\"color\":\"25AAE2\",\"text_color\":\"FFFFFF\",\"style_type\":\"emoji\",\"icon\":null,\"emoji\":\"blue_book\",\"slug\":\"general\",\"topic_count\":3,\"post_count\":0,\"position\":3,\"description\":\"\\u003cp\\u003eCreate topics here that don’t fit into any other existing category.\\u003c/p\\u003e\",\"description_text\":\"Create topics here that don’t fit into any other existing category.\",\"description_excerpt\":\"Create topics here that don’t fit into any other existing category.\",\"topic_url\":\"/t/about-the-general-category/3\",\"read_restricted\":false,\"permission\":null,\"notification_level\":null,\"topic_template\":null,\"topic_title_placeholder\":null,\"has_children\":null,\"subcategory_count\":null,\"sort_order\":null,\"sort_ascending\":null,\"show_subcategory_list\":false,\"num_featured_topics\":3,\"default_view\":null,\"subcategory_list_style\":\"rows_with_featured_topics\",\"default_top_period\":\"all\",\"default_list_filter\":\"all\",\"minimum_required_tags\":0,\"navigate_to_first_post_after_read\":false,\"uploaded_logo\":null,\"uploaded_logo_dark\":null,\"uploaded_background\":null,\"uploaded_background_dark\":null},\"chatable_id\":4,\"chatable_type\":\"Category\",\"chatable_url\":\"/c/general/4\",\"title\":\"General\",\"unicode_title\":\"General\",\"slug\":\"general\",\"status\":\"open\",\"memberships_count\":3,\"current_user_membership\":{\"following\":true,\"muted\":false,\"muted_until\":null,\"notification_level\":\"mention\",\"chat_channel_id\":2,\"last_read_message_id\":2,\"last_viewed_at\":\"2026-11-23T16:08:49.533Z\",\"last_viewed_pins_at\":null,\"starred\":false,\"has_unseen_pins\":false},\"meta\":{\"message_bus_last_ids\":{\"channel_message_bus_last_id\":1,\"new_messages\":0,\"new_mentions\":0,\"kick\":0},\"can_join_chat_channel\":true,\"can_flag\":true,\"user_silenced\":false,\"can_moderate\":false,\"can_delete_self\":true,\"can_delete_others\":false,\"can_remove_members\":false,\"can_manage_pins\":false},\"threading_enabled\":false,\"pinned_messages_count\":0,\"last_message\":{\"id\":6,\"message\":\"https://example.com\",\"cooked\":\"\\u003cp\\u003e\\u003ca href=\\\"https://example.com\\\" rel=\\\"noopener nofollow ugc\\\"\\u003ehttps://example.com\\u003c/a\\u003e\\u003c/p\\u003e\",\"created_at\":\"2026-11-23T18:14:48Z\",\"excerpt\":\"https://example.com\",\"deleted_at\":null,\"deleted_by_id\":null,\"thread_id\":null,\"chat_channel_id\":2,\"streaming\":false}}}",
+        "payload": "{\"message\":{\"id\":5,\"message\":\"edited **now**\",\"cooked\":\"\\u003cp\\u003eedited \\u003cstrong\\u003enow\\u003c/strong\\u003e\\u003c/p\\u003e\",\"created_at\":\"2026-11-24T01:10:31Z\",\"excerpt\":\"edited now\",\"chat_channel_id\":2,\"streaming\":false,\"user\":{\"id\":3,\"username\":\"user1\",\"name\":\"User1\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png\",\"can_chat\":null,\"has_chat_enabled\":null,\"moderator\":false,\"admin\":false,\"staff\":false,\"new_user\":false,\"primary_group_name\":null},\"mentioned_users\":[],\"available_flags\":[],\"edited\":true,\"blocks\":[],\"pinned\":false,\"is_action\":false,\"chat_webhook_event\":null,\"uploads\":[]},\"channel\":{\"id\":2,\"allow_channel_wide_mentions\":true,\"chatable\":{\"id\":4,\"name\":\"General\",\"color\":\"25AAE2\",\"text_color\":\"FFFFFF\",\"style_type\":\"emoji\",\"icon\":null,\"emoji\":\"blue_book\",\"slug\":\"general\",\"topic_count\":3,\"post_count\":7,\"position\":3,\"description\":\"\\u003cp\\u003eCreate topics here that don’t fit into any other existing category.\\u003c/p\\u003e\",\"description_text\":\"Create topics here that don’t fit into any other existing category.\",\"description_excerpt\":\"Create topics here that don’t fit into any other existing category.\",\"topic_url\":\"/t/about-the-general-category/3\",\"read_restricted\":false,\"permission\":null,\"notification_level\":null,\"topic_template\":null,\"topic_title_placeholder\":null,\"has_children\":null,\"subcategory_count\":null,\"sort_order\":null,\"sort_ascending\":null,\"show_subcategory_list\":false,\"num_featured_topics\":3,\"default_view\":null,\"subcategory_list_style\":\"rows_with_featured_topics\",\"default_top_period\":\"all\",\"default_list_filter\":\"all\",\"minimum_required_tags\":0,\"navigate_to_first_post_after_read\":false,\"uploaded_logo\":null,\"uploaded_logo_dark\":null,\"uploaded_background\":null,\"uploaded_background_dark\":null},\"chatable_id\":4,\"chatable_type\":\"Category\",\"chatable_url\":\"/c/general/4\",\"title\":\"General\",\"unicode_title\":\"General\",\"slug\":\"general\",\"status\":\"open\",\"memberships_count\":3,\"current_user_membership\":{\"following\":true,\"muted\":false,\"muted_until\":null,\"notification_level\":\"mention\",\"chat_channel_id\":2,\"last_read_message_id\":2,\"last_viewed_at\":\"2026-11-23T20:53:28.149Z\",\"last_viewed_pins_at\":null,\"starred\":false,\"has_unseen_pins\":false},\"meta\":{\"message_bus_last_ids\":{\"channel_message_bus_last_id\":1,\"new_messages\":0,\"new_mentions\":0,\"kick\":0},\"can_join_chat_channel\":true,\"can_flag\":true,\"user_silenced\":false,\"can_moderate\":false,\"can_delete_self\":true,\"can_delete_others\":false,\"can_remove_members\":false,\"can_manage_pins\":false},\"threading_enabled\":false,\"pinned_messages_count\":0,\"last_message\":{\"id\":6,\"message\":\"https://example.com\",\"cooked\":\"\\u003cp\\u003e\\u003ca href=\\\"https://example.com\\\" rel=\\\"noopener nofollow ugc\\\"\\u003ehttps://example.com\\u003c/a\\u003e\\u003c/p\\u003e\",\"created_at\":\"2026-11-24T01:20:31Z\",\"excerpt\":\"https://example.com\",\"deleted_at\":null,\"deleted_by_id\":null,\"thread_id\":null,\"chat_channel_id\":2,\"streaming\":false}}}",
         "category_id": 4,
         "web_hook_id": 9001,
         "event_name": "chat_message_edited",
@@ -154,7 +154,7 @@
       "Jobs::Chat::ProcessMessage",
       {
         "chat_message_id": 5,
-        "edit_timestamp": "2026-11-23T18:19:49.873224Z"
+        "edit_timestamp": "2026-11-24T01:25:32.696375Z"
       }
     ]
   ],
@@ -181,7 +181,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "68c96da2ef72398b22e861f8f9fed63c146a8a758bebeaa158d3996bbeccc7a0",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

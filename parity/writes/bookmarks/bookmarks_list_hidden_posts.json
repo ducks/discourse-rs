@@ -11,8 +11,8 @@
       "path": "/u/user1/bookmarks.json?q=Parity%20fixture"
     }
   ],
-  "started_at": "2026-11-23T16:32:54.859055",
-  "transaction_started_at": "2026-11-23T16:32:53.866498",
+  "started_at": "2026-11-23T21:46:06.628295",
+  "transaction_started_at": "2026-11-23T21:46:05.259944",
   "responses": [
     {
       "status": 200,
@@ -21,8 +21,8 @@
           "bookmarks": [
             {
               "id": 4,
-              "created_at": "2026-11-23T16:08:46.265Z",
-              "updated_at": "2026-11-23T16:08:46.271Z",
+              "created_at": "2026-11-23T20:53:24.498Z",
+              "updated_at": "2026-11-23T20:53:24.508Z",
               "name": "Parity fixture: pinned, in a PM",
               "reminder_at": null,
               "pinned": true,
@@ -41,7 +41,7 @@
               "archived": false,
               "archetype": "private_message",
               "highest_post_number": 2,
-              "bumped_at": "2026-11-23T16:08:42.419Z",
+              "bumped_at": "2026-11-23T20:53:20.384Z",
               "slug": "parity-fixture-pm-user1-to-user0",
               "user": {
                 "id": 2,
@@ -52,8 +52,8 @@
             },
             {
               "id": 3,
-              "created_at": "2026-11-23T16:08:46.245Z",
-              "updated_at": "2026-11-23T16:08:46.245Z",
+              "created_at": "2026-11-23T20:53:24.435Z",
+              "updated_at": "2026-11-23T20:53:24.435Z",
               "name": "Parity fixture: with a reminder",
               "reminder_at": "2031-01-15T09:30:00.000Z",
               "reminder_at_ics_start": "20310115T093000Z",
@@ -82,7 +82,7 @@
               "archived": false,
               "archetype": "regular",
               "highest_post_number": 5,
-              "bumped_at": "2026-11-23T16:08:43.039Z",
+              "bumped_at": "2026-11-23T20:53:20.972Z",
               "slug": "parity-fixture-replies-and-posters",
               "user": {
                 "id": 3,
@@ -93,8 +93,8 @@
             },
             {
               "id": 1,
-              "created_at": "2026-11-23T16:08:37.025Z",
-              "updated_at": "2026-11-23T16:08:37.025Z",
+              "created_at": "2026-11-23T20:53:13.925Z",
+              "updated_at": "2026-11-23T20:53:13.925Z",
               "name": null,
               "reminder_at": null,
               "pinned": null,
@@ -115,7 +115,7 @@
               "archived": false,
               "archetype": "regular",
               "highest_post_number": 1,
-              "bumped_at": "2026-11-23T16:08:33.529Z",
+              "bumped_at": "2026-11-23T20:53:09.691Z",
               "slug": "parity-fixture-pinned-and-closed",
               "user": {
                 "id": 1,
@@ -135,8 +135,8 @@
           "bookmarks": [
             {
               "id": 4,
-              "created_at": "2026-11-23T16:08:46.265Z",
-              "updated_at": "2026-11-23T16:08:46.271Z",
+              "created_at": "2026-11-23T20:53:24.498Z",
+              "updated_at": "2026-11-23T20:53:24.508Z",
               "name": "Parity fixture: pinned, in a PM",
               "reminder_at": null,
               "pinned": true,
@@ -155,7 +155,7 @@
               "archived": false,
               "archetype": "private_message",
               "highest_post_number": 2,
-              "bumped_at": "2026-11-23T16:08:42.419Z",
+              "bumped_at": "2026-11-23T20:53:20.384Z",
               "slug": "parity-fixture-pm-user1-to-user0",
               "user": {
                 "id": 2,
@@ -166,8 +166,8 @@
             },
             {
               "id": 3,
-              "created_at": "2026-11-23T16:08:46.245Z",
-              "updated_at": "2026-11-23T16:08:46.245Z",
+              "created_at": "2026-11-23T20:53:24.435Z",
+              "updated_at": "2026-11-23T20:53:24.435Z",
               "name": "Parity fixture: with a reminder",
               "reminder_at": "2031-01-15T09:30:00.000Z",
               "reminder_at_ics_start": "20310115T093000Z",
@@ -196,7 +196,7 @@
               "archived": false,
               "archetype": "regular",
               "highest_post_number": 5,
-              "bumped_at": "2026-11-23T16:08:43.039Z",
+              "bumped_at": "2026-11-23T20:53:20.972Z",
               "slug": "parity-fixture-replies-and-posters",
               "user": {
                 "id": 3,
@@ -207,8 +207,8 @@
             },
             {
               "id": 1,
-              "created_at": "2026-11-23T16:08:37.025Z",
-              "updated_at": "2026-11-23T16:08:37.025Z",
+              "created_at": "2026-11-23T20:53:13.925Z",
+              "updated_at": "2026-11-23T20:53:13.925Z",
               "name": null,
               "reminder_at": null,
               "pinned": null,
@@ -229,7 +229,7 @@
               "archived": false,
               "archetype": "regular",
               "highest_post_number": 1,
-              "bumped_at": "2026-11-23T16:08:33.529Z",
+              "bumped_at": "2026-11-23T20:53:09.691Z",
               "slug": "parity-fixture-pinned-and-closed",
               "user": {
                 "id": 1,
@@ -254,29 +254,29 @@
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "Q7L7DPlN3y8hyMTQOz/fk9hn2jk=",
-            "created_at": "2026-11-23T16:32:54.363131",
-            "rotated_at": "2026-11-23T16:32:54.361522",
-            "updated_at": "2026-11-23T16:32:54.363131",
+            "auth_token": "uscUtH2RlwJd1z/Mvuc+0sDIDpI=",
+            "created_at": "2026-11-23T21:46:05.718277",
+            "rotated_at": "2026-11-23T21:46:05.717227",
+            "updated_at": "2026-11-23T21:46:05.718277",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Q7L7DPlN3y8hyMTQOz/fk9hn2jk=",
+            "prev_auth_token": "uscUtH2RlwJd1z/Mvuc+0sDIDpI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:32:54.865184",
+            "seen_at": "2026-11-23T21:46:06.636437",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "Q7L7DPlN3y8hyMTQOz/fk9hn2jk=",
-            "created_at": "2026-11-23T16:32:54.363131",
-            "rotated_at": "2026-11-23T16:32:54.361522",
-            "updated_at": "2026-11-23T16:32:54.363131",
+            "auth_token": "uscUtH2RlwJd1z/Mvuc+0sDIDpI=",
+            "created_at": "2026-11-23T21:46:05.718277",
+            "rotated_at": "2026-11-23T21:46:05.717227",
+            "updated_at": "2026-11-23T21:46:05.718277",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Q7L7DPlN3y8hyMTQOz/fk9hn2jk=",
+            "prev_auth_token": "uscUtH2RlwJd1z/Mvuc+0sDIDpI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -292,7 +292,7 @@
   ],
   "recorded_from": {
     "case": "f6fd8a182a94e5d43ed7ab995708a6543d0eab854dabf29269af3e8efe13811c",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

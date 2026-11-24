@@ -7,8 +7,8 @@
       "path": "/chat/api/channels/2/messages.json"
     }
   ],
-  "started_at": "2026-11-23T16:39:47.174048",
-  "transaction_started_at": "2026-11-23T16:39:46.387219",
+  "started_at": "2026-11-23T21:47:40.20859",
+  "transaction_started_at": "2026-11-23T21:47:39.3823",
   "responses": [
     {
       "status": 200,
@@ -18,7 +18,7 @@
             "id": 1,
             "message": "Hello **world**",
             "cooked": "<p>Hello <strong>world</strong></p>",
-            "created_at": "2026-11-23T15:49:46Z",
+            "created_at": "2026-11-23T20:57:39Z",
             "excerpt": "Hello world",
             "chat_channel_id": 2,
             "streaming": false,
@@ -47,7 +47,7 @@
             "id": 2,
             "message": "@user0 hi back",
             "cooked": "<p><a class=\"mention\" href=\"/u/user0\">@user0</a> hi back</p>",
-            "created_at": "2026-11-23T15:59:46Z",
+            "created_at": "2026-11-23T21:07:39Z",
             "excerpt": "@user0 hi back",
             "chat_channel_id": 2,
             "streaming": false,
@@ -99,7 +99,7 @@
             "id": 3,
             "message": "edited message :heart:",
             "cooked": "<p>edited message <img src=\"/images/emoji/twitter/heart.png?v=14\" title=\":heart:\" class=\"emoji\" alt=\":heart:\" loading=\"lazy\" width=\"20\" height=\"20\"></p>",
-            "created_at": "2026-11-23T16:09:46Z",
+            "created_at": "2026-11-23T21:17:39Z",
             "excerpt": "edited message :heart:",
             "chat_channel_id": 2,
             "streaming": false,
@@ -169,7 +169,7 @@
             "id": 5,
             "message": "/me waves",
             "cooked": "<p>/me waves</p>",
-            "created_at": "2026-11-23T16:24:46Z",
+            "created_at": "2026-11-23T21:32:39Z",
             "excerpt": "/me waves",
             "chat_channel_id": 2,
             "streaming": false,
@@ -198,7 +198,7 @@
             "id": 6,
             "message": "https://example.com",
             "cooked": "<p><a href=\"https://example.com\" rel=\"noopener nofollow ugc\">https://example.com</a></p>",
-            "created_at": "2026-11-23T16:34:46Z",
+            "created_at": "2026-11-23T21:42:39Z",
             "excerpt": "https://example.com",
             "chat_channel_id": 2,
             "streaming": false,
@@ -256,7 +256,7 @@
   ],
   "recorded_from": {
     "case": "826b14befab509519c3ee64bc0538b2cb588b75fbc326b31a2cc1a44fb7a8144",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

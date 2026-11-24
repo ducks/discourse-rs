@@ -15,8 +15,8 @@
       "path": "/c/999/show.json"
     }
   ],
-  "started_at": "2026-11-23T16:34:10.73801",
-  "transaction_started_at": "2026-11-23T16:34:09.862472",
+  "started_at": "2026-11-23T21:46:06.322348",
+  "transaction_started_at": "2026-11-23T21:46:05.519237",
   "responses": [
     {
       "status": 200,
@@ -31,7 +31,7 @@
           "emoji": "thought_balloon",
           "slug": "site-feedback",
           "topic_count": 1,
-          "post_count": 0,
+          "post_count": 1,
           "position": 1,
           "description": "<p>Discussion about this site, its organization, how it works, and how we can improve it.</p>",
           "description_text": "Discussion about this site, its organization, how it works, and how we can improve it.",
@@ -118,7 +118,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "5ff27ffd9c56b080d201256b044aba27370d56227fee92d8f112b460cc7c31d1",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

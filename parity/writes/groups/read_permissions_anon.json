@@ -7,8 +7,8 @@
       "path": "/groups/testers/permissions.json"
     }
   ],
-  "started_at": "2026-11-23T16:58:40.317722",
-  "transaction_started_at": "2026-11-23T16:58:39.722995",
+  "started_at": "2026-11-23T21:55:46.695821",
+  "transaction_started_at": "2026-11-23T21:55:42.695302",
   "responses": [
     {
       "status": 200,
@@ -25,7 +25,7 @@
             "emoji": "blue_book",
             "slug": "general",
             "topic_count": 3,
-            "post_count": 0,
+            "post_count": 7,
             "position": 3,
             "description": "<p>Create topics here that don’t fit into any other existing category.</p>",
             "description_text": "Create topics here that don’t fit into any other existing category.",
@@ -131,7 +131,7 @@
   ],
   "recorded_from": {
     "case": "22361786efb9d8f2250c8d06364b32053bd0cd5b8967d0b5ebe563a79abddabc",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

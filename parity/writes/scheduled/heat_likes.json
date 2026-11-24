@@ -2,8 +2,8 @@
   "name": "heat_likes",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:35:24.357596",
-  "transaction_started_at": "2026-11-23T17:35:23.733326",
+  "started_at": "2026-11-24T01:07:45.059727",
+  "transaction_started_at": "2026-11-24T01:07:40.818535",
   "responses": [],
   "changes": {
     "site_settings": {
@@ -13,24 +13,24 @@
           "name": "topic_post_like_heat_high",
           "value": "2.5",
           "data_type": 4,
-          "created_at": "2026-11-23T17:35:24.360696",
-          "updated_at": "2026-11-23T17:35:24.360696"
+          "created_at": "2026-11-24T01:07:45.116979",
+          "updated_at": "2026-11-24T01:07:45.116979"
         },
         {
           "id": 38,
           "name": "topic_post_like_heat_medium",
           "value": "1.5",
           "data_type": 4,
-          "created_at": "2026-11-23T17:35:24.367714",
-          "updated_at": "2026-11-23T17:35:24.367714"
+          "created_at": "2026-11-24T01:07:45.185951",
+          "updated_at": "2026-11-24T01:07:45.185951"
         },
         {
           "id": 39,
           "name": "topic_post_like_heat_low",
           "value": "0.58",
           "data_type": 4,
-          "created_at": "2026-11-23T17:35:24.373483",
-          "updated_at": "2026-11-23T17:35:24.373483"
+          "created_at": "2026-11-24T01:07:45.213719",
+          "updated_at": "2026-11-24T01:07:45.213719"
         }
       ],
       "deleted": [],
@@ -39,7 +39,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 66,
+          "id": 69,
           "email": null,
           "action": 3,
           "context": null,
@@ -49,10 +49,10 @@
           "topic_id": null,
           "new_value": "2.5",
           "admin_only": true,
-          "created_at": "2026-11-23T17:35:24.364171",
+          "created_at": "2026-11-24T01:07:45.175309",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:35:24.364171",
+          "updated_at": "2026-11-24T01:07:45.175309",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -61,7 +61,7 @@
           "target_user_id": null
         },
         {
-          "id": 67,
+          "id": 70,
           "email": null,
           "action": 3,
           "context": null,
@@ -71,10 +71,10 @@
           "topic_id": null,
           "new_value": "1.5",
           "admin_only": true,
-          "created_at": "2026-11-23T17:35:24.370647",
+          "created_at": "2026-11-24T01:07:45.200905",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:35:24.370647",
+          "updated_at": "2026-11-24T01:07:45.200905",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -83,7 +83,7 @@
           "target_user_id": null
         },
         {
-          "id": 68,
+          "id": 71,
           "email": null,
           "action": 3,
           "context": null,
@@ -93,10 +93,10 @@
           "topic_id": null,
           "new_value": "0.58",
           "admin_only": true,
-          "created_at": "2026-11-23T17:35:24.376719",
+          "created_at": "2026-11-24T01:07:45.230722",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-23T17:35:24.376719",
+          "updated_at": "2026-11-24T01:07:45.230722",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -112,7 +112,7 @@
   "jobs": [],
   "next_ids": {
     "site_settings": 37,
-    "user_histories": 66
+    "user_histories": 69
   },
   "setup": [
     "UPDATE topics SET posts_count = x.p, like_count = x.l FROM (VALUES (35,10,30),(37,10,25),(38,10,21),(41,10,18),(34,10,15),(1,10,12),(2,10,11),(3,10,7),(4,12,7)) AS x(id,p,l) WHERE topics.id = x.id"
@@ -126,7 +126,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "91d174ddbe996f2c5b43acc39b37df48db75466c2e3b495cd1c8f1b06740408e",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

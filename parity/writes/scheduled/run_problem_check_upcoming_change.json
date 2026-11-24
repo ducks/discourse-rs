@@ -2,8 +2,8 @@
   "name": "run_problem_check_upcoming_change",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:36:40.174934",
-  "transaction_started_at": "2026-11-23T17:36:39.248998",
+  "started_at": "2026-11-24T01:11:23.654678",
+  "transaction_started_at": "2026-11-24T01:11:19.462799",
   "responses": [],
   "changes": {
     "admin_notices": {
@@ -17,9 +17,9 @@
           },
           "subject": 0,
           "priority": 0,
-          "created_at": "2026-11-23T17:36:40.196472",
+          "created_at": "2026-11-24T01:11:23.796511",
           "identifier": "upcoming_change_stable_opted_out",
-          "updated_at": "2026-11-23T17:36:40.196472"
+          "updated_at": "2026-11-24T01:11:23.796511"
         }
       ],
       "deleted": [],
@@ -34,10 +34,10 @@
           "details": {},
           "identifier": "upcoming_change_stable_opted_out",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T17:36:40.180147",
-          "next_run_at": "2026-11-23T18:36:40.177155",
+          "last_run_at": "2026-11-24T01:11:23.682279",
+          "next_run_at": "2026-11-24T02:11:23.668948",
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T17:36:40.180147"
+          "last_success_at": "2026-11-24T01:11:23.682279"
         },
         {
           "id": 80,
@@ -49,9 +49,9 @@
           },
           "identifier": "upcoming_change_stable_opted_out",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T17:36:40.193369",
-          "next_run_at": "2026-11-23T18:36:40.190973",
-          "last_problem_at": "2026-11-23T17:36:40.193369",
+          "last_run_at": "2026-11-24T01:11:23.775239",
+          "next_run_at": "2026-11-24T02:11:23.756822",
+          "last_problem_at": "2026-11-24T01:11:23.775239",
           "last_success_at": null
         }
       ],
@@ -120,7 +120,7 @@
   ],
   "recorded_from": {
     "case": "e08ea9fe14c7148a4f1f9b7484a50a3109b00eeee3e27adebecb2b813320d331",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

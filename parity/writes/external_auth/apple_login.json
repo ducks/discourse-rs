@@ -19,21 +19,21 @@
       "path": "/auth/apple/callback"
     }
   ],
-  "started_at": "2026-11-23T16:54:29.953625",
-  "transaction_started_at": "2026-11-23T16:54:29.306962",
+  "started_at": "2026-11-23T21:53:12.006057",
+  "transaction_started_at": "2026-11-23T21:53:08.962966",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/apple/auth/authorize?client_id=com.example.app&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fapple%2Fcallback&response_mode=form_post&response_type=code&scope=email%20name&state=b58472ed0b74f599d4a1922236911d5a124dba326ea60878...",
+      "body": "Redirecting to http://fixtures.localhost:8099/apple/auth/authorize?client_id=com.example.app&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fapple%2Fcallback&response_mode=form_post&response_type=code&scope=email%20name&state=bc7378924c3a136f6518651ab863d4c0d113d551933a4b24...",
       "headers": {
-        "Location": "/apple/auth/authorize?client_id=com.example.app&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fapple%2Fcallback&response_mode=form_post&response_type=code&scope=email%20name&state=b58472ed0b74f599d4a1922236911d5a124dba326ea60878"
+        "Location": "/apple/auth/authorize?client_id=com.example.app&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Fapple%2Fcallback&response_mode=form_post&response_type=code&scope=email%20name&state=bc7378924c3a136f6518651ab863d4c0d113d551933a4b24"
       }
     },
     {
       "status": 302,
-      "body": "Redirecting to http://localhost:3042/auth/apple/callback?code=good-code&state=b58472ed0b74f599d4a1922236911d5a124dba326ea60878&user=%7B%22name%22%3A%7B%22firstName%22%3A%22Ann%22%2C%22lastName%22%3A%22Apple%22%7D%7D...",
+      "body": "Redirecting to http://localhost:3042/auth/apple/callback?code=good-code&state=bc7378924c3a136f6518651ab863d4c0d113d551933a4b24&user=%7B%22name%22%3A%7B%22firstName%22%3A%22Ann%22%2C%22lastName%22%3A%22Apple%22%7D%7D...",
       "headers": {
-        "Location": "/auth/apple/callback?code=good-code&state=b58472ed0b74f599d4a1922236911d5a124dba326ea60878&user=%7B%22name%22%3A%7B%22firstName%22%3A%22Ann%22%2C%22lastName%22%3A%22Apple%22%7D%7D"
+        "Location": "/auth/apple/callback?code=good-code&state=bc7378924c3a136f6518651ab863d4c0d113d551933a4b24&user=%7B%22name%22%3A%7B%22firstName%22%3A%22Ann%22%2C%22lastName%22%3A%22Apple%22%7D%7D"
       }
     },
     {
@@ -78,9 +78,9 @@
             }
           },
           "user_id": 5,
-          "last_used": "2026-11-23T16:54:30.049998",
-          "created_at": "2026-11-23T16:54:30.054695",
-          "updated_at": "2026-11-23T16:54:30.054695",
+          "last_used": "2026-11-23T21:53:12.145164",
+          "created_at": "2026-11-23T21:53:12.149762",
+          "updated_at": "2026-11-23T21:53:12.149762",
           "credentials": {
             "token": "apple-access",
             "expires": false
@@ -101,8 +101,8 @@
           "action": "generate",
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "Zwik/4iOv4ZWoKEDYArZoL4YTAc=",
-          "created_at": "2026-11-23T16:54:30.2279",
+          "auth_token": "FuSNtfs49hsvoq4jXDKdUHQN+HI=",
+          "created_at": "2026-11-23T21:53:12.289678",
           "user_agent": null,
           "user_auth_token_id": 1
         }
@@ -117,13 +117,13 @@
           "seen_at": null,
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "Zwik/4iOv4ZWoKEDYArZoL4YTAc=",
-          "created_at": "2026-11-23T16:54:30.222948",
-          "rotated_at": "2026-11-23T16:54:30.219335",
-          "updated_at": "2026-11-23T16:54:30.222948",
+          "auth_token": "FuSNtfs49hsvoq4jXDKdUHQN+HI=",
+          "created_at": "2026-11-23T21:53:12.281444",
+          "rotated_at": "2026-11-23T21:53:12.279009",
+          "updated_at": "2026-11-23T21:53:12.281444",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "Zwik/4iOv4ZWoKEDYArZoL4YTAc=",
+          "prev_auth_token": "FuSNtfs49hsvoq4jXDKdUHQN+HI=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": true,
           "impersonation_expires_at": null
@@ -192,7 +192,7 @@
             "created_at": "2026-11-03T05:08:00.934987",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-23T16:54:30.131383",
+            "updated_at": "2026-11-23T21:53:12.211066",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -221,15 +221,7 @@
       ]
     }
   },
-  "jobs": [
-    [
-      "update_gravatar in 1s",
-      {
-        "user_id": 5,
-        "avatar_id": 7
-      }
-    ]
-  ],
+  "jobs": [],
   "next_ids": {
     "user_associated_accounts": 1,
     "user_auth_token_logs": 1,
@@ -267,7 +259,7 @@
   ],
   "recorded_from": {
     "case": "e77189c5ad578d105569a976d94a85444d1b61fe87ab8c6daa755fe2df789c06",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

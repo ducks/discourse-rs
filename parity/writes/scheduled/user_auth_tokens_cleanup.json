@@ -2,8 +2,8 @@
   "name": "user_auth_tokens_cleanup",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:37:29.375017",
-  "transaction_started_at": "2026-11-23T17:37:28.631336",
+  "started_at": "2026-11-24T01:12:07.779334",
+  "transaction_started_at": "2026-11-24T01:12:02.972329",
   "responses": [],
   "changes": {
     "user_auth_token_logs": {
@@ -16,7 +16,7 @@
           "user_id": 3,
           "client_ip": null,
           "auth_token": null,
-          "created_at": "2026-09-14T17:37:28.631336",
+          "created_at": "2026-09-15T01:12:02.972329",
           "user_agent": null,
           "user_auth_token_id": 9501
         }
@@ -32,9 +32,9 @@
           "user_id": 3,
           "client_ip": null,
           "auth_token": "a9501",
-          "created_at": "2026-09-14T17:37:28.631336",
-          "rotated_at": "2026-09-14T17:37:28.631336",
-          "updated_at": "2026-09-14T17:37:28.631336",
+          "created_at": "2026-09-15T01:12:02.972329",
+          "rotated_at": "2026-09-15T01:12:02.972329",
+          "updated_at": "2026-09-15T01:12:02.972329",
           "user_agent": null,
           "auth_token_seen": false,
           "prev_auth_token": "p9501",
@@ -64,7 +64,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "87d345d0987642d068fe6e86f7c3acad654c645aabd700d8a951a02aa177385a",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

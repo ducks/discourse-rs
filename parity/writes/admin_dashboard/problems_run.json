@@ -7,8 +7,8 @@
       "path": "/admin/dashboard/problems.json"
     }
   ],
-  "started_at": "2026-11-23T16:19:09.7744",
-  "transaction_started_at": "2026-11-23T16:19:08.922587",
+  "started_at": "2026-11-23T21:38:17.259399",
+  "transaction_started_at": "2026-11-23T21:38:13.269886",
   "responses": [
     {
       "status": 200,
@@ -40,16 +40,28 @@
     "problem_check_trackers": {
       "inserted": [
         {
+          "id": 97,
+          "blips": 0,
+          "target": "__NULL__",
+          "details": {},
+          "identifier": "sidekiq_check",
+          "ignored_at": null,
+          "last_run_at": "2026-11-23T21:38:18.552658",
+          "next_run_at": null,
+          "last_problem_at": null,
+          "last_success_at": "2026-11-23T21:38:18.552658"
+        },
+        {
           "id": 77,
           "blips": 0,
           "target": "__NULL__",
           "details": {},
           "identifier": "content_security_policy_disabled",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:09.832471",
+          "last_run_at": "2026-11-23T21:38:17.343308",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:09.832471"
+          "last_success_at": "2026-11-23T21:38:17.343308"
         },
         {
           "id": 78,
@@ -58,10 +70,10 @@
           "details": {},
           "identifier": "email_polling_errored_recently",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:09.858114",
+          "last_run_at": "2026-11-23T21:38:17.38686",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:09.858114"
+          "last_success_at": "2026-11-23T21:38:17.38686"
         },
         {
           "id": 79,
@@ -70,10 +82,10 @@
           "details": {},
           "identifier": "facebook_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:09.881773",
+          "last_run_at": "2026-11-23T21:38:17.427074",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:09.881773"
+          "last_success_at": "2026-11-23T21:38:17.427074"
         },
         {
           "id": 80,
@@ -82,10 +94,10 @@
           "details": {},
           "identifier": "failing_emails",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:09.90907",
+          "last_run_at": "2026-11-23T21:38:17.472669",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:09.90907"
+          "last_success_at": "2026-11-23T21:38:17.472669"
         },
         {
           "id": 81,
@@ -96,9 +108,9 @@
           },
           "identifier": "force_https",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:09.939399",
+          "last_run_at": "2026-11-23T21:38:17.518443",
           "next_run_at": null,
-          "last_problem_at": "2026-11-23T16:19:09.939399",
+          "last_problem_at": "2026-11-23T21:38:17.518443",
           "last_success_at": null
         },
         {
@@ -108,10 +120,10 @@
           "details": {},
           "identifier": "github_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:09.964083",
+          "last_run_at": "2026-11-23T21:38:17.568625",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:09.964083"
+          "last_success_at": "2026-11-23T21:38:17.568625"
         },
         {
           "id": 83,
@@ -120,10 +132,10 @@
           "details": {},
           "identifier": "google_analytics_version",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:09.986816",
+          "last_run_at": "2026-11-23T21:38:17.612437",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:09.986816"
+          "last_success_at": "2026-11-23T21:38:17.612437"
         },
         {
           "id": 84,
@@ -132,10 +144,10 @@
           "details": {},
           "identifier": "google_oauth2_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.012118",
+          "last_run_at": "2026-11-23T21:38:17.653381",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.012118"
+          "last_success_at": "2026-11-23T21:38:17.653381"
         },
         {
           "id": 85,
@@ -146,9 +158,9 @@
           },
           "identifier": "host_names",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.036833",
+          "last_run_at": "2026-11-23T21:38:17.697903",
           "next_run_at": null,
-          "last_problem_at": "2026-11-23T16:19:10.036833",
+          "last_problem_at": "2026-11-23T21:38:17.697903",
           "last_success_at": null
         },
         {
@@ -158,10 +170,10 @@
           "details": {},
           "identifier": "image_magick",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.049942",
+          "last_run_at": "2026-11-23T21:38:17.748292",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.049942"
+          "last_success_at": "2026-11-23T21:38:17.748292"
         },
         {
           "id": 87,
@@ -170,10 +182,10 @@
           "details": {},
           "identifier": "landlock",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.061078",
+          "last_run_at": "2026-11-23T21:38:17.795269",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.061078"
+          "last_success_at": "2026-11-23T21:38:17.795269"
         },
         {
           "id": 88,
@@ -182,10 +194,10 @@
           "details": {},
           "identifier": "missing_aws_sns_topic_arn",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.070767",
+          "last_run_at": "2026-11-23T21:38:17.841774",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.070767"
+          "last_success_at": "2026-11-23T21:38:17.841774"
         },
         {
           "id": 89,
@@ -194,10 +206,10 @@
           "details": {},
           "identifier": "missing_mailgun_api_key",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.08051",
+          "last_run_at": "2026-11-23T21:38:17.888394",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.08051"
+          "last_success_at": "2026-11-23T21:38:17.888394"
         },
         {
           "id": 90,
@@ -206,10 +218,10 @@
           "details": {},
           "identifier": "out_of_date_themes",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.093024",
+          "last_run_at": "2026-11-23T21:38:17.942956",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.093024"
+          "last_success_at": "2026-11-23T21:38:17.942956"
         },
         {
           "id": 91,
@@ -218,10 +230,10 @@
           "details": {},
           "identifier": "qq_mail_smtp",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.102369",
+          "last_run_at": "2026-11-23T21:38:18.01285",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.102369"
+          "last_success_at": "2026-11-23T21:38:18.01285"
         },
         {
           "id": 92,
@@ -233,9 +245,9 @@
           },
           "identifier": "rails_env",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.11219",
+          "last_run_at": "2026-11-23T21:38:18.087546",
           "next_run_at": null,
-          "last_problem_at": "2026-11-23T16:19:10.11219",
+          "last_problem_at": "2026-11-23T21:38:18.087546",
           "last_success_at": null
         },
         {
@@ -245,10 +257,10 @@
           "details": {},
           "identifier": "ram",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.128598",
+          "last_run_at": "2026-11-23T21:38:18.185416",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.128598"
+          "last_success_at": "2026-11-23T21:38:18.185416"
         },
         {
           "id": 94,
@@ -257,10 +269,10 @@
           "details": {},
           "identifier": "s3_backup_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.138204",
+          "last_run_at": "2026-11-23T21:38:18.272732",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.138204"
+          "last_success_at": "2026-11-23T21:38:18.272732"
         },
         {
           "id": 95,
@@ -269,10 +281,10 @@
           "details": {},
           "identifier": "s3_cdn",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.147024",
+          "last_run_at": "2026-11-23T21:38:18.360809",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.147024"
+          "last_success_at": "2026-11-23T21:38:18.360809"
         },
         {
           "id": 96,
@@ -281,22 +293,10 @@
           "details": {},
           "identifier": "s3_upload_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.155639",
+          "last_run_at": "2026-11-23T21:38:18.456135",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.155639"
-        },
-        {
-          "id": 97,
-          "blips": 0,
-          "target": "__NULL__",
-          "details": {},
-          "identifier": "sidekiq_check",
-          "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.164459",
-          "next_run_at": null,
-          "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.164459"
+          "last_success_at": "2026-11-23T21:38:18.456135"
         },
         {
           "id": 98,
@@ -305,10 +305,10 @@
           "details": {},
           "identifier": "subfolder_ends_in_slash",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.173851",
+          "last_run_at": "2026-11-23T21:38:18.639309",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.173851"
+          "last_success_at": "2026-11-23T21:38:18.639309"
         },
         {
           "id": 99,
@@ -317,10 +317,10 @@
           "details": {},
           "identifier": "starttls_disabled",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.182503",
+          "last_run_at": "2026-11-23T21:38:18.703791",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.182503"
+          "last_success_at": "2026-11-23T21:38:18.703791"
         },
         {
           "id": 100,
@@ -329,10 +329,10 @@
           "details": {},
           "identifier": "translation_overrides",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.192088",
+          "last_run_at": "2026-11-23T21:38:18.764124",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.192088"
+          "last_success_at": "2026-11-23T21:38:18.764124"
         },
         {
           "id": 101,
@@ -341,10 +341,10 @@
           "details": {},
           "identifier": "twitter_config",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.202157",
+          "last_run_at": "2026-11-23T21:38:18.831682",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.202157"
+          "last_success_at": "2026-11-23T21:38:18.831682"
         },
         {
           "id": 102,
@@ -353,10 +353,10 @@
           "details": {},
           "identifier": "unreachable_themes",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.213379",
+          "last_run_at": "2026-11-23T21:38:18.92868",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.213379"
+          "last_success_at": "2026-11-23T21:38:18.92868"
         },
         {
           "id": 103,
@@ -365,10 +365,10 @@
           "details": {},
           "identifier": "watched_words",
           "ignored_at": null,
-          "last_run_at": "2026-11-23T16:19:10.230558",
+          "last_run_at": "2026-11-23T21:38:19.044106",
           "next_run_at": null,
           "last_problem_at": null,
-          "last_success_at": "2026-11-23T16:19:10.230558"
+          "last_success_at": "2026-11-23T21:38:19.044106"
         }
       ],
       "deleted": [],
@@ -384,29 +384,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "3KwzOVZA7HEuakgcf3Z6DLyM8h0=",
-            "created_at": "2026-11-23T16:19:09.240947",
-            "rotated_at": "2026-11-23T16:19:09.238277",
-            "updated_at": "2026-11-23T16:19:09.240947",
+            "auth_token": "IPFXhXGo3VOsmKeYqs+hoZlZIDE=",
+            "created_at": "2026-11-23T21:38:15.049527",
+            "rotated_at": "2026-11-23T21:38:15.04272",
+            "updated_at": "2026-11-23T21:38:15.049527",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "3KwzOVZA7HEuakgcf3Z6DLyM8h0=",
+            "prev_auth_token": "IPFXhXGo3VOsmKeYqs+hoZlZIDE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T16:19:09.797731",
+            "seen_at": "2026-11-23T21:38:17.27996",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "3KwzOVZA7HEuakgcf3Z6DLyM8h0=",
-            "created_at": "2026-11-23T16:19:09.240947",
-            "rotated_at": "2026-11-23T16:19:09.238277",
-            "updated_at": "2026-11-23T16:19:09.240947",
+            "auth_token": "IPFXhXGo3VOsmKeYqs+hoZlZIDE=",
+            "created_at": "2026-11-23T21:38:15.049527",
+            "rotated_at": "2026-11-23T21:38:15.04272",
+            "updated_at": "2026-11-23T21:38:15.049527",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "3KwzOVZA7HEuakgcf3Z6DLyM8h0=",
+            "prev_auth_token": "IPFXhXGo3VOsmKeYqs+hoZlZIDE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -424,7 +424,7 @@
   ],
   "recorded_from": {
     "case": "b18b1c557de7285dfb008ad764f8b60374f5d3b6898d37dd627405d0f7dd88ae",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "bookmarks_cleanup_chat_on",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T17:34:22.300642",
-  "transaction_started_at": "2026-11-23T17:34:21.428586",
+  "started_at": "2026-11-24T01:08:53.070672",
+  "transaction_started_at": "2026-11-24T01:08:49.403874",
   "responses": [],
   "changes": {
     "bookmarks": {
@@ -52,7 +52,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "6b60b9ddfba0eb15a75a63f54b131550a1b940e514828ab85532510a90c2ace2",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

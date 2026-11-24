@@ -29,8 +29,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T18:20:20.74299",
-  "transaction_started_at": "2026-11-23T18:20:19.635528",
+  "started_at": "2026-11-24T01:26:21.369621",
+  "transaction_started_at": "2026-11-24T01:26:20.505279",
   "responses": [
     {
       "status": 200,
@@ -83,9 +83,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-23T18:20:20.810941",
+          "created_at": "2026-11-24T01:26:21.407552",
           "prev_value": null,
-          "updated_at": "2026-11-23T18:20:20.810941",
+          "updated_at": "2026-11-24T01:26:21.407552",
           "acting_user_id": 1,
           "target_user_id": 3
         },
@@ -95,9 +95,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-23T18:20:20.861521",
+          "created_at": "2026-11-24T01:26:21.45971",
           "prev_value": null,
-          "updated_at": "2026-11-23T18:20:20.861521",
+          "updated_at": "2026-11-24T01:26:21.45971",
           "acting_user_id": 1,
           "target_user_id": 4
         }
@@ -115,7 +115,7 @@
           "group_id": 9001,
           "created_at": "2026-10-01T10:00:00",
           "updated_at": "2026-10-01T10:00:00",
-          "first_unread_pm_at": "2026-11-23T18:20:19.635528",
+          "first_unread_pm_at": "2026-11-24T01:26:20.505279",
           "notification_level": 3
         },
         {
@@ -125,7 +125,7 @@
           "group_id": 9001,
           "created_at": "2026-10-01T10:00:00",
           "updated_at": "2026-10-01T10:00:00",
-          "first_unread_pm_at": "2026-11-23T18:20:19.635528",
+          "first_unread_pm_at": "2026-11-24T01:26:20.505279",
           "notification_level": 3
         }
       ],
@@ -257,29 +257,29 @@
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ODlXP5ZXR6ARbq17/8uP36ELOfE=",
-            "created_at": "2026-11-23T18:20:20.053665",
-            "rotated_at": "2026-11-23T18:20:20.052739",
-            "updated_at": "2026-11-23T18:20:20.053665",
+            "auth_token": "TjHR1AYQQzqORO1+n94U3x9k6xo=",
+            "created_at": "2026-11-24T01:26:20.841113",
+            "rotated_at": "2026-11-24T01:26:20.839652",
+            "updated_at": "2026-11-24T01:26:20.841113",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ODlXP5ZXR6ARbq17/8uP36ELOfE=",
+            "prev_auth_token": "TjHR1AYQQzqORO1+n94U3x9k6xo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
             "id": 1,
-            "seen_at": "2026-11-23T18:20:20.762234",
+            "seen_at": "2026-11-24T01:26:21.377701",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ODlXP5ZXR6ARbq17/8uP36ELOfE=",
-            "created_at": "2026-11-23T18:20:20.053665",
-            "rotated_at": "2026-11-23T18:20:20.052739",
-            "updated_at": "2026-11-23T18:20:20.053665",
+            "auth_token": "TjHR1AYQQzqORO1+n94U3x9k6xo=",
+            "created_at": "2026-11-24T01:26:20.841113",
+            "rotated_at": "2026-11-24T01:26:20.839652",
+            "updated_at": "2026-11-24T01:26:20.841113",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ODlXP5ZXR6ARbq17/8uP36ELOfE=",
+            "prev_auth_token": "TjHR1AYQQzqORO1+n94U3x9k6xo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -328,7 +328,7 @@
   ],
   "recorded_from": {
     "case": "5a70e73c1c53e7229c7ceb66b5c59ad453054fb9058c6378a04cfae0bf0d9098",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

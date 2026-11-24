@@ -7,8 +7,8 @@
       "path": "/invites/Fixture900"
     }
   ],
-  "started_at": "2026-11-23T17:04:23.708583",
-  "transaction_started_at": "2026-11-23T17:04:23.068993",
+  "started_at": "2026-11-23T22:01:26.673281",
+  "transaction_started_at": "2026-11-23T22:01:20.838281",
   "responses": [
     {
       "status": 200,
@@ -41,7 +41,7 @@
   ],
   "recorded_from": {
     "case": "5a3748f7e3eb6577fc8e3ab9da9cba94ba8b0c25109a80a489dbc93c5df10c12",
-    "seed": "2488010d3bf6e7ca583468c7015a459886eca1fd380e80a7b9321763f249c01d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }
