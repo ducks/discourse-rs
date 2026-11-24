@@ -105,8 +105,6 @@ pub async fn update(
     if let Some(o) = section(&p, "your_organization") {
         add("company_name", value(o, "company_name"));
         add("company_url", value(o, "company_url"));
-        add("governing_law", value(o, "governing_law"));
-        add("city_for_disputes", value(o, "city_for_disputes"));
     }
     if let Some(e) = section(&p, "extra_groups") {
         add("about_page_extra_groups", value(e, "groups"));
