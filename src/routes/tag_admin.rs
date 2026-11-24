@@ -15,7 +15,7 @@ use axum::response::{IntoResponse, Response};
 use serde_json::{Map, Value, json};
 use sqlx::PgConnection;
 
-use crate::guardian::Guardian;
+use crate::guardian::{Guardian, GuardianError};
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
 use crate::tags::Tag;
@@ -59,12 +59,21 @@ fn tag_ref(segment: &str) -> &str {
 async fn fetch_tag(
     conn: &mut PgConnection,
     guardian: &Guardian,
+    settings: &SiteSettings,
     reference: &str,
-) -> Result<Option<Tag>, sqlx::Error> {
+) -> Result<Option<Tag>, GuardianError> {
     let numeric = !reference.is_empty() && reference.bytes().all(|b| b.is_ascii_digit());
     let mut tag = None;
     if numeric && let Ok(id) = reference.parse::<i32>() {
         tag = Tag::find(&mut *conn, id).await?;
+        // An id lookup doesn't disclose tags confined to unseen categories.
+        if let Some(t) = &tag
+            && !t
+                .visible_in_accessible_categories(&mut *conn, guardian, settings)
+                .await?
+        {
+            tag = None;
+        }
     }
     if tag.is_none() {
         tag = Tag::find_by_name(&mut *conn, reference).await?;
@@ -151,7 +160,7 @@ pub async fn get_sub(
             ))
         }
         "info" => {
-            let Some(t) = fetch_tag(&mut conn, guardian, tag_ref(&tag)).await? else {
+            let Some(t) = fetch_tag(&mut conn, guardian, &s, tag_ref(&tag)).await? else {
                 return Ok(Some(not_found(state)));
             };
             Ok(Some(
@@ -162,7 +171,7 @@ pub async fn get_sub(
             if guardian.is_anonymous() {
                 return Ok(Some(super::login_required::not_logged_in(state)));
             }
-            let Some(t) = fetch_tag(&mut conn, guardian, tag_ref(&tag)).await? else {
+            let Some(t) = fetch_tag(&mut conn, guardian, &s, tag_ref(&tag)).await? else {
                 return Ok(Some(not_found(state)));
             };
             let level: Option<i32> = sqlx::query_scalar(
@@ -213,7 +222,7 @@ pub async fn put(
         .ok_or(Unsupported("anonymous tag writes"))?;
     match action.as_str() {
         "" => {
-            let Some(t) = fetch_tag(&mut conn, &guardian, tag_ref(&tag)).await? else {
+            let Some(t) = fetch_tag(&mut conn, &guardian, &s, tag_ref(&tag)).await? else {
                 return Ok(not_found(&state));
             };
             let Some(Value::Object(params)) = p.get("tag") else {
@@ -282,7 +291,7 @@ pub async fn put(
             }
         }
         "notifications" => {
-            let Some(t) = fetch_tag(&mut conn, &guardian, tag_ref(&tag)).await? else {
+            let Some(t) = fetch_tag(&mut conn, &guardian, &s, tag_ref(&tag)).await? else {
                 return Ok(not_found(&state));
             };
             let level = p
@@ -473,7 +482,7 @@ pub async fn delete(
     let user_id = guardian
         .user_id()
         .ok_or(Unsupported("anonymous tag writes"))?;
-    let Some(t) = fetch_tag(&mut conn, &guardian, tag_ref(&tag)).await? else {
+    let Some(t) = fetch_tag(&mut conn, &guardian, &s, tag_ref(&tag)).await? else {
         return Ok(not_found(&state));
     };
     match (action.as_str(), synonym) {
@@ -544,7 +553,7 @@ pub async fn post(
     if guardian.is_anonymous() {
         return Ok(super::login_required::not_logged_in(&state));
     }
-    let Some(t) = fetch_tag(&mut conn, &guardian, tag_ref(&tag)).await? else {
+    let Some(t) = fetch_tag(&mut conn, &guardian, &s, tag_ref(&tag)).await? else {
         return Ok(not_found(&state));
     };
     if !can_edit_tags(&guardian, &s)? {
@@ -824,6 +833,15 @@ async fn info_json(
         Value::Object(m) => m,
         _ => Map::new(),
     };
+    // restricted_from_scope?: no description, and the raw name (serialize
+    // never localizes it).
+    if !t
+        .visible_in_accessible_categories(conn, guardian, s)
+        .await?
+    {
+        info.remove("description");
+        info.remove("description_cooked");
+    }
     // synonyms: filter_visible(object.synonyms), as tag_counts_json lists them.
     let visible = crate::tags::visible_tags_where(guardian, s)?;
     let rows: Vec<crate::tagging::AllowedTag> = sqlx::query_as(&format!(

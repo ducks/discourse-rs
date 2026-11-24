@@ -193,6 +193,37 @@ impl Tag {
         Ok(!hidden)
     }
 
+    /// `Tag#visible_in_accessible_categories?`
+    /// (`DiscourseTagging.filter_visible_in_accessible_categories`): not
+    /// restricted to any category, or restricted to one the guardian may
+    /// see, directly or through a tag group. Admins see every tag.
+    pub async fn visible_in_accessible_categories(
+        &self,
+        conn: &mut PgConnection,
+        guardian: &Guardian,
+        settings: &SiteSettings,
+    ) -> Result<bool, GuardianError> {
+        if guardian.is_admin() {
+            return Ok(true);
+        }
+        let allowed = guardian.allowed_category_ids_sql(settings)?;
+        Ok(sqlx::query_scalar(&format!(
+            "SELECT EXISTS (SELECT 1 FROM tags WHERE tags.id = $1 AND ( \
+               tags.id NOT IN ( \
+                 SELECT tag_id FROM category_tags \
+                 UNION SELECT tgm.tag_id FROM tag_group_memberships tgm \
+                 JOIN category_tag_groups ctg ON ctg.tag_group_id = tgm.tag_group_id) \
+               OR tags.id IN ( \
+                 SELECT tag_id FROM category_tags WHERE category_id IN ({allowed}) \
+                 UNION SELECT tgm.tag_id FROM tag_group_memberships tgm \
+                 JOIN category_tag_groups ctg ON ctg.tag_group_id = tgm.tag_group_id \
+                 AND ctg.category_id IN ({allowed}))))"
+        ))
+        .bind(self.id)
+        .fetch_one(conn)
+        .await?)
+    }
+
     /// `DiscourseTagging.staff_tag_names.include?(name)`: in a group that is
     /// read-only (permission 3) for everyone.
     pub async fn is_staff(&self, conn: &mut PgConnection) -> Result<bool, sqlx::Error> {
