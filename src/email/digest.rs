@@ -1186,10 +1186,13 @@ pub async fn build(
             "    {}\n\n",
             linker.create(&topic.title, &topic_url(topic)?)
         ));
-        // Topic#best_post: the highest scored regular post.
+        // Topic#best_post: the highest scored visible regular post. Unscored
+        // posts tie, and Rails' small-table seq scan keeps the first tuple
+        // it reads, so ties break on heap position.
         let best: Option<(i32, String)> = sqlx::query_as(
             "SELECT post_number, cooked FROM posts WHERE topic_id = $1 AND deleted_at IS NULL \
-             AND post_type = 1 AND user_deleted = false ORDER BY score DESC NULLS LAST LIMIT 1",
+             AND post_type = 1 AND user_deleted = false AND hidden = false \
+             ORDER BY score DESC NULLS LAST, ctid LIMIT 1",
         )
         .bind(topic.id)
         .fetch_optional(&mut *conn)
