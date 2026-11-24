@@ -268,7 +268,7 @@ test("the selection outlives a post drawn again and reaches posts that arrive", 
     raw: label("A late reply by user1 for the select posts spec"),
   });
   await expect(article(page, late.id)).toBeVisible();
-  await expect(controls(page, late.id).locator("button")).toHaveText(["select +below", "select"]);
+  await expect(controls(page, late.id).locator("button")).toHaveText(["Select & below", "Select"]);
   await expect(panel.locator("p").first()).toHaveText("You have selected 1 post.");
   await panel.locator("a.select-all").click();
   await expect(panel.locator("p").first()).toHaveText("You have selected 5 posts.");
