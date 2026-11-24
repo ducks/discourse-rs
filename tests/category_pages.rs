@@ -141,7 +141,7 @@ async fn category_page_renders_the_category_navigation() {
 
     // /none: no subcategories, the pills keep the /none path.
     let (_, _, html) = get(&db.pool, "/c/general/4/none").await;
-    assert!(html.contains(r#"data-name="no subcategories""#));
+    assert!(html.contains(r#"data-name="No subcategories""#));
     assert!(html.contains(r#"href="/c/general/4/none/l/latest""#));
 }
 

@@ -653,18 +653,18 @@ async fn recent_notifications_bump_the_seen_id_unless_silent() {
         .collect();
     // Unread high priority first (the bookmark reminder is the newest),
     // then unread non-likes, the like, the read one.
-    assert_eq!(ids, vec![24, 19, 17, 16, 28, 26, 20, 7, 21, 2]);
+    assert_eq!(ids, vec![26, 21, 19, 18, 29, 27, 22, 8, 23, 2]);
 
     // Without `silent` the newest visible id is recorded on the user.
     let reply = client.get("/notifications.json?recent=true&limit=3").await;
     let json = reply.json();
-    assert_eq!(json["seen_notification_id"], 28);
+    assert_eq!(json["seen_notification_id"], 29);
     assert_eq!(json["notifications"].as_array().unwrap().len(), 3);
     let seen: i64 = sqlx::query_scalar("SELECT seen_notification_id FROM users WHERE id = 3")
         .fetch_one(&db.pool)
         .await
         .unwrap();
-    assert_eq!(seen, 28);
+    assert_eq!(seen, 29);
     // And the counters current.json derives from it follow.
     let reply = client
         .send(
@@ -680,7 +680,7 @@ async fn recent_notifications_bump_the_seen_id_unless_silent() {
         current["current_user"]["unread_high_priority_notifications"],
         4
     );
-    assert_eq!(current["current_user"]["seen_notification_id"], 28);
+    assert_eq!(current["current_user"]["seen_notification_id"], 29);
 
     // Anonymous: 403 not_logged_in, like Rails' requires_login.
     let mut anon = Client::new(app_state);
@@ -721,27 +721,32 @@ async fn private_messages_open_for_participants_only() {
     assert_eq!(reply.json()["message_archived"], true);
 
     // user0 is not in 43: a 404 with the not-found extras. The
-    // InvalidAccess rescue's Notification.remove_for(user, params[:topic_id])
-    // has no topic_id on `/t/:id`, so it deletes the viewer's notifications
-    // with no topic (recorded in parity/writes/permalinks/deleted_topic).
+    // InvalidAccess rescue's Notification.remove_for(user, ex.obj.id)
+    // deletes the viewer's notifications on the refused topic only.
     let mut user0 = Client::new(app_state.clone());
     user0.login("user0", "password").await;
-    let (before, without_topic): (i64, i64) = sqlx::query_as(
-        "SELECT count(*), count(*) FILTER (WHERE topic_id IS NULL) FROM notifications WHERE user_id = 2",
+    sqlx::query(
+        "INSERT INTO notifications (notification_type, user_id, data, topic_id, post_number, created_at, updated_at) \
+         VALUES (1, 2, '{}', 43, 1, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let before: i64 = sqlx::query_scalar("SELECT count(*) FROM notifications WHERE user_id = 2")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let reply = user0.get("/t/43.json").await;
+    assert_eq!(reply.status, StatusCode::NOT_FOUND);
+    assert_eq!(reply.json()["error_type"], "not_found");
+    let (notifications, on_topic): (i64, i64) = sqlx::query_as(
+        "SELECT count(*), count(*) FILTER (WHERE topic_id = 43) FROM notifications WHERE user_id = 2",
     )
     .fetch_one(&db.pool)
     .await
     .unwrap();
-    let reply = user0.get("/t/43.json").await;
-    assert_eq!(reply.status, StatusCode::NOT_FOUND);
-    assert_eq!(reply.json()["error_type"], "not_found");
-    let notifications: i64 =
-        sqlx::query_scalar("SELECT count(*) FROM notifications WHERE user_id = 2")
-            .fetch_one(&db.pool)
-            .await
-            .unwrap();
-    assert!(without_topic > 0);
-    assert_eq!(notifications, before - without_topic);
+    assert_eq!(on_topic, 0);
+    assert_eq!(notifications, before - 1);
 
     // Anonymous: the same 404.
     let mut anon = Client::new(app_state);
@@ -968,11 +973,11 @@ async fn the_user_menu_pairs_unread_reminders_with_the_other_bookmarks() {
             .collect()
     };
 
-    // Notification 24 is the fired reminder of bookmark 5.
+    // Notification 26 is the fired reminder of bookmark 5.
     let reply = client.get(path).await;
     assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
     let json = reply.json();
-    assert_eq!(ids(&json, "notifications"), vec![24]);
+    assert_eq!(ids(&json, "notifications"), vec![26]);
     assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
     // The topic bookmark links to the first unread post (2 read, so 3).
     let topic = json["bookmarks"]
@@ -1000,7 +1005,7 @@ async fn the_user_menu_pairs_unread_reminders_with_the_other_bookmarks() {
         .await
         .unwrap();
     let json = client.get(path).await.json();
-    assert_eq!(ids(&json, "notifications"), vec![24]);
+    assert_eq!(ids(&json, "notifications"), vec![26]);
     assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
 
     // And goes once the viewer can't see the post any more.
@@ -1025,9 +1030,9 @@ async fn the_user_menu_pairs_unread_reminders_with_the_other_bookmarks() {
     .await
     .unwrap();
     let json = client.get(path).await.json();
-    assert_eq!(ids(&json, "notifications"), vec![24]);
+    assert_eq!(ids(&json, "notifications"), vec![26]);
     assert_eq!(ids(&json, "bookmarks"), vec![4, 3, 2, 1]);
-    sqlx::query("UPDATE notifications SET read = TRUE WHERE id = 24")
+    sqlx::query("UPDATE notifications SET read = TRUE WHERE id = 26")
         .execute(&db.pool)
         .await
         .unwrap();
