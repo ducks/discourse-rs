@@ -103,18 +103,21 @@ pub async fn defaults(
 /// The site contact: site_contact_username's user, else the system user.
 async fn site_contact(conn: &mut PgConnection, ctx: &Ctx<'_>) -> Result<SessionUser, AppError> {
     let username = ctx.settings.get("site_contact_username")?.to_s();
-    let sql = format!(
-        "SELECT {SESSION_USER_COLUMNS} FROM users WHERE {}",
-        if username.trim().is_empty() {
-            "users.id = -1"
-        } else {
-            "users.username_lower = lower($1)"
-        }
-    );
-    let user: Option<SessionUser> = sqlx::query_as(&sql)
-        .bind(username.trim())
+    let username = username.trim();
+    let user: Option<SessionUser> = if username.is_empty() {
+        sqlx::query_as(&format!(
+            "SELECT {SESSION_USER_COLUMNS} FROM users WHERE users.id = -1"
+        ))
         .fetch_optional(&mut *conn)
-        .await?;
+        .await?
+    } else {
+        sqlx::query_as(&format!(
+            "SELECT {SESSION_USER_COLUMNS} FROM users WHERE users.username_lower = lower($1)"
+        ))
+        .bind(username)
+        .fetch_optional(&mut *conn)
+        .await?
+    };
     match user {
         Some(u) => Ok(u),
         None => Err(Unsupported("a site contact that does not exist").into()),
