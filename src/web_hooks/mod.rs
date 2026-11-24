@@ -30,13 +30,13 @@ pub fn event_type(event: &str) -> &str {
 }
 
 /// `WebHook.active_web_hooks(event)`: the active hooks subscribed to the
-/// event's type, or wildcard ones, by id. An INNER JOIN on the event types,
-/// so a wildcard hook without any never fires.
+/// event's type, or wildcard ones, by id. Left-joined to the event types,
+/// so a wildcard hook with none fires too (ff1f80f5e8b).
 pub async fn active_ids(conn: &mut PgConnection, event: &str) -> Result<Vec<i32>, sqlx::Error> {
     sqlx::query_scalar(
         "SELECT DISTINCT w.id FROM web_hooks w \
-         JOIN web_hook_event_types_hooks h ON h.web_hook_id = w.id \
-         JOIN web_hook_event_types t ON t.id = h.web_hook_event_type_id \
+         LEFT JOIN web_hook_event_types_hooks h ON h.web_hook_id = w.id \
+         LEFT JOIN web_hook_event_types t ON t.id = h.web_hook_event_type_id \
          WHERE w.active AND (w.wildcard_web_hook OR t.name = $1) ORDER BY w.id",
     )
     .bind(event_type(event))
@@ -48,8 +48,8 @@ pub async fn active_ids(conn: &mut PgConnection, event: &str) -> Result<Vec<i32>
 pub async fn active(conn: &mut PgConnection, event: &str) -> Result<bool, sqlx::Error> {
     sqlx::query_scalar(
         "SELECT EXISTS (SELECT 1 FROM web_hooks w \
-         JOIN web_hook_event_types_hooks h ON h.web_hook_id = w.id \
-         JOIN web_hook_event_types t ON t.id = h.web_hook_event_type_id \
+         LEFT JOIN web_hook_event_types_hooks h ON h.web_hook_id = w.id \
+         LEFT JOIN web_hook_event_types t ON t.id = h.web_hook_event_type_id \
          WHERE w.active AND (w.wildcard_web_hook OR t.name = $1))",
     )
     .bind(event_type(event))
