@@ -256,7 +256,7 @@ test("the selection outlives a post drawn again and reaches posts that arrive", 
     t.posts[2],
   );
   await expect(page.locator(`article[data-post-id="${t.posts[2]}"][data-stale]`)).toHaveCount(0);
-  await expect(controls(page, t.posts[2]).locator(".select-post")).toHaveText("selected");
+  await expect(controls(page, t.posts[2]).locator(".select-post")).toHaveText("Selected");
   expect(await selected(page)).toEqual([t.posts[2]]);
   expect(await buttons(page, t.posts[2])).toEqual(["select-post"]);
 
