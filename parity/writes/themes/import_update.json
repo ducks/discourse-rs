@@ -42,8 +42,8 @@
       "path": "/admin/config/colors.json"
     }
   ],
-  "started_at": "2026-11-15T23:44:34.843755",
-  "transaction_started_at": "2026-11-15T23:44:34.017105",
+  "started_at": "2026-11-24T01:19:14.523475",
+  "transaction_started_at": "2026-11-24T01:19:13.364691",
   "responses": [
     {
       "status": 201,
@@ -52,8 +52,8 @@
           "id": 1,
           "name": "Fancy Theme",
           "description": "A fancy imported theme",
-          "created_at": "2026-11-15T23:44:34.912Z",
-          "updated_at": "2026-11-15T23:44:35.194Z",
+          "created_at": "2026-11-24T01:19:14.653Z",
+          "updated_at": "2026-11-24T01:19:15.122Z",
           "component": false,
           "color_scheme_id": 19,
           "dark_color_scheme_id": null,
@@ -323,8 +323,8 @@
           "id": 1,
           "name": "Fancy Theme",
           "description": null,
-          "created_at": "2026-11-15T23:44:34.912Z",
-          "updated_at": "2026-11-15T23:44:35.194Z",
+          "created_at": "2026-11-24T01:19:14.653Z",
+          "updated_at": "2026-11-24T01:19:15.122Z",
           "component": false,
           "color_scheme_id": 19,
           "dark_color_scheme_id": null,
@@ -523,8 +523,8 @@
           "id": 1,
           "name": "Fancy Theme",
           "description": null,
-          "created_at": "2026-11-15T23:44:34.912Z",
-          "updated_at": "2026-11-15T23:44:35.194Z",
+          "created_at": "2026-11-24T01:19:14.653Z",
+          "updated_at": "2026-11-24T01:19:15.122Z",
           "component": false,
           "color_scheme_id": 19,
           "dark_color_scheme_id": null,
@@ -5242,200 +5242,200 @@
           "id": 326,
           "hex": "ffffff",
           "name": "secondary",
-          "created_at": "2026-11-15T23:44:34.961241",
-          "updated_at": "2026-11-15T23:44:34.961241",
+          "created_at": "2026-11-24T01:19:14.737929",
+          "updated_at": "2026-11-24T01:19:14.737929",
           "color_scheme_id": 19
         },
         {
           "id": 327,
           "hex": "0088cc",
           "name": "tertiary",
-          "created_at": "2026-11-15T23:44:34.962687",
-          "updated_at": "2026-11-15T23:44:34.962687",
+          "created_at": "2026-11-24T01:19:14.741523",
+          "updated_at": "2026-11-24T01:19:14.741523",
           "color_scheme_id": 19
         },
         {
           "id": 328,
           "hex": "e45735",
           "name": "quaternary",
-          "created_at": "2026-11-15T23:44:34.964052",
-          "updated_at": "2026-11-15T23:44:34.964052",
+          "created_at": "2026-11-24T01:19:14.745233",
+          "updated_at": "2026-11-24T01:19:14.745233",
           "color_scheme_id": 19
         },
         {
           "id": 330,
           "hex": "333",
           "name": "header_primary",
-          "created_at": "2026-11-15T23:44:34.966669",
-          "updated_at": "2026-11-15T23:44:34.966669",
+          "created_at": "2026-11-24T01:19:14.751694",
+          "updated_at": "2026-11-24T01:19:14.751694",
           "color_scheme_id": 19
         },
         {
           "id": 331,
           "hex": "ffff4d",
           "name": "highlight",
-          "created_at": "2026-11-15T23:44:34.967874",
-          "updated_at": "2026-11-15T23:44:34.967874",
+          "created_at": "2026-11-24T01:19:14.754731",
+          "updated_at": "2026-11-24T01:19:14.754731",
           "color_scheme_id": 19
         },
         {
           "id": 332,
           "hex": "d1f0ff",
           "name": "selected",
-          "created_at": "2026-11-15T23:44:34.969015",
-          "updated_at": "2026-11-15T23:44:34.969015",
+          "created_at": "2026-11-24T01:19:14.757718",
+          "updated_at": "2026-11-24T01:19:14.757718",
           "color_scheme_id": 19
         },
         {
           "id": 333,
           "hex": "f2f2f2",
           "name": "hover",
-          "created_at": "2026-11-15T23:44:34.970543",
-          "updated_at": "2026-11-15T23:44:34.970543",
+          "created_at": "2026-11-24T01:19:14.761274",
+          "updated_at": "2026-11-24T01:19:14.761274",
           "color_scheme_id": 19
         },
         {
           "id": 334,
           "hex": "c80001",
           "name": "danger",
-          "created_at": "2026-11-15T23:44:34.971757",
-          "updated_at": "2026-11-15T23:44:34.971757",
+          "created_at": "2026-11-24T01:19:14.763808",
+          "updated_at": "2026-11-24T01:19:14.763808",
           "color_scheme_id": 19
         },
         {
           "id": 335,
           "hex": "090",
           "name": "success",
-          "created_at": "2026-11-15T23:44:34.972908",
-          "updated_at": "2026-11-15T23:44:34.972908",
+          "created_at": "2026-11-24T01:19:14.766996",
+          "updated_at": "2026-11-24T01:19:14.766996",
           "color_scheme_id": 19
         },
         {
           "id": 336,
           "hex": "fa6c8d",
           "name": "love",
-          "created_at": "2026-11-15T23:44:34.97426",
-          "updated_at": "2026-11-15T23:44:34.97426",
+          "created_at": "2026-11-24T01:19:14.769816",
+          "updated_at": "2026-11-24T01:19:14.769816",
           "color_scheme_id": 19
         },
         {
           "id": 350,
           "hex": "000000",
           "name": "primary",
-          "created_at": "2026-11-15T23:44:36.195191",
-          "updated_at": "2026-11-15T23:44:36.195191",
+          "created_at": "2026-11-24T01:19:16.790048",
+          "updated_at": "2026-11-24T01:19:16.790048",
           "color_scheme_id": 21
         },
         {
           "id": 351,
           "hex": "fff",
           "name": "secondary",
-          "created_at": "2026-11-15T23:44:36.196614",
-          "updated_at": "2026-11-15T23:44:36.196614",
+          "created_at": "2026-11-24T01:19:16.791477",
+          "updated_at": "2026-11-24T01:19:16.791477",
           "color_scheme_id": 21
         },
         {
           "id": 352,
           "hex": "08c",
           "name": "tertiary",
-          "created_at": "2026-11-15T23:44:36.197713",
-          "updated_at": "2026-11-15T23:44:36.197713",
+          "created_at": "2026-11-24T01:19:16.792857",
+          "updated_at": "2026-11-24T01:19:16.792857",
           "color_scheme_id": 21
         },
         {
           "id": 353,
           "hex": "e45735",
           "name": "quaternary",
-          "created_at": "2026-11-15T23:44:36.198965",
-          "updated_at": "2026-11-15T23:44:36.198965",
+          "created_at": "2026-11-24T01:19:16.794504",
+          "updated_at": "2026-11-24T01:19:16.794504",
           "color_scheme_id": 21
         },
         {
           "id": 354,
           "hex": "fff",
           "name": "header_background",
-          "created_at": "2026-11-15T23:44:36.20015",
-          "updated_at": "2026-11-15T23:44:36.20015",
+          "created_at": "2026-11-24T01:19:16.795914",
+          "updated_at": "2026-11-24T01:19:16.795914",
           "color_scheme_id": 21
         },
         {
           "id": 355,
           "hex": "333",
           "name": "header_primary",
-          "created_at": "2026-11-15T23:44:36.201497",
-          "updated_at": "2026-11-15T23:44:36.201497",
+          "created_at": "2026-11-24T01:19:16.797203",
+          "updated_at": "2026-11-24T01:19:16.797203",
           "color_scheme_id": 21
         },
         {
           "id": 356,
           "hex": "ffff4d",
           "name": "highlight",
-          "created_at": "2026-11-15T23:44:36.202805",
-          "updated_at": "2026-11-15T23:44:36.202805",
+          "created_at": "2026-11-24T01:19:16.798955",
+          "updated_at": "2026-11-24T01:19:16.798955",
           "color_scheme_id": 21
         },
         {
           "id": 357,
           "hex": "d1f0ff",
           "name": "selected",
-          "created_at": "2026-11-15T23:44:36.203947",
-          "updated_at": "2026-11-15T23:44:36.203947",
+          "created_at": "2026-11-24T01:19:16.800621",
+          "updated_at": "2026-11-24T01:19:16.800621",
           "color_scheme_id": 21
         },
         {
           "id": 358,
           "hex": "f2f2f2",
           "name": "hover",
-          "created_at": "2026-11-15T23:44:36.205378",
-          "updated_at": "2026-11-15T23:44:36.205378",
+          "created_at": "2026-11-24T01:19:16.802141",
+          "updated_at": "2026-11-24T01:19:16.802141",
           "color_scheme_id": 21
         },
         {
           "id": 359,
           "hex": "c80001",
           "name": "danger",
-          "created_at": "2026-11-15T23:44:36.2065",
-          "updated_at": "2026-11-15T23:44:36.2065",
+          "created_at": "2026-11-24T01:19:16.803878",
+          "updated_at": "2026-11-24T01:19:16.803878",
           "color_scheme_id": 21
         },
         {
           "id": 360,
           "hex": "090",
           "name": "success",
-          "created_at": "2026-11-15T23:44:36.207885",
-          "updated_at": "2026-11-15T23:44:36.207885",
+          "created_at": "2026-11-24T01:19:16.805401",
+          "updated_at": "2026-11-24T01:19:16.805401",
           "color_scheme_id": 21
         },
         {
           "id": 361,
           "hex": "fa6c8d",
           "name": "love",
-          "created_at": "2026-11-15T23:44:36.20909",
-          "updated_at": "2026-11-15T23:44:36.20909",
+          "created_at": "2026-11-24T01:19:16.811723",
+          "updated_at": "2026-11-24T01:19:16.811723",
           "color_scheme_id": 21
         },
         {
           "id": 362,
           "hex": "123456",
           "name": "highlight-bg",
-          "created_at": "2026-11-15T23:44:36.210387",
-          "updated_at": "2026-11-15T23:44:36.210387",
+          "created_at": "2026-11-24T01:19:16.814673",
+          "updated_at": "2026-11-24T01:19:16.814673",
           "color_scheme_id": 21
         },
         {
           "id": 325,
           "hex": "333333",
           "name": "primary",
-          "created_at": "2026-11-15T23:44:34.960047",
-          "updated_at": "2026-11-15T23:44:36.211897",
+          "created_at": "2026-11-24T01:19:14.735759",
+          "updated_at": "2026-11-24T01:19:16.816693",
           "color_scheme_id": 19
         },
         {
           "id": 329,
           "hex": "fff",
           "name": "header_background",
-          "created_at": "2026-11-15T23:44:34.965221",
-          "updated_at": "2026-11-15T23:44:36.213354",
+          "created_at": "2026-11-24T01:19:14.748699",
+          "updated_at": "2026-11-24T01:19:16.818666",
           "color_scheme_id": 19
         }
       ],
@@ -5449,8 +5449,8 @@
           "name": "Fancy Extra",
           "version": 1,
           "theme_id": 1,
-          "created_at": "2026-11-15T23:44:36.194131",
-          "updated_at": "2026-11-15T23:44:36.194131",
+          "created_at": "2026-11-24T01:19:16.788225",
+          "updated_at": "2026-11-24T01:19:16.788225",
           "via_wizard": false,
           "remote_copy": false,
           "base_scheme_id": null,
@@ -5461,8 +5461,8 @@
           "name": "Fancy Light",
           "version": 2,
           "theme_id": 1,
-          "created_at": "2026-11-15T23:44:34.95875",
-          "updated_at": "2026-11-15T23:44:36.216791",
+          "created_at": "2026-11-24T01:19:14.732671",
+          "updated_at": "2026-11-24T01:19:16.824623",
           "via_wizard": false,
           "remote_copy": false,
           "base_scheme_id": null,
@@ -5479,9 +5479,9 @@
           "branch": null,
           "authors": "Jane Doe",
           "about_url": "https://example.com/fancy",
-          "created_at": "2026-11-15T23:44:34.909507",
+          "created_at": "2026-11-24T01:19:14.648637",
           "remote_url": "",
-          "updated_at": "2026-11-15T23:44:34.909507",
+          "updated_at": "2026-11-24T01:19:14.648637",
           "license_url": "https://example.com/fancy/LICENSE",
           "private_key": null,
           "local_version": null,
@@ -5500,9 +5500,9 @@
           "branch": null,
           "authors": "Jane Doe",
           "about_url": null,
-          "created_at": "2026-11-15T23:44:36.188116",
+          "created_at": "2026-11-24T01:19:16.781379",
           "remote_url": "",
-          "updated_at": "2026-11-15T23:44:36.188116",
+          "updated_at": "2026-11-24T01:19:16.781379",
           "license_url": null,
           "private_key": null,
           "local_version": null,
@@ -5523,20 +5523,6 @@
     "theme_fields": {
       "inserted": [
         {
-          "id": 172,
-          "name": "yaml",
-          "error": null,
-          "value": "homepage_on: true\nbanner_text:\n  default: Hello again\n",
-          "type_id": 5,
-          "theme_id": 1,
-          "target_id": 3,
-          "upload_id": null,
-          "created_at": "2026-11-15T23:44:34.952254",
-          "updated_at": "2026-11-15T23:44:36.220467",
-          "value_baked": "baked",
-          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
-        },
-        {
           "id": 163,
           "name": "logo",
           "error": null,
@@ -5545,8 +5531,8 @@
           "theme_id": 1,
           "target_id": 0,
           "upload_id": 36,
-          "created_at": "2026-11-15T23:44:34.915988",
-          "updated_at": "2026-11-15T23:44:34.915988",
+          "created_at": "2026-11-24T01:19:14.659143",
+          "updated_at": "2026-11-24T01:19:14.659143",
           "value_baked": null,
           "compiler_version": "0"
         },
@@ -5559,10 +5545,24 @@
           "theme_id": 1,
           "target_id": 9,
           "upload_id": null,
-          "created_at": "2026-11-15T23:44:34.944233",
-          "updated_at": "2026-11-15T23:44:36.218076",
+          "created_at": "2026-11-24T01:19:14.702445",
+          "updated_at": "2026-11-24T01:19:16.826281",
           "value_baked": null,
           "compiler_version": "0"
+        },
+        {
+          "id": 172,
+          "name": "yaml",
+          "error": null,
+          "value": "homepage_on: true\nbanner_text:\n  default: Hello again\n",
+          "type_id": 5,
+          "theme_id": 1,
+          "target_id": 3,
+          "upload_id": null,
+          "created_at": "2026-11-24T01:19:14.719596",
+          "updated_at": "2026-11-24T01:19:16.830384",
+          "value_baked": "baked",
+          "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         },
         {
           "id": 168,
@@ -5573,8 +5573,8 @@
           "theme_id": 1,
           "target_id": 0,
           "upload_id": null,
-          "created_at": "2026-11-15T23:44:34.945482",
-          "updated_at": "2026-11-15T23:44:36.219516",
+          "created_at": "2026-11-24T01:19:14.705498",
+          "updated_at": "2026-11-24T01:19:16.828687",
           "value_baked": "<div class=\"fancy-header\">Fancy <i>two</i></div>\n",
           "compiler_version": "a0254b1da90b2edceadeba6a37ba0361572ef128"
         }
@@ -5617,9 +5617,9 @@
           "value": "Kept",
           "theme_id": 1,
           "data_type": 2,
-          "created_at": "2026-11-15T23:44:36.030905",
+          "created_at": "2026-11-24T01:19:16.596549",
           "json_value": null,
-          "updated_at": "2026-11-15T23:44:36.030905"
+          "updated_at": "2026-11-24T01:19:16.596549"
         }
       ],
       "deleted": [],
@@ -5633,8 +5633,8 @@
           "value": "f",
           "theme_id": 1,
           "data_type": 5,
-          "created_at": "2026-11-15T23:44:35.355315",
-          "updated_at": "2026-11-15T23:44:35.355315"
+          "created_at": "2026-11-24T01:19:15.411558",
+          "updated_at": "2026-11-24T01:19:15.411558"
         },
         {
           "id": 4,
@@ -5642,8 +5642,8 @@
           "value": "search_field",
           "theme_id": 1,
           "data_type": 7,
-          "created_at": "2026-11-15T23:44:36.341529",
-          "updated_at": "2026-11-15T23:44:36.341529"
+          "created_at": "2026-11-24T01:19:17.02907",
+          "updated_at": "2026-11-24T01:19:17.02907"
         }
       ],
       "deleted": [],
@@ -5658,8 +5658,8 @@
           "enabled": true,
           "user_id": 1,
           "component": false,
-          "created_at": "2026-11-15T23:44:34.912204",
-          "updated_at": "2026-11-15T23:44:35.194296",
+          "created_at": "2026-11-24T01:19:14.65391",
+          "updated_at": "2026-11-24T01:19:15.122057",
           "auto_update": false,
           "color_scheme_id": 19,
           "remote_theme_id": null,
@@ -5677,8 +5677,8 @@
           "id": 38,
           "target_id": 163,
           "upload_id": 36,
-          "created_at": "2026-11-15T23:44:34.917521",
-          "updated_at": "2026-11-15T23:44:34.917528",
+          "created_at": "2026-11-24T01:19:14.661346",
+          "updated_at": "2026-11-24T01:19:14.661382",
           "target_type": "ThemeField"
         }
       ],
@@ -5700,8 +5700,8 @@
           "animated": null,
           "filesize": 44,
           "extension": "gif",
-          "created_at": "2026-11-15T23:44:34.868136",
-          "updated_at": "2026-11-15T23:44:34.869993",
+          "created_at": "2026-11-24T01:19:14.572507",
+          "updated_at": "2026-11-24T01:19:14.575913",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -5726,8 +5726,8 @@
           "animated": null,
           "filesize": 125,
           "extension": "svg",
-          "created_at": "2026-11-15T23:44:34.878586",
-          "updated_at": "2026-11-15T23:44:34.880153",
+          "created_at": "2026-11-24T01:19:14.59124",
+          "updated_at": "2026-11-24T01:19:14.594026",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -5752,8 +5752,8 @@
           "animated": null,
           "filesize": 27,
           "extension": "js",
-          "created_at": "2026-11-15T23:44:34.88824",
-          "updated_at": "2026-11-15T23:44:34.889798",
+          "created_at": "2026-11-24T01:19:14.609863",
+          "updated_at": "2026-11-24T01:19:14.613664",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -5778,8 +5778,8 @@
           "animated": null,
           "filesize": 48867,
           "extension": "png",
-          "created_at": "2026-11-15T23:44:34.896983",
-          "updated_at": "2026-11-15T23:44:34.898502",
+          "created_at": "2026-11-24T01:19:14.625828",
+          "updated_at": "2026-11-24T01:19:14.628679",
           "retain_hours": null,
           "original_sha1": null,
           "dominant_color": null,
@@ -5801,33 +5801,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "CpxtXHq0+R+OYO1ypShmGqmxKVc=",
-            "created_at": "2026-11-15T23:44:34.375826",
-            "rotated_at": "2026-11-15T23:44:34.375024",
-            "updated_at": "2026-11-15T23:44:34.375826",
+            "auth_token": "wAj5HFJ4RNFGvq9A0Yr3CIywV9I=",
+            "created_at": "2026-11-24T01:19:13.828897",
+            "rotated_at": "2026-11-24T01:19:13.827545",
+            "updated_at": "2026-11-24T01:19:13.828897",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "CpxtXHq0+R+OYO1ypShmGqmxKVc=",
+            "prev_auth_token": "wAj5HFJ4RNFGvq9A0Yr3CIywV9I=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:44:34.84969",
+            "id": 1,
+            "seen_at": "2026-11-24T01:19:14.538965",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "CpxtXHq0+R+OYO1ypShmGqmxKVc=",
-            "created_at": "2026-11-15T23:44:34.375826",
-            "rotated_at": "2026-11-15T23:44:34.375024",
-            "updated_at": "2026-11-15T23:44:34.375826",
+            "auth_token": "wAj5HFJ4RNFGvq9A0Yr3CIywV9I=",
+            "created_at": "2026-11-24T01:19:13.828897",
+            "rotated_at": "2026-11-24T01:19:13.827545",
+            "updated_at": "2026-11-24T01:19:13.828897",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "CpxtXHq0+R+OYO1ypShmGqmxKVc=",
+            "prev_auth_token": "wAj5HFJ4RNFGvq9A0Yr3CIywV9I=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -5838,7 +5838,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 69,
           "email": null,
           "action": 120,
           "context": null,
@@ -5848,10 +5848,10 @@
           "topic_id": null,
           "new_value": "f",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:35.357094",
+          "created_at": "2026-11-24T01:19:15.413995",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:35.357094",
+          "updated_at": "2026-11-24T01:19:15.413995",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -5860,7 +5860,7 @@
           "target_user_id": null
         },
         {
-          "id": 69,
+          "id": 70,
           "email": null,
           "action": 4,
           "context": null,
@@ -5868,12 +5868,12 @@
           "post_id": null,
           "subject": "Fancy Theme",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Fancy Theme\",\"description\":\"A fancy imported theme\",\"created_at\":\"2026-11-15T23:44:34.912Z\",\"updated_at\":\"2026-11-15T23:44:35.194Z\",\"component\":false,\"color_scheme_id\":19,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"homepage_on\",\"humanized_name\":\"Homepage on\",\"type\":\"bool\",\"default\":false,\"value\":false,\"description\":\"Use the custom homepage\"},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Hello fancy\",\"value\":\"Hello fancy\",\"description\":\"The banner text\",\"textarea\":false}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"false\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"fancy-header\\\"\\u003eFancy \\u003cb\\u003eheader\\u003c/b\\u003e\\u003c/div\\u003e\\n\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"helper\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":38,\"url\":\"/uploads/default/original/1X/a903591298329ee322549234150f589d6173fc00.js\",\"filename\":\"helper.js\",\"file_path\":\"assets/helper.js\"},{\"name\":\"icons-sprite\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":37,\"url\":\"/uploads/default/original/1X/9acef76ac8d7370e5df930e8337fcb7dcb6f01c4.svg\",\"filename\":\"icons.svg\",\"file_path\":\"assets/icons-sprite.svg\"},{\"name\":\"logo\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif\",\"filename\":\"logo.gif\",\"file_path\":\"assets/logo.gif\"},{\"name\":\"screenshot_light\",\"target\":\"common\",\"value\":\"\",\"type_id\":7,\"upload_id\":39,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"light.png\",\"file_path\":null},{\"name\":\"footer\",\"target\":\"desktop\",\"value\":\"\\u003cp class=\\\"fancy-footer\\\"\\u003eDesktop footer\\u003c/p\\u003e\\n\",\"type_id\":0,\"file_path\":\"desktop/footer.html\"},{\"name\":\"head_tag\",\"target\":\"mobile\",\"value\":\"\\u003cmeta name=\\\"fancy\\\" content=\\\"mobile\\\"\\u003e\\n\",\"type_id\":0,\"file_path\":\"mobile/head_tag.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"homepage_on: false\\nbanner_text:\\n  default: Hello fancy\\n  description: The banner text\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  greeting: Hello\\n  theme_metadata:\\n    description: A fancy imported theme\\n    settings:\\n      homepage_on: Use the custom homepage\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Fancy Theme\\\",\\n  \\\"component\\\": false,\\n  \\\"about_url\\\": \\\"https://example.com/fancy\\\",\\n  \\\"license_url\\\": \\\"https://example.com/fancy/LICENSE\\\",\\n  \\\"authors\\\": \\\"Jane Doe\\\",\\n  \\\"theme_version\\\": \\\"1.2.0\\\",\\n  \\\"minimum_discourse_version\\\": \\\"3.0.0\\\",\\n  \\\"assets\\\": {\\n    \\\"logo\\\": \\\"assets/logo.gif\\\",\\n    \\\"icons-sprite\\\": \\\"assets/icons.svg\\\",\\n    \\\"helper\\\": \\\"assets/helper.js\\\",\\n    \\\"missing\\\": \\\"assets/nothing.png\\\"\\n  },\\n  \\\"screenshots\\\": [\\\"screenshots/light.png\\\"],\\n  \\\"color_schemes\\\": {\\n    \\\"Fancy Light\\\": {\\n      \\\"primary\\\": \\\"222222\\\",\\n      \\\"secondary\\\": \\\"FFFFFF\\\",\\n      \\\"tertiary\\\": \\\"0088cc\\\",\\n      \\\"header_background\\\": \\\"ABCDEF\\\",\\n      \\\"primary-low\\\": \\\"eeeeee\\\"\\n    },\\n    \\\"Fancy Dark\\\": {\\n      \\\"primary\\\": \\\"dddddd\\\",\\n      \\\"secondary\\\": \\\"111111\\\",\\n      \\\"danger\\\": \\\"nothex\\\"\\n    }\\n  },\\n  \\\"modifiers\\\": {\\n    \\\"serialize_topic_excerpts\\\": true,\\n    \\\"svg_icons\\\": [\\\"far-star\\\", \\\"fab-github\\\"],\\n    \\\"custom_homepage\\\": {\\\"type\\\": \\\"setting\\\", \\\"value\\\": \\\"homepage_on\\\"}\\n  },\\n  \\\"theme_site_settings\\\": {\\n    \\\"enable_welcome_banner\\\": false,\\n    \\\"not_a_setting\\\": true\\n  }\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":{\"id\":19,\"name\":\"Fancy Light\",\"is_base\":null,\"base_scheme_id\":null,\"theme_id\":1,\"theme_name\":\"Fancy Theme\",\"user_selectable\":false,\"is_builtin_default\":null,\"is_dark\":false,\"colors\":[{\"name\":\"primary\",\"hex\":\"222222\",\"default_hex\":\"222222\",\"is_advanced\":false},{\"name\":\"secondary\",\"hex\":\"ffffff\",\"default_hex\":\"ffffff\",\"is_advanced\":false},{\"name\":\"tertiary\",\"hex\":\"0088cc\",\"default_hex\":\"0088cc\",\"is_advanced\":false},{\"name\":\"quaternary\",\"hex\":\"e45735\",\"default_hex\":\"e45735\",\"is_advanced\":false},{\"name\":\"header_background\",\"hex\":\"abcdef\",\"default_hex\":\"abcdef\",\"is_advanced\":false},{\"name\":\"header_primary\",\"hex\":\"333\",\"default_hex\":\"333\",\"is_advanced\":false},{\"name\":\"selected\",\"hex\":\"d1f0ff\",\"default_hex\":\"d1f0ff\",\"is_advanced\":false},{\"name\":\"hover\",\"hex\":\"f2f2f2\",\"default_hex\":\"f2f2f2\",\"is_advanced\":false},{\"name\":\"highlight\",\"hex\":\"ffff4d\",\"default_hex\":\"ffff4d\",\"is_advanced\":false},{\"name\":\"danger\",\"hex\":\"c80001\",\"default_hex\":\"c80001\",\"is_advanced\":false},{\"name\":\"success\",\"hex\":\"090\",\"default_hex\":\"090\",\"is_advanced\":false},{\"name\":\"love\",\"hex\":\"fa6c8d\",\"default_hex\":\"fa6c8d\",\"is_advanced\":false},{\"name\":\"primary-low\",\"hex\":\"eeeeee\",\"default_hex\":\"eeeeee\",\"is_advanced\":true}]},\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"greeting\",\"value\":\"Hello\",\"default\":\"Hello\"}]}",
+          "new_value": "{\"id\":1,\"name\":\"Fancy Theme\",\"description\":\"A fancy imported theme\",\"created_at\":\"2026-11-24T01:19:14.653Z\",\"updated_at\":\"2026-11-24T01:19:15.122Z\",\"component\":false,\"color_scheme_id\":19,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"homepage_on\",\"humanized_name\":\"Homepage on\",\"type\":\"bool\",\"default\":false,\"value\":false,\"description\":\"Use the custom homepage\"},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Hello fancy\",\"value\":\"Hello fancy\",\"description\":\"The banner text\",\"textarea\":false}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"false\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_icon\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"fancy-header\\\"\\u003eFancy \\u003cb\\u003eheader\\u003c/b\\u003e\\u003c/div\\u003e\\n\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"helper\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":38,\"url\":\"/uploads/default/original/1X/a903591298329ee322549234150f589d6173fc00.js\",\"filename\":\"helper.js\",\"file_path\":\"assets/helper.js\"},{\"name\":\"icons-sprite\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":37,\"url\":\"/uploads/default/original/1X/9acef76ac8d7370e5df930e8337fcb7dcb6f01c4.svg\",\"filename\":\"icons.svg\",\"file_path\":\"assets/icons-sprite.svg\"},{\"name\":\"logo\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif\",\"filename\":\"logo.gif\",\"file_path\":\"assets/logo.gif\"},{\"name\":\"screenshot_light\",\"target\":\"common\",\"value\":\"\",\"type_id\":7,\"upload_id\":39,\"url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"filename\":\"light.png\",\"file_path\":null},{\"name\":\"footer\",\"target\":\"desktop\",\"value\":\"\\u003cp class=\\\"fancy-footer\\\"\\u003eDesktop footer\\u003c/p\\u003e\\n\",\"type_id\":0,\"file_path\":\"desktop/footer.html\"},{\"name\":\"head_tag\",\"target\":\"mobile\",\"value\":\"\\u003cmeta name=\\\"fancy\\\" content=\\\"mobile\\\"\\u003e\\n\",\"type_id\":0,\"file_path\":\"mobile/head_tag.html\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"homepage_on: false\\nbanner_text:\\n  default: Hello fancy\\n  description: The banner text\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"en\",\"target\":\"translations\",\"value\":\"en:\\n  greeting: Hello\\n  theme_metadata:\\n    description: A fancy imported theme\\n    settings:\\n      homepage_on: Use the custom homepage\\n\",\"type_id\":5,\"file_path\":\"locales/en.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Fancy Theme\\\",\\n  \\\"component\\\": false,\\n  \\\"about_url\\\": \\\"https://example.com/fancy\\\",\\n  \\\"license_url\\\": \\\"https://example.com/fancy/LICENSE\\\",\\n  \\\"authors\\\": \\\"Jane Doe\\\",\\n  \\\"theme_version\\\": \\\"1.2.0\\\",\\n  \\\"minimum_discourse_version\\\": \\\"3.0.0\\\",\\n  \\\"assets\\\": {\\n    \\\"logo\\\": \\\"assets/logo.gif\\\",\\n    \\\"icons-sprite\\\": \\\"assets/icons.svg\\\",\\n    \\\"helper\\\": \\\"assets/helper.js\\\",\\n    \\\"missing\\\": \\\"assets/nothing.png\\\"\\n  },\\n  \\\"screenshots\\\": [\\\"screenshots/light.png\\\"],\\n  \\\"color_schemes\\\": {\\n    \\\"Fancy Light\\\": {\\n      \\\"primary\\\": \\\"222222\\\",\\n      \\\"secondary\\\": \\\"FFFFFF\\\",\\n      \\\"tertiary\\\": \\\"0088cc\\\",\\n      \\\"header_background\\\": \\\"ABCDEF\\\",\\n      \\\"primary-low\\\": \\\"eeeeee\\\"\\n    },\\n    \\\"Fancy Dark\\\": {\\n      \\\"primary\\\": \\\"dddddd\\\",\\n      \\\"secondary\\\": \\\"111111\\\",\\n      \\\"danger\\\": \\\"nothex\\\"\\n    }\\n  },\\n  \\\"modifiers\\\": {\\n    \\\"serialize_topic_excerpts\\\": true,\\n    \\\"svg_icons\\\": [\\\"far-star\\\", \\\"fab-github\\\"],\\n    \\\"custom_homepage\\\": {\\\"type\\\": \\\"setting\\\", \\\"value\\\": \\\"homepage_on\\\"}\\n  },\\n  \\\"theme_site_settings\\\": {\\n    \\\"enable_welcome_banner\\\": false,\\n    \\\"not_a_setting\\\": true\\n  }\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":\"/uploads/default/original/1X/043b0aa221f492e60cda981a865188e2c0afe6e0.png\",\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":{\"id\":19,\"name\":\"Fancy Light\",\"is_base\":null,\"base_scheme_id\":null,\"theme_id\":1,\"theme_name\":\"Fancy Theme\",\"user_selectable\":false,\"is_builtin_default\":null,\"is_dark\":false,\"colors\":[{\"name\":\"primary\",\"hex\":\"222222\",\"default_hex\":\"222222\",\"is_advanced\":false},{\"name\":\"secondary\",\"hex\":\"ffffff\",\"default_hex\":\"ffffff\",\"is_advanced\":false},{\"name\":\"tertiary\",\"hex\":\"0088cc\",\"default_hex\":\"0088cc\",\"is_advanced\":false},{\"name\":\"quaternary\",\"hex\":\"e45735\",\"default_hex\":\"e45735\",\"is_advanced\":false},{\"name\":\"header_background\",\"hex\":\"abcdef\",\"default_hex\":\"abcdef\",\"is_advanced\":false},{\"name\":\"header_primary\",\"hex\":\"333\",\"default_hex\":\"333\",\"is_advanced\":false},{\"name\":\"selected\",\"hex\":\"d1f0ff\",\"default_hex\":\"d1f0ff\",\"is_advanced\":false},{\"name\":\"hover\",\"hex\":\"f2f2f2\",\"default_hex\":\"f2f2f2\",\"is_advanced\":false},{\"name\":\"highlight\",\"hex\":\"ffff4d\",\"default_hex\":\"ffff4d\",\"is_advanced\":false},{\"name\":\"danger\",\"hex\":\"c80001\",\"default_hex\":\"c80001\",\"is_advanced\":false},{\"name\":\"success\",\"hex\":\"090\",\"default_hex\":\"090\",\"is_advanced\":false},{\"name\":\"love\",\"hex\":\"fa6c8d\",\"default_hex\":\"fa6c8d\",\"is_advanced\":false},{\"name\":\"primary-low\",\"hex\":\"eeeeee\",\"default_hex\":\"eeeeee\",\"is_advanced\":true}]},\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[{\"key\":\"greeting\",\"value\":\"Hello\",\"default\":\"Hello\"}]}",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:35.936618",
+          "created_at": "2026-11-24T01:19:16.46271",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:35.936618",
+          "updated_at": "2026-11-24T01:19:16.46271",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -5882,7 +5882,7 @@
           "target_user_id": null
         },
         {
-          "id": 70,
+          "id": 71,
           "email": null,
           "action": 77,
           "context": null,
@@ -5892,10 +5892,10 @@
           "topic_id": null,
           "new_value": "Kept",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:36.060786",
+          "created_at": "2026-11-24T01:19:16.641364",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:36.060786",
+          "updated_at": "2026-11-24T01:19:16.641364",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -5904,7 +5904,7 @@
           "target_user_id": null
         },
         {
-          "id": 71,
+          "id": 72,
           "email": null,
           "action": 120,
           "context": null,
@@ -5914,10 +5914,10 @@
           "topic_id": null,
           "new_value": "search_field",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:36.343213",
+          "created_at": "2026-11-24T01:19:17.031031",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:36.343213",
+          "updated_at": "2026-11-24T01:19:17.031031",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -5926,7 +5926,7 @@
           "target_user_id": null
         },
         {
-          "id": 72,
+          "id": 73,
           "email": null,
           "action": 4,
           "context": null,
@@ -5934,12 +5934,12 @@
           "post_id": null,
           "subject": "Fancy Theme",
           "topic_id": null,
-          "new_value": "{\"id\":1,\"name\":\"Fancy Theme\",\"description\":null,\"created_at\":\"2026-11-15T23:44:34.912Z\",\"updated_at\":\"2026-11-15T23:44:35.194Z\",\"component\":false,\"color_scheme_id\":19,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"homepage_on\",\"humanized_name\":\"Homepage on\",\"type\":\"bool\",\"default\":true,\"value\":true},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Hello again\",\"value\":\"Kept\",\"textarea\":false}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"false\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_field\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"fancy-header\\\"\\u003eFancy \\u003ci\\u003etwo\\u003c/i\\u003e\\u003c/div\\u003e\\n\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"logo\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif\",\"filename\":\"logo.gif\",\"file_path\":\"assets/logo.gif\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"homepage_on: true\\nbanner_text:\\n  default: Hello again\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Fancy Theme Two\\\",\\n  \\\"component\\\": false,\\n  \\\"authors\\\": \\\"Jane Doe\\\",\\n  \\\"theme_version\\\": \\\"1.3.0\\\",\\n  \\\"assets\\\": {\\n    \\\"logo\\\": \\\"assets/logo.gif\\\"\\n  },\\n  \\\"color_schemes\\\": {\\n    \\\"Fancy Light\\\": {\\n      \\\"primary\\\": \\\"333333\\\",\\n      \\\"secondary\\\": \\\"FFFFFF\\\",\\n      \\\"tertiary\\\": \\\"0088CC\\\"\\n    },\\n    \\\"Fancy Extra\\\": {\\n      \\\"primary\\\": \\\"000000\\\",\\n      \\\"highlight-bg\\\": \\\"123456\\\"\\n    }\\n  },\\n  \\\"modifiers\\\": {\\n    \\\"svg_icons\\\": [\\\"far-star\\\"],\\n    \\\"topic_thumbnail_sizes\\\": [[100, 50], [200, 100]]\\n  },\\n  \\\"theme_site_settings\\\": {\\n    \\\"enable_welcome_banner\\\": true,\\n    \\\"search_experience\\\": \\\"search_field\\\"\\n  }\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":{\"id\":19,\"name\":\"Fancy Light\",\"is_base\":null,\"base_scheme_id\":null,\"theme_id\":1,\"theme_name\":\"Fancy Theme\",\"user_selectable\":false,\"is_builtin_default\":null,\"is_dark\":false,\"colors\":[{\"name\":\"primary\",\"hex\":\"333333\",\"default_hex\":\"333333\",\"is_advanced\":false},{\"name\":\"secondary\",\"hex\":\"ffffff\",\"default_hex\":\"ffffff\",\"is_advanced\":false},{\"name\":\"tertiary\",\"hex\":\"0088cc\",\"default_hex\":\"0088cc\",\"is_advanced\":false},{\"name\":\"quaternary\",\"hex\":\"e45735\",\"default_hex\":\"e45735\",\"is_advanced\":false},{\"name\":\"header_background\",\"hex\":\"fff\",\"default_hex\":\"fff\",\"is_advanced\":false},{\"name\":\"header_primary\",\"hex\":\"333\",\"default_hex\":\"333\",\"is_advanced\":false},{\"name\":\"selected\",\"hex\":\"d1f0ff\",\"default_hex\":\"d1f0ff\",\"is_advanced\":false},{\"name\":\"hover\",\"hex\":\"f2f2f2\",\"default_hex\":\"f2f2f2\",\"is_advanced\":false},{\"name\":\"highlight\",\"hex\":\"ffff4d\",\"default_hex\":\"ffff4d\",\"is_advanced\":false},{\"name\":\"danger\",\"hex\":\"c80001\",\"default_hex\":\"c80001\",\"is_advanced\":false},{\"name\":\"success\",\"hex\":\"090\",\"default_hex\":\"090\",\"is_advanced\":false},{\"name\":\"love\",\"hex\":\"fa6c8d\",\"default_hex\":\"fa6c8d\",\"is_advanced\":false}]},\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
+          "new_value": "{\"id\":1,\"name\":\"Fancy Theme\",\"description\":null,\"created_at\":\"2026-11-24T01:19:14.653Z\",\"updated_at\":\"2026-11-24T01:19:15.122Z\",\"component\":false,\"color_scheme_id\":19,\"dark_color_scheme_id\":null,\"user_selectable\":false,\"auto_update\":false,\"remote_theme_id\":null,\"settings\":[{\"setting\":\"homepage_on\",\"humanized_name\":\"Homepage on\",\"type\":\"bool\",\"default\":true,\"value\":true},{\"setting\":\"banner_text\",\"humanized_name\":\"Banner text\",\"type\":\"string\",\"default\":\"Hello again\",\"value\":\"Kept\",\"textarea\":false}],\"translations_locale\":\"en\",\"themeable_site_settings\":[{\"setting\":\"enable_welcome_banner\",\"default\":\"true\",\"description\":\"Display a banner on your main topic list pages to welcome members and allow them to search site content\",\"humanized_name\":\"Enable welcome banner\",\"type\":\"bool\",\"value\":\"false\"},{\"setting\":\"search_experience\",\"default\":\"search_icon\",\"description\":\"The default position and appearance of search on desktop devices\",\"humanized_name\":\"Search experience\",\"type\":\"enum\",\"valid_values\":[{\"name\":\"search.experience.search_field\",\"value\":\"search_field\"},{\"name\":\"search.experience.search_icon\",\"value\":\"search_icon\"}],\"translate_names\":true,\"value\":\"search_field\"}],\"supported\":true,\"enabled\":true,\"theme_fields\":[{\"name\":\"header\",\"target\":\"common\",\"value\":\"\\u003cdiv class=\\\"fancy-header\\\"\\u003eFancy \\u003ci\\u003etwo\\u003c/i\\u003e\\u003c/div\\u003e\\n\",\"type_id\":0,\"file_path\":\"common/header.html\"},{\"name\":\"logo\",\"target\":\"common\",\"value\":\"\",\"type_id\":2,\"upload_id\":36,\"url\":\"/uploads/default/original/1X/f5cebe42706fcad01568026c8db70c8ec640d4a2.gif\",\"filename\":\"logo.gif\",\"file_path\":\"assets/logo.gif\"},{\"name\":\"yaml\",\"target\":\"settings\",\"value\":\"homepage_on: true\\nbanner_text:\\n  default: Hello again\\n\",\"type_id\":5,\"file_path\":\"settings.yml\"},{\"name\":\"about\",\"target\":\"about\",\"value\":\"{\\n  \\\"name\\\": \\\"Fancy Theme Two\\\",\\n  \\\"component\\\": false,\\n  \\\"authors\\\": \\\"Jane Doe\\\",\\n  \\\"theme_version\\\": \\\"1.3.0\\\",\\n  \\\"assets\\\": {\\n    \\\"logo\\\": \\\"assets/logo.gif\\\"\\n  },\\n  \\\"color_schemes\\\": {\\n    \\\"Fancy Light\\\": {\\n      \\\"primary\\\": \\\"333333\\\",\\n      \\\"secondary\\\": \\\"FFFFFF\\\",\\n      \\\"tertiary\\\": \\\"0088CC\\\"\\n    },\\n    \\\"Fancy Extra\\\": {\\n      \\\"primary\\\": \\\"000000\\\",\\n      \\\"highlight-bg\\\": \\\"123456\\\"\\n    }\\n  },\\n  \\\"modifiers\\\": {\\n    \\\"svg_icons\\\": [\\\"far-star\\\"],\\n    \\\"topic_thumbnail_sizes\\\": [[100, 50], [200, 100]]\\n  },\\n  \\\"theme_site_settings\\\": {\\n    \\\"enable_welcome_banner\\\": true,\\n    \\\"search_experience\\\": \\\"search_field\\\"\\n  }\\n}\\n\",\"type_id\":8,\"file_path\":\"about.json\"}],\"screenshot_dark_url\":null,\"screenshot_light_url\":null,\"system\":false,\"only_theme_color_schemes\":false,\"color_scheme\":{\"id\":19,\"name\":\"Fancy Light\",\"is_base\":null,\"base_scheme_id\":null,\"theme_id\":1,\"theme_name\":\"Fancy Theme\",\"user_selectable\":false,\"is_builtin_default\":null,\"is_dark\":false,\"colors\":[{\"name\":\"primary\",\"hex\":\"333333\",\"default_hex\":\"333333\",\"is_advanced\":false},{\"name\":\"secondary\",\"hex\":\"ffffff\",\"default_hex\":\"ffffff\",\"is_advanced\":false},{\"name\":\"tertiary\",\"hex\":\"0088cc\",\"default_hex\":\"0088cc\",\"is_advanced\":false},{\"name\":\"quaternary\",\"hex\":\"e45735\",\"default_hex\":\"e45735\",\"is_advanced\":false},{\"name\":\"header_background\",\"hex\":\"fff\",\"default_hex\":\"fff\",\"is_advanced\":false},{\"name\":\"header_primary\",\"hex\":\"333\",\"default_hex\":\"333\",\"is_advanced\":false},{\"name\":\"selected\",\"hex\":\"d1f0ff\",\"default_hex\":\"d1f0ff\",\"is_advanced\":false},{\"name\":\"hover\",\"hex\":\"f2f2f2\",\"default_hex\":\"f2f2f2\",\"is_advanced\":false},{\"name\":\"highlight\",\"hex\":\"ffff4d\",\"default_hex\":\"ffff4d\",\"is_advanced\":false},{\"name\":\"danger\",\"hex\":\"c80001\",\"default_hex\":\"c80001\",\"is_advanced\":false},{\"name\":\"success\",\"hex\":\"090\",\"default_hex\":\"090\",\"is_advanced\":false},{\"name\":\"love\",\"hex\":\"fa6c8d\",\"default_hex\":\"fa6c8d\",\"is_advanced\":false}]},\"user\":{\"id\":1,\"username\":\"admin\",\"name\":\"Admin\",\"avatar_template\":\"/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png\",\"title\":null},\"child_themes\":[],\"parent_themes\":[],\"remote_theme\":null,\"translations\":[]}",
           "admin_only": true,
-          "created_at": "2026-11-15T23:44:36.591287",
+          "created_at": "2026-11-24T01:19:17.370925",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:44:36.591287",
+          "updated_at": "2026-11-24T01:19:17.370925",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -5957,25 +5957,25 @@
           "id": 36,
           "user_id": 1,
           "upload_id": 36,
-          "created_at": "2026-11-15T23:44:34.872961"
+          "created_at": "2026-11-24T01:19:14.581009"
         },
         {
           "id": 37,
           "user_id": 1,
           "upload_id": 37,
-          "created_at": "2026-11-15T23:44:34.882995"
+          "created_at": "2026-11-24T01:19:14.598942"
         },
         {
           "id": 38,
           "user_id": 1,
           "upload_id": 38,
-          "created_at": "2026-11-15T23:44:34.893141"
+          "created_at": "2026-11-24T01:19:14.619042"
         },
         {
           "id": 39,
           "user_id": 1,
           "upload_id": 39,
-          "created_at": "2026-11-15T23:44:34.901645"
+          "created_at": "2026-11-24T01:19:14.634056"
         }
       ],
       "deleted": [],
@@ -5994,12 +5994,12 @@
     "themes": 1,
     "upload_references": 38,
     "uploads": 36,
-    "user_histories": 68,
+    "user_histories": 69,
     "user_uploads": 36
   },
   "recorded_from": {
     "case": "3d5553b890fabf5be7d06013b0f7922f1a53c1be86effde660b90462d40f9bac",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

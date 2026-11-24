@@ -39,8 +39,8 @@
       "path": "/admin/config/welcome-banner/themes-with-setting.json"
     }
   ],
-  "started_at": "2026-11-15T23:44:40.151608",
-  "transaction_started_at": "2026-11-15T23:44:39.347703",
+  "started_at": "2026-11-24T01:19:22.606464",
+  "transaction_started_at": "2026-11-24T01:19:21.325788",
   "responses": [
     {
       "status": 200,
@@ -1183,7 +1183,7 @@
               {
                 "name": "sidebar",
                 "target": "extra_scss",
-                "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link:focus,\n.sidebar-section-link-wrapper .sidebar-section-link:hover {\n  .d-icon {\n    color: var(--primary);\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
+                "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link {\n  &:focus-visible .d-icon {\n    color: var(--primary);\n  }\n\n  @media (hover: hover) {\n    &:hover .d-icon,\n    &:focus .d-icon {\n      color: var(--primary);\n    }\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
                 "type_id": 1,
                 "file_path": "stylesheets/sidebar.scss"
               },
@@ -4374,7 +4374,7 @@
             {
               "name": "sidebar",
               "target": "extra_scss",
-              "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link:focus,\n.sidebar-section-link-wrapper .sidebar-section-link:hover {\n  .d-icon {\n    color: var(--primary);\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
+              "value": "@use \"lib/viewport\";\n\n:root {\n  --d-sidebar-active-background: var(--d-selected);\n}\n\nbody.has-full-page-chat .sidebar-wrapper,\n.sidebar-wrapper,\n.sidebar-hamburger-dropdown {\n  @include viewport.until(lg) {\n    background: var(--secondary);\n\n    .sidebar-footer-wrapper {\n      background: var(--secondary);\n\n      .sidebar-footer-container::before {\n        display: none;\n      }\n    }\n  }\n\n  .has-full-page-chat &,\n  .has-full-page-chat & .sidebar-footer-wrapper {\n    background: transparent;\n  }\n\n  .sidebar-container {\n    border-right: none;\n  }\n\n  .sidebar-section-link {\n    transition: none;\n    border-radius: var(--d-border-radius);\n  }\n\n  .dropdown-menu__item .sidebar-section-link {\n    border-radius: 0;\n  }\n}\n\n.sidebar-hamburger-dropdown {\n  .sidebar-new-topic-button__wrapper {\n    width: 100%;\n    margin: 0 0 var(--space-2);\n  }\n}\n\n.sidebar-section-wrapper {\n  --d-sidebar-section-border-color: var(--d-sidebar-border-color);\n\n  @include viewport.from(xl) {\n    padding-block: 0.45em;\n  }\n\n  @include viewport.until(sm) {\n    .hamburger-panel .revamped & {\n      margin-bottom: var(--space-4);\n    }\n  }\n\n  .sidebar-section-header {\n    font-size: var(--font-down-2);\n  }\n\n  .sidebar-section-content {\n    margin: 0;\n    display: flex;\n    flex-direction: column;\n\n    @include viewport.from(xl) {\n      gap: var(--space-1);\n    }\n  }\n}\n\n.sidebar-wrapper .sidebar-sections {\n  --scrollbarThumbBg: var(--d-selected);\n}\n\n.sidebar-section-link-wrapper .sidebar-section-link {\n  &:focus-visible .d-icon {\n    color: var(--primary);\n  }\n\n  @media (hover: hover) {\n    &:hover .d-icon,\n    &:focus .d-icon {\n      color: var(--primary);\n    }\n  }\n}\n\n// put the draft menu above the slide-out hamburger on small desktop screens\n@include viewport.until(md) {\n  html:not(.mobile-view) {\n    .topic-drafts-menu-content {\n      z-index: z(\"modal\", \"overlay\");\n    }\n  }\n}\n\n.admin-area .sidebar-wrapper .admin-panel {\n  --d-sidebar-highlight-background: var(--d-selected);\n  --d-sidebar-link-icon-color: var(--d-sidebar-link-color);\n}\n\n.sidebar-theme-toggle__wrapper {\n  order: -1;\n\n  .d-icon-paintbrush {\n    display: none;\n  }\n}\n\n.sidebar-theme-toggle-dropdown.select-kit.combo-box .select-kit-header {\n  padding-left: 1em;\n}\n",
               "type_id": 1,
               "file_path": "stylesheets/sidebar.scss"
             },
@@ -9637,33 +9637,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "4QxwlxFQSXAOhU6aJrwprxo9TEo=",
-            "created_at": "2026-11-15T23:44:39.711419",
-            "rotated_at": "2026-11-15T23:44:39.710539",
-            "updated_at": "2026-11-15T23:44:39.711419",
+            "auth_token": "kexp7hoFMJYrtEV6pfMHbczeQRE=",
+            "created_at": "2026-11-24T01:19:21.746326",
+            "rotated_at": "2026-11-24T01:19:21.744832",
+            "updated_at": "2026-11-24T01:19:21.746326",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "4QxwlxFQSXAOhU6aJrwprxo9TEo=",
+            "prev_auth_token": "kexp7hoFMJYrtEV6pfMHbczeQRE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:44:40.157205",
+            "id": 1,
+            "seen_at": "2026-11-24T01:19:22.614574",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "4QxwlxFQSXAOhU6aJrwprxo9TEo=",
-            "created_at": "2026-11-15T23:44:39.711419",
-            "rotated_at": "2026-11-15T23:44:39.710539",
-            "updated_at": "2026-11-15T23:44:39.711419",
+            "auth_token": "kexp7hoFMJYrtEV6pfMHbczeQRE=",
+            "created_at": "2026-11-24T01:19:21.746326",
+            "rotated_at": "2026-11-24T01:19:21.744832",
+            "updated_at": "2026-11-24T01:19:21.746326",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "4QxwlxFQSXAOhU6aJrwprxo9TEo=",
+            "prev_auth_token": "kexp7hoFMJYrtEV6pfMHbczeQRE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -9676,7 +9676,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "18a0b582b51e678370e8d16a3e2bdd293d1c2cbdfba9af91db9be5dcf1988731",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

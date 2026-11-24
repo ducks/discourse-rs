@@ -1,6 +1,6 @@
-commit=9daeae2a745b73533215775ebf132191ca4c5056
-committed_at=2026-11-13T15:41:32-08:00
-version=2026.11.0-latest.1
-describe=v2026.11.0-latest-576-g9daeae2a745
+commit=ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d
+committed_at=2026-11-20T16:17:23-08:00
+version=2026.11.0-latest.2
+describe=v2026.11.0-latest-799-gba3bd0d0d47
 discourse_emojis=1.0.47
 emoji_image_version=16

@@ -7,8 +7,8 @@
       "path": "/presence/get?channels%5B%5D=%2Fchat-reply%2F1&channels%5B%5D=%2Fchat-reply%2F2&channels%5B%5D=%2Fchat-reply%2F3&channels%5B%5D=%2Fchat-reply%2F4&channels%5B%5D=%2Fchat-reply%2F5&channels%5B%5D=%2Fchat-reply%2F6&channels%5B%5D=%2Fchat-reply%2F7&channels%5B%5D=%2Fchat-reply%2F8&channels%5B%5D=%2Fchat-reply%2F9&channels%5B%5D=%2Fchat-reply%2F10&channels%5B%5D=%2Fchat-reply%2F11&channels%5B%5D=%2Fchat-reply%2F12&channels%5B%5D=%2Fchat-reply%2F13&channels%5B%5D=%2Fchat-reply%2F14&channels%5B%5D=%2Fchat-reply%2F15&channels%5B%5D=%2Fchat-reply%2F16&channels%5B%5D=%2Fchat-reply%2F17&channels%5B%5D=%2Fchat-reply%2F18&channels%5B%5D=%2Fchat-reply%2F19&channels%5B%5D=%2Fchat-reply%2F20&channels%5B%5D=%2Fchat-reply%2F21&channels%5B%5D=%2Fchat-reply%2F22&channels%5B%5D=%2Fchat-reply%2F23&channels%5B%5D=%2Fchat-reply%2F24&channels%5B%5D=%2Fchat-reply%2F25&channels%5B%5D=%2Fchat-reply%2F26&channels%5B%5D=%2Fchat-reply%2F27&channels%5B%5D=%2Fchat-reply%2F28&channels%5B%5D=%2Fchat-reply%2F29&channels%5B%5D=%2Fchat-reply%2F30&channels%5B%5D=%2Fchat-reply%2F31&channels%5B%5D=%2Fchat-reply%2F32&channels%5B%5D=%2Fchat-reply%2F33&channels%5B%5D=%2Fchat-reply%2F34&channels%5B%5D=%2Fchat-reply%2F35&channels%5B%5D=%2Fchat-reply%2F36&channels%5B%5D=%2Fchat-reply%2F37&channels%5B%5D=%2Fchat-reply%2F38&channels%5B%5D=%2Fchat-reply%2F39&channels%5B%5D=%2Fchat-reply%2F40&channels%5B%5D=%2Fchat-reply%2F41&channels%5B%5D=%2Fchat-reply%2F42&channels%5B%5D=%2Fchat-reply%2F43&channels%5B%5D=%2Fchat-reply%2F44&channels%5B%5D=%2Fchat-reply%2F45&channels%5B%5D=%2Fchat-reply%2F46&channels%5B%5D=%2Fchat-reply%2F47&channels%5B%5D=%2Fchat-reply%2F48&channels%5B%5D=%2Fchat-reply%2F49&channels%5B%5D=%2Fchat-reply%2F50&channels%5B%5D=%2Fchat-reply%2F51"
     }
   ],
-  "started_at": "2026-11-15T23:16:34.337641",
-  "transaction_started_at": "2026-11-15T23:16:33.374286",
+  "started_at": "2026-11-23T22:24:19.186829",
+  "transaction_started_at": "2026-11-23T22:24:15.088047",
   "responses": [
     {
       "status": 400,
@@ -27,33 +27,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "EytaHrlyKfnmP/SzCPgc8SlVnPY=",
-            "created_at": "2026-11-15T23:16:33.700469",
-            "rotated_at": "2026-11-15T23:16:33.69952",
-            "updated_at": "2026-11-15T23:16:33.700469",
+            "auth_token": "VJwHxa+LN4m1yBQ+60TCKCk8obo=",
+            "created_at": "2026-11-23T22:24:16.73573",
+            "rotated_at": "2026-11-23T22:24:16.731538",
+            "updated_at": "2026-11-23T22:24:16.73573",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "EytaHrlyKfnmP/SzCPgc8SlVnPY=",
+            "prev_auth_token": "VJwHxa+LN4m1yBQ+60TCKCk8obo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:16:34.34799",
+            "id": 1,
+            "seen_at": "2026-11-23T22:24:19.213442",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "EytaHrlyKfnmP/SzCPgc8SlVnPY=",
-            "created_at": "2026-11-15T23:16:33.700469",
-            "rotated_at": "2026-11-15T23:16:33.69952",
-            "updated_at": "2026-11-15T23:16:33.700469",
+            "auth_token": "VJwHxa+LN4m1yBQ+60TCKCk8obo=",
+            "created_at": "2026-11-23T22:24:16.73573",
+            "rotated_at": "2026-11-23T22:24:16.731538",
+            "updated_at": "2026-11-23T22:24:16.73573",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "EytaHrlyKfnmP/SzCPgc8SlVnPY=",
+            "prev_auth_token": "VJwHxa+LN4m1yBQ+60TCKCk8obo=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -66,7 +66,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "0b7c62beed62785407489f40edf70dca3a99b213b6070890d6ca17be48ae5246",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

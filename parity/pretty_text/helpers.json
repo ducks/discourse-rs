@@ -3,7 +3,10 @@
     "method": "hashtag_lookup",
     "args": [
       "site-feedback",
-      -1,
+      [
+        -1,
+        -1
+      ],
       [
         "category",
         "tag",
@@ -695,6 +698,33 @@
         "short_path": "/uploads/short-url/5MOyqPPuE0zKxGgwAPEOECI7NeT.png",
         "base62_sha1": "5MOyqPPuE0zKxGgwAPEOECI7NeT"
       }
+    }
+  },
+  {
+    "method": "hashtag_lookup",
+    "args": [
+      "site-feedback",
+      -1,
+      [
+        "category",
+        "tag",
+        "channel"
+      ]
+    ],
+    "result": {
+      "relative_url": "/c/site-feedback/2",
+      "text": "Site Feedback",
+      "description": "Discussion about this site, its organization, how it works, and how we can improve it.",
+      "icon": "folder",
+      "colors": [
+        "808281"
+      ],
+      "type": "category",
+      "ref": "site-feedback",
+      "slug": "site-feedback",
+      "id": 2,
+      "style_type": "emoji",
+      "emoji": "thought_balloon"
     }
   }
 ]

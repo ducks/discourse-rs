@@ -82,23 +82,23 @@
       }
     }
   ],
-  "started_at": "2026-11-16T00:14:26.910665",
-  "transaction_started_at": "2026-11-16T00:14:26.139797",
+  "started_at": "2026-11-24T01:05:35.789823",
+  "transaction_started_at": "2026-11-24T01:05:28.494272",
   "responses": [
     {
       "status": 200,
       "body": {
-        "external_upload_identifier": "OTRkN2U4NGMtOThkNy00YTQxLTljMzktOTc5MjFkZmVkZTllLmU1MDRkYjUyLTExZGMtNDBlNy1hZjY4LTMzNTVjNDVkZjAzN3gxNzk0Nzg4MDY2OTQ2NzU5ODI4",
-        "key": "temp/uploads/default/602641646898c85a3bc8d7692548b4f0/0689fa7e3a2664a97ac8279834ad0a21.png",
-        "unique_identifier": "b1da9724-8887-443b-847b-f29417f98578"
+        "external_upload_identifier": "YjMxZjI0ZjQtYTk5YS00Y2M1LWFiYmMtNThmZGRkNDY5YzhkLjYwNjQxYzRiLWYyYzMtNGE1NC04MmNiLWFmMjUwZTY0ZTJiNngxNzk1NDgyMzM1OTA0MDMzMTg0",
+        "key": "temp/uploads/default/cb2def39fbd7de6b336fc28865675ee2/7f3a8f323d0d4e022f8a0d925de34034.png",
+        "unique_identifier": "08b0da72-05cb-4116-b369-4f07ab025980"
       }
     },
     {
       "status": 200,
       "body": {
         "presigned_urls": {
-          "1": "http://s3-direct-multipart.minio.localhost:9122/temp/uploads/default/602641646898c85a3bc8d7692548b4f0/0689fa7e3a2664a97ac8279834ad0a21.png?partNumber=1&uploadId=OTRkN2U4NGMtOThkNy00YTQxLTljMzktOTc5MjFkZmVkZTllLmU1MDRkYjUyLTExZGMtNDBlNy1hZjY4LTMzNTVjNDVkZjAzN3gxNzk0Nzg4MDY2OTQ2NzU5ODI4&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261116T001426Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&X-Amz-Signature=e6f21495d45bd7783b10eb0057107c6b109ef096e5824d1e92d2842f713f4bef",
-          "2": "http://s3-direct-multipart.minio.localhost:9122/temp/uploads/default/602641646898c85a3bc8d7692548b4f0/0689fa7e3a2664a97ac8279834ad0a21.png?partNumber=2&uploadId=OTRkN2U4NGMtOThkNy00YTQxLTljMzktOTc5MjFkZmVkZTllLmU1MDRkYjUyLTExZGMtNDBlNy1hZjY4LTMzNTVjNDVkZjAzN3gxNzk0Nzg4MDY2OTQ2NzU5ODI4&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261116%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261116T001426Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&X-Amz-Signature=bebae5e7a5018d229a2b48747d221cfdb760e4899ec7134005c4707b031340a5"
+          "1": "http://s3-direct-multipart.minio.localhost:9122/temp/uploads/default/cb2def39fbd7de6b336fc28865675ee2/7f3a8f323d0d4e022f8a0d925de34034.png?partNumber=1&uploadId=YjMxZjI0ZjQtYTk5YS00Y2M1LWFiYmMtNThmZGRkNDY5YzhkLjYwNjQxYzRiLWYyYzMtNGE1NC04MmNiLWFmMjUwZTY0ZTJiNngxNzk1NDgyMzM1OTA0MDMzMTg0&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261124%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261124T010536Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&X-Amz-Signature=0a65c4330f46d0297d3cf94d6e7f96b445354825249b3d2ffaa6f16432574c47",
+          "2": "http://s3-direct-multipart.minio.localhost:9122/temp/uploads/default/cb2def39fbd7de6b336fc28865675ee2/7f3a8f323d0d4e022f8a0d925de34034.png?partNumber=2&uploadId=YjMxZjI0ZjQtYTk5YS00Y2M1LWFiYmMtNThmZGRkNDY5YzhkLjYwNjQxYzRiLWYyYzMtNGE1NC04MmNiLWFmMjUwZTY0ZTJiNngxNzk1NDgyMzM1OTA0MDMzMTg0&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=discourse-rs-test%2F20261124%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20261124T010536Z&X-Amz-Expires=600&X-Amz-SignedHeaders=host&X-Amz-Signature=9756d1a4b3eb326b4b748e9c9b0bdaf1121e1bfbe920d7e55a986c522501c9b5"
         }
       }
     },
@@ -157,33 +157,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "W6S1RcTcdGu06cLyoh+kpiB0s7s=",
-            "created_at": "2026-11-16T00:14:26.426795",
-            "rotated_at": "2026-11-16T00:14:26.426008",
-            "updated_at": "2026-11-16T00:14:26.426795",
+            "auth_token": "xTgjrpFaoGY9xYmFcugoAs/xbiY=",
+            "created_at": "2026-11-24T01:05:31.453506",
+            "rotated_at": "2026-11-24T01:05:31.447113",
+            "updated_at": "2026-11-24T01:05:31.453506",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "W6S1RcTcdGu06cLyoh+kpiB0s7s=",
+            "prev_auth_token": "xTgjrpFaoGY9xYmFcugoAs/xbiY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T00:14:26.915981",
+            "id": 1,
+            "seen_at": "2026-11-24T01:05:35.825896",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "W6S1RcTcdGu06cLyoh+kpiB0s7s=",
-            "created_at": "2026-11-16T00:14:26.426795",
-            "rotated_at": "2026-11-16T00:14:26.426008",
-            "updated_at": "2026-11-16T00:14:26.426795",
+            "auth_token": "xTgjrpFaoGY9xYmFcugoAs/xbiY=",
+            "created_at": "2026-11-24T01:05:31.453506",
+            "rotated_at": "2026-11-24T01:05:31.447113",
+            "updated_at": "2026-11-24T01:05:31.453506",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "W6S1RcTcdGu06cLyoh+kpiB0s7s=",
+            "prev_auth_token": "xTgjrpFaoGY9xYmFcugoAs/xbiY=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -211,7 +211,7 @@
   "s3_objects": [],
   "recorded_from": {
     "case": "e5f238f08da547ebe7972330ac981cab4deddeaea8437cc2bf14129f7789a5b8",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -13,7 +13,7 @@ use crate::pretty_text::cleanup::{
     append, attr, element_name, fragment_root, new_element, new_text, parse, parse_document,
     replace, replace_with, set_attr, text,
 };
-use crate::pretty_text::select::{parent, select};
+use crate::pretty_text::select::{Selector, element_children, parent, select};
 use crate::site_settings::SiteSettings;
 use crate::{AppError, Unsupported};
 
@@ -413,12 +413,14 @@ impl Styles {
         self.style("pre", Some("word-wrap: break-word; max-width: 694px;"), &[]);
         self.style(
             "code",
-            Some("background-color: #f9f9f9; padding: 2px 5px;"),
+            Some("background-color: #f9f9f9; color: #222222; padding: 2px 5px;"),
             &[],
         );
         self.style(
             "pre code",
-            Some("display: block; background-color: #f9f9f9; overflow: auto; padding: 5px;"),
+            Some(
+                "display: block; background-color: #f9f9f9; color: #222222; overflow: auto; padding: 5px;",
+            ),
             &[],
         );
         self.style("pre.onebox code", Some("white-space: normal;"), &[]);
@@ -577,10 +579,12 @@ impl Styles {
         );
         self.style(
             "aside.quote",
-            Some("border-left: 5px solid #e9e9e9; background-color: #f8f8f8; margin: 0;"),
+            Some(
+                "border-left: 5px solid #e9e9e9; background-color: #f8f8f8; color: #222222; margin: 0;",
+            ),
             &[],
         );
-        self.style("blockquote", Some("border-left: 5px solid #e9e9e9; background-color: #f8f8f8; margin-left: 0; padding: 12px;"), &[]);
+        self.style("blockquote", Some("border-left: 5px solid #e9e9e9; background-color: #f8f8f8; color: #222222; margin-left: 0; padding: 12px;"), &[]);
         self.style(
             "aside.onebox",
             Some("border: 5px solid #e9e9e9; padding: 12px 25px 12px 12px; margin-bottom: 10px;"),
@@ -643,18 +647,25 @@ impl Styles {
         for p in self.select("aside.quote blockquote > p") {
             set_attr(&p, "style", "padding: 0;");
         }
-        // Each quote, in document order: its title's and blockquotes'
-        // inner HTML (every one within, a nested quote's too, as a
-        // NodeSet's inner_html joins them) less the quote controls. A
-        // nested quote is replaced along with its parent's content, so
-        // what is done to it after shows nowhere (and Rails' copy of the
-        // quote, the controls removed, reads the same as the quote).
-        for quote in self.select("aside.quote") {
+        // Each quote, innermost first (92f721ad2f4): its own title's and
+        // blockquote's inner HTML (the direct children, `> div.title` and
+        // `> blockquote`, a NodeSet's inner_html joining them) less the
+        // quote controls. A nested quote is converted before the quote
+        // around it, which then carries it converted.
+        let direct = |node: &Handle, selector: &str| -> String {
+            let selector = Selector::parse(selector);
+            element_children(node)
+                .iter()
+                .filter(|c| selector.matches(c))
+                .map(inner_html)
+                .collect()
+        };
+        for quote in self.select("aside.quote").into_iter().rev() {
             let copy = quote.clone();
             for controls in select(&copy, "div.quote-controls") {
                 remove(&controls);
             }
-            let quoted: String = select(&copy, "blockquote").iter().map(inner_html).collect();
+            let quoted = direct(&copy, "blockquote");
             // String#strip: ASCII whitespace and NUL.
             let stripped = quoted.trim_start_matches([' ', '\t', '\n', '\x0B', '\x0C', '\r', '\0']);
             let blockquote = if stripped.starts_with("<p") {
@@ -662,7 +673,7 @@ impl Styles {
             } else {
                 format!("<p style='padding: 0;'>{quoted}</p>")
             };
-            let title: String = select(&copy, "div.title").iter().map(inner_html).collect();
+            let title = direct(&copy, "div.title");
             set_inner_html(&quote, &format!("{title}{blockquote}"));
             rename(&quote, "blockquote");
         }

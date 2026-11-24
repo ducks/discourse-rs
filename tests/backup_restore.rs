@@ -144,8 +144,6 @@ async fn a_backup_restored_over_a_changed_site_brings_it_back() {
         "Unzipping archive, this may take a while...",
         "Extracting dump file...",
         "Validating metadata...",
-        "  Current version: 20261113130002",
-        "  Restored version: 20261113130002",
         "Enabling readonly mode...",
         "Pausing sidekiq...",
         "Waiting up to 60 seconds for Sidekiq to finish running jobs...",
@@ -171,6 +169,17 @@ async fn a_backup_restored_over_a_changed_site_brings_it_back() {
         "[SUCCESS]",
     ] {
         assert!(lines.contains(&expected), "no {expected:?} in {lines:#?}");
+    }
+    // The vendored schema's version, on both sides.
+    let version: String = scalar(&db.pool, "SELECT max(version) FROM schema_migrations").await;
+    for expected in [
+        format!("  Current version: {version}"),
+        format!("  Restored version: {version}"),
+    ] {
+        assert!(
+            lines.contains(&expected.as_str()),
+            "no {expected:?} in {lines:#?}"
+        );
     }
     assert_eq!(lines.last(), Some(&"[SUCCESS]"));
     assert!(

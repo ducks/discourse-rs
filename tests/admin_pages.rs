@@ -545,7 +545,8 @@ async fn a_users_admin_page_carries_the_penalty_modal() {
     assert!(config["user"]["next_penalty"].is_string(), "{config}");
     assert_eq!(config["user"]["penalty_counts"]["silenced"], 0);
     assert_eq!(config["timezone"], "Europe/Paris");
-    assert_eq!(config["settings"]["hide_suspension_reasons"], false);
+    // On by default under its upcoming change (Discourse bd38a9dae78).
+    assert_eq!(config["settings"]["hide_suspension_reasons"], true);
     let strings = &config["strings"];
     assert_eq!(strings["admin.user.silence_modal_title"], "Silence User");
     assert_eq!(strings["admin.user.suspend_modal_title"], "Suspend User");

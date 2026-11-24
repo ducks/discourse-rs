@@ -7,8 +7,8 @@
       "path": "/admin/users/3/grant_admin.json"
     }
   ],
-  "started_at": "2026-11-15T21:48:23.22565",
-  "transaction_started_at": "2026-11-15T21:48:18.333132",
+  "started_at": "2026-11-23T21:42:56.397125",
+  "transaction_started_at": "2026-11-23T21:42:52.971104",
   "responses": [
     {
       "status": 200,
@@ -29,11 +29,11 @@
           "user_id": null,
           "topic_id": null,
           "bounce_key": null,
-          "created_at": "2026-11-15T21:48:29.45335",
+          "created_at": "2026-11-23T21:42:56.727326",
           "email_type": "admin_confirmation_message",
-          "message_id": "d47b6810-8b6f-407f-a612-05500c52b86a@localhost",
+          "message_id": "a86a89d1-8e3a-4334-bfb7-32e5b3f67615@localhost",
           "to_address": "admin@example.com",
-          "updated_at": "2026-11-15T21:48:29.45335",
+          "updated_at": "2026-11-23T21:42:56.727326",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -51,33 +51,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "/0vLNqOEFhdcigFIL8B9uzKsQx8=",
-            "created_at": "2026-11-15T21:48:20.407681",
-            "rotated_at": "2026-11-15T21:48:20.403328",
-            "updated_at": "2026-11-15T21:48:20.407681",
+            "auth_token": "/CHZpKug8HLKLMAkj911tEMOjDE=",
+            "created_at": "2026-11-23T21:42:54.412747",
+            "rotated_at": "2026-11-23T21:42:54.409269",
+            "updated_at": "2026-11-23T21:42:54.412747",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "/0vLNqOEFhdcigFIL8B9uzKsQx8=",
+            "prev_auth_token": "/CHZpKug8HLKLMAkj911tEMOjDE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T21:48:23.259553",
+            "id": 1,
+            "seen_at": "2026-11-23T21:42:56.411487",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "/0vLNqOEFhdcigFIL8B9uzKsQx8=",
-            "created_at": "2026-11-15T21:48:20.407681",
-            "rotated_at": "2026-11-15T21:48:20.403328",
-            "updated_at": "2026-11-15T21:48:20.407681",
+            "auth_token": "/CHZpKug8HLKLMAkj911tEMOjDE=",
+            "created_at": "2026-11-23T21:42:54.412747",
+            "rotated_at": "2026-11-23T21:42:54.409269",
+            "updated_at": "2026-11-23T21:42:54.412747",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "/0vLNqOEFhdcigFIL8B9uzKsQx8=",
+            "prev_auth_token": "/CHZpKug8HLKLMAkj911tEMOjDE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -93,7 +93,7 @@
         "to_address": "admin@example.com",
         "target_email": "user1@example.com",
         "target_username": "user1",
-        "token": "cc8b57bafd6a747db0b17284ce43ca03"
+        "token": "0d7007574acc764cbd65953876e8e61f"
       }
     ]
   ],
@@ -118,7 +118,7 @@
         ],
         [
           "Message-ID",
-          "<d47b6810-8b6f-407f-a612-05500c52b86a@localhost>"
+          "<a86a89d1-8e3a-4334-bfb7-32e5b3f67615@localhost>"
         ],
         [
           "Subject",
@@ -130,7 +130,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6afa28ad5f551_b6b6f38-4a6"
+          "multipart/alternative; boundary=--==_mimepart_6b04b360a86f7_83df38624f5"
         ],
         [
           "Content-Transfer-Encoding",
@@ -149,13 +149,13 @@
           "auto-generated"
         ]
       ],
-      "text": "Please confirm that you'd like to add **user1 (user1@example.com)** as an administrator for your forum.\n\n[Confirm Administrator Account](http://localhost:3042/u/confirm-admin/cc8b57bafd6a747db0b17284ce43ca03)\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Please confirm that you’d like to add <strong>user1 (<a href=\"mailto:user1@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">user1@example.com</a>)</strong> as an administrator for your forum.</p>\n<p><a href=\"http://localhost:3042/u/confirm-admin/cc8b57bafd6a747db0b17284ce43ca03\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Confirm Administrator Account</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "Please confirm that you'd like to add **user1 (user1@example.com)** as an administrator for your forum.\n\n[Confirm Administrator Account](http://localhost:3042/u/confirm-admin/0d7007574acc764cbd65953876e8e61f)\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <p>Please confirm that you’d like to add <strong>user1 (<a href=\"mailto:user1@example.com\" style=\"text-decoration:none;font-weight:bold;color:#006699\">user1@example.com</a>)</strong> as an administrator for your forum.</p>\n<p><a href=\"http://localhost:3042/u/confirm-admin/0d7007574acc764cbd65953876e8e61f\" style=\"text-decoration:none;font-weight:bold;color:#006699\">Confirm Administrator Account</a></p>\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "47a2c7915066a8a3611b084ac2c5d83c494083ad6768d3e90fb19a67901bbf2d",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

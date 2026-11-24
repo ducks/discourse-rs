@@ -647,7 +647,7 @@ async fn uploaded_avatars_are_served_at_each_size() {
     let db = TestDb::new().await;
     let dir = scratch("uploaded");
     let config = proxy_config("http://127.0.0.1:1", &dir);
-    // discobot's avatar, upload 35 (its gravatar) in the seed.
+    // discobot's avatar, upload 34 (its gravatar) in the seed.
     let original =
         dir.join("public/uploads/default/original/1X/fefde1dafd8c529f488f2e7671a631f59823fd89.png");
     std::fs::create_dir_all(original.parent().unwrap()).unwrap();
@@ -658,7 +658,7 @@ async fn uploaded_avatars_are_served_at_each_size() {
     .unwrap();
 
     // 48 is in the seed, its file only on the reference: another size.
-    let path = "/user_avatar/test.localhost/discobot/50/35_2.png";
+    let path = "/user_avatar/test.localhost/discobot/50/34_2.png";
     let (status, headers, body) = get_avatar(&db, &config, path).await;
     assert_eq!(status, StatusCode::OK);
     assert_eq!(dimensions(&body), (50, 50));
@@ -667,7 +667,7 @@ async fn uploaded_avatars_are_served_at_each_size() {
         "max-age=31556952, public, immutable"
     );
     let made: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM optimized_images WHERE upload_id = 35 AND width = 50 AND height = 50",
+        "SELECT COUNT(*) FROM optimized_images WHERE upload_id = 34 AND width = 50 AND height = 50",
     )
     .fetch_one(&db.pool)
     .await
@@ -678,7 +678,7 @@ async fn uploaded_avatars_are_served_at_each_size() {
     let (status, _, body) = get_avatar(
         &db,
         &config,
-        "/user_avatar/test.localhost/discobot/120/35.png",
+        "/user_avatar/test.localhost/discobot/120/34.png",
     )
     .await;
     assert_eq!(status, StatusCode::OK);
@@ -687,7 +687,7 @@ async fn uploaded_avatars_are_served_at_each_size() {
     // Another upload id: the current avatar.
     let response = discourse_rs::app(state(db.pool.clone(), config.clone()).await)
         .oneshot(
-            Request::get("/user_avatar/test.localhost/discobot/48/34_2.png")
+            Request::get("/user_avatar/test.localhost/discobot/48/35_2.png")
                 .header(header::HOST, "test.localhost")
                 .body(Body::empty())
                 .unwrap(),
@@ -697,17 +697,17 @@ async fn uploaded_avatars_are_served_at_each_size() {
     assert_eq!(response.status(), StatusCode::FOUND);
     assert_eq!(
         response.headers()[header::LOCATION],
-        "http://test.localhost/user_avatar/test.localhost/discobot/48/35_2.png"
+        "http://test.localhost/user_avatar/test.localhost/discobot/48/34_2.png"
     );
 
     for blank in [
-        "/user_avatar/test.localhost/discobot/48/35_3.png",
-        "/user_avatar/test.localhost/discobot/7/35_2.png",
-        "/user_avatar/test.localhost/discobot/1001/35_2.png",
-        "/user_avatar/test.localhost/nobody/48/35_2.png",
+        "/user_avatar/test.localhost/discobot/48/34_3.png",
+        "/user_avatar/test.localhost/discobot/7/34_2.png",
+        "/user_avatar/test.localhost/discobot/1001/34_2.png",
+        "/user_avatar/test.localhost/nobody/48/34_2.png",
         "/user_avatar/test.localhost/discobot/48/0_2.png",
         // The system user's gravatar has no file here.
-        "/user_avatar/test.localhost/system/48/34_2.png",
+        "/user_avatar/test.localhost/system/48/35_2.png",
     ] {
         let (status, headers, body) = get_avatar(&db, &config, blank).await;
         assert_eq!(status, StatusCode::OK, "{blank}");
@@ -717,7 +717,7 @@ async fn uploaded_avatars_are_served_at_each_size() {
     let (status, _, _) = get_avatar(
         &db,
         &config,
-        "/user_avatar/test.localhost/discobot/4x8/35_2.png",
+        "/user_avatar/test.localhost/discobot/4x8/34_2.png",
     )
     .await;
     assert_eq!(status, StatusCode::NOT_FOUND);

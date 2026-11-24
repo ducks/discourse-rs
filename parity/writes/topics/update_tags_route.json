@@ -32,8 +32,8 @@
       "params": {}
     }
   ],
-  "started_at": "2026-11-15T23:51:59.011456",
-  "transaction_started_at": "2026-11-15T23:51:58.132152",
+  "started_at": "2026-11-24T01:21:33.685679",
+  "transaction_started_at": "2026-11-24T01:21:29.249649",
   "responses": [
     {
       "status": 200,
@@ -129,8 +129,8 @@
           "post_id": 35,
           "user_id": 2,
           "unlisted": false,
-          "created_at": "2026-11-15T23:51:59.101681",
-          "updated_at": "2026-11-15T23:51:59.101681",
+          "created_at": "2026-11-24T01:21:34.065088",
+          "updated_at": "2026-11-24T01:21:34.065088",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntags:\n- - guide\n- - howto\n"
         },
         {
@@ -140,8 +140,8 @@
           "post_id": 35,
           "user_id": 2,
           "unlisted": false,
-          "created_at": "2026-11-15T23:51:59.263822",
-          "updated_at": "2026-11-15T23:51:59.263822",
+          "created_at": "2026-11-24T01:21:34.699782",
+          "updated_at": "2026-11-24T01:21:34.699782",
           "modifications": "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\ntags:\n- - howto\n- []\n"
         }
       ],
@@ -173,42 +173,6 @@
         {
           "before": {
             "locale": "en",
-            "post_id": 38,
-            "version": 5,
-            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
-            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 38,
-            "version": 0,
-            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
-            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
-            "post_id": 52,
-            "version": 5,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
-            "private_message": false
-          },
-          "after": {
-            "locale": "en",
-            "post_id": 52,
-            "version": 0,
-            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
-            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
-            "private_message": false
-          }
-        },
-        {
-          "before": {
-            "locale": "en",
             "post_id": 36,
             "version": 5,
             "raw_data": "Reply one from user1, also long enough to pass the minimum length check.",
@@ -239,6 +203,42 @@
             "version": 0,
             "raw_data": "Reply two from user2, also long enough to pass the minimum length check.",
             "search_data": "'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'two':9 'user2':11",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 38,
+            "version": 5,
+            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
+            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 38,
+            "version": 0,
+            "raw_data": "Reply three from admin, also long enough to pass the minimum length check.",
+            "search_data": "'admin':11 'also':12 'check':20 'enough':14 'fixtur':2A 'general':6B 'guid':7C 'length':19 'long':13 'minimum':18 'pariti':1A 'pass':16 'poster':5A 'repli':3A,8 'three':9",
+            "private_message": false
+          }
+        },
+        {
+          "before": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 5,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
+            "private_message": false
+          },
+          "after": {
+            "locale": "en",
+            "post_id": 52,
+            "version": 0,
+            "raw_data": "Reply from user0 mentioning @user1 so a mention notification exists.",
+            "search_data": "'exist':17 'fixtur':2A 'general':6B 'guid':7C 'mention':11,15 'notif':16 'pariti':1A 'poster':5A 'repli':3A,8 'user0':10 'user1':12",
             "private_message": false
           }
         }
@@ -254,26 +254,26 @@
             "raw": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "wiki": false,
             "reads": 1,
-            "score": 0.2,
+            "score": null,
             "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
             "hidden": false,
             "locale": null,
             "user_id": 2,
             "version": 1,
-            "baked_at": "2026-11-15T19:19:53.957278",
+            "baked_at": "2026-11-23T20:53:06.839627",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-11-15T19:19:53.957314",
+            "created_at": "2026-11-23T20:53:06.839754",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 0,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-15T19:19:53.957314",
+            "updated_at": "2026-11-23T20:53:06.839754",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -282,7 +282,7 @@
             "quote_count": 0,
             "reply_count": 0,
             "locked_by_id": null,
-            "percent_rank": 0.25,
+            "percent_rank": 1,
             "reply_quoted": false,
             "user_deleted": false,
             "baked_version": 2,
@@ -293,14 +293,14 @@
             "last_editor_id": 2,
             "public_version": 1,
             "image_upload_id": null,
-            "last_version_at": "2026-11-15T19:19:53.972352",
+            "last_version_at": "2026-11-23T20:53:06.890547",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
             "notify_user_count": 0,
             "inappropriate_count": 0,
             "incoming_link_count": 0,
-            "outbound_message_id": "discourse/post/35@localhost",
+            "outbound_message_id": null,
             "reply_to_post_number": null,
             "notify_moderators_count": 0
           },
@@ -309,26 +309,26 @@
             "raw": "First post of a topic with several repliers, long enough to be a real post body for the excerpt.",
             "wiki": false,
             "reads": 1,
-            "score": 0.2,
+            "score": null,
             "cooked": "<p>First post of a topic with several repliers, long enough to be a real post body for the excerpt.</p>",
             "hidden": false,
             "locale": null,
             "user_id": 2,
             "version": 3,
-            "baked_at": "2026-11-15T19:19:53.957278",
+            "baked_at": "2026-11-23T20:53:06.839627",
             "topic_id": 35,
             "hidden_at": null,
             "post_type": 1,
             "raw_email": null,
             "via_email": false,
-            "created_at": "2026-11-15T19:19:53.957314",
+            "created_at": "2026-11-23T20:53:06.839754",
             "deleted_at": null,
             "like_count": 0,
             "like_score": 0,
             "self_edits": 2,
             "sort_order": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-15T23:51:59.229284",
+            "updated_at": "2026-11-24T01:21:34.569485",
             "word_count": 19,
             "action_code": null,
             "cook_method": 1,
@@ -337,7 +337,7 @@
             "quote_count": 0,
             "reply_count": 0,
             "locked_by_id": null,
-            "percent_rank": 0.25,
+            "percent_rank": 1,
             "reply_quoted": false,
             "user_deleted": false,
             "baked_version": 2,
@@ -348,14 +348,14 @@
             "last_editor_id": 2,
             "public_version": 3,
             "image_upload_id": null,
-            "last_version_at": "2026-11-15T23:51:59.223543",
+            "last_version_at": "2026-11-24T01:21:34.54121",
             "off_topic_count": 0,
             "hidden_reason_id": null,
             "reply_to_user_id": null,
             "notify_user_count": 0,
             "inappropriate_count": 0,
             "incoming_link_count": 0,
-            "outbound_message_id": "discourse/post/35@localhost",
+            "outbound_message_id": null,
             "reply_to_post_number": null,
             "notify_moderators_count": 0
           }
@@ -372,30 +372,30 @@
             "name": "guide",
             "slug": "guide",
             "locale": null,
-            "created_at": "2026-11-15T19:19:55.460172",
-            "updated_at": "2026-11-15T19:19:55.460172",
+            "created_at": "2026-11-23T20:53:13.458533",
+            "updated_at": "2026-11-23T20:53:13.458533",
             "description": null,
             "target_tag_id": null,
             "pm_topic_count": 0,
             "staff_topic_count": 2,
             "description_cooked": null,
             "public_topic_count": 2,
-            "description_cooked_version": 1
+            "description_cooked_version": null
           },
           "after": {
             "id": 2,
             "name": "guide",
             "slug": "guide",
             "locale": null,
-            "created_at": "2026-11-15T19:19:55.460172",
-            "updated_at": "2026-11-15T19:19:55.460172",
+            "created_at": "2026-11-23T20:53:13.458533",
+            "updated_at": "2026-11-23T20:53:13.458533",
             "description": null,
             "target_tag_id": null,
             "pm_topic_count": 0,
             "staff_topic_count": 1,
             "description_cooked": null,
             "public_topic_count": 1,
-            "description_cooked_version": 1
+            "description_cooked_version": null
           }
         }
       ]
@@ -407,8 +407,8 @@
           "id": 2,
           "tag_id": 2,
           "topic_id": 35,
-          "created_at": "2026-11-15T19:19:55.476005",
-          "updated_at": "2026-11-15T19:19:55.476005"
+          "created_at": "2026-11-23T20:53:13.543539",
+          "updated_at": "2026-11-23T20:53:13.543539"
         }
       ],
       "updated": []
@@ -421,7 +421,7 @@
           "before": {
             "id": 35,
             "slug": "parity-fixture-replies-and-posters",
-            "score": 3.1999999999999997,
+            "score": null,
             "title": "Parity fixture: replies and posters",
             "views": 0,
             "closed": false,
@@ -432,13 +432,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-11-15T19:20:01.206739",
+            "bumped_at": "2026-11-23T20:53:20.972537",
             "pinned_at": null,
-            "created_at": "2026-11-15T19:19:53.917926",
+            "created_at": "2026-11-23T20:53:06.673867",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-15T19:20:01.293353",
+            "updated_at": "2026-11-23T20:53:21.042255",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -451,7 +451,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-11-15T19:20:01.206739",
+            "last_posted_at": "2026-11-23T20:53:20.972537",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -473,7 +473,7 @@
           "after": {
             "id": 35,
             "slug": "parity-fixture-replies-and-posters",
-            "score": 3.1999999999999997,
+            "score": null,
             "title": "Parity fixture: replies and posters",
             "views": 0,
             "closed": false,
@@ -484,13 +484,13 @@
             "visible": true,
             "archived": false,
             "archetype": "regular",
-            "bumped_at": "2026-11-15T19:20:01.206739",
+            "bumped_at": "2026-11-23T20:53:20.972537",
             "pinned_at": null,
-            "created_at": "2026-11-15T19:19:53.917926",
+            "created_at": "2026-11-23T20:53:06.673867",
             "deleted_at": null,
             "like_count": 1,
             "spam_count": 0,
-            "updated_at": "2026-11-15T23:51:59.256912",
+            "updated_at": "2026-11-24T01:21:34.643915",
             "word_count": 68,
             "category_id": 4,
             "external_id": null,
@@ -503,7 +503,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-11-15T19:20:01.206739",
+            "last_posted_at": "2026-11-23T20:53:20.972537",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -531,33 +531,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "lbB8qlFnkdyOC6FL2LvTeP0AVho=",
-            "created_at": "2026-11-15T23:51:58.507695",
-            "rotated_at": "2026-11-15T23:51:58.506793",
-            "updated_at": "2026-11-15T23:51:58.507695",
+            "auth_token": "O3TPq/2pjjX9DsuJKt8VrK7xNNc=",
+            "created_at": "2026-11-24T01:21:30.918952",
+            "rotated_at": "2026-11-24T01:21:30.914519",
+            "updated_at": "2026-11-24T01:21:30.918952",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "lbB8qlFnkdyOC6FL2LvTeP0AVho=",
+            "prev_auth_token": "O3TPq/2pjjX9DsuJKt8VrK7xNNc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:51:59.019043",
+            "id": 1,
+            "seen_at": "2026-11-24T01:21:33.711923",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "lbB8qlFnkdyOC6FL2LvTeP0AVho=",
-            "created_at": "2026-11-15T23:51:58.507695",
-            "rotated_at": "2026-11-15T23:51:58.506793",
-            "updated_at": "2026-11-15T23:51:58.507695",
+            "auth_token": "O3TPq/2pjjX9DsuJKt8VrK7xNNc=",
+            "created_at": "2026-11-24T01:21:30.918952",
+            "rotated_at": "2026-11-24T01:21:30.914519",
+            "updated_at": "2026-11-24T01:21:30.918952",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "lbB8qlFnkdyOC6FL2LvTeP0AVho=",
+            "prev_auth_token": "O3TPq/2pjjX9DsuJKt8VrK7xNNc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -592,8 +592,8 @@
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
-            "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-15T19:19:53.957314",
+            "distinct_badge_count": 1,
+            "first_post_created_at": "2026-11-23T20:53:06.839754",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -618,8 +618,8 @@
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
-            "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-15T19:19:53.957314",
+            "distinct_badge_count": 1,
+            "first_post_created_at": "2026-11-23T20:53:06.839754",
             "reset_bounce_score_after": null
           }
         }
@@ -714,7 +714,7 @@
   },
   "recorded_from": {
     "case": "d019f2abe197f28c7fb78a2b11d4ab891ada8d2b9df61a70644c4715c349c5c9",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

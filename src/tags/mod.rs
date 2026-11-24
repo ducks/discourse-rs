@@ -51,6 +51,49 @@ pub fn visible_tags_where(
     ))
 }
 
+/// `TagGroup.visible(guardian)` as a WHERE fragment over `tag_groups` (its
+/// columns unqualified): everything for admins; otherwise the groups
+/// restricted to a category the user may see or to none, that a
+/// permitted group may see.
+pub fn visible_tag_groups_where(
+    guardian: &Guardian,
+    settings: &SiteSettings,
+) -> Result<String, SettingError> {
+    if guardian.is_admin() {
+        return Ok("TRUE".to_string());
+    }
+    let allowed = guardian.allowed_category_ids_sql(settings)?;
+    let groups = crate::tagging::permitted_group_ids(guardian)
+        .iter()
+        .map(i64::to_string)
+        .collect::<Vec<_>>()
+        .join(",");
+    Ok(format!(
+        "(id IN (SELECT tag_group_id FROM category_tag_groups WHERE category_id IN ({allowed})) \
+          OR id NOT IN (SELECT tag_group_id FROM category_tag_groups)) \
+         AND id IN (SELECT tag_group_id FROM tag_group_permissions WHERE group_id IN ({groups}))"
+    ))
+}
+
+/// `DiscourseTagging.visible_tag_ids_resolving_synonyms`: the visible
+/// tags named (any case), each synonym as its target, the targets kept
+/// only if visible too. `visible` is visible_tags_where's fragment.
+pub async fn visible_tag_ids_resolving_synonyms(
+    conn: &mut sqlx::PgConnection,
+    visible: &str,
+    names: &[String],
+) -> Result<Vec<i32>, sqlx::Error> {
+    let lowered: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
+    sqlx::query_scalar(&format!(
+        "SELECT tags.id FROM tags WHERE {visible} AND tags.id IN ( \
+           SELECT COALESCE(target_tag_id, id) FROM tags WHERE {visible} AND lower(name) = ANY($1)) \
+         ORDER BY tags.id"
+    ))
+    .bind(&lowered)
+    .fetch_all(&mut *conn)
+    .await
+}
+
 /// `tags.id IN (visible tag ids)`, for joins from topic_tags.
 pub fn visible_tag_ids_subquery(
     guardian: &Guardian,
@@ -148,6 +191,37 @@ impl Tag {
         .fetch_one(conn)
         .await?;
         Ok(!hidden)
+    }
+
+    /// `Tag#visible_in_accessible_categories?`
+    /// (`DiscourseTagging.filter_visible_in_accessible_categories`): not
+    /// restricted to any category, or restricted to one the guardian may
+    /// see, directly or through a tag group. Admins see every tag.
+    pub async fn visible_in_accessible_categories(
+        &self,
+        conn: &mut PgConnection,
+        guardian: &Guardian,
+        settings: &SiteSettings,
+    ) -> Result<bool, GuardianError> {
+        if guardian.is_admin() {
+            return Ok(true);
+        }
+        let allowed = guardian.allowed_category_ids_sql(settings)?;
+        Ok(sqlx::query_scalar(&format!(
+            "SELECT EXISTS (SELECT 1 FROM tags WHERE tags.id = $1 AND ( \
+               tags.id NOT IN ( \
+                 SELECT tag_id FROM category_tags \
+                 UNION SELECT tgm.tag_id FROM tag_group_memberships tgm \
+                 JOIN category_tag_groups ctg ON ctg.tag_group_id = tgm.tag_group_id) \
+               OR tags.id IN ( \
+                 SELECT tag_id FROM category_tags WHERE category_id IN ({allowed}) \
+                 UNION SELECT tgm.tag_id FROM tag_group_memberships tgm \
+                 JOIN category_tag_groups ctg ON ctg.tag_group_id = tgm.tag_group_id \
+                 AND ctg.category_id IN ({allowed}))))"
+        ))
+        .bind(self.id)
+        .fetch_one(conn)
+        .await?)
     }
 
     /// `DiscourseTagging.staff_tag_names.include?(name)`: in a group that is

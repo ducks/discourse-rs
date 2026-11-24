@@ -24,8 +24,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:44:13.976336",
-  "transaction_started_at": "2026-11-15T22:44:13.185793",
+  "started_at": "2026-11-23T21:50:42.243237",
+  "transaction_started_at": "2026-11-23T21:50:41.075521",
   "responses": [
     {
       "status": 302,
@@ -38,7 +38,7 @@
       "status": 302,
       "body": "",
       "headers": {
-        "Location": "/sso?sso=bm9uY2U9MGU0NjUzMTk2NzBmMTdhZGMwZDVhY2VhYmMyZWFmYzUmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=81963a20540a85e0bf6716dcd2e543907af91af986521f71fd7b51a6ad341e74"
+        "Location": "/sso?sso=bm9uY2U9ODU2YzBkNWFlNDRjZjdmNGQzZDA5MzJlNTU1N2YxZmEmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=a9fac5cfe127ac98b2695800cc9a905760ea1c90ebf2114100ad7c1292840823"
       }
     },
     {
@@ -55,10 +55,10 @@
         {
           "id": 1,
           "user_id": 5,
-          "created_at": "2026-11-15T22:44:14.018265",
-          "updated_at": "2026-11-15T22:44:14.018265",
+          "created_at": "2026-11-23T21:50:42.325233",
+          "updated_at": "2026-11-23T21:50:42.325233",
           "external_id": "ext-user3-key",
-          "last_payload": "email=user3%40example.com&external_id=ext-user3-key&nonce=0e465319670f17adc0d5aceabc2eafc5&username=user3",
+          "last_payload": "email=user3%40example.com&external_id=ext-user3-key&nonce=856c0d5ae44cf7f4d3d0932e5557f1fa&username=user3",
           "external_name": null,
           "external_email": "user3@example.com",
           "external_username": "user3",
@@ -78,10 +78,10 @@
           "action": "generate",
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "Ne5QrIcZWjxluBKHHT+9d597w9U=",
-          "created_at": "2026-11-15T22:44:14.040221",
+          "auth_token": "vz5lz0IEViWdwP44uW3PpJXdQok=",
+          "created_at": "2026-11-23T21:50:42.358213",
           "user_agent": null,
-          "user_auth_token_id": 14
+          "user_auth_token_id": 1
         }
       ],
       "deleted": [],
@@ -90,17 +90,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 14,
+          "id": 1,
           "seen_at": null,
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "Ne5QrIcZWjxluBKHHT+9d597w9U=",
-          "created_at": "2026-11-15T22:44:14.037601",
-          "rotated_at": "2026-11-15T22:44:14.036751",
-          "updated_at": "2026-11-15T22:44:14.037601",
+          "auth_token": "vz5lz0IEViWdwP44uW3PpJXdQok=",
+          "created_at": "2026-11-23T21:50:42.353786",
+          "rotated_at": "2026-11-23T21:50:42.352087",
+          "updated_at": "2026-11-23T21:50:42.353786",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "Ne5QrIcZWjxluBKHHT+9d597w9U=",
+          "prev_auth_token": "vz5lz0IEViWdwP44uW3PpJXdQok=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": false,
           "impersonation_expires_at": null
@@ -169,7 +169,7 @@
             "created_at": "2026-11-03T05:08:00.934987",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-15T22:44:14.028452",
+            "updated_at": "2026-11-23T21:50:42.340452",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -202,7 +202,7 @@
   "next_ids": {
     "single_sign_on_records": 1,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 14
+    "user_auth_tokens": 1
   },
   "settings": {
     "discourse_connect_url": "https://idp.example.com/sso",
@@ -214,7 +214,7 @@
   ],
   "recorded_from": {
     "case": "5324005191c9b651db172c4da3387ee828422b6baae31a35dae902fc46543a17",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

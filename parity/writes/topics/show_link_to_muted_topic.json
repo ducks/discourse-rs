@@ -7,8 +7,8 @@
       "path": "/t/admin-guide-getting-started/6.json"
     }
   ],
-  "started_at": "2026-11-15T23:49:34.35825",
-  "transaction_started_at": "2026-11-15T23:49:33.54868",
+  "started_at": "2026-11-24T01:19:56.15699",
+  "transaction_started_at": "2026-11-24T01:19:54.794591",
   "responses": [
     {
       "status": 200,
@@ -52,17 +52,17 @@
               "can_wiki": true,
               "link_counts": [
                 {
-                  "url": "https://blog.discourse.org/",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Blog | Discourse",
-                  "clicks": 0
-                },
-                {
                   "url": "https://discover.discourse.com/",
                   "internal": false,
                   "reflection": false,
                   "title": "Discourse Discover",
+                  "clicks": 0
+                },
+                {
+                  "url": "https://blog.discourse.org/",
+                  "internal": false,
+                  "reflection": false,
+                  "title": "Blog | Discourse",
                   "clicks": 0
                 },
                 {
@@ -76,7 +76,12 @@
                   "url": "https://meta.discourse.org/c/documentation/10",
                   "internal": false,
                   "reflection": false,
-                  "title": "Documentation - Discourse Meta",
+                  "clicks": 0
+                },
+                {
+                  "url": "https://meta.discourse.org/",
+                  "internal": false,
+                  "reflection": false,
                   "clicks": 0
                 },
                 {
@@ -84,13 +89,6 @@
                   "internal": false,
                   "reflection": false,
                   "title": "discourse/docs/INSTALL-email.md at main · discourse/discourse · GitHub",
-                  "clicks": 0
-                },
-                {
-                  "url": "https://meta.discourse.org/",
-                  "internal": false,
-                  "reflection": false,
-                  "title": "Discourse Meta",
                   "clicks": 0
                 },
                 {
@@ -174,7 +172,7 @@
         "timeline_lookup": [
           [
             1,
-            13
+            21
           ]
         ],
         "suggested_topics": [
@@ -187,10 +185,10 @@
             "reply_count": 0,
             "highest_post_number": 5,
             "image_url": null,
-            "created_at": "2026-11-15T19:19:53.917Z",
-            "last_posted_at": "2026-11-15T19:20:01.206Z",
+            "created_at": "2026-11-23T20:53:06.673Z",
+            "last_posted_at": "2026-11-23T20:53:20.972Z",
             "bumped": true,
-            "bumped_at": "2026-11-15T19:20:01.206Z",
+            "bumped_at": "2026-11-23T20:53:20.972Z",
             "archetype": "regular",
             "unseen": false,
             "last_read_post_number": 4,
@@ -251,7 +249,6 @@
                   "name": "Admin",
                   "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
                   "admin": true,
-                  "moderator": true,
                   "trust_level": 4
                 }
               },
@@ -277,10 +274,10 @@
             "reply_count": 0,
             "highest_post_number": 1,
             "image_url": null,
-            "created_at": "2026-11-15T19:19:54.728Z",
-            "last_posted_at": "2026-11-15T19:19:54.764Z",
+            "created_at": "2026-11-23T20:53:10.444Z",
+            "last_posted_at": "2026-11-23T20:53:10.659Z",
             "bumped": true,
-            "bumped_at": "2026-11-15T19:19:54.764Z",
+            "bumped_at": "2026-11-23T20:53:10.659Z",
             "archetype": "regular",
             "unseen": true,
             "pinned": false,
@@ -476,7 +473,7 @@
               "id": -1,
               "username": "system",
               "name": "system",
-              "avatar_template": "/user_avatar/localhost/system/{size}/34_2.png",
+              "avatar_template": "/user_avatar/localhost/system/{size}/35_2.png",
               "post_count": 1,
               "primary_group_name": null,
               "flair_name": null,
@@ -514,33 +511,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "81CnPixuo6sX+heB7GvAnFknupQ=",
-            "created_at": "2026-11-15T23:49:33.925015",
-            "rotated_at": "2026-11-15T23:49:33.924029",
-            "updated_at": "2026-11-15T23:49:33.925015",
+            "auth_token": "l8OSDoL1QP+RMrtv48WmvjkH1dA=",
+            "created_at": "2026-11-24T01:19:55.451615",
+            "rotated_at": "2026-11-24T01:19:55.45023",
+            "updated_at": "2026-11-24T01:19:55.451615",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "81CnPixuo6sX+heB7GvAnFknupQ=",
+            "prev_auth_token": "l8OSDoL1QP+RMrtv48WmvjkH1dA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:49:34.363603",
+            "id": 1,
+            "seen_at": "2026-11-24T01:19:56.168031",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "81CnPixuo6sX+heB7GvAnFknupQ=",
-            "created_at": "2026-11-15T23:49:33.925015",
-            "rotated_at": "2026-11-15T23:49:33.924029",
-            "updated_at": "2026-11-15T23:49:33.925015",
+            "auth_token": "l8OSDoL1QP+RMrtv48WmvjkH1dA=",
+            "created_at": "2026-11-24T01:19:55.451615",
+            "rotated_at": "2026-11-24T01:19:55.45023",
+            "updated_at": "2026-11-24T01:19:55.451615",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "81CnPixuo6sX+heB7GvAnFknupQ=",
+            "prev_auth_token": "l8OSDoL1QP+RMrtv48WmvjkH1dA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -556,7 +553,7 @@
   ],
   "recorded_from": {
     "case": "9a1270b480264945f13bf739af21921f100b33c18f71c990c5faccd48e232233",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

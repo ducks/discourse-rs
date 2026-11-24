@@ -2,8 +2,8 @@
   "name": "job_close_deleted_topic",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:53:21.086164",
-  "transaction_started_at": "2026-11-15T23:53:20.266788",
+  "started_at": "2026-11-24T01:22:14.518479",
+  "transaction_started_at": "2026-11-24T01:22:13.703712",
   "responses": [],
   "changes": {
     "topic_timers": {
@@ -14,10 +14,10 @@
           "type": "TopicTimer",
           "user_id": 1,
           "topic_id": null,
-          "created_at": "2026-11-15T22:53:20.266788",
+          "created_at": "2026-11-24T00:22:13.703712",
           "deleted_at": null,
-          "execute_at": "2026-11-15T23:52:20.266788",
-          "updated_at": "2026-11-15T22:53:20.266788",
+          "execute_at": "2026-11-24T01:21:13.703712",
+          "updated_at": "2026-11-24T00:22:13.703712",
           "category_id": null,
           "public_type": true,
           "status_type": 1,
@@ -46,7 +46,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "52fad64ff5debd143effeec1a434cb89f557ce3189070b348a263aa3e87fec01",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

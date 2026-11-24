@@ -93,7 +93,7 @@ test("selected posts move to a new topic with its title and category", async ({ 
 
   await expect(modal).toHaveAttribute("id", "choosing-topic");
   await expect(modal.locator(".d-modal__title-text")).toHaveText("Move to");
-  expect(await radios(modal)).toEqual(["New Topic", "Existing Topic", "New Message"]);
+  expect(await radios(modal)).toEqual(["New topic", "Existing topic", "New message"]);
   await expect(modal.locator("#move-to-new-topic")).toBeChecked();
   expect(await modal.locator(".d-modal__body > p").innerHTML()).toBe(
     "You are about to create a new topic and populate it with the <b>2</b> posts you've selected.",
@@ -168,7 +168,7 @@ test("selected posts move to an existing topic chosen by search", async ({ page,
   await expect(modal.locator("#chronological-order")).toHaveCount(0);
 
   const input = modal.locator("#choose-topic-title");
-  await expect(input).toHaveAttribute("placeholder", "type the topic title, url or id here");
+  await expect(input).toHaveAttribute("placeholder", "Type the topic title, URL or ID here");
   // Nothing by that title.
   await input.fill(label("nothing is titled"));
   await expect(modal.locator(".choose-topic__search-results")).toHaveText("No topics found.");
@@ -258,7 +258,7 @@ test("every post selected merges the topic into an existing one", async ({ page,
   const submit = modal.locator(".d-modal__footer .btn-primary");
 
   // Nothing to split off: an existing topic is the one destination.
-  expect(await radios(modal)).toEqual(["Existing Topic"]);
+  expect(await radios(modal)).toEqual(["Existing topic"]);
   await expect(modal.locator("#move-to-existing-topic")).toBeChecked();
   expect(await modal.locator(".d-modal__body > p").innerHTML()).toBe(
     "Please choose the topic you'd like to move those <b>4</b> posts to.",
@@ -332,7 +332,7 @@ test("the destinations follow the viewer and the selection", async ({ page, cont
   sql("UPDATE users SET moderator = true WHERE id = :'p1'", moderator.id);
   await login(context, moderator.name);
   let modal = await open(page, t, [t.posts[1]]);
-  expect(await radios(modal)).toEqual(["New Topic", "Existing Topic"]);
+  expect(await radios(modal)).toEqual(["New topic", "Existing topic"]);
   await expect(modal.locator("#move-to-new-topic")).toBeChecked();
   await modal.locator(".modal-close").click();
   await expect(modal).toHaveCount(0);
@@ -343,7 +343,7 @@ test("the destinations follow the viewer and the selection", async ({ page, cont
   // first post.
   sql("UPDATE posts SET post_type = 2 WHERE id = :'p1'", t.posts[1]);
   modal = await open(page, t, [t.posts[2], t.posts[1]]);
-  expect(await radios(modal)).toEqual(["Existing Topic"]);
+  expect(await radios(modal)).toEqual(["Existing topic"]);
   await expect(modal.locator("#move-to-existing-topic")).toBeChecked();
   await expect(modal.locator(".d-modal__footer .btn-primary")).toHaveText("Move to Existing Topic");
   await expect(modal.locator("#split-topic-name")).toHaveCount(0);
@@ -377,7 +377,7 @@ test("a message's posts move to an existing message", async ({ page, context, se
   const submit = modal.locator(".d-modal__footer .btn-primary");
 
   // A message's destinations are messages, the new one first.
-  expect(await radios(modal)).toEqual(["New Message", "Existing Message"]);
+  expect(await radios(modal)).toEqual(["New message", "Existing message"]);
   await expect(modal.locator("#move-to-new-message")).toBeChecked();
   await expect(submit).toHaveText("Move to New Message");
   await expect(submit).toBeDisabled();
@@ -391,7 +391,7 @@ test("a message's posts move to an existing message", async ({ page, context, se
   await expect(modal.locator(".choose-message > label")).toHaveText("Search for a Message");
   await expect(modal.locator("#choose-message-title")).toHaveAttribute(
     "placeholder",
-    "type the message title, url or id here",
+    "Type the message title, URL or ID here",
   );
   await expect(modal.locator("form > label").first()).toHaveText("Participants");
   await expect(modal.locator("details.email-group-user-chooser.participant-selector")).toHaveCount(1);

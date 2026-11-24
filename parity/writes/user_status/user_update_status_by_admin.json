@@ -13,8 +13,8 @@
       }
     }
   ],
-  "started_at": "2026-11-16T00:06:37.579047",
-  "transaction_started_at": "2026-11-16T00:06:36.518561",
+  "started_at": "2026-11-24T01:25:15.91229",
+  "transaction_started_at": "2026-11-24T01:25:14.876411",
   "responses": [
     {
       "status": 200,
@@ -31,8 +31,8 @@
           "username": "user1",
           "name": "User1",
           "avatar_template": "/letter_avatar_proxy/v4/letter/u/5daacb/{size}.png",
-          "last_posted_at": "2026-11-15T19:19:54.764Z",
-          "last_seen_at": "2026-11-15T19:40:02.306Z",
+          "last_posted_at": "2026-11-23T20:53:10.659Z",
+          "last_seen_at": "2026-11-23T20:53:28.144Z",
           "created_at": "2026-11-03T05:08:00.404Z",
           "ignored": false,
           "muted": false,
@@ -44,7 +44,7 @@
           "moderator": false,
           "admin": false,
           "title": null,
-          "badge_count": 4,
+          "badge_count": 2,
           "custom_fields": {},
           "time_read": 0,
           "recent_time_read": 0,
@@ -67,7 +67,7 @@
           "uploaded_avatar_id": null,
           "has_title_badges": false,
           "pending_count": 0,
-          "profile_view_count": 2,
+          "profile_view_count": 0,
           "second_factor_enabled": false,
           "can_upload_profile_header": true,
           "can_upload_user_card_background": true,
@@ -102,56 +102,7 @@
           "can_change_website": true,
           "can_change_tracking_preferences": true,
           "user_api_keys": null,
-          "user_auth_tokens": [
-            {
-              "id": 1,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-15T19:35:24.117Z",
-              "seen_at": "2026-11-15T19:35:24.275Z",
-              "is_active": false
-            },
-            {
-              "id": 5,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-15T19:44:27.327Z",
-              "seen_at": "2026-11-15T19:44:27.465Z",
-              "is_active": false
-            },
-            {
-              "id": 9,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-15T21:23:05.533Z",
-              "seen_at": "2026-11-15T21:23:05.694Z",
-              "is_active": false
-            },
-            {
-              "id": 13,
-              "client_ip": "172.17.0.1",
-              "location": "unknown",
-              "browser": "Unknown browser",
-              "device": "unknown device",
-              "os": "unknown operating system",
-              "icon": "question",
-              "created_at": "2026-11-15T21:32:23.773Z",
-              "seen_at": "2026-11-15T21:32:23.773Z",
-              "is_active": false
-            }
-          ],
+          "user_auth_tokens": [],
           "user_notification_schedule": {
             "enabled": false,
             "day_0_start_time": 480,
@@ -180,9 +131,8 @@
           "can_pick_theme_with_custom_homepage": false,
           "accepted_answers": 0,
           "featured_user_badge_ids": [
-            10,
-            16,
-            18
+            7,
+            3
           ],
           "invited_by": null,
           "groups": [
@@ -382,33 +332,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Z5iRvNn2TLpcpKSzOZAWlwZjqtg=",
-            "created_at": "2026-11-16T00:06:37.07342",
-            "rotated_at": "2026-11-16T00:06:37.071738",
-            "updated_at": "2026-11-16T00:06:37.07342",
+            "auth_token": "z1tb7lvZMCoARQfi8tcm7LFzZiI=",
+            "created_at": "2026-11-24T01:25:15.272565",
+            "rotated_at": "2026-11-24T01:25:15.271375",
+            "updated_at": "2026-11-24T01:25:15.272565",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Z5iRvNn2TLpcpKSzOZAWlwZjqtg=",
+            "prev_auth_token": "z1tb7lvZMCoARQfi8tcm7LFzZiI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T00:06:37.584781",
+            "id": 1,
+            "seen_at": "2026-11-24T01:25:15.921861",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Z5iRvNn2TLpcpKSzOZAWlwZjqtg=",
-            "created_at": "2026-11-16T00:06:37.07342",
-            "rotated_at": "2026-11-16T00:06:37.071738",
-            "updated_at": "2026-11-16T00:06:37.07342",
+            "auth_token": "z1tb7lvZMCoARQfi8tcm7LFzZiI=",
+            "created_at": "2026-11-24T01:25:15.272565",
+            "rotated_at": "2026-11-24T01:25:15.271375",
+            "updated_at": "2026-11-24T01:25:15.272565",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Z5iRvNn2TLpcpKSzOZAWlwZjqtg=",
+            "prev_auth_token": "z1tb7lvZMCoARQfi8tcm7LFzZiI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -420,7 +370,7 @@
       "inserted": [
         {
           "emoji": "wave",
-          "set_at": "2026-11-16T00:06:37.594994",
+          "set_at": "2026-11-24T01:25:15.938594",
           "ends_at": null,
           "user_id": 3,
           "description": "set by staff"
@@ -437,7 +387,7 @@
   },
   "recorded_from": {
     "case": "6df7ea2760675c0b74ec28bedb88e58375bda5f2a98b53be2b298d63eb479eb6",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

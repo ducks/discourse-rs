@@ -13,8 +13,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T21:58:59.890717",
-  "transaction_started_at": "2026-11-15T21:58:55.315711",
+  "started_at": "2026-11-23T21:45:25.298916",
+  "transaction_started_at": "2026-11-23T21:45:24.244041",
   "responses": [
     {
       "status": 200,
@@ -24,7 +24,7 @@
           "silence_reason": "Breaking the rules",
           "full_silence_reason": "Breaking the rules",
           "silenced_till": "2027-01-01T00:00:00.000Z",
-          "silenced_at": "2026-11-15T21:59:00.025Z",
+          "silenced_at": "2026-11-23T21:45:25.342Z",
           "silenced_by": {
             "id": 1,
             "username": "admin",
@@ -42,8 +42,8 @@
           "locale": "en",
           "post_id": 53,
           "version": 5,
-          "raw_data": "Hello, This is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure. Please do continue to browse, but you won't be able to reply or create topics until a staff member reviews your most recent posts. We apologize for the inconvenience. For additional guidance, refer to our community guidelines .",
-          "search_data": "'abl':40 'account':1A,19 'addit':61 'apolog':56 'autom':9 'brows':34 'communiti':66 'continu':32 'creat':44 'discours':12 'guidanc':62 'guidelin':67 'hello':5 'hold':4A,25 'inconveni':59 'know':16 'let':14 'measur':29 'member':49 'messag':10 'place':23 'pleas':30 'post':54 'precautionari':28 'recent':53 'refer':63 'repli':42 'review':50 'staff':48 'temporarili':2A,22 'topic':45 'won':37",
+          "raw_data": "Hello, This is an automated message from Discourse to let you know that a moderator silenced your account until January 1, 2027, 12:00am (UTC+00:00). Reason: Breaking the rules You can still read discussions, but you can't participate in them while your account is silenced. For additional guidance, refer to our community guidelines .",
+          "search_data": "'+00':31 '00':32 '00am':29 '1':26 '12':28 '2027':27 'account':2A,23,51 'addit':55 'autom':10 'break':34 'communiti':60 'discours':13 'discuss':41 'guidanc':56 'guidelin':61 'hello':6 'januari':25 'know':17 'let':15 'messag':11 'moder':20 'particip':46 'read':40 'reason':33 'refer':57 'rule':36 'silenc':5A,21,53 'still':39 'utc':30",
           "private_message": true
         }
       ],
@@ -55,8 +55,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-11-15T21:59:00.4675",
-          "updated_at": "2026-11-15T21:59:00.4675",
+          "created_at": "2026-11-23T21:45:25.48372",
+          "updated_at": "2026-11-23T21:45:25.48372",
           "drafts_saved": 0,
           "writing_device": null,
           "composer_version": null,
@@ -84,30 +84,30 @@
       "inserted": [
         {
           "id": 53,
-          "raw": "Hello,\n\nThis is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure.\n\nPlease do continue to browse, but you won't be able to reply or create topics until a [staff member](http://localhost:3042/about) reviews your most recent posts. We apologize for the inconvenience.\n\nFor additional guidance, refer to our [community guidelines](http://localhost:3042/guidelines).",
+          "raw": "Hello,\n\nThis is an automated message from Discourse to let you know that a moderator silenced your account until January 1, 2027, 12:00am (UTC+00:00).\n\nReason: Breaking the rules\n\nYou can still read discussions, but you can’t participate in them while your account is silenced.\n\nFor additional guidance, refer to our [community guidelines](http://localhost:3042/guidelines).",
           "wiki": false,
           "reads": 1,
           "score": null,
-          "cooked": "<p>Hello,</p>\n<p>This is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure.</p>\n<p>Please do continue to browse, but you won’t be able to reply or create topics until a <a href=\"http://localhost:3042/about\">staff member</a> reviews your most recent posts. We apologize for the inconvenience.</p>\n<p>For additional guidance, refer to our <a href=\"http://localhost:3042/guidelines\">community guidelines</a>.</p>",
+          "cooked": "<p>Hello,</p>\n<p>This is an automated message from Discourse to let you know that a moderator silenced your account until January 1, 2027, 12:00am (UTC+00:00).</p>\n<p>Reason: Breaking the rules</p>\n<p>You can still read discussions, but you can’t participate in them while your account is silenced.</p>\n<p>For additional guidance, refer to our <a href=\"http://localhost:3042/guidelines\">community guidelines</a>.</p>",
           "hidden": false,
           "locale": null,
           "user_id": -1,
           "version": 1,
-          "baked_at": "2026-11-15T21:59:00.305247",
+          "baked_at": "2026-11-23T21:45:25.435274",
           "topic_id": 45,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-11-15T21:59:00.305394",
+          "created_at": "2026-11-23T21:45:25.435334",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 1,
           "spam_count": 0,
-          "updated_at": "2026-11-15T21:59:00.305394",
-          "word_count": 71,
+          "updated_at": "2026-11-23T21:45:25.435334",
+          "word_count": 60,
           "action_code": null,
           "cook_method": 1,
           "edit_reason": null,
@@ -126,7 +126,7 @@
           "last_editor_id": -1,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-11-15T21:59:00.459999",
+          "last_version_at": "2026-11-23T21:45:25.481103",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -147,15 +147,15 @@
           "id": 9,
           "user_id": 4,
           "topic_id": 45,
-          "created_at": "2026-11-15T21:59:00.115085",
-          "updated_at": "2026-11-15T21:59:00.115085"
+          "created_at": "2026-11-23T21:45:25.373292",
+          "updated_at": "2026-11-23T21:45:25.373292"
         },
         {
           "id": 10,
           "user_id": -1,
           "topic_id": 45,
-          "created_at": "2026-11-15T21:59:00.127656",
-          "updated_at": "2026-11-15T21:59:00.127656"
+          "created_at": "2026-11-23T21:45:25.376535",
+          "updated_at": "2026-11-23T21:45:25.376535"
         }
       ],
       "deleted": [],
@@ -165,25 +165,6 @@
       "inserted": [
         {
           "id": 20,
-          "url": "http://localhost:3042/about",
-          "quote": false,
-          "title": null,
-          "clicks": 0,
-          "domain": "localhost",
-          "post_id": 53,
-          "user_id": -1,
-          "internal": true,
-          "topic_id": 45,
-          "extension": null,
-          "crawled_at": null,
-          "created_at": "2026-11-15T21:59:00.481729",
-          "reflection": false,
-          "updated_at": "2026-11-15T21:59:00.481729",
-          "link_post_id": null,
-          "link_topic_id": null
-        },
-        {
-          "id": 21,
           "url": "http://localhost:3042/guidelines",
           "quote": false,
           "title": null,
@@ -195,9 +176,9 @@
           "topic_id": 45,
           "extension": null,
           "crawled_at": null,
-          "created_at": "2026-11-15T21:59:00.491624",
+          "created_at": "2026-11-23T21:45:25.48971",
           "reflection": false,
-          "updated_at": "2026-11-15T21:59:00.491624",
+          "updated_at": "2026-11-23T21:45:25.48971",
           "link_post_id": null,
           "link_topic_id": null
         }
@@ -210,9 +191,9 @@
         {
           "locale": "en",
           "version": 4,
-          "raw_data": "Account temporarily on hold Hello, This is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure. Please do continue to browse, but you won't be able",
+          "raw_data": "Your account has been silenced Hello, This is an automated message from Discourse to let you know that a moderator silenced your account until January 1, 2027, 12:00am (UTC+00:00). Reason: Breaking the rules You can still read disc",
           "topic_id": 45,
-          "search_data": "'abl':40B 'account':1A,19B 'autom':9B 'brows':34B 'continu':32B 'discours':12B 'hello':5B 'hold':4A,25B 'know':16B 'let':14B 'measur':29B 'messag':10B 'place':23B 'pleas':30B 'precautionari':28B 'temporarili':2A,22B 'won':37B"
+          "search_data": "'+00':31B '00':32B '00am':29B '1':26B '12':28B '2027':27B 'account':2A,23B 'autom':10B 'break':34B 'disc':41B 'discours':13B 'hello':6B 'januari':25B 'know':17B 'let':15B 'messag':11B 'moder':20B 'read':40B 'reason':33B 'rule':36B 'silenc':5A,21B 'still':39B 'utc':30B"
         }
       ],
       "deleted": [],
@@ -228,15 +209,15 @@
           "topic_id": 45,
           "bookmarked": false,
           "last_posted_at": null,
-          "last_visited_at": "2026-11-15T21:59:00.192995",
-          "first_visited_at": "2026-11-15T21:59:00.192995",
+          "last_visited_at": "2026-11-23T21:45:25.399437",
+          "first_visited_at": "2026-11-23T21:45:25.399437",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": null,
           "notifications_reason_id": 2,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-11-15T21:59:00.187598"
+          "notifications_changed_at": "2026-11-23T21:45:25.398292"
         },
         {
           "id": 55,
@@ -245,16 +226,16 @@
           "user_id": -1,
           "topic_id": 45,
           "bookmarked": false,
-          "last_posted_at": "2026-11-15T21:59:00.508091",
-          "last_visited_at": "2026-11-15T21:59:00.156918",
-          "first_visited_at": "2026-11-15T21:59:00.156918",
+          "last_posted_at": "2026-11-23T21:45:25.49434",
+          "last_visited_at": "2026-11-23T21:45:25.390148",
+          "first_visited_at": "2026-11-23T21:45:25.390148",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": 1,
           "notifications_reason_id": 1,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-11-15T21:59:00.151251"
+          "notifications_changed_at": "2026-11-23T21:45:25.388025"
         }
       ],
       "deleted": [],
@@ -264,29 +245,29 @@
       "inserted": [
         {
           "id": 45,
-          "slug": "account-temporarily-on-hold",
+          "slug": "your-account-has-been-silenced",
           "score": null,
-          "title": "Account temporarily on hold",
+          "title": "Your account has been silenced",
           "views": 0,
           "closed": false,
           "locale": null,
-          "excerpt": "Hello, \nThis is an automated message from Discourse to let you know that your account has been temporarily placed on hold as a precautionary measure. \nPlease do continue to browse, but you won’t be able to reply or creat&hellip;",
+          "excerpt": "Hello, \nThis is an automated message from Discourse to let you know that a moderator silenced your account until January 1, 2027, 12:00am (UTC+00:00). \nReason: Breaking the rules \nYou can still read discussions, but you &hellip;",
           "subtype": "system_message",
           "user_id": -1,
           "visible": true,
           "archived": false,
           "archetype": "private_message",
-          "bumped_at": "2026-11-15T21:59:00.305394",
+          "bumped_at": "2026-11-23T21:45:25.435334",
           "pinned_at": null,
-          "created_at": "2026-11-15T21:59:00.099458",
+          "created_at": "2026-11-23T21:45:25.369024",
           "deleted_at": null,
           "like_count": 0,
           "spam_count": 0,
-          "updated_at": "2026-11-15T21:59:00.527257",
-          "word_count": 71,
+          "updated_at": "2026-11-23T21:45:25.500983",
+          "word_count": 60,
           "category_id": null,
           "external_id": null,
-          "fancy_title": "Account temporarily on hold",
+          "fancy_title": "Your account has been silenced",
           "has_summary": false,
           "posts_count": 1,
           "reply_count": 0,
@@ -295,7 +276,7 @@
           "deleted_by_id": null,
           "featured_link": null,
           "bannered_until": null,
-          "last_posted_at": "2026-11-15T21:59:00.305394",
+          "last_posted_at": "2026-11-23T21:45:25.435334",
           "image_upload_id": null,
           "pinned_globally": false,
           "reviewable_score": 0,
@@ -323,8 +304,8 @@
         {
           "id": 65,
           "user_id": -1,
-          "created_at": "2026-11-15T21:59:00.099458",
-          "updated_at": "2026-11-15T21:59:00.239232",
+          "created_at": "2026-11-23T21:45:25.369024",
+          "updated_at": "2026-11-23T21:45:25.412747",
           "action_type": 12,
           "acting_user_id": -1,
           "target_post_id": -1,
@@ -334,26 +315,13 @@
         {
           "id": 66,
           "user_id": 4,
-          "created_at": "2026-11-15T21:59:00.099458",
-          "updated_at": "2026-11-15T21:59:00.278198",
+          "created_at": "2026-11-23T21:45:25.369024",
+          "updated_at": "2026-11-23T21:45:25.426987",
           "action_type": 13,
           "acting_user_id": -1,
           "target_post_id": -1,
           "target_user_id": null,
           "target_topic_id": 45
-        }
-      ],
-      "deleted": [],
-      "updated": []
-    },
-    "user_archived_messages": {
-      "inserted": [
-        {
-          "id": 2,
-          "user_id": -1,
-          "topic_id": 45,
-          "created_at": "2026-11-15T21:59:00.652731",
-          "updated_at": "2026-11-15T21:59:00.652731"
         }
       ],
       "deleted": [],
@@ -365,33 +333,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "cOJo096i7Pu+g59GoOPA0p6iB9o=",
-            "created_at": "2026-11-15T21:58:57.091979",
-            "rotated_at": "2026-11-15T21:58:57.087516",
-            "updated_at": "2026-11-15T21:58:57.091979",
+            "auth_token": "UfHkXwT3lE+XvbVxw612XqmEhbs=",
+            "created_at": "2026-11-23T21:45:24.633281",
+            "rotated_at": "2026-11-23T21:45:24.632327",
+            "updated_at": "2026-11-23T21:45:24.633281",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "cOJo096i7Pu+g59GoOPA0p6iB9o=",
+            "prev_auth_token": "UfHkXwT3lE+XvbVxw612XqmEhbs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T21:58:59.918574",
+            "id": 1,
+            "seen_at": "2026-11-23T21:45:25.307861",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "cOJo096i7Pu+g59GoOPA0p6iB9o=",
-            "created_at": "2026-11-15T21:58:57.091979",
-            "rotated_at": "2026-11-15T21:58:57.087516",
-            "updated_at": "2026-11-15T21:58:57.091979",
+            "auth_token": "UfHkXwT3lE+XvbVxw612XqmEhbs=",
+            "created_at": "2026-11-23T21:45:24.633281",
+            "rotated_at": "2026-11-23T21:45:24.632327",
+            "updated_at": "2026-11-23T21:45:24.633281",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "cOJo096i7Pu+g59GoOPA0p6iB9o=",
+            "prev_auth_token": "UfHkXwT3lE+XvbVxw612XqmEhbs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -402,20 +370,20 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 69,
           "email": null,
           "action": 30,
-          "context": "silenced_by_staff: Breaking the rules",
+          "context": "moderator_silence: Breaking the rules",
           "details": "Breaking the rules",
           "post_id": 37,
           "subject": null,
           "topic_id": null,
           "new_value": null,
           "admin_only": false,
-          "created_at": "2026-11-15T21:59:00.025153",
+          "created_at": "2026-11-23T21:45:25.342854",
           "expires_at": "2027-01-01T00:00:00",
           "ip_address": null,
-          "updated_at": "2026-11-15T21:59:00.025153",
+          "updated_at": "2026-11-23T21:45:25.342854",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": 999,
@@ -447,7 +415,7 @@
             "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-15T19:40:02.142369",
+            "updated_at": "2026-11-23T20:53:27.948368",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
@@ -457,7 +425,7 @@
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-15T19:19:54.208081",
+            "last_posted_at": "2026-11-23T20:53:07.76738",
             "suspended_till": null,
             "username_lower": "user2",
             "last_emailed_at": null,
@@ -487,7 +455,7 @@
             "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-15T21:58:59.987077",
+            "updated_at": "2026-11-23T21:45:25.328229",
             "approved_at": null,
             "trust_level": 2,
             "last_seen_at": null,
@@ -497,7 +465,7 @@
             "silenced_till": "2027-01-01T00:00:00",
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-15T19:19:54.208081",
+            "last_posted_at": "2026-11-23T20:53:07.76738",
             "suspended_till": null,
             "username_lower": "user2",
             "last_emailed_at": null,
@@ -532,19 +500,11 @@
       }
     ],
     [
-      "crawl_topic_link",
-      {
-        "topic_link_id": 21
-      }
-    ],
-    [
       "post_alert",
       {
         "post_id": 53,
         "new_record": true,
-        "options": {
-          "skip_send_email": true
-        }
+        "options": null
       }
     ],
     [
@@ -568,14 +528,6 @@
       {
         "post_id": 53
       }
-    ],
-    [
-      "critical_user_email",
-      {
-        "type": "account_silenced",
-        "user_id": 4,
-        "user_history_id": 68
-      }
     ]
   ],
   "next_ids": {
@@ -586,12 +538,11 @@
     "topic_users": 55,
     "topics": 45,
     "user_actions": 65,
-    "user_archived_messages": 2,
-    "user_histories": 68
+    "user_histories": 69
   },
   "recorded_from": {
     "case": "a04da5535bb96eb951f51f08c2baf8934e6f6c0330363451db9050dd8cac2708",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

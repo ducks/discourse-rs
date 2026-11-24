@@ -2485,7 +2485,7 @@ async fn staff_get_what_the_multi_select_mode_reads() {
     );
     assert_eq!(
         strings["topic.multi_select.select_below.label"],
-        "select +below"
+        "Select & below"
     );
     assert_eq!(strings["topic.change_owner.title"], "Change Owner");
     assert_eq!(

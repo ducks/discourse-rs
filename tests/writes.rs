@@ -572,6 +572,10 @@ fn unrandom(s: &str) -> String {
         regex::Regex::new(r"/u/password-reset/[0-9a-f]{32}\b").unwrap()
     });
     let s = RESET_TOKEN.replace_all(&s, "/u/password-reset/<hex>");
+    // OmniAuth's CSRF state (SecureRandom.hex(24)) in an authorize URL.
+    static OAUTH_STATE: std::sync::LazyLock<regex::Regex> =
+        std::sync::LazyLock::new(|| regex::Regex::new(r"\bstate=[0-9a-f]{48}\b").unwrap());
+    let s = OAUTH_STATE.replace_all(&s, "state=<hex>");
     // Jobs::BulkInvite's log lines, stamped `[Time.now]` to the second.
     static LOG_TIME: std::sync::LazyLock<regex::Regex> = std::sync::LazyLock::new(|| {
         regex::Regex::new(r"\[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} \+0000\]").unwrap()

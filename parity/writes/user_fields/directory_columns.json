@@ -64,8 +64,8 @@
       "path": "/edit-directory-columns.json"
     }
   ],
-  "started_at": "2026-11-16T00:00:37.026898",
-  "transaction_started_at": "2026-11-16T00:00:36.205155",
+  "started_at": "2026-11-24T03:29:49.390883",
+  "transaction_started_at": "2026-11-24T03:29:48.590139",
   "responses": [
     {
       "status": 200,
@@ -235,33 +235,9 @@
           },
           {
             "id": 36,
-            "name": "Color",
-            "type": "user_field",
-            "position": 10,
-            "icon": null,
-            "user_field_id": 1,
-            "enabled": false,
-            "automatic_position": null,
-            "user_field": {
-              "id": 1,
-              "name": "Color",
-              "description": "Your color",
-              "field_type": "text",
-              "editable": true,
-              "required": false,
-              "requirement": "optional",
-              "show_on_profile": true,
-              "show_on_user_card": false,
-              "show_on_signup": true,
-              "searchable": false,
-              "position": 1
-            }
-          },
-          {
-            "id": 37,
             "name": "Langs",
             "type": "user_field",
-            "position": 11,
+            "position": 10,
             "icon": null,
             "user_field_id": 2,
             "enabled": false,
@@ -283,6 +259,30 @@
                 "rust"
               ]
             }
+          },
+          {
+            "id": 37,
+            "name": "Color",
+            "type": "user_field",
+            "position": 11,
+            "icon": null,
+            "user_field_id": 1,
+            "enabled": false,
+            "automatic_position": null,
+            "user_field": {
+              "id": 1,
+              "name": "Color",
+              "description": "Your color",
+              "field_type": "text",
+              "editable": true,
+              "required": false,
+              "requirement": "optional",
+              "show_on_profile": true,
+              "show_on_user_card": false,
+              "show_on_signup": true,
+              "searchable": false,
+              "position": 1
+            }
           }
         ]
       }
@@ -299,11 +299,11 @@
         "directory_columns": [
           {
             "id": 36,
-            "name": "Color",
+            "name": "Langs",
             "type": "user_field",
             "position": 2,
             "icon": null,
-            "user_field_id": 1
+            "user_field_id": 2
           },
           {
             "id": 3,
@@ -371,11 +371,11 @@
         "directory_columns": [
           {
             "id": 36,
-            "name": "Color",
+            "name": "Langs",
             "type": "user_field",
             "position": 2,
             "icon": null,
-            "user_field_id": 1
+            "user_field_id": 2
           },
           {
             "id": 3,
@@ -511,29 +511,26 @@
           },
           {
             "id": 37,
-            "name": "Langs",
+            "name": "Color",
             "type": "user_field",
             "position": 11,
             "icon": null,
-            "user_field_id": 2,
+            "user_field_id": 1,
             "enabled": false,
             "automatic_position": null,
             "user_field": {
-              "id": 2,
-              "name": "Langs",
-              "description": "Languages",
-              "field_type": "multiselect",
+              "id": 1,
+              "name": "Color",
+              "description": "Your color",
+              "field_type": "text",
               "editable": true,
               "required": false,
               "requirement": "optional",
-              "show_on_profile": false,
-              "show_on_user_card": true,
+              "show_on_profile": true,
+              "show_on_user_card": false,
               "show_on_signup": true,
-              "searchable": true,
-              "position": 2,
-              "options": [
-                "rust"
-              ]
+              "searchable": false,
+              "position": 1
             }
           },
           {
@@ -560,26 +557,29 @@
           },
           {
             "id": 36,
-            "name": "Color",
+            "name": "Langs",
             "type": "user_field",
             "position": 2,
             "icon": null,
-            "user_field_id": 1,
+            "user_field_id": 2,
             "enabled": true,
             "automatic_position": null,
             "user_field": {
-              "id": 1,
-              "name": "Color",
-              "description": "Your color",
-              "field_type": "text",
+              "id": 2,
+              "name": "Langs",
+              "description": "Languages",
+              "field_type": "multiselect",
               "editable": true,
               "required": false,
               "requirement": "optional",
-              "show_on_profile": true,
-              "show_on_user_card": false,
+              "show_on_profile": false,
+              "show_on_user_card": true,
               "show_on_signup": true,
-              "searchable": false,
-              "position": 1
+              "searchable": true,
+              "position": 2,
+              "options": [
+                "rust"
+              ]
             }
           }
         ]
@@ -596,8 +596,8 @@
           "type": 1,
           "enabled": false,
           "position": 11,
-          "created_at": "2026-11-16T00:00:36.205155",
-          "user_field_id": 2,
+          "created_at": "2026-11-24T03:29:48.590139",
+          "user_field_id": 1,
           "automatic_position": null
         },
         {
@@ -607,8 +607,8 @@
           "type": 1,
           "enabled": true,
           "position": 2,
-          "created_at": "2026-11-16T00:00:36.205155",
-          "user_field_id": 1,
+          "created_at": "2026-11-24T03:29:48.590139",
+          "user_field_id": 2,
           "automatic_position": null
         }
       ],
@@ -670,33 +670,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 6,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1hOF1DpbYzhutqy4GQzD5gVGCPk=",
-            "created_at": "2026-11-16T00:00:36.565372",
-            "rotated_at": "2026-11-16T00:00:36.564622",
-            "updated_at": "2026-11-16T00:00:36.565372",
+            "auth_token": "ZFRaGYcjk0jo1pg8u5BNGKVHcrs=",
+            "created_at": "2026-11-24T03:29:48.902112",
+            "rotated_at": "2026-11-24T03:29:48.901299",
+            "updated_at": "2026-11-24T03:29:48.902112",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "1hOF1DpbYzhutqy4GQzD5gVGCPk=",
+            "prev_auth_token": "ZFRaGYcjk0jo1pg8u5BNGKVHcrs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T00:00:37.032603",
+            "id": 6,
+            "seen_at": "2026-11-24T03:29:49.401231",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1hOF1DpbYzhutqy4GQzD5gVGCPk=",
-            "created_at": "2026-11-16T00:00:36.565372",
-            "rotated_at": "2026-11-16T00:00:36.564622",
-            "updated_at": "2026-11-16T00:00:36.565372",
+            "auth_token": "ZFRaGYcjk0jo1pg8u5BNGKVHcrs=",
+            "created_at": "2026-11-24T03:29:48.902112",
+            "rotated_at": "2026-11-24T03:29:48.901299",
+            "updated_at": "2026-11-24T03:29:48.902112",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "1hOF1DpbYzhutqy4GQzD5gVGCPk=",
+            "prev_auth_token": "ZFRaGYcjk0jo1pg8u5BNGKVHcrs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -707,7 +707,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 69,
           "email": null,
           "action": 23,
           "context": null,
@@ -717,10 +717,10 @@
           "topic_id": null,
           "new_value": "{\"name\":\"likes_received\",\"enabled\":\"true\"}{\"name\":\"likes_given\",\"position\":\"2\"}{\"name\":\"\",\"enabled\":\"false\",\"position\":\"10\"}",
           "admin_only": true,
-          "created_at": "2026-11-16T00:00:37.093553",
+          "created_at": "2026-11-24T03:29:49.476986",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-16T00:00:37.093553",
+          "updated_at": "2026-11-24T03:29:49.476986",
           "category_id": null,
           "custom_type": "update_directory_columns",
           "reviewable_id": null,
@@ -736,7 +736,7 @@
   "jobs": [],
   "next_ids": {
     "directory_columns": 36,
-    "user_histories": 68
+    "user_histories": 69
   },
   "setup": [
     "INSERT INTO user_fields (id, name, description, field_type_enum, editable, show_on_profile, show_on_user_card, searchable, position, requirement, created_at, updated_at) VALUES (1, 'Color', 'Your color', 0, true, true, false, false, 1, 0, now(), now()), (2, 'Langs', 'Languages', 3, true, false, true, true, 2, 0, now(), now()), (3, 'Secret', 'Staff only', 0, true, false, false, false, 3, 0, now(), now())",
@@ -745,7 +745,7 @@
   ],
   "recorded_from": {
     "case": "ad13c433d5a7d24c9c40f9c422c1d17756a5ad85c915d36dbf35e654c226ddbb",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

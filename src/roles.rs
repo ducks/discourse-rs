@@ -112,6 +112,7 @@ pub async fn bootstrap_first_admin(
     conn: &mut PgConnection,
     i18n: &I18n,
     globals: &GlobalSettings,
+    defs: &crate::site_settings::Definitions,
     user_id: i32,
 ) -> Result<LogOnGrants, AppError> {
     let mut grants = LogOnGrants {
@@ -145,6 +146,9 @@ pub async fn bootstrap_first_admin(
     .bind(user_id)
     .execute(&mut *conn)
     .await?;
+    // DiscoursePluginRegistry.first_admin_bootstrap, for the enabled plugins.
+    let settings = crate::site_settings::SiteSettings::load(conn, defs, globals).await?;
+    crate::plugins::first_admin_bootstrapped(conn, defs, &settings, user_id).await?;
     grants.moderator = true;
     Ok(grants)
 }

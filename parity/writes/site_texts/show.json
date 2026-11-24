@@ -43,8 +43,8 @@
       "path": "/admin/customize/site_texts/system_messages.welcome_user.subject_template.json?locale=en"
     }
   ],
-  "started_at": "2026-11-15T23:37:37.203399",
-  "transaction_started_at": "2026-11-15T23:37:36.213294",
+  "started_at": "2026-11-24T01:17:40.124553",
+  "transaction_started_at": "2026-11-24T01:17:38.814662",
   "responses": [
     {
       "status": 200,
@@ -52,6 +52,7 @@
         "site_text": {
           "id": "js.topic.create",
           "value": "New Topic",
+          "override_value": null,
           "status": "up_to_date",
           "old_default": null,
           "new_default": null,
@@ -68,6 +69,7 @@
         "site_text": {
           "id": "user_notifications.user_mentioned.text_body_template",
           "value": "%{header_instructions}\n\n%{message}\n\n%{context}\n\n%{respond_instructions}\n",
+          "override_value": null,
           "status": "up_to_date",
           "old_default": null,
           "new_default": null,
@@ -108,6 +110,7 @@
         "site_text": {
           "id": "js.topic.filter_to.one",
           "value": "%{count} post in topic",
+          "override_value": null,
           "status": "up_to_date",
           "old_default": null,
           "new_default": null,
@@ -498,20 +501,20 @@
             "invite_private": {
               "title": "Invite to Message",
               "email_or_username": "Invitee's Email or Username",
-              "email_or_username_placeholder": "email address or username",
+              "email_or_username_placeholder": "Email address or username",
               "action": "Invite",
               "success": "We've invited that user to participate in this message.",
               "success_group": "We've invited that group to participate in this message.",
               "error": "Sorry, there was an error inviting that user.",
               "not_allowed": "Sorry, that user can't be invited.",
-              "group_name": "group name"
+              "group_name": "Group name"
             },
             "controls": "Topic Controls",
             "invite_reply": {
               "title": "Invite",
-              "username_placeholder": "username",
+              "username_placeholder": "Username",
               "action": "Send Invite",
-              "help": "invite others to this topic via email or notifications",
+              "help": "Invite others to this topic via email or notifications",
               "to_forum": "We'll send a brief email allowing your friend to immediately join by clicking a link.",
               "discourse_connect_enabled": "Enter the username of the person you'd like to invite to this topic.",
               "to_topic_blank": "Enter the username or email address of the person you'd like to invite to this topic.",
@@ -534,14 +537,14 @@
             },
             "move_to": {
               "title": "Move to",
-              "action": "move to",
+              "action": "Move to",
               "error": "There was an error moving posts."
             },
             "split_topic": {
               "title": "Move to New Topic",
-              "action": "move to new topic",
+              "action": "Move to new topic",
               "topic_name": "New Topic Title",
-              "radio_label": "New Topic",
+              "radio_label": "New topic",
               "error": "There was an error moving posts to the new topic.",
               "instructions": {
                 "one": "You are about to create a new topic and populate it with the post you've selected.",
@@ -550,9 +553,9 @@
             },
             "merge_topic": {
               "title": "Move to Existing Topic",
-              "action": "move to existing topic",
+              "action": "Move to existing topic",
               "error": "There was an error moving posts into that topic.",
-              "radio_label": "Existing Topic",
+              "radio_label": "Existing topic",
               "instructions": {
                 "one": "Please choose the topic you'd like to move that post to.",
                 "other": "Please choose the topic you'd like to move those <b>%{count}</b> posts to."
@@ -561,9 +564,9 @@
             },
             "move_to_new_message": {
               "title": "Move to New Message",
-              "action": "move to new message",
+              "action": "Move to new message",
               "message_title": "New Message Title",
-              "radio_label": "New Message",
+              "radio_label": "New message",
               "participants": "Participants",
               "instructions": {
                 "one": "You are about to create a new message and populate it with the post you've selected.",
@@ -572,8 +575,8 @@
             },
             "move_to_existing_message": {
               "title": "Move to Existing Message",
-              "action": "move to existing message",
-              "radio_label": "Existing Message",
+              "action": "Move to existing message",
+              "radio_label": "Existing message",
               "participants": "Participants",
               "instructions": {
                 "one": "Please choose the message you'd like to move that post to.",
@@ -582,7 +585,7 @@
             },
             "merge_posts": {
               "title": "Merge Selected Posts",
-              "action": "merge selected posts",
+              "action": "Merge selected posts",
               "error": "There was an error merging the selected posts."
             },
             "publish_page": {
@@ -602,9 +605,9 @@
             },
             "change_owner": {
               "title": "Change Owner",
-              "action": "change ownership",
+              "action": "Change ownership",
               "error": "There was an error changing the ownership of the posts.",
-              "placeholder": "username of new owner",
+              "placeholder": "Username of new owner",
               "instructions": {
                 "one": "Please choose a new owner for the post by <b>@%{old_user}</b>",
                 "other": "Please choose a new owner for the %{count} posts by <b>@%{old_user}</b>"
@@ -622,28 +625,28 @@
               "instructions": "Please select the new timestamp of the topic. Posts in the topic will be updated to have the same time difference."
             },
             "multi_select": {
-              "select": "select",
-              "selected": "selected (%{count})",
+              "select": "Select",
+              "selected": "Selected (%{count})",
               "select_post": {
-                "label": "select",
+                "label": "Select",
                 "title": "Add post to selection"
               },
               "selected_post": {
-                "label": "selected",
+                "label": "Selected",
                 "title": "Click to remove post from selection"
               },
               "select_replies": {
-                "label": "select +replies",
+                "label": "Select & replies",
                 "title": "Add post and all its replies to selection"
               },
               "select_below": {
-                "label": "select +below",
+                "label": "Select & below",
                 "title": "Add post and all after it to selection"
               },
-              "delete": "delete selected",
-              "cancel": "cancel selecting",
-              "select_all": "select all",
-              "deselect_all": "deselect all",
+              "delete": "Delete selected",
+              "cancel": "Cancel selecting",
+              "select_all": "Select all",
+              "deselect_all": "Deselect all",
               "description": {
                 "one": "You have selected <b>%{count}</b> post.",
                 "other": "You have selected <b>%{count}</b> posts."
@@ -661,6 +664,7 @@
             "create_zendesk_issue": "Create Zendesk Ticket",
             "view_zendesk_issue": "View on Zendesk"
           },
+          "override_value": null,
           "status": "up_to_date",
           "old_default": null,
           "new_default": null,
@@ -677,6 +681,8 @@
         "site_text": {
           "id": "js.theme_translations.-2.solved",
           "value": "Solved",
+          "override_value": null,
+          "preview_default": "Solved",
           "status": "up_to_date",
           "old_default": null,
           "new_default": "Solved",
@@ -713,6 +719,7 @@
         "site_text": {
           "id": "system_messages.welcome_user.subject_template",
           "value": "Welcome to %{site_name}!",
+          "override_value": null,
           "status": "up_to_date",
           "old_default": null,
           "new_default": null,
@@ -736,33 +743,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "xRSN29AGyMTzBOrWNcr9LX+Vhm4=",
-            "created_at": "2026-11-15T23:37:36.553708",
-            "rotated_at": "2026-11-15T23:37:36.552883",
-            "updated_at": "2026-11-15T23:37:36.553708",
+            "auth_token": "SxY6eltiSMXIqg3BO8ql5YQgIdc=",
+            "created_at": "2026-11-24T01:17:39.222267",
+            "rotated_at": "2026-11-24T01:17:39.220751",
+            "updated_at": "2026-11-24T01:17:39.222267",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "xRSN29AGyMTzBOrWNcr9LX+Vhm4=",
+            "prev_auth_token": "SxY6eltiSMXIqg3BO8ql5YQgIdc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:37:37.209273",
+            "id": 1,
+            "seen_at": "2026-11-24T01:17:40.133552",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "xRSN29AGyMTzBOrWNcr9LX+Vhm4=",
-            "created_at": "2026-11-15T23:37:36.553708",
-            "rotated_at": "2026-11-15T23:37:36.552883",
-            "updated_at": "2026-11-15T23:37:36.553708",
+            "auth_token": "SxY6eltiSMXIqg3BO8ql5YQgIdc=",
+            "created_at": "2026-11-24T01:17:39.222267",
+            "rotated_at": "2026-11-24T01:17:39.220751",
+            "updated_at": "2026-11-24T01:17:39.222267",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "xRSN29AGyMTzBOrWNcr9LX+Vhm4=",
+            "prev_auth_token": "SxY6eltiSMXIqg3BO8ql5YQgIdc=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -775,7 +782,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "d01732c741ddc6cea0892cc3779f53bf657bb17bc6898bd33174d5b38ea2f7ad",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

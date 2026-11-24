@@ -52,20 +52,26 @@ pub async fn posts(
     limit: i64,
 ) -> Result<Vec<Value>, AppError> {
     let moderator_only = guardian.is_moderator() && !guardian.is_admin();
-    let allowed = if moderator_only {
-        guardian.allowed_category_ids(&mut *conn, settings).await?
+    let (allowed, secured) = if moderator_only {
+        (
+            guardian.allowed_category_ids(&mut *conn, settings).await?,
+            guardian
+                .visible_posts_clause(&mut *conn, settings, "p")
+                .await?
+                .unwrap_or_else(|| "TRUE".to_string()),
+        )
     } else {
-        Vec::new()
+        (Vec::new(), "TRUE".to_string())
     };
-    let rows: Vec<Row> = sqlx::query_as(
+    let rows: Vec<Row> = sqlx::query_as(&format!(
         "SELECT p.id, p.created_at, p.post_number, p.cooked, p.topic_id, p.hidden, p.post_type, \
                 p.deleted_at, p.deleted_by_id, p.reply_to_post_number, t.slug, t.title, t.category_id \
          FROM posts p LEFT JOIN topics t ON t.id = p.topic_id \
          WHERE p.user_id = $1 AND p.deleted_at IS NOT NULL \
            AND (NOT $2 OR (t.archetype <> 'private_message' \
-                AND (t.category_id IS NULL OR t.category_id = ANY($3)))) \
-         ORDER BY p.created_at DESC OFFSET $4 LIMIT $5",
-    )
+                AND (t.category_id IS NULL OR t.category_id = ANY($3)) AND {secured})) \
+         ORDER BY p.created_at DESC OFFSET $4 LIMIT $5"
+    ))
     .bind(user_id)
     .bind(moderator_only)
     .bind(&allowed)

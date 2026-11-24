@@ -37,7 +37,7 @@ pub const RESTRICTED_KEYS: [&str; 7] = [
 ];
 
 /// `TranslationOverride::ALLOWED_CUSTOM_INTERPOLATION_KEYS`
-const CUSTOM_INTERPOLATION_KEYS: [(&[&str], &[&str]); 4] = [
+const CUSTOM_INTERPOLATION_KEYS: [(&[&str], &[&str]); 5] = [
     (
         &[
             "user_notifications.user_",
@@ -73,6 +73,11 @@ const CUSTOM_INTERPOLATION_KEYS: [(&[&str], &[&str]); 4] = [
             "optional_cat",
             "optional_tags",
         ],
+    ),
+    // 70b9fd6b73c
+    (
+        &["user_notifications.signup_after_reject"],
+        &["reject_reason"],
     ),
     (
         &["system_messages.welcome_user"],
@@ -292,8 +297,8 @@ pub fn record_interpolation_keys(key: &str) -> Result<Vec<String>, Unsupported> 
 pub struct Record {
     pub id: String,
     pub value: Value,
-    /// The record's locale: "en", or (as Rails' fix_plural_keys leaves it
-    /// for a complete plural group) the value itself.
+    /// The record's locale: the one asked for, or "en" for a plural form
+    /// fix_plural_keys fell back to.
     pub locale: String,
     pub interpolation_keys: Vec<String>,
 }
@@ -352,11 +357,13 @@ fn status_name(status: i32) -> &'static str {
 }
 
 /// SiteTextSerializer; `overridden_keys` as the index passes them, else
-/// the record's own override decides.
+/// the record's own override decides. `include_preview_default` is the
+/// index's option (e036899dffc).
 pub async fn serialize(
     conn: &mut PgConnection,
     record: &Record,
     overridden_keys: Option<&[String]>,
+    include_preview_default: bool,
 ) -> Result<Value, AppError> {
     let row = find_override(conn, &record.locale, &record.id).await?;
     let (status, old_default, new_default) = match &row {
@@ -374,16 +381,25 @@ pub async fn serialize(
         Some(keys) => keys.contains(&record.id),
         None => row.is_some(),
     };
-    Ok(json!({
+    let mut out = json!({
         "id": record.id,
         "value": record.value,
+        "override_value": row.as_ref().map(|r| r.value.clone()),
         "status": status,
         "old_default": old_default,
         "new_default": new_default,
         "interpolation_keys": record.interpolation_keys,
         "overridden": overridden,
         "can_revert": overridden,
-    }))
+    });
+    // `I18n.overrides_disabled { I18n.t(id, locale: override.locale) }`
+    if include_preview_default && let Some(r) = &row {
+        if r.locale != "en" {
+            return Err(Unsupported("the default of a site text outside English").into());
+        }
+        out["preview_default"] = tree().default_value(&record.id)?;
+    }
+    Ok(out)
 }
 
 /// `TranslationOverride#invalid_interpolation_keys` for a value of a key.
@@ -607,6 +623,8 @@ impl ThemeEntry {
         json!({
             "id": self.id(),
             "value": self.value(),
+            "override_value": self.overridden,
+            "preview_default": self.default,
             "status": self.status().unwrap_or("up_to_date"),
             "old_default": self.overridden.as_ref().and(self.original.as_ref()),
             "new_default": self.default,

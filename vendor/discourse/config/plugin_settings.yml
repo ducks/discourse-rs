@@ -36,11 +36,11 @@ settings:
     blog_category:
       type: category
       default: ""
-      client: true
     blog_drafts_category:
       type: category
       default: ""
       client: true
+      hidden: true
     blog_title:
       default: "The blog"
     blog_description:
@@ -51,7 +51,6 @@ settings:
       textarea: true
     blog_path_format:
       default: "/{slug}"
-      client: true
       validator: "Blog::PathFormatValidator"
     blog_posts_per_page:
       default: 10
@@ -116,6 +115,16 @@ settings:
         status: "permanent"
         impact: "feature,all_members"
         learn_more_url: "https://meta.discourse.org/t/-/397571"
+    chat_thread_improvements:
+      default: false
+      hidden: true
+      client: true
+      upcoming_change:
+        status: "alpha"
+        impact: "feature,all_members"
+        learn_more_url: "https://meta.discourse.org/t/-/417837"
+        allow_enabled_for:
+          - everyone
     enable_public_channels:
       default: true
       client: true
@@ -1662,6 +1671,19 @@ settings:
         - 2
         - 3
         - 4
+    ai_reviewable_action_suggestions_enabled:
+      default: false
+      area: "ai-features/review_queue"
+    ai_reviewable_action_decision_model:
+      area: "ai-features/review_queue"
+      type: enum
+      default: ""
+      enum: "DiscourseAi::Configuration::DecisionModelEnumerator"
+    ai_reviewable_action_min_confidence:
+      area: "ai-features/review_queue"
+      default: 0.9
+      min: 0
+      max: 1
     ai_dsa_classification_decision_model:
       type: enum
       default: ""
@@ -3538,6 +3560,23 @@ settings:
         learn_more_url: "https://meta.discourse.org/t/-/411337"
         requires_plugin_enabled: false
         permanent_warning: false
+    live_file_transfer_max_size_mb:
+      type: integer
+      default: 100
+      min: 1
+      max: 102400
+      client: true
+      depends_on:
+        - live_enabled
+    live_file_transfer_allowed_groups:
+      type: group_list
+      list_type: compact
+      default: ""
+      allow_any: false
+      refresh: true
+      disallowed_groups: "0|4"
+      depends_on:
+        - live_enabled
     live_verbose_logging:
       default: false
       client: true

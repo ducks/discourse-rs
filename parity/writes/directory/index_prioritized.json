@@ -13,8 +13,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:43:12.498751",
-  "transaction_started_at": "2026-11-15T22:43:11.63378",
+  "started_at": "2026-11-23T21:51:02.296682",
+  "transaction_started_at": "2026-11-23T21:51:00.629504",
   "responses": [
     {
       "status": 200,
@@ -22,13 +22,13 @@
         "directory_items": [
           {
             "id": 3,
-            "likes_received": 0,
-            "likes_given": 0,
-            "topic_count": 0,
-            "post_count": 0,
+            "likes_received": 1,
+            "likes_given": 1,
+            "topic_count": 1,
+            "post_count": 1,
             "topics_entered": 0,
             "posts_read": 0,
-            "days_visited": 0,
+            "days_visited": 1,
             "time_read": 0,
             "user": {
               "id": 3,
@@ -40,7 +40,7 @@
             }
           },
           {
-            "id": 1,
+            "id": 5,
             "likes_received": 0,
             "likes_given": 0,
             "topic_count": 0,
@@ -50,13 +50,11 @@
             "days_visited": 0,
             "time_read": 0,
             "user": {
-              "id": 1,
-              "username": "admin",
-              "name": "Admin",
-              "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
+              "id": 5,
+              "username": "user3",
+              "name": "User3",
+              "avatar_template": "/letter_avatar_proxy/v4/letter/u/ec9cab/{size}.png",
               "title": null,
-              "admin": true,
-              "moderator": true,
               "trust_level": 4
             }
           }
@@ -76,33 +74,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "4w69vK21sw2Xcu+Sn2V/rRr9SU4=",
-            "created_at": "2026-11-15T22:43:11.973197",
-            "rotated_at": "2026-11-15T22:43:11.972219",
-            "updated_at": "2026-11-15T22:43:11.973197",
+            "auth_token": "T4wE9L30KpvsuiDUIG4b7B/QV7o=",
+            "created_at": "2026-11-23T21:51:01.124824",
+            "rotated_at": "2026-11-23T21:51:01.123167",
+            "updated_at": "2026-11-23T21:51:01.124824",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "4w69vK21sw2Xcu+Sn2V/rRr9SU4=",
+            "prev_auth_token": "T4wE9L30KpvsuiDUIG4b7B/QV7o=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:43:12.505818",
+            "id": 1,
+            "seen_at": "2026-11-23T21:51:02.308916",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "4w69vK21sw2Xcu+Sn2V/rRr9SU4=",
-            "created_at": "2026-11-15T22:43:11.973197",
-            "rotated_at": "2026-11-15T22:43:11.972219",
-            "updated_at": "2026-11-15T22:43:11.973197",
+            "auth_token": "T4wE9L30KpvsuiDUIG4b7B/QV7o=",
+            "created_at": "2026-11-23T21:51:01.124824",
+            "rotated_at": "2026-11-23T21:51:01.123167",
+            "updated_at": "2026-11-23T21:51:01.124824",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "4w69vK21sw2Xcu+Sn2V/rRr9SU4=",
+            "prev_auth_token": "T4wE9L30KpvsuiDUIG4b7B/QV7o=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -115,7 +113,7 @@
   "next_ids": {},
   "recorded_from": {
     "case": "86fc9401f864351bf54359c23e9516118d79358e3912a50f28695ca69beb0eb3",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

@@ -2,8 +2,8 @@
   "name": "deliver_retry",
   "user": "admin",
   "requests": [],
-  "started_at": "2026-11-16T00:09:13.674865",
-  "transaction_started_at": "2026-11-16T00:09:12.709093",
+  "started_at": "2026-11-24T01:26:01.17347",
+  "transaction_started_at": "2026-11-24T01:25:59.839637",
   "responses": [],
   "changes": {
     "web_hook_events": {
@@ -11,38 +11,38 @@
         {
           "id": 1,
           "status": 503,
-          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"17\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"1\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\"}",
+          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"17\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"1\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\"}",
           "payload": "{\"post\":{\"id\":7}}",
-          "duration": 31,
-          "created_at": "2026-11-16T00:09:13.679514",
-          "updated_at": "2026-11-16T00:09:13.714675",
+          "duration": 21,
+          "created_at": "2026-11-24T01:26:01.179969",
+          "updated_at": "2026-11-24T01:26:01.207006",
           "web_hook_id": 9002,
           "response_body": "busy",
-          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"4\"}"
+          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"4\"}"
         },
         {
           "id": 2,
           "status": 503,
-          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"17\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"2\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\"}",
+          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"17\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"2\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\"}",
           "payload": "{\"post\":{\"id\":7}}",
-          "duration": 19,
-          "created_at": "2026-11-16T00:09:13.720062",
-          "updated_at": "2026-11-16T00:09:13.742123",
+          "duration": 16,
+          "created_at": "2026-11-24T01:26:01.213946",
+          "updated_at": "2026-11-24T01:26:01.234075",
           "web_hook_id": 9002,
           "response_body": "busy",
-          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"4\"}"
+          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"4\"}"
         },
         {
           "id": 3,
           "status": 503,
-          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"17\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"3\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\"}",
+          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"17\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"3\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\"}",
           "payload": "{\"post\":{\"id\":7}}",
-          "duration": 18,
-          "created_at": "2026-11-16T00:09:13.746858",
-          "updated_at": "2026-11-16T00:09:13.768545",
+          "duration": 15,
+          "created_at": "2026-11-24T01:26:01.240774",
+          "updated_at": "2026-11-24T01:26:01.260934",
           "web_hook_id": 9002,
           "response_body": "busy",
-          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"4\"}"
+          "response_headers": "{\"user-agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"connection\":\"close\",\"content-length\":\"4\"}"
         }
       ],
       "deleted": [],
@@ -72,7 +72,7 @@
             "secret": "",
             "status": 1,
             "created_at": "2026-10-01T10:00:00",
-            "updated_at": "2026-11-16T00:09:13.681201",
+            "updated_at": "2026-11-24T01:26:01.182833",
             "payload_url": "http://fixtures.localhost:8099/broken",
             "content_type": 1,
             "wildcard_web_hook": false,
@@ -140,7 +140,7 @@
   ],
   "recorded_from": {
     "case": "83230955a8e5707dcbaad7ad0a7c803eadf5028b98331be9c135da47c602bc39",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

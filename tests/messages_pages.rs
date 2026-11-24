@@ -146,6 +146,8 @@ async fn a_group_inbox_lists_the_groups_messages() {
         "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post.', '<p>The first post.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1)",
         "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
         "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2)",
+        // Admin is no moderator, so not in the automatic group on its own.
+        "INSERT INTO group_users (group_id, user_id, created_at, updated_at, first_unread_pm_at) VALUES (2, 1, now(), now(), now() - interval '1 day')",
         "UPDATE groups SET has_messages = true WHERE id = 2",
     ] {
         sqlx::query(sql).execute(&db.pool).await.unwrap();
@@ -288,6 +290,8 @@ async fn a_group_message_shows_its_group_and_inbox() {
         "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post.', '<p>The first post.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1)",
         "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
         "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2)",
+        // Admin is no moderator, so not in the automatic group on its own.
+        "INSERT INTO group_users (group_id, user_id, created_at, updated_at, first_unread_pm_at) VALUES (2, 1, now(), now(), now() - interval '1 day')",
     ] {
         sqlx::query(sql).execute(&db.pool).await.unwrap();
     }
@@ -422,7 +426,7 @@ async fn a_message_carries_its_add_participants_modal() {
     );
     assert_eq!(
         config["strings"]["placeholder"],
-        "email address or username"
+        "Email address or username"
     );
     assert_eq!(config["strings"]["send"], "Send Invite");
     assert_eq!(
@@ -716,6 +720,8 @@ async fn a_group_inboxs_new_and_unread_lists_dismiss() {
         "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (900, 90, 3, 1, 'The first post.', '<p>The first post.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 1)",
         "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (90, 3, now(), now())",
         "INSERT INTO topic_allowed_groups (topic_id, group_id) VALUES (90, 2)",
+        // Admin is no moderator, so not in the automatic group on its own.
+        "INSERT INTO group_users (group_id, user_id, created_at, updated_at, first_unread_pm_at) VALUES (2, 1, now(), now(), now() - interval '1 day')",
         "INSERT INTO topics (id, title, fancy_title, slug, user_id, last_post_user_id, archetype, subtype, created_at, updated_at, bumped_at, posts_count, highest_post_number, highest_staff_post_number, visible) VALUES (91, 'Another message the moderators received', 'Another message the moderators received', 'another-message-the-moderators-received', 3, 3, 'private_message', 'user_to_user', now() - interval '2 hours', now() - interval '1 hour', now() - interval '1 hour', 2, 2, 2, true)",
         "INSERT INTO posts (id, topic_id, user_id, post_number, raw, cooked, created_at, updated_at, last_version_at, sort_order) VALUES (910, 91, 3, 1, 'The first post.', '<p>The first post.</p>', now() - interval '2 hours', now() - interval '2 hours', now() - interval '2 hours', 1), (911, 91, 3, 2, 'The second post.', '<p>The second post.</p>', now() - interval '1 hour', now() - interval '1 hour', now() - interval '1 hour', 2)",
         "INSERT INTO topic_allowed_users (topic_id, user_id, created_at, updated_at) VALUES (91, 3, now(), now())",

@@ -1189,13 +1189,21 @@ pub async fn update(
     Ok(Ok((saved, a)))
 }
 
-/// `@web_hook.destroy!`: its events and daily aggregates, its join rows,
-/// the row; then `log_web_hook` (destroy).
+/// `@web_hook.destroy!`: its events (each with its pending redelivery)
+/// and daily aggregates, its join rows, the row; then `log_web_hook`
+/// (destroy).
 pub async fn destroy(
     conn: &mut PgConnection,
     admin_id: i32,
     hook: &WebHook,
 ) -> Result<(), AppError> {
+    sqlx::query(
+        "DELETE FROM redelivering_webhook_events WHERE web_hook_event_id IN \
+         (SELECT id FROM web_hook_events WHERE web_hook_id = $1)",
+    )
+    .bind(hook.id)
+    .execute(&mut *conn)
+    .await?;
     sqlx::query("DELETE FROM web_hook_events WHERE web_hook_id = $1")
         .bind(hook.id)
         .execute(&mut *conn)

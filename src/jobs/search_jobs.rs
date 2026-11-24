@@ -87,6 +87,42 @@ pub async fn reindex_search(state: &AppState) -> Result<(), AppError> {
         search_index::index_tag(&mut conn, &s, id, &name.to_lowercase()).await?;
     }
 
+    // queue_hidden_tags_changes (Discourse 452a0dadea5): the posts of tags
+    // that became hidden, or stopped being, since the last run queued for a
+    // reindex. The last run's hidden ids are in Redis there.
+    let visible =
+        crate::tags::visible_tag_ids_subquery(&crate::guardian::Guardian::anonymous(), &s)?;
+    let hidden: Vec<i32> = sqlx::query_scalar(&format!(
+        "SELECT id FROM tags WHERE id NOT IN {visible} ORDER BY id"
+    ))
+    .fetch_all(&mut *conn)
+    .await?;
+    let previous: Option<String> = sqlx::query_scalar(
+        "SELECT value FROM discourse_rs.persistent_values WHERE key = 'reindex_search_hidden_tag_ids'",
+    )
+    .fetch_optional(&mut *conn)
+    .await?;
+    let previous: Vec<i32> = previous
+        .and_then(|v| serde_json::from_str(&v).ok())
+        .unwrap_or_default();
+    let changed: Vec<i32> = hidden
+        .iter()
+        .filter(|id| !previous.contains(id))
+        .chain(previous.iter().filter(|id| !hidden.contains(id)))
+        .copied()
+        .collect();
+    if !changed.is_empty() {
+        crate::tagging::queue_tags_posts_reindex(&mut conn, &changed).await?;
+    }
+    sqlx::query(
+        "INSERT INTO discourse_rs.persistent_values (key, value) \
+         VALUES ('reindex_search_hidden_tag_ids', $1) \
+         ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value",
+    )
+    .bind(serde_json::to_string(&hidden)?)
+    .execute(&mut *conn)
+    .await?;
+
     // rebuild_topics(limit: 10000): through each topic's first post.
     let topics: Vec<i32> = sqlx::query_scalar(
         "SELECT topics.id FROM topics \

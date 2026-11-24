@@ -759,22 +759,20 @@ async fn lookup_search_context(
         return Ok(Ok(Some((SearchContext::Category(category_id), None))));
     }
     if kind == "tag" {
-        // A tag hidden from the viewer is no context; Tag.where_name(id).first,
-        // then can_see_tag?.
-        let hidden = crate::tagging::hidden_tag_names(&mut conn, guardian).await?;
-        if hidden.contains(&id) {
-            return Ok(Err(invalid_access(state)));
-        }
-        let tag: Option<(i32, String)> = sqlx::query_as(
-            "SELECT id, name FROM tags WHERE lower(tags.name) IN ($1) ORDER BY tags.id LIMIT 1",
-        )
+        // DiscourseTagging.visible_tags(guardian).where_name(id).first
+        // (Discourse 452a0dadea5), then can_see_tag?: a hidden tag is no
+        // context.
+        let visible = crate::tags::visible_tags_where(guardian, &settings)?;
+        let tag: Option<i32> = sqlx::query_scalar(&format!(
+            "SELECT id FROM tags WHERE {visible} AND lower(tags.name) IN ($1) ORDER BY tags.id LIMIT 1"
+        ))
         .bind(id.to_lowercase())
         .fetch_optional(&mut *conn)
         .await?;
-        let Some((tag_id, name)) = tag else {
+        let Some(tag_id) = tag else {
             return Ok(Err(invalid_access(state)));
         };
-        if !settings.get("tagging_enabled")?.truthy() || hidden.contains(&name) {
+        if !settings.get("tagging_enabled")?.truthy() {
             return Ok(Err(invalid_access(state)));
         }
         return Ok(Ok(Some((SearchContext::Tag(tag_id), None))));

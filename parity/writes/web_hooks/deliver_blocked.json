@@ -2,8 +2,8 @@
   "name": "deliver_blocked",
   "user": "admin",
   "requests": [],
-  "started_at": "2026-11-16T00:09:10.995014",
-  "transaction_started_at": "2026-11-16T00:09:10.186361",
+  "started_at": "2026-11-24T01:25:57.753538",
+  "transaction_started_at": "2026-11-24T01:25:56.663149",
   "responses": [],
   "changes": {
     "web_hook_events": {
@@ -11,11 +11,11 @@
         {
           "id": 1,
           "status": -1,
-          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"17\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.1-9daeae2a745b73533215775ebf132191ca4c5056; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"1\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\"}",
+          "headers": "{\"Accept\":\"*/*\",\"Connection\":\"close\",\"Content-Length\":\"17\",\"Content-Type\":\"application/json\",\"Host\":\"fixtures.localhost\",\"User-Agent\":\"Discourse/2026.11.0-latest.2-ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d; +https://www.discourse.org/\",\"X-Discourse-Instance\":\"http://localhost:3042\",\"X-Discourse-Event-Id\":\"1\",\"X-Discourse-Event-Type\":\"post\",\"X-Discourse-Event\":\"post_created\"}",
           "payload": "{\"post\":{\"id\":7}}",
-          "duration": 18,
-          "created_at": "2026-11-16T00:09:11.003694",
-          "updated_at": "2026-11-16T00:09:11.025738",
+          "duration": 32,
+          "created_at": "2026-11-24T01:25:57.763865",
+          "updated_at": "2026-11-24T01:25:57.803705",
           "web_hook_id": 9001,
           "response_body": null,
           "response_headers": "{\"error\":\"Payload URL cannot be used because it resolves to a blocked or internal IP\"}"
@@ -48,7 +48,7 @@
             "secret": "",
             "status": 1,
             "created_at": "2026-10-01T10:00:00",
-            "updated_at": "2026-11-16T00:09:11.005534",
+            "updated_at": "2026-11-24T01:25:57.766695",
             "payload_url": "http://fixtures.localhost:8099/hook",
             "content_type": 1,
             "wildcard_web_hook": false,
@@ -88,7 +88,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "765cda991378ac120b0100a867184ed102ff9991d57087ecccfd7ca887188ae9",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

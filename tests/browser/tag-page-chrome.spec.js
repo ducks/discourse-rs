@@ -164,7 +164,7 @@ test("a staff-only tag and the untagged list prefill nothing", async ({ page, co
 
   // The untagged list has its navigation and no tag to start with.
   await page.goto("/tag/none");
-  await expect(page.locator(".category-breadcrumb details.tag-drop.tag-none summary")).toHaveAttribute("data-name", "no tags");
+  await expect(page.locator(".category-breadcrumb details.tag-drop.tag-none summary")).toHaveAttribute("data-name", "No tags");
   await expect(page.locator("#navigation-bar a.active")).toHaveAttribute("href", "/tag/none/l/latest");
   const button = page.locator("#create-topic");
   await expect(button).toBeVisible();

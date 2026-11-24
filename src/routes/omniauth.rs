@@ -304,14 +304,9 @@ pub async fn request(
             false,
         ),
     };
-    // Google takes a state from the request; it is the one kept.
-    let state_param = match extra.iter().find(|(k, _)| k == "state") {
-        Some((_, given)) => given.clone(),
-        None => {
-            extra.insert(0, ("state".to_string(), state_param.clone()));
-            state_param
-        }
-    };
+    // Always the server's nonce: Google took one from the request until
+    // Discourse 088778c7af1.
+    extra.insert(0, ("state".to_string(), state_param.clone()));
     if pkce {
         let verifier = oauth2::random_hex(64);
         extra.push(("code_challenge".into(), oauth2::code_challenge(&verifier)));

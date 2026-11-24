@@ -456,6 +456,25 @@ pub fn problem_check(
     Ok(None)
 }
 
+/// `first_admin_bootstrap` callbacks, after the site's first admin is
+/// granted moderation: chat spares them its channel retention reminder.
+pub async fn first_admin_bootstrapped(
+    conn: &mut sqlx::PgConnection,
+    defs: &crate::site_settings::Definitions,
+    settings: &SiteSettings,
+    user_id: i32,
+) -> Result<(), crate::AppError> {
+    if defs.plugin_enabled("chat", settings) {
+        sqlx::query(
+            "UPDATE user_options SET dismissed_channel_retention_reminder = TRUE WHERE user_id = $1",
+        )
+        .bind(user_id)
+        .execute(conn)
+        .await?;
+    }
+    Ok(())
+}
+
 /// DiscourseEvent `:site_setting_changed`, after a setting's new value is
 /// saved: the handlers of the plugins the port implements, each while
 /// its plugin is enabled (`plugin.on`). Chat's chat_allowed_groups job

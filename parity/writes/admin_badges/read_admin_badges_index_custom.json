@@ -7,8 +7,8 @@
       "path": "/admin/badges.json"
     }
   ],
-  "started_at": "2026-11-15T21:39:40.842378",
-  "transaction_started_at": "2026-11-15T21:39:40.090728",
+  "started_at": "2026-11-23T21:35:45.082744",
+  "transaction_started_at": "2026-11-23T21:35:43.753192",
   "responses": [
     {
       "status": 200,
@@ -1499,7 +1499,7 @@
             "id": 3,
             "name": "Regular",
             "description": "<a href=\"https://blog.discourse.org/2018/06/understanding-discourse-trust-levels/\">Granted</a> recategorize, rename, followed links, wiki, more likes",
-            "grant_count": 3,
+            "grant_count": 2,
             "allow_title": true,
             "multiple_grant": false,
             "icon": "user",
@@ -2357,11 +2357,11 @@
             "listable"
           ],
           "triggers": {
+            "post_revision": 2,
             "post_action": 1,
-            "none": 0,
-            "trust_level_change": 4,
             "user_change": 8,
-            "post_revision": 2
+            "trust_level_change": 4,
+            "none": 0
           },
           "badge_ids": [
             138,
@@ -2477,33 +2477,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "R4JrgQpe6JYvhEHXxXNB0z+ijSc=",
-            "created_at": "2026-11-15T21:39:40.37789",
-            "rotated_at": "2026-11-15T21:39:40.377022",
-            "updated_at": "2026-11-15T21:39:40.37789",
+            "auth_token": "w7G8mwafh3ysO4rSe/mSoWBSt9k=",
+            "created_at": "2026-11-23T21:35:44.199346",
+            "rotated_at": "2026-11-23T21:35:44.197743",
+            "updated_at": "2026-11-23T21:35:44.199346",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "R4JrgQpe6JYvhEHXxXNB0z+ijSc=",
+            "prev_auth_token": "w7G8mwafh3ysO4rSe/mSoWBSt9k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T21:39:40.848526",
+            "id": 1,
+            "seen_at": "2026-11-23T21:35:45.09147",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "R4JrgQpe6JYvhEHXxXNB0z+ijSc=",
-            "created_at": "2026-11-15T21:39:40.37789",
-            "rotated_at": "2026-11-15T21:39:40.377022",
-            "updated_at": "2026-11-15T21:39:40.37789",
+            "auth_token": "w7G8mwafh3ysO4rSe/mSoWBSt9k=",
+            "created_at": "2026-11-23T21:35:44.199346",
+            "rotated_at": "2026-11-23T21:35:44.197743",
+            "updated_at": "2026-11-23T21:35:44.199346",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "R4JrgQpe6JYvhEHXxXNB0z+ijSc=",
+            "prev_auth_token": "w7G8mwafh3ysO4rSe/mSoWBSt9k=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -2525,7 +2525,7 @@
   ],
   "recorded_from": {
     "case": "22c456213bdb4e8de78de4ebaed5784aa9212710378a845cb141206bb1d8ce4f",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

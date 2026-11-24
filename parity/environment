@@ -1,5 +1,5 @@
 # Environment of the Discourse the golden files were recorded from (dv agent
-# rs-parity-20261115, whose database is seed/fresh_install.sql).
+# rs-parity-20261121, whose database is seed/fresh_install.sql).
 # tests/parity.rs builds its Config from this; run discourse-rs with the
 # same env for `make parity`:
 #   env $(grep -v '^#' parity/environment) cargo run

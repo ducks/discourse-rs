@@ -1,4 +1,5 @@
 {
+  "unordered_responses": ["/responses/2/body/current_user/available_notification_types"],
   "user": "admin",
   "requests": [
     {

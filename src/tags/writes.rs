@@ -480,6 +480,7 @@ pub async fn add_or_create_synonyms(
         .bind(target_id)
         .execute(&mut *conn)
         .await?;
+    crate::tagging::queue_tags_posts_reindex(&mut *conn, &[target_id]).await?;
     // Scheduler::Defer.later: Tag.ensure_consistency!
     update_topic_counts(conn).await?;
     Ok(failed)

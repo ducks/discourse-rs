@@ -149,13 +149,16 @@ impl Search<'_> {
     ) -> Result<(), SearchError> {
         let lower = tags.to_lowercase();
         let modifier = if positive { "" } else { "NOT" };
+        // Only the tags the searcher may see (Discourse 452a0dadea5).
+        let visible = crate::tags::visible_tags_where(self.guardian, self.settings)?;
         if lower.contains('+') {
             let names = self
                 .resolve_tag_synonyms(crate::ruby::split(&lower, "+"))
                 .await?;
             let config = super::ts_config(&self.settings.get("default_locale")?.to_s());
             q.and(format!(
-                "topics.id {modifier} IN (SELECT tt.topic_id FROM topic_tags tt, tags \
+                "topics.id {modifier} IN (SELECT tt.topic_id FROM topic_tags tt, \
+                   (SELECT * FROM tags WHERE {visible}) tags \
                  WHERE tt.tag_id = tags.id GROUP BY tt.topic_id \
                  HAVING to_tsvector('{config}', array_to_string(array_agg(lower(tags.name)), ' ')) \
                  @@ to_tsquery('{config}', {}))",
@@ -163,14 +166,12 @@ impl Search<'_> {
             ));
             return Ok(());
         }
-        let names = self
-            .resolve_tag_synonyms(crate::ruby::split(&lower, ","))
-            .await?;
-        let lowered: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
-        let ids: Vec<i32> =
-            sqlx::query_scalar("SELECT id FROM tags WHERE lower(tags.name) = ANY($1)")
-                .bind(&lowered)
-                .fetch_all(&mut *self.conn)
+        let names: Vec<String> = crate::ruby::split(&lower, ",")
+            .into_iter()
+            .map(str::to_string)
+            .collect();
+        let ids =
+            crate::tags::visible_tag_ids_resolving_synonyms(&mut *self.conn, &visible, &names)
                 .await?;
         if ids.is_empty() {
             if positive {
@@ -189,14 +190,16 @@ impl Search<'_> {
         Ok(())
     }
 
-    /// `resolve_tag_synonyms`: each name that is a synonym becomes its
-    /// target's, lowercased.
+    /// `resolve_tag_synonyms`: each name that is a synonym the searcher may
+    /// see becomes its target's, lowercased.
     async fn resolve_tag_synonyms(&mut self, names: Vec<&str>) -> Result<Vec<String>, SearchError> {
         let lowered: Vec<String> = names.iter().map(|n| n.to_lowercase()).collect();
-        let synonyms: Vec<(String, String)> = sqlx::query_as(
+        let visible = crate::tags::visible_tags_where(self.guardian, self.settings)?;
+        let synonyms: Vec<(String, String)> = sqlx::query_as(&format!(
             "SELECT lower(s.name), lower(t.name) FROM tags s JOIN tags t ON t.id = s.target_tag_id \
-             WHERE lower(s.name) = ANY($1) AND s.target_tag_id IS NOT NULL",
-        )
+             WHERE lower(s.name) = ANY($1) AND s.target_tag_id IS NOT NULL \
+               AND s.id IN (SELECT tags.id FROM tags WHERE {visible})"
+        ))
         .bind(&lowered)
         .fetch_all(&mut *self.conn)
         .await?;

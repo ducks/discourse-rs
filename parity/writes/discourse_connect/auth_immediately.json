@@ -28,8 +28,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:43:44.447891",
-  "transaction_started_at": "2026-11-15T22:43:43.78295",
+  "started_at": "2026-11-23T21:50:00.411002",
+  "transaction_started_at": "2026-11-23T21:49:59.522518",
   "responses": [
     {
       "status": 302,
@@ -42,7 +42,7 @@
       "status": 302,
       "body": "",
       "headers": {
-        "Location": "/sso?sso=bm9uY2U9OTcwYmIzMGM3ODBjYzZiNTRmNjBkYmVmOTU3YmJmMDMmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=ed9c226f7f8c0bf7a53445dd35208b39bf3a6e7be79473406e5df93dee295d2b"
+        "Location": "/sso?sso=bm9uY2U9ZWM0OTExM2Q3MmIwYjZiNmE5ODFlODg5NTNlMzk1Y2UmcmV0dXJuX3Nzb191cmw9aHR0cCUzQSUyRiUyRmxvY2FsaG9zdCUzQTMwNDIlMkZzZXNzaW9uJTJGc3NvX2xvZ2lu&sig=17bcbca4e8d28ce52de293c9ab1a41288636bf61075f7f1f3ed3797822fbbcba"
       }
     },
     {
@@ -59,10 +59,10 @@
         {
           "id": 1,
           "user_id": 5,
-          "created_at": "2026-11-15T22:43:44.549219",
-          "updated_at": "2026-11-15T22:43:44.549219",
+          "created_at": "2026-11-23T21:50:00.566135",
+          "updated_at": "2026-11-23T21:50:00.566135",
           "external_id": "ext-user3-gate",
-          "last_payload": "email=user3%40example.com&external_id=ext-user3-gate&nonce=970bb30c780cc6b54f60dbef957bbf03&username=user3",
+          "last_payload": "email=user3%40example.com&external_id=ext-user3-gate&nonce=ec49113d72b0b6b6a981e88953e395ce&username=user3",
           "external_name": null,
           "external_email": "user3@example.com",
           "external_username": "user3",
@@ -82,10 +82,10 @@
           "action": "generate",
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "ia63pX9IOc3ABZCbJqMPt0a2fxQ=",
-          "created_at": "2026-11-15T22:43:44.576424",
+          "auth_token": "xfPTuvnfqenj8NUU6BmvxR6QnK0=",
+          "created_at": "2026-11-23T21:50:00.610189",
           "user_agent": null,
-          "user_auth_token_id": 14
+          "user_auth_token_id": 1
         }
       ],
       "deleted": [],
@@ -94,17 +94,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 14,
+          "id": 1,
           "seen_at": null,
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "ia63pX9IOc3ABZCbJqMPt0a2fxQ=",
-          "created_at": "2026-11-15T22:43:44.572429",
-          "rotated_at": "2026-11-15T22:43:44.571348",
-          "updated_at": "2026-11-15T22:43:44.572429",
+          "auth_token": "xfPTuvnfqenj8NUU6BmvxR6QnK0=",
+          "created_at": "2026-11-23T21:50:00.602827",
+          "rotated_at": "2026-11-23T21:50:00.600201",
+          "updated_at": "2026-11-23T21:50:00.602827",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "ia63pX9IOc3ABZCbJqMPt0a2fxQ=",
+          "prev_auth_token": "xfPTuvnfqenj8NUU6BmvxR6QnK0=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": false,
           "impersonation_expires_at": null
@@ -173,7 +173,7 @@
             "created_at": "2026-11-03T05:08:00.934987",
             "flag_level": 0,
             "ip_address": "127.0.0.1",
-            "updated_at": "2026-11-15T22:43:44.562428",
+            "updated_at": "2026-11-23T21:50:00.584147",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -206,7 +206,7 @@
   "next_ids": {
     "single_sign_on_records": 1,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 14
+    "user_auth_tokens": 1
   },
   "settings": {
     "discourse_connect_url": "https://idp.example.com/sso",
@@ -219,7 +219,7 @@
   ],
   "recorded_from": {
     "case": "a579baaea8ff8f75a0b79acbf292143ac7587548f7a1dea63f07d3445558108e",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

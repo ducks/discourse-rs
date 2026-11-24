@@ -1597,7 +1597,7 @@ pub async fn create_with(
     }
     let (category_name, tags): (Option<String>, Option<String>) = sqlx::query_as(&format!(
         "SELECT (SELECT name FROM categories WHERE id = $2), {}",
-        search_index::topic_tag_names_sql("$1")
+        search_index::topic_tag_names_sql("$1", s)?
     ))
     .bind(topic_id)
     .bind(category_id)

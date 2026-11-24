@@ -1,8 +1,8 @@
 {
   "request": "GET /notifications.json?recent=true&silent=true as=admin",
   "source": "http://127.0.0.1:3042",
-  "recorded_at": "2026-11-15T21:26:04.862736856+00:00",
+  "recorded_at": "2026-11-24T01:37:13.566810166+00:00",
   "status": 200,
   "content_type": "application/json; charset=utf-8",
-  "body": "{\"notifications\":[{\"id\":23,\"user_id\":1,\"notification_type\":42,\"read\":false,\"high_priority\":false,\"created_at\":\"2026-11-15T19:20:04.280Z\",\"post_number\":null,\"topic_id\":null,\"slug\":null,\"data\":{\"upcoming_change_names\":[\"enable_main_outlet_grid_layout_change\",\"review_queue_consistent_answers\"],\"upcoming_change_humanized_names\":[\"Enable main outlet grid layout change\",\"Review queue consistent answers\"],\"count\":2}}],\"seen_notification_id\":0,\"pending_reviewables\":[]}"
+  "body": "{\"notifications\":[{\"id\":9,\"user_id\":1,\"notification_type\":42,\"read\":false,\"high_priority\":false,\"created_at\":\"2026-11-23T20:51:34.218Z\",\"post_number\":null,\"topic_id\":null,\"slug\":null,\"data\":{\"upcoming_change_names\":[\"enable_main_outlet_grid_layout_change\",\"enable_new_default_for_hide_suspension_reasons_and_hide_silencing_reasons\",\"enable_new_reordering_controls\",\"review_queue_consistent_answers\"],\"upcoming_change_humanized_names\":[\"Enable main outlet grid layout change\",\"Enable new default for hide suspension reasons and hide silencing reasons\",\"Enable new reordering controls\",\"Review queue consistent answers\"],\"count\":4}}],\"seen_notification_id\":0,\"pending_reviewables\":[]}"
 }

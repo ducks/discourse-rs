@@ -439,6 +439,59 @@ async fn category_restricted_tags_hide_outside_readable_categories() {
 }
 
 #[tokio::test]
+async fn tags_restricted_to_unseen_categories_are_not_disclosed() {
+    let db = TestDb::new().await;
+    // guide (2) allowed only in Staff (3, read_restricted).
+    sqlx::query("UPDATE tags SET description = 'secret description' WHERE id = 2")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("INSERT INTO category_tags (category_id, tag_id, created_at, updated_at) VALUES (3, 2, now(), now())")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, _, _) = get(&db.pool, "/tag/2/info.json").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+    let (status, _, _) = get(&db.pool, "/tag/guide/2.json").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+
+    let (status, _, body) = get(&db.pool, "/tag/guide/info.json").await;
+    assert_eq!(status, StatusCode::OK);
+    let json: Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(json["tag_info"]["name"], "guide");
+    assert_eq!(json["tag_info"]["category_restricted"], true);
+    assert!(json["tag_info"].get("description").is_none(), "{body}");
+    assert!(
+        json["tag_info"].get("description_cooked").is_none(),
+        "{body}"
+    );
+
+    let (status, _, html) = get(&db.pool, "/tags/intersection/guide/howto").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(!html.contains("secret description"));
+
+    // Through a tag group instead.
+    sqlx::query("DELETE FROM category_tags")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("INSERT INTO tag_groups (id, name, created_at, updated_at) VALUES (9701, 'private', now(), now())")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("INSERT INTO tag_group_memberships (tag_id, tag_group_id, created_at, updated_at) VALUES (2, 9701, now(), now())")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    sqlx::query("INSERT INTO category_tag_groups (category_id, tag_group_id, created_at, updated_at) VALUES (3, 9701, now(), now())")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (status, _, _) = get(&db.pool, "/tag/2/info.json").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}
+
+#[tokio::test]
 async fn tag_pages_render_html() {
     let db = TestDb::new().await;
     let (status, _, html) = get(&db.pool, "/tag/howto/1").await;
@@ -474,7 +527,7 @@ async fn tag_pages_render_html() {
     let (status, _, html) = get(&db.pool, "/tags").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("<title>Tags - Discourse</title>"));
-    assert!(html.contains("<h3>Other Tags</h3>"));
+    assert!(html.contains("<h3>Other tags</h3>"));
     assert!(html.contains(r#"<a href="/tag/1" class="discourse-tag simple">howto</a>"#));
     assert!(html.contains(r#"<span class="tag-count">x 2</span>"#));
 }
@@ -525,7 +578,7 @@ async fn a_tag_in_a_category_draws_the_category_navigation() {
     let (status, _, html) = get(&db.pool, "/tags/c/general/4/none").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("tag-drop tag-none"));
-    assert!(html.contains(r#"data-name="no tags" data-value="""#));
+    assert!(html.contains(r#"data-name="No tags" data-value="""#));
     assert!(html.contains(r#"href="/tags/c/general/4/none/l/latest""#));
 
     // What navigation-bar.js links from the drops with both selected.
@@ -707,7 +760,7 @@ async fn the_untagged_list_draws_its_navigation() {
     assert!(html.contains(
         r#"<details class="select-kit single-select combobox combo-box tag-drop tag-none">"#
     ));
-    assert!(html.contains(r#"data-name="no tags" data-value="""#));
+    assert!(html.contains(r#"data-name="No tags" data-value="""#));
     assert!(
         html.contains(
             r#"<a aria-current="page" class="active" href="/tag/none/l/latest">Latest</a>"#

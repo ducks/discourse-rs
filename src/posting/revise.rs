@@ -1155,7 +1155,7 @@ pub async fn revise_with(
             sqlx::query_as(&format!(
                 "SELECT t.title, (SELECT name FROM categories WHERE id = t.category_id), {} \
                  FROM topics t WHERE t.id = $1",
-                super::search_index::topic_tag_names_sql("$1")
+                super::search_index::topic_tag_names_sql("$1", ctx.settings)?
             ))
             .bind(post.topic_id)
             .fetch_one(&mut *conn)

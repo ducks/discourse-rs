@@ -2,8 +2,8 @@
   "name": "close_poll_job",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T23:07:03.220483",
-  "transaction_started_at": "2026-11-15T23:07:02.313791",
+  "started_at": "2026-11-23T22:12:46.424218",
+  "transaction_started_at": "2026-11-23T22:12:42.537845",
   "responses": [],
   "changes": {
     "polls": {
@@ -47,10 +47,10 @@
             "post_id": 37,
             "results": 0,
             "close_at": null,
-            "closed_at": "2026-11-15T23:07:03.259197",
+            "closed_at": "2026-11-23T22:12:46.469018",
             "chart_type": 0,
             "created_at": "2026-10-05T10:00:00",
-            "updated_at": "2026-11-15T23:07:03.259505",
+            "updated_at": "2026-11-23T22:12:46.469965",
             "visibility": 0,
             "closed_by_id": -1,
             "anonymous_voters": null
@@ -61,7 +61,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 69,
           "email": null,
           "action": 23,
           "context": null,
@@ -71,10 +71,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T23:07:03.268111",
+          "created_at": "2026-11-23T22:12:46.698281",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:07:03.268111",
+          "updated_at": "2026-11-23T22:12:46.698281",
           "category_id": null,
           "custom_type": "poll_closed",
           "reviewable_id": null,
@@ -89,7 +89,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 68
+    "user_histories": 69
   },
   "setup": [
     "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9001, 37, 'poll', 0, 0, 0, 0, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
@@ -115,7 +115,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "33252ef1b4b56397d67338029a9898e06d1496b70128ca978b4e6df4cb17401e",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

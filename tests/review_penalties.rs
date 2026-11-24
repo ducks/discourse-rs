@@ -88,7 +88,8 @@ async fn transition_fails(db: &TestDb) {
 
 /// The penalty's traces for the user: suspended or silenced, the staff
 /// action log rows (UserHistory suspend_user, silence_user), the
-/// critical_user_email jobs, the system messages sent to them.
+/// critical_user_email jobs (none for a silence since Discourse
+/// ea0efdc105e), the system messages sent to them.
 async fn penalty_traces(db: &TestDb, user_id: i32) -> (bool, bool, i64, i64, i64) {
     let (suspended, silenced): (bool, bool) = sqlx::query_as(
         "SELECT suspended_till IS NOT NULL, silenced_till IS NOT NULL FROM users WHERE id = $1",
@@ -180,7 +181,7 @@ async fn a_silence_rolls_back_with_a_failed_agree() {
     assert_eq!(status, 200, "{json}");
     assert_eq!(
         penalty_traces(&db, 2).await,
-        (false, true, 1, 1, before.4 + 1)
+        (false, true, 1, 0, before.4 + 1)
     );
     assert_eq!(reviewable(&db, 9301).await, (1, 1));
 }
@@ -210,7 +211,7 @@ async fn a_silence_rolls_back_with_a_failed_queued_reject() {
     assert_eq!(status, 200, "{json}");
     assert_eq!(
         penalty_traces(&db, 3).await,
-        (false, true, 1, 1, before.4 + 1)
+        (false, true, 1, 0, before.4 + 1)
     );
     assert_eq!(reviewable(&db, 9311).await, (2, 1));
 }

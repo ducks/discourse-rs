@@ -120,7 +120,7 @@ test("Select Posts turns the mode on, cancel and the menu turn it off", async ({
   await expect(panel).toBeVisible();
   await expect(panel.locator("p").first()).toHaveText("You have selected 0 posts.");
   expect(await panel.locator("p > span").first().innerHTML()).toBe("You have selected <b>0</b> posts.");
-  await expect(panel.locator("a")).toHaveText(["select all", "cancel selecting"]);
+  await expect(panel.locator("a")).toHaveText(["Select all", "Cancel selecting"]);
   await expect(panel.locator("a.select-all")).toHaveCount(1);
   await expect(panel.locator(".btn")).toHaveCount(0);
   await expect(page.locator(".container.posts > :first-child")).toHaveClass("selected-posts");
@@ -131,7 +131,7 @@ test("Select Posts turns the mode on, cancel and the menu turn it off", async ({
   expect(await buttons(page, t.posts[1])).toEqual(["select-replies", "select-below", "select-post"]);
   expect(await buttons(page, t.posts[2])).toEqual(["select-below", "select-post"]);
   expect(await buttons(page, t.posts[3])).toEqual(["select-below", "select-post"]);
-  await expect(controls(page, t.posts[1]).locator("button")).toHaveText(["select +replies", "select +below", "select"]);
+  await expect(controls(page, t.posts[1]).locator("button")).toHaveText(["Select & replies", "Select & below", "Select"]);
   await expect(controls(page, t.posts[1]).locator(".select-below")).toHaveAttribute(
     "title",
     "Add post and all after it to selection",
@@ -174,7 +174,7 @@ test("posts are selected one by one and +below, the panel following the rules", 
   await expect(panel.locator("p").first()).toHaveText("You have selected 1 post.");
   expect(await selected(page)).toEqual([t.posts[1]]);
   expect(await buttons(page, t.posts[1])).toEqual(["select-post"]);
-  await expect(controls(page, t.posts[1]).locator(".select-post")).toHaveText("selected");
+  await expect(controls(page, t.posts[1]).locator(".select-post")).toHaveText("Selected");
   await expect(controls(page, t.posts[1]).locator(".select-post")).toHaveAttribute(
     "title",
     "Click to remove post from selection",
@@ -191,7 +191,7 @@ test("posts are selected one by one and +below, the panel following the rules", 
     }),
   );
   // Delete, Move to and Change Owner for one post; merging needs two.
-  expect(await actions(page)).toEqual(["delete selected", "move to", "change ownership"]);
+  expect(await actions(page)).toEqual(["Delete selected", "Move to", "Change ownership"]);
   await expect(panel.locator(".btn.btn-danger .d-icon-trash-can")).toHaveCount(1);
   await expect(panel.locator(".btn.btn-primary.move-to-topic .d-icon-right-from-bracket")).toHaveCount(1);
   for (const name of ["trash-can", "right-from-bracket", "user", "up-down"]) {
@@ -202,7 +202,7 @@ test("posts are selected one by one and +below, the panel following the rules", 
   await controls(page, t.posts[2]).locator(".select-post").click();
   await expect(panel.locator("p").first()).toHaveText("You have selected 2 posts.");
   expect(await selected(page)).toEqual([t.posts[1], t.posts[2]]);
-  expect(await actions(page)).toEqual(["delete selected", "move to", "change ownership", "merge selected posts"]);
+  expect(await actions(page)).toEqual(["Delete selected", "Move to", "Change ownership", "Merge selected posts"]);
 
   // Unselected again.
   await controls(page, t.posts[1]).locator(".select-post").click();
@@ -216,8 +216,8 @@ test("posts are selected one by one and +below, the panel following the rules", 
   await controls(page, t.posts[1]).locator(".select-below").click();
   await expect(panel.locator("p").first()).toHaveText("You have selected 3 posts.");
   expect(await selected(page)).toEqual([t.posts[1], t.posts[2], t.posts[3]]);
-  expect(await actions(page)).toEqual(["delete selected", "move to"]);
-  await expect(panel.locator("a")).toHaveText(["select all", "cancel selecting"]);
+  expect(await actions(page)).toEqual(["Delete selected", "Move to"]);
+  await expect(panel.locator("a")).toHaveText(["Select all", "Cancel selecting"]);
   expect(deleted(t)).toEqual([]);
 });
 
@@ -229,15 +229,15 @@ test("select all and deselect all", async ({ page, context, session }) => {
   await expect(panel.locator("p").first()).toHaveText("You have selected 4 posts.");
   expect(await selected(page)).toEqual(t.posts);
   // Every post selected: deselect all in select all's stead.
-  await expect(panel.locator("a")).toHaveText(["deselect all", "cancel selecting"]);
-  expect(await actions(page)).toEqual(["delete selected", "move to"]);
+  await expect(panel.locator("a")).toHaveText(["Deselect all", "Cancel selecting"]);
+  expect(await actions(page)).toEqual(["Delete selected", "Move to"]);
   for (const id of t.posts) {
     expect(await buttons(page, id)).toEqual(["select-post"]);
   }
-  await panel.locator("a", { hasText: "deselect all" }).click();
+  await panel.locator("a", { hasText: "Deselect all" }).click();
   await expect(panel.locator("p").first()).toHaveText("You have selected 0 posts.");
   expect(await selected(page)).toEqual([]);
-  await expect(panel.locator("a")).toHaveText(["select all", "cancel selecting"]);
+  await expect(panel.locator("a")).toHaveText(["Select all", "Cancel selecting"]);
   await expect(panel.locator(".btn")).toHaveCount(0);
   await expect(page).toHaveURL(new RegExp(`/t/[^/]+/${t.id}`));
 });
@@ -256,7 +256,7 @@ test("the selection outlives a post drawn again and reaches posts that arrive", 
     t.posts[2],
   );
   await expect(page.locator(`article[data-post-id="${t.posts[2]}"][data-stale]`)).toHaveCount(0);
-  await expect(controls(page, t.posts[2]).locator(".select-post")).toHaveText("selected");
+  await expect(controls(page, t.posts[2]).locator(".select-post")).toHaveText("Selected");
   expect(await selected(page)).toEqual([t.posts[2]]);
   expect(await buttons(page, t.posts[2])).toEqual(["select-post"]);
 
@@ -268,7 +268,7 @@ test("the selection outlives a post drawn again and reaches posts that arrive", 
     raw: label("A late reply by user1 for the select posts spec"),
   });
   await expect(article(page, late.id)).toBeVisible();
-  await expect(controls(page, late.id).locator("button")).toHaveText(["select +below", "select"]);
+  await expect(controls(page, late.id).locator("button")).toHaveText(["Select & below", "Select"]);
   await expect(panel.locator("p").first()).toHaveText("You have selected 1 post.");
   await panel.locator("a.select-all").click();
   await expect(panel.locator("p").first()).toHaveText("You have selected 5 posts.");
@@ -303,7 +303,7 @@ test("ChangeOwner hands the selected posts to another member", async ({ page, co
   await enter(page, t);
   await controls(page, t.posts[1]).locator(".select-post").click();
   await controls(page, t.posts[2]).locator(".select-post").click();
-  await page.locator(`${PANEL} .btn`, { hasText: "change ownership" }).click();
+  await page.locator(`${PANEL} .btn`, { hasText: "Change ownership" }).click();
 
   const modal = page.locator(MODAL);
   await expect(modal.locator(".d-modal__title-text")).toHaveText("Change Owner");
@@ -312,14 +312,14 @@ test("ChangeOwner hands the selected posts to another member", async ({ page, co
   );
   expect(await modal.locator(".d-modal__body > span b").innerText()).toBe("@user0");
   const submit = modal.locator(".d-modal__footer .btn-primary");
-  await expect(submit).toHaveText("change ownership");
+  await expect(submit).toHaveText("Change ownership");
   await expect(submit).toBeDisabled();
 
   // The chooser: members only, one at most.
   const chooser = modal.locator("details.email-group-user-chooser");
   await chooser.locator("summary").click();
   const filter = chooser.locator(".filter-input");
-  await expect(filter).toHaveAttribute("placeholder", "username of new owner");
+  await expect(filter).toHaveAttribute("placeholder", "Username of new owner");
   await filter.fill("user2");
   await chooser.locator('.select-kit-row[data-value="user2"]').click();
   await expect(chooser.locator("summary")).toHaveAttribute("data-value", "user2");
@@ -363,7 +363,7 @@ test("ChangeOwner flashes its error when the change is refused", async ({ page, 
   const t = await setup(session, context);
   await enter(page, t);
   await controls(page, t.posts[3]).locator(".select-post").click();
-  await page.locator(`${PANEL} .btn`, { hasText: "change ownership" }).click();
+  await page.locator(`${PANEL} .btn`, { hasText: "Change ownership" }).click();
   const modal = page.locator(MODAL);
   const chooser = modal.locator("details.email-group-user-chooser");
   await chooser.locator("summary").click();
@@ -378,7 +378,7 @@ test("ChangeOwner flashes its error when the change is refused", async ({ page, 
     "There was an error changing the ownership of the posts.",
   );
   await expect(submit).toBeEnabled();
-  await expect(submit).toHaveText("change ownership");
+  await expect(submit).toHaveText("Change ownership");
   expect(owners(t)).toEqual(["user1", "user0", "user0", "user2"]);
 });
 
@@ -394,7 +394,7 @@ test("+replies selects the post and its replies", async ({ page, context, sessio
   expect(await buttons(page, t.posts[1])).toEqual(["select-post"]);
   expect(await buttons(page, t.posts[2])).toEqual(["select-below", "select-post"]);
   // Two authors: no owner to change, no merging.
-  expect(await actions(page)).toEqual(["delete selected", "move to"]);
+  expect(await actions(page)).toEqual(["Delete selected", "Move to"]);
 
   // A reply already selected is counted once.
   await controls(page, t.posts[1]).locator(".select-post").click();
@@ -447,7 +447,7 @@ test("Merge selected posts merges the posts of one author", async ({ page, conte
   await enter(page, t);
   await controls(page, t.posts[1]).locator(".select-post").click();
   await controls(page, t.posts[2]).locator(".select-post").click();
-  await page.locator(`${PANEL} .btn`, { hasText: "merge selected posts" }).click();
+  await page.locator(`${PANEL} .btn`, { hasText: "Merge selected posts" }).click();
   const dialog = page.locator(".dialog-content");
   await expect(dialog.locator(".dialog-body")).toHaveText("Are you sure you want to merge these 2 posts?");
   // No leaves everything as it was.
@@ -456,7 +456,7 @@ test("Merge selected posts merges the posts of one author", async ({ page, conte
   expect(raws(t)).toEqual(before);
   expect(await selected(page)).toEqual([t.posts[1], t.posts[2]]);
 
-  await page.locator(`${PANEL} .btn`, { hasText: "merge selected posts" }).click();
+  await page.locator(`${PANEL} .btn`, { hasText: "Merge selected posts" }).click();
   await Promise.all([page.waitForEvent("load"), dialog.locator(".dialog-footer .btn", { hasText: "Yes" }).click()]);
   // The last of them holds them all, the others are deleted.
   expect(raws(t)).toEqual([before[0], before[1], `${before[1]}||${before[2]}`, before[3]]);
@@ -474,7 +474,7 @@ test("Merge selected posts shows what the server refuses", async ({ page, contex
   // One of the two changes hands after the page was drawn, which still
   // offers the merge.
   sql("UPDATE posts SET user_id = (SELECT id FROM users WHERE username = 'user2') WHERE id = :'p1'", t.posts[2]);
-  await page.locator(`${PANEL} .btn`, { hasText: "merge selected posts" }).click();
+  await page.locator(`${PANEL} .btn`, { hasText: "Merge selected posts" }).click();
   const dialog = page.locator(".dialog-content");
   await dialog.locator(".dialog-footer .btn", { hasText: "Yes" }).click();
   await expect(dialog.locator(".dialog-body")).toHaveText("Posts belonging to different users cannot be merged.");

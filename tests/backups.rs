@@ -174,8 +174,11 @@ async fn a_backup_with_uploads_is_the_dump_and_the_uploads() {
     .await
     .unwrap();
     assert!(outcome.success, "{:#?}", outcome.logs);
-    let name =
-        regex::Regex::new(r"^discourse-\d{4}-\d{2}-\d{2}-\d{6}-v20261113130002\.tar\.gz$").unwrap();
+    let version = schema_version(&db).await;
+    let name = regex::Regex::new(&format!(
+        r"^discourse-\d{{4}}-\d{{2}}-\d{{2}}-\d{{6}}-v{version}\.tar\.gz$"
+    ))
+    .unwrap();
     assert!(name.is_match(&outcome.filename), "{}", outcome.filename);
     let archive = st
         .config
@@ -314,7 +317,8 @@ async fn a_dump_only_backup_and_one_refused_while_running() {
         .await
         .unwrap();
     assert!(outcome.success, "{:#?}", outcome.logs);
-    assert!(outcome.filename.ends_with("-v20261113130002.sql.gz"));
+    let version = schema_version(&db).await;
+    assert!(outcome.filename.ends_with(&format!("-v{version}.sql.gz")));
     let dump = std::fs::read(
         st.config
             .public_dir
@@ -535,4 +539,12 @@ async fn a_cancelled_backup_stops() {
     assert!(left.is_empty());
     let _ = std::fs::remove_dir_all(&st.config.public_dir);
     let _ = std::fs::remove_dir_all(&st.config.tmp_dir);
+}
+
+/// The vendored schema's version, which names a backup.
+async fn schema_version(db: &TestDb) -> String {
+    sqlx::query_scalar("SELECT max(version) FROM schema_migrations")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap()
 }

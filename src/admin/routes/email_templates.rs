@@ -21,7 +21,7 @@ use crate::{AppError, AppState, Unsupported};
 
 /// `Admin::EmailTemplatesController.email_keys` (no restricted key is in
 /// the list, and no plugin on the reference adds any).
-pub const EMAIL_KEYS: [&str; 124] = [
+pub const EMAIL_KEYS: [&str; 123] = [
     "admin_confirmation_mailer",
     "custom_invite_forum_mailer",
     "custom_invite_mailer",
@@ -77,6 +77,7 @@ pub const EMAIL_KEYS: [&str; 124] = [
     "system_messages.flags_agreed_and_post_deleted_for_responders",
     "system_messages.flags_disagreed",
     "system_messages.ignored_users_summary",
+    "system_messages.moderator_silence",
     "system_messages.new_user_of_the_month",
     "system_messages.pending_users_reminder",
     "system_messages.post_hidden",
@@ -110,8 +111,6 @@ pub const EMAIL_KEYS: [&str; 124] = [
     "user_notifications.account_deleted",
     "user_notifications.account_exists",
     "user_notifications.account_second_factor_disabled",
-    "user_notifications.account_silenced",
-    "user_notifications.account_silenced_forever",
     "user_notifications.account_suspended",
     "user_notifications.account_suspended_forever",
     "user_notifications.activation_reminder",
@@ -147,60 +146,6 @@ pub const EMAIL_KEYS: [&str; 124] = [
     "user_notifications.user_watching_category_or_tag",
     "user_notifications.user_watching_first_post",
 ];
-
-/// `TranslationOverride::ALLOWED_CUSTOM_INTERPOLATION_KEYS`
-const CUSTOM_INTERPOLATION_KEYS: [(&[&str], &[&str]); 4] = [
-    (
-        &[
-            "user_notifications.user_",
-            "user_notifications.only_reply_by_email",
-            "user_notifications.reply_by_email",
-            "user_notifications.visit_link_to_respond",
-            "user_notifications.header_instructions",
-            "user_notifications.pm_participants",
-            "unsubscribe_mailing_list",
-            "unsubscribe_link_and_mail",
-            "unsubscribe_link",
-        ],
-        &[
-            "topic_title",
-            "topic_title_url_encoded",
-            "message",
-            "url",
-            "post_id",
-            "topic_id",
-            "context",
-            "username",
-            "recipient_username",
-            "group_name",
-            "unsubscribe_url",
-            "subject_pm",
-            "participants",
-            "site_description",
-            "site_title",
-            "site_title_url_encoded",
-            "site_name",
-            "optional_re",
-            "optional_pm",
-            "optional_cat",
-            "optional_tags",
-        ],
-    ),
-    (
-        &["system_messages.welcome_user"],
-        &["username", "name", "name_or_username"],
-    ),
-    (&["js.welcome_banner.header"], &["site_name"]),
-    (&["email_from"], &["site_name"]),
-];
-
-/// `TranslationOverride.custom_interpolation_keys(key)`
-fn custom_interpolation_keys(key: &str) -> &'static [&'static str] {
-    CUSTOM_INTERPOLATION_KEYS
-        .iter()
-        .find(|(prefixes, _)| prefixes.iter().any(|p| key.starts_with(p)))
-        .map_or(&[], |(_, keys)| keys)
-}
 
 /// `I18nInterpolationKeysFinder.find`: the names in `%{name}`,
 /// `%<name>...` and `{{name}}`, first appearance first.
@@ -353,7 +298,7 @@ fn serialize(i18n: &I18n, overrides: &Overrides, key: &str) -> Result<Value, App
             interpolation_keys(text, &mut keys);
         }
     }
-    for k in custom_interpolation_keys(key) {
+    for k in crate::site_texts::custom_interpolation_keys(key) {
         if !keys.iter().any(|x| x == k) {
             keys.push((*k).to_string());
         }

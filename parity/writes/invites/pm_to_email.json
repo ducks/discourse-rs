@@ -13,8 +13,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:59:34.425289",
-  "transaction_started_at": "2026-11-15T22:59:33.582626",
+  "started_at": "2026-11-23T21:59:35.508829",
+  "transaction_started_at": "2026-11-23T21:59:29.002597",
   "responses": [
     {
       "status": 200,
@@ -23,12 +23,12 @@
         "name": "Admin",
         "username": "admin",
         "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
-        "created_at": "2026-11-15T22:59:34.772Z",
+        "created_at": "2026-11-23T21:59:36.794Z",
         "cooked": "<p>Hello there, this message goes to an email address that has no account yet.</p>",
         "post_number": 1,
         "post_type": 1,
         "posts_count": 1,
-        "updated_at": "2026-11-15T22:59:34.772Z",
+        "updated_at": "2026-11-23T21:59:36.794Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
@@ -78,7 +78,7 @@
             "can_act": true
           }
         ],
-        "moderator": true,
+        "moderator": false,
         "admin": true,
         "staff": true,
         "user_id": 1,
@@ -135,11 +135,11 @@
           "user_id": 6,
           "topic_id": 45,
           "bounce_key": null,
-          "created_at": "2026-11-15T22:59:34.97683",
+          "created_at": "2026-11-23T21:59:38.403261",
           "email_type": "user_private_message",
           "message_id": "discourse/post/53@localhost",
           "to_address": "stranger@example.com",
-          "updated_at": "2026-11-15T22:59:34.97683",
+          "updated_at": "2026-11-23T21:59:38.403261",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -160,9 +160,9 @@
           "expired": false,
           "user_id": 6,
           "confirmed": false,
-          "created_at": "2026-11-15T22:59:34.624082",
-          "token_hash": "a484b1a20aea8217aa18cb0fde75eb07a3cc45415e3057501af3abbfde4f5db1",
-          "updated_at": "2026-11-15T22:59:34.624082"
+          "created_at": "2026-11-23T21:59:36.082325",
+          "token_hash": "4b396435612b474fd0a921c7e324baeb7ea65dc1ad798fde08212329f263e10e",
+          "updated_at": "2026-11-23T21:59:36.082325"
         }
       ],
       "deleted": [],
@@ -171,13 +171,13 @@
     "group_users": {
       "inserted": [
         {
-          "id": 68,
+          "id": 37,
           "owner": false,
           "user_id": 6,
           "group_id": 10,
-          "created_at": "2026-11-15T22:59:34.664824",
-          "updated_at": "2026-11-15T22:59:34.664824",
-          "first_unread_pm_at": "2026-11-15T22:59:33.582626",
+          "created_at": "2026-11-23T21:59:36.199233",
+          "updated_at": "2026-11-23T21:59:36.199233",
+          "first_unread_pm_at": "2026-11-23T21:59:29.002597",
           "notification_level": 3
         }
       ],
@@ -303,13 +303,13 @@
     "notifications": {
       "inserted": [
         {
-          "id": 30,
+          "id": 32,
           "data": "{\"topic_title\":\"A message for someone without an account\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"admin\",\"revision_number\":null,\"display_username\":\"admin\",\"display_name\":\"Admin\"}",
           "read": false,
           "user_id": 6,
           "topic_id": 45,
-          "created_at": "2026-11-15T22:59:34.904783",
-          "updated_at": "2026-11-15T22:59:34.904783",
+          "created_at": "2026-11-23T21:59:37.800024",
+          "updated_at": "2026-11-23T21:59:37.800024",
           "post_number": 1,
           "high_priority": true,
           "post_action_id": null,
@@ -338,8 +338,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-11-15T22:59:34.791366",
-          "updated_at": "2026-11-15T22:59:34.791366",
+          "created_at": "2026-11-23T21:59:36.893056",
+          "updated_at": "2026-11-23T21:59:36.893056",
           "drafts_saved": 0,
           "writing_device": "unknown",
           "composer_version": null,
@@ -376,20 +376,20 @@
           "locale": null,
           "user_id": 1,
           "version": 1,
-          "baked_at": "2026-11-15T22:59:34.772146",
+          "baked_at": "2026-11-23T21:59:36.79476",
           "topic_id": 45,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-11-15T22:59:34.772185",
+          "created_at": "2026-11-23T21:59:36.794986",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 1,
           "spam_count": 0,
-          "updated_at": "2026-11-15T22:59:34.772185",
+          "updated_at": "2026-11-23T21:59:36.794986",
           "word_count": 14,
           "action_code": null,
           "cook_method": 1,
@@ -409,7 +409,7 @@
           "last_editor_id": 1,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-11-15T22:59:34.788876",
+          "last_version_at": "2026-11-23T21:59:36.884107",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -430,15 +430,15 @@
           "id": 9,
           "user_id": 6,
           "topic_id": 45,
-          "created_at": "2026-11-15T22:59:34.728362",
-          "updated_at": "2026-11-15T22:59:34.728362"
+          "created_at": "2026-11-23T21:59:36.510999",
+          "updated_at": "2026-11-23T21:59:36.510999"
         },
         {
           "id": 10,
           "user_id": 1,
           "topic_id": 45,
-          "created_at": "2026-11-15T22:59:34.730791",
-          "updated_at": "2026-11-15T22:59:34.730791"
+          "created_at": "2026-11-23T21:59:36.527929",
+          "updated_at": "2026-11-23T21:59:36.527929"
         }
       ],
       "deleted": [],
@@ -466,16 +466,16 @@
           "user_id": 1,
           "topic_id": 45,
           "bookmarked": false,
-          "last_posted_at": "2026-11-15T22:59:34.794719",
-          "last_visited_at": "2026-11-15T22:59:34.739965",
-          "first_visited_at": "2026-11-15T22:59:34.739965",
+          "last_posted_at": "2026-11-23T21:59:36.910208",
+          "last_visited_at": "2026-11-23T21:59:36.606093",
+          "first_visited_at": "2026-11-23T21:59:36.606093",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": 1,
           "notifications_reason_id": 1,
           "last_emailed_post_number": null,
-          "notifications_changed_at": "2026-11-15T22:59:34.738709"
+          "notifications_changed_at": "2026-11-23T21:59:36.597975"
         },
         {
           "id": 56,
@@ -485,15 +485,15 @@
           "topic_id": 45,
           "bookmarked": false,
           "last_posted_at": null,
-          "last_visited_at": "2026-11-15T22:59:34.746499",
-          "first_visited_at": "2026-11-15T22:59:34.746499",
+          "last_visited_at": "2026-11-23T21:59:36.649574",
+          "first_visited_at": "2026-11-23T21:59:36.649574",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
           "last_read_post_number": null,
           "notifications_reason_id": 2,
           "last_emailed_post_number": 1,
-          "notifications_changed_at": "2026-11-15T22:59:34.745676"
+          "notifications_changed_at": "2026-11-23T21:59:36.641541"
         }
       ],
       "deleted": [],
@@ -515,13 +515,13 @@
           "visible": true,
           "archived": false,
           "archetype": "private_message",
-          "bumped_at": "2026-11-15T22:59:34.772185",
+          "bumped_at": "2026-11-23T21:59:36.794986",
           "pinned_at": null,
-          "created_at": "2026-11-15T22:59:34.724325",
+          "created_at": "2026-11-23T21:59:36.485741",
           "deleted_at": null,
           "like_count": 0,
           "spam_count": 0,
-          "updated_at": "2026-11-15T22:59:34.799463",
+          "updated_at": "2026-11-23T21:59:36.935249",
           "word_count": 14,
           "category_id": null,
           "external_id": null,
@@ -534,7 +534,7 @@
           "deleted_by_id": null,
           "featured_link": null,
           "bannered_until": null,
-          "last_posted_at": "2026-11-15T22:59:34.772185",
+          "last_posted_at": "2026-11-23T21:59:36.794986",
           "image_upload_id": null,
           "pinned_globally": false,
           "reviewable_score": 0,
@@ -560,12 +560,12 @@
     "unsubscribe_keys": {
       "inserted": [
         {
-          "key": "b30d2ff1b3998c4b9180fc8140a0fb619d9827a14f4030b8476219a55fa6e68a",
+          "key": "e1231e1e6b2c4b951d56d3d2945a12401e2229e314baef076ce3bf373662db34",
           "post_id": 53,
           "user_id": 6,
           "topic_id": 45,
-          "created_at": "2026-11-15T22:59:34.945924",
-          "updated_at": "2026-11-15T22:59:34.945924",
+          "created_at": "2026-11-23T21:59:38.164188",
+          "updated_at": "2026-11-23T21:59:38.164188",
           "unsubscribe_key_type": "topic"
         }
       ],
@@ -577,8 +577,8 @@
         {
           "id": 65,
           "user_id": 1,
-          "created_at": "2026-11-15T22:59:34.724325",
-          "updated_at": "2026-11-15T22:59:34.754651",
+          "created_at": "2026-11-23T21:59:36.485741",
+          "updated_at": "2026-11-23T21:59:36.704296",
           "action_type": 12,
           "acting_user_id": 1,
           "target_post_id": -1,
@@ -588,8 +588,8 @@
         {
           "id": 66,
           "user_id": 6,
-          "created_at": "2026-11-15T22:59:34.724325",
-          "updated_at": "2026-11-15T22:59:34.762889",
+          "created_at": "2026-11-23T21:59:36.485741",
+          "updated_at": "2026-11-23T21:59:36.743976",
           "action_type": 13,
           "acting_user_id": 1,
           "target_post_id": -1,
@@ -606,33 +606,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "KfF2aPss6bTx8N9yf3ESgyVxMcw=",
-            "created_at": "2026-11-15T22:59:33.899446",
-            "rotated_at": "2026-11-15T22:59:33.898474",
-            "updated_at": "2026-11-15T22:59:33.899446",
+            "auth_token": "vZF+M+KAIS+8kqI63n/NSJKU9rA=",
+            "created_at": "2026-11-23T21:59:32.113285",
+            "rotated_at": "2026-11-23T21:59:32.105796",
+            "updated_at": "2026-11-23T21:59:32.113285",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "KfF2aPss6bTx8N9yf3ESgyVxMcw=",
+            "prev_auth_token": "vZF+M+KAIS+8kqI63n/NSJKU9rA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T22:59:34.439797",
+            "id": 1,
+            "seen_at": "2026-11-23T21:59:35.555558",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "KfF2aPss6bTx8N9yf3ESgyVxMcw=",
-            "created_at": "2026-11-15T22:59:33.899446",
-            "rotated_at": "2026-11-15T22:59:33.898474",
-            "updated_at": "2026-11-15T22:59:33.899446",
+            "auth_token": "vZF+M+KAIS+8kqI63n/NSJKU9rA=",
+            "created_at": "2026-11-23T21:59:32.113285",
+            "rotated_at": "2026-11-23T21:59:32.105796",
+            "updated_at": "2026-11-23T21:59:32.113285",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "KfF2aPss6bTx8N9yf3ESgyVxMcw=",
+            "prev_auth_token": "vZF+M+KAIS+8kqI63n/NSJKU9rA=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -645,8 +645,8 @@
         {
           "id": 8,
           "user_id": 6,
-          "created_at": "2026-11-15T22:59:34.689994",
-          "updated_at": "2026-11-15T22:59:34.689994",
+          "created_at": "2026-11-23T21:59:36.269577",
+          "updated_at": "2026-11-23T21:59:36.269577",
           "custom_upload_id": null,
           "gravatar_upload_id": null,
           "last_gravatar_download_attempt": null,
@@ -663,8 +663,8 @@
           "email": "stranger@example.com",
           "primary": true,
           "user_id": 6,
-          "created_at": "2026-11-15T22:59:34.618008",
-          "updated_at": "2026-11-15T22:59:34.618008",
+          "created_at": "2026-11-23T21:59:36.071228",
+          "updated_at": "2026-11-23T21:59:36.071228",
           "normalized_email": "stranger@example.com"
         }
       ],
@@ -802,7 +802,7 @@
         {
           "user_id": 6,
           "read_faq": null,
-          "new_since": "2026-11-15T22:59:34.629422",
+          "new_since": "2026-11-23T21:59:36.102189",
           "time_read": 0,
           "post_count": 0,
           "draft_count": 0,
@@ -814,11 +814,11 @@
           "flags_ignored": 0,
           "likes_received": 0,
           "topics_entered": 0,
-          "first_unread_at": "2026-11-15T22:59:33.582626",
+          "first_unread_at": "2026-11-23T21:59:29.002597",
           "flags_disagreed": 0,
           "post_edits_count": null,
           "posts_read_count": 0,
-          "first_unread_pm_at": "2026-11-15T22:59:33.582626",
+          "first_unread_pm_at": "2026-11-23T21:59:29.002597",
           "digest_attempted_at": null,
           "pending_posts_count": 0,
           "distinct_badge_count": 0,
@@ -843,10 +843,10 @@
           "approved": false,
           "username": "stranger",
           "moderator": false,
-          "created_at": "2026-11-15T22:59:34.609966",
+          "created_at": "2026-11-23T21:59:36.054452",
           "flag_level": 0,
           "ip_address": null,
-          "updated_at": "2026-11-15T22:59:34.609966",
+          "updated_at": "2026-11-23T21:59:36.054452",
           "approved_at": null,
           "trust_level": 0,
           "last_seen_at": null,
@@ -859,7 +859,7 @@
           "last_posted_at": null,
           "suspended_till": null,
           "username_lower": "stranger",
-          "last_emailed_at": "2026-11-15T22:59:33.582626",
+          "last_emailed_at": "2026-11-23T21:59:29.002597",
           "primary_group_id": null,
           "previous_visit_at": null,
           "secure_identifier": null,
@@ -935,8 +935,8 @@
     "draft_sequences": 1,
     "email_logs": 1,
     "email_tokens": 13,
-    "group_users": 68,
-    "notifications": 30,
+    "group_users": 37,
+    "notifications": 32,
     "post_stats": 52,
     "posts": 53,
     "topic_allowed_users": 9,
@@ -953,7 +953,7 @@
       {
         "type": "user_private_message",
         "user_id": 6,
-        "notification_id": 30,
+        "notification_id": 32,
         "notification_data_hash": {
           "topic_title": "A message for someone without an account",
           "original_post_id": 53,
@@ -998,7 +998,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6afa3956ec2d8_eed2f38518c6"
+          "multipart/alternative; boundary=--==_mimepart_6b04b74a514c8_d53f38-251"
         ],
         [
           "Content-Transfer-Encoding",
@@ -1042,12 +1042,12 @@
         ]
       ],
       "text": "\nHello there, this message goes to an email address that has no account yet.\n\n\n\nParticipants: [admin](http://localhost:3042/u/admin)\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/a/3ec8ea/45.png\" title=\"admin\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/admin\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">admin</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 15</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">Hello there, this message goes to an email address that has no account yet.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer \" style=\"color:#666\"><p>Participants: <a href=\"http://localhost:3042/u/admin\" style=\"font-weight:bold;text-decoration:none;color:#666\">admin</a></p></div>\n  <div class=\"footer\" style=\"color:#666\"></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/a-message-for-someone-without-an-account/45/1\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/a/3ec8ea/45.png\" title=\"admin\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/admin\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">admin</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 23</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">Hello there, this message goes to an email address that has no account yet.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer \" style=\"color:#666\"><p>Participants: <a href=\"http://localhost:3042/u/admin\" style=\"font-weight:bold;text-decoration:none;color:#666\">admin</a></p></div>\n  <div class=\"footer\" style=\"color:#666\"></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/a-message-for-someone-without-an-account/45/1\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {
     "case": "821eb02922392708b537a82f2a7b8b8a1f91bde86b607d85852526f0a64b8e9e",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

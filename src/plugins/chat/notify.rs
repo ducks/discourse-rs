@@ -175,9 +175,11 @@ impl Job<'_> {
         mention_type: &str,
         user_ids: &[i64],
     ) -> Result<(), AppError> {
+        // Unordered in Rails; Postgres walks the unique (user_id,
+        // chat_channel_id) index, so by user.
         let memberships: Vec<Membership> = sqlx::query_as(
             "SELECT user_id, notification_level, muted, last_read_message_id FROM user_chat_channel_memberships \
-             WHERE user_id = ANY($1) AND chat_channel_id = $2 AND (following OR $3) ORDER BY id",
+             WHERE user_id = ANY($1) AND chat_channel_id = $2 AND (following OR $3) ORDER BY user_id",
         )
         .bind(user_ids.iter().map(|id| *id as i32).collect::<Vec<i32>>())
         .bind(self.channel_id)

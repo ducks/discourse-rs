@@ -1244,19 +1244,22 @@ impl Alerter<'_> {
             // unread_posts_in_bucket: secured, past the last read, replies
             // to the bucket's post (the root: no reply_to or post 1, not
             // post 1 itself).
-            let visible = guardian.visible_post_types(ctx.settings)?;
-            let (first, count): (Option<i32>, i64) = sqlx::query_as(
+            // filter_visible_posts(Post.all, topic:)
+            let secured = guardian
+                .visible_posts_clause(&mut *conn, ctx.settings, "posts")
+                .await?
+                .unwrap_or_else(|| "TRUE".to_string());
+            let (first, count): (Option<i32>, i64) = sqlx::query_as(&format!(
                 "SELECT MIN(post_number), COUNT(*) FROM posts WHERE topic_id = $2 AND deleted_at IS NULL \
-                   AND post_type = ANY($3) \
+                   AND {secured} \
                    AND post_number > COALESCE((SELECT last_read_post_number FROM topic_users tu \
                                                WHERE tu.user_id = $1 AND tu.topic_id = $2), 0) \
-                   AND CASE WHEN $4 = 1 THEN (reply_to_post_number IS NULL OR reply_to_post_number = 1) \
+                   AND CASE WHEN $3 = 1 THEN (reply_to_post_number IS NULL OR reply_to_post_number = 1) \
                                               AND post_number > 1 \
-                            ELSE reply_to_post_number = $4 END",
-            )
+                            ELSE reply_to_post_number = $3 END"
+            ))
             .bind(user_id)
             .bind(post.topic_id)
-            .bind(&visible)
             .bind(b)
             .fetch_one(&mut *conn)
             .await?;
@@ -1289,10 +1292,14 @@ impl Alerter<'_> {
             .bind(&collapsed)
             .execute(&mut *conn)
             .await?;
-            let visible = guardian.visible_post_types(ctx.settings)?;
-            let (first, count): (Option<i32>, i64) = sqlx::query_as(
+            // filter_visible_posts(Post.all, topic:)
+            let secured = guardian
+                .visible_posts_clause(&mut *conn, ctx.settings, "posts")
+                .await?
+                .unwrap_or_else(|| "TRUE".to_string());
+            let (first, count): (Option<i32>, i64) = sqlx::query_as(&format!(
                 "SELECT MIN(post_number), COUNT(*) FROM posts WHERE topic_id = $2 AND deleted_at IS NULL \
-                   AND post_type = ANY($6) \
+                   AND {secured} \
                    AND post_number > COALESCE((SELECT last_read_post_number FROM topic_users tu \
                                                WHERE tu.user_id = $1 AND tu.topic_id = $2), 0) \
                    AND (reply_to_user_id = $1 \
@@ -1302,14 +1309,13 @@ impl Alerter<'_> {
                                    AND notification_level = $4) \
                         OR EXISTS (SELECT 1 FROM tag_users tu WHERE tu.user_id = $1 \
                                    AND tu.tag_id IN (SELECT tag_id FROM topic_tags WHERE topic_id = $2) \
-                                   AND notification_level = $5))",
-            )
+                                   AND notification_level = $5))"
+            ))
             .bind(user_id)
             .bind(post.topic_id)
             .bind(post.category_id)
             .bind(3)
             .bind(3)
-            .bind(&visible)
             .fetch_one(&mut *conn)
             .await?;
             if let Some(first) = first {

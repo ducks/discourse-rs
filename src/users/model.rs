@@ -825,10 +825,8 @@ impl Users<'_> {
         if g.is_staff() {
             self.private().staff_attributes(user, &mut u).await?;
         }
-        // gravatar_avatar_* and custom_avatar_*: in the private block for
-        // those who may edit the user; for everyone else they leak at the
-        // end, because their include_ predicates are redefined after
-        // private_attributes.
+        // gravatar_avatar_* and custom_avatar_*: in the private block, and
+        // only for those who may edit the user (Discourse de1522843ac).
         let avatars: Option<(Option<i32>, Option<i32>)> = sqlx::query_as(
             "SELECT gravatar_upload_id, custom_upload_id FROM user_avatars WHERE user_id = $1",
         )
@@ -902,8 +900,6 @@ impl Users<'_> {
             self.private()
                 .private_block(user, &system_avatar, &avatar_keys, &mut u)
                 .await?;
-        } else {
-            u.extend(avatar_keys.into_iter().map(|(k, v)| (k.to_string(), v)));
         }
         u.insert(
             "featured_user_badge_ids".into(),
@@ -1066,13 +1062,16 @@ impl Users<'_> {
         if !g.can_see_topic(self.settings, &topic, true, &secure)? {
             return Ok(None);
         }
-        let count: i64 = sqlx::query_scalar(
+        let secured = g
+            .visible_posts_clause(&mut *self.conn, self.settings, "posts")
+            .await?
+            .unwrap_or_else(|| "TRUE".to_string());
+        let count: i64 = sqlx::query_scalar(&format!(
             "SELECT COUNT(*) FROM posts WHERE topic_id = $1 AND user_id = $2 \
-             AND deleted_at IS NULL AND post_type = ANY($3)",
-        )
+             AND deleted_at IS NULL AND {secured}"
+        ))
         .bind(topic_id)
         .bind(user.id)
-        .bind(g.visible_post_types(self.settings)?)
         .fetch_one(&mut *self.conn)
         .await?;
         Ok(Some(json!({ topic_id.to_string(): count })))

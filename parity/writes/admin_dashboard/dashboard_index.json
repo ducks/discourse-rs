@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-16T03:28:50.477363",
-  "transaction_started_at": "2026-11-16T03:28:48.529928",
+  "started_at": "2026-11-23T21:36:11.269784",
+  "transaction_started_at": "2026-11-23T21:36:04.520959",
   "responses": [
     {
       "status": 200,
@@ -608,9 +608,9 @@
             "id": "system",
             "data": {
               "version": {
-                "installed_version": "2026.11.0-latest.1",
-                "installed_sha": "9daeae2a745b73533215775ebf132191ca4c5056",
-                "installed_describe": "v2026.11.0-latest +576",
+                "installed_version": "2026.11.0-latest.2",
+                "installed_sha": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d",
+                "installed_describe": "v2026.11.0-latest +799",
                 "git_branch": "unknown",
                 "updated_at": null,
                 "version_check_pending": true,
@@ -619,18 +619,18 @@
               "storage": {
                 "backups": {
                   "used_bytes": 0,
-                  "free_bytes": 34507005952,
+                  "free_bytes": 225839099904,
                   "count": 0,
                   "last_backup_taken_at": null,
                   "remote": false
                 },
                 "uploads": {
                   "used_bytes": 618825,
-                  "free_bytes": 34507005952,
+                  "free_bytes": 225839095808,
                   "remote": false
                 }
               },
-              "discourse_updated_at": "2026-11-13T23:41:32.000+00:00"
+              "discourse_updated_at": "2026-11-21T00:17:23.000+00:00"
             }
           }
         ],
@@ -652,12 +652,6 @@
             "priority": "low",
             "message": "Your server is running in development mode.",
             "identifier": "rails_env"
-          },
-          {
-            "id": 4,
-            "priority": "low",
-            "message": "There are 9 email jobs that failed. Check your app.yml and ensure that the mail server settings are correct. <a href=\"/sidekiq/retries\" target=\"_blank\">See the failed jobs in Sidekiq</a>.",
-            "identifier": "failing_emails"
           }
         ],
         "configuration": {
@@ -698,33 +692,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Ke6Wude6jsM4dzTi4nWiDctQ3HU=",
-            "created_at": "2026-11-16T03:28:49.358665",
-            "rotated_at": "2026-11-16T03:28:49.349907",
-            "updated_at": "2026-11-16T03:28:49.358665",
+            "auth_token": "YMSwDyUqpibfp34fFea0XrtzYps=",
+            "created_at": "2026-11-23T21:36:07.183988",
+            "rotated_at": "2026-11-23T21:36:07.176486",
+            "updated_at": "2026-11-23T21:36:07.183988",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "Ke6Wude6jsM4dzTi4nWiDctQ3HU=",
+            "prev_auth_token": "YMSwDyUqpibfp34fFea0XrtzYps=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T03:28:50.485616",
+            "id": 1,
+            "seen_at": "2026-11-23T21:36:11.301086",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "Ke6Wude6jsM4dzTi4nWiDctQ3HU=",
-            "created_at": "2026-11-16T03:28:49.358665",
-            "rotated_at": "2026-11-16T03:28:49.349907",
-            "updated_at": "2026-11-16T03:28:49.358665",
+            "auth_token": "YMSwDyUqpibfp34fFea0XrtzYps=",
+            "created_at": "2026-11-23T21:36:07.183988",
+            "rotated_at": "2026-11-23T21:36:07.176486",
+            "updated_at": "2026-11-23T21:36:07.183988",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "Ke6Wude6jsM4dzTi4nWiDctQ3HU=",
+            "prev_auth_token": "YMSwDyUqpibfp34fFea0XrtzYps=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -756,7 +750,7 @@
   ],
   "recorded_from": {
     "case": "5c045f87b5dd454cf51f65f4385f52f43dfaea19879c71cfe7e3d55158dc1744",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

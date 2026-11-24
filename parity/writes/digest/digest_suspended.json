@@ -2,8 +2,8 @@
   "name": "digest_suspended",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-15T22:42:33.875294",
-  "transaction_started_at": "2026-11-15T22:42:33.266038",
+  "started_at": "2026-11-23T21:50:44.504109",
+  "transaction_started_at": "2026-11-23T21:50:43.364803",
   "responses": [],
   "changes": {
     "skipped_email_logs": {
@@ -12,10 +12,10 @@
           "id": 1,
           "post_id": null,
           "user_id": 2,
-          "created_at": "2026-11-15T22:42:33.877791",
+          "created_at": "2026-11-23T21:50:44.508537",
           "email_type": "digest",
           "to_address": "user0@example.com",
-          "updated_at": "2026-11-15T22:42:33.877791",
+          "updated_at": "2026-11-23T21:50:44.508537",
           "reason_type": 8,
           "custom_reason": null
         }
@@ -50,8 +50,8 @@
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
             "digest_attempted_at": null,
             "pending_posts_count": 0,
-            "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-15T19:19:53.957314",
+            "distinct_badge_count": 1,
+            "first_post_created_at": "2026-11-23T20:53:06.839754",
             "reset_bounce_score_after": null
           },
           "after": {
@@ -74,10 +74,10 @@
             "post_edits_count": null,
             "posts_read_count": 3,
             "first_unread_pm_at": "2026-11-03T05:08:00.103863",
-            "digest_attempted_at": "2026-11-15T22:42:33.878811",
+            "digest_attempted_at": "2026-11-23T21:50:44.510393",
             "pending_posts_count": 0,
-            "distinct_badge_count": 4,
-            "first_post_created_at": "2026-11-15T19:19:53.957314",
+            "distinct_badge_count": 1,
+            "first_post_created_at": "2026-11-23T20:53:06.839754",
             "reset_bounce_score_after": null
           }
         }
@@ -107,7 +107,7 @@
   "jobs_from_jobs": [],
   "recorded_from": {
     "case": "d3abfdb101b62a44768c27fe912851e17ee912fa2a1d3899399ad85d1fe3385a",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

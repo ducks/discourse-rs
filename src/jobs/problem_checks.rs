@@ -147,10 +147,11 @@ pub async fn notify_admins_of_problems(state: &AppState) -> Result<(), AppError>
     .fetch_one(&mut *tx)
     .await?;
     if persistent {
+        // `Group[:admins].users` has no ORDER BY: Postgres reads users in heap order.
         let users: Vec<i32> = sqlx::query_scalar(
-            "SELECT gu.user_id FROM group_users gu WHERE gu.group_id = $1 \
-               AND gu.user_id NOT IN (SELECT user_id FROM notifications WHERE notification_type = $2) \
-             ORDER BY gu.id",
+            "SELECT u.id FROM users u JOIN group_users gu ON gu.user_id = u.id WHERE gu.group_id = $1 \
+               AND u.id NOT IN (SELECT user_id FROM notifications WHERE notification_type = $2) \
+             ORDER BY u.ctid",
         )
         .bind(ADMINS_GROUP)
         .bind(ADMIN_PROBLEMS)

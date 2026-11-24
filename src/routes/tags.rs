@@ -420,10 +420,21 @@ async fn show_list(
 
     // fetch_tag(raise_not_found: false)
     let (tag, found_by_name) = match &path.tag {
-        TagRef::SlugId(_, id) | TagRef::Id(id) => match Tag::find(&mut conn, *id).await? {
-            Some(t) => (Some(t), false),
-            None => (Tag::find_by_name(&mut conn, &id.to_string()).await?, true),
-        },
+        TagRef::SlugId(_, id) | TagRef::Id(id) => {
+            let by_id = match Tag::find(&mut conn, *id).await? {
+                Some(t)
+                    if t.visible_in_accessible_categories(&mut conn, &guardian, &settings)
+                        .await? =>
+                {
+                    Some(t)
+                }
+                _ => None,
+            };
+            match by_id {
+                Some(t) => (Some(t), false),
+                None => (Tag::find_by_name(&mut conn, &id.to_string()).await?, true),
+            }
+        }
         TagRef::Name(name) => (Tag::find_by_name(&mut conn, name).await?, false),
     };
     if let Some(t) = &tag
@@ -844,11 +855,14 @@ async fn show_list(
         .i18n
         .t_with("rss_by_tag", &[("tag", &request.tags.join(" & "))])
         .unwrap_or_else(|| format!("Topics tagged {}", request.tags.join(" & ")));
-    let description = tag
-        .as_ref()
-        .and_then(|t| t.description.clone())
-        .filter(|d| !d.is_empty())
-        .unwrap_or_else(|| title.clone());
+    let mut description = None;
+    if let Some(t) = &tag
+        && t.visible_in_accessible_categories(&mut conn, &guardian, &settings)
+            .await?
+    {
+        description = t.description.clone().filter(|d| !d.is_empty());
+    }
+    let description = description.unwrap_or_else(|| title.clone());
     let image = crate::html::site_opengraph_image(&mut conn, &urls).await?;
     let mut crawler = crate::html::Crawler::for_request(&urls, &uri, Some(canonical))?.with_meta(
         urls.settings.emojis(),

@@ -22,8 +22,8 @@
       }
     }
   ],
-  "started_at": "2026-11-16T00:09:09.816791",
-  "transaction_started_at": "2026-11-16T00:09:08.810393",
+  "started_at": "2026-11-24T01:25:56.210015",
+  "transaction_started_at": "2026-11-24T01:25:53.539553",
   "responses": [
     {
       "status": 200,
@@ -92,8 +92,8 @@
           "name": "brand-new",
           "slug": "brand-new",
           "locale": null,
-          "created_at": "2026-11-16T00:09:09.83769",
-          "updated_at": "2026-11-16T00:09:09.83769",
+          "created_at": "2026-11-24T01:25:56.248521",
+          "updated_at": "2026-11-24T01:25:56.248521",
           "description": null,
           "target_tag_id": null,
           "pm_topic_count": 0,
@@ -126,33 +126,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ox7vGI0kl8Rw9Sf4IE6gG2vZaeQ=",
-            "created_at": "2026-11-16T00:09:09.196719",
-            "rotated_at": "2026-11-16T00:09:09.195773",
-            "updated_at": "2026-11-16T00:09:09.196719",
+            "auth_token": "4ZmELgJ4l7+o52FcbDNSep+3jN0=",
+            "created_at": "2026-11-24T01:25:54.708161",
+            "rotated_at": "2026-11-24T01:25:54.705792",
+            "updated_at": "2026-11-24T01:25:54.708161",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "ox7vGI0kl8Rw9Sf4IE6gG2vZaeQ=",
+            "prev_auth_token": "4ZmELgJ4l7+o52FcbDNSep+3jN0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T00:09:09.822371",
+            "id": 1,
+            "seen_at": "2026-11-24T01:25:56.219991",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "ox7vGI0kl8Rw9Sf4IE6gG2vZaeQ=",
-            "created_at": "2026-11-16T00:09:09.196719",
-            "rotated_at": "2026-11-16T00:09:09.195773",
-            "updated_at": "2026-11-16T00:09:09.196719",
+            "auth_token": "4ZmELgJ4l7+o52FcbDNSep+3jN0=",
+            "created_at": "2026-11-24T01:25:54.708161",
+            "rotated_at": "2026-11-24T01:25:54.705792",
+            "updated_at": "2026-11-24T01:25:54.708161",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "ox7vGI0kl8Rw9Sf4IE6gG2vZaeQ=",
+            "prev_auth_token": "4ZmELgJ4l7+o52FcbDNSep+3jN0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -163,7 +163,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 69,
           "email": null,
           "action": 70,
           "context": "webhook_id: 1, payload_url: http://fixtures.localhost:8099/hook",
@@ -173,10 +173,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-16T00:09:09.895426",
+          "created_at": "2026-11-24T01:25:56.298863",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-16T00:09:09.895426",
+          "updated_at": "2026-11-24T01:25:56.298863",
           "category_id": null,
           "custom_type": null,
           "reviewable_id": null,
@@ -205,8 +205,8 @@
           "active": false,
           "secret": "",
           "status": 1,
-          "created_at": "2026-11-16T00:09:09.889292",
-          "updated_at": "2026-11-16T00:09:09.889292",
+          "created_at": "2026-11-24T01:25:56.287654",
+          "updated_at": "2026-11-24T01:25:56.287654",
           "payload_url": "http://fixtures.localhost:8099/hook",
           "content_type": 1,
           "wildcard_web_hook": false,
@@ -221,7 +221,7 @@
   "jobs": [],
   "next_ids": {
     "tags": 3,
-    "user_histories": 68,
+    "user_histories": 69,
     "web_hooks": 1
   },
   "settings": {
@@ -230,7 +230,7 @@
   },
   "recorded_from": {
     "case": "19fb26d1ba39360b594a1422c37279800c98650037a18bf5290b280e16f60731",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

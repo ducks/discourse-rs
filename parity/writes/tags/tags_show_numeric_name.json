@@ -15,8 +15,8 @@
       "path": "/tag/not-the-slug/6309"
     }
   ],
-  "started_at": "2026-11-15T23:42:27.747066",
-  "transaction_started_at": "2026-11-15T23:42:26.959586",
+  "started_at": "2026-11-24T01:18:02.445724",
+  "transaction_started_at": "2026-11-24T01:18:01.395433",
   "responses": [
     {
       "status": 200,
@@ -42,7 +42,6 @@
             "name": "Admin",
             "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
             "admin": true,
-            "moderator": true,
             "trust_level": 4
           },
           {
@@ -92,10 +91,10 @@
               "reply_count": 0,
               "highest_post_number": 5,
               "image_url": null,
-              "created_at": "2026-11-15T19:19:53.917Z",
-              "last_posted_at": "2026-11-15T19:20:01.206Z",
+              "created_at": "2026-11-23T20:53:06.673Z",
+              "last_posted_at": "2026-11-23T20:53:20.972Z",
               "bumped": true,
-              "bumped_at": "2026-11-15T19:20:01.206Z",
+              "bumped_at": "2026-11-23T20:53:20.972Z",
               "archetype": "regular",
               "unseen": false,
               "pinned": false,
@@ -196,7 +195,6 @@
             "name": "Admin",
             "avatar_template": "/letter_avatar_proxy/v4/letter/a/3ec8ea/{size}.png",
             "admin": true,
-            "moderator": true,
             "trust_level": 4
           },
           {
@@ -246,10 +244,10 @@
               "reply_count": 0,
               "highest_post_number": 5,
               "image_url": null,
-              "created_at": "2026-11-15T19:19:53.917Z",
-              "last_posted_at": "2026-11-15T19:20:01.206Z",
+              "created_at": "2026-11-23T20:53:06.673Z",
+              "last_posted_at": "2026-11-23T20:53:20.972Z",
               "bumped": true,
-              "bumped_at": "2026-11-15T19:20:01.206Z",
+              "bumped_at": "2026-11-23T20:53:20.972Z",
               "archetype": "regular",
               "unseen": false,
               "pinned": false,
@@ -330,7 +328,7 @@
   ],
   "recorded_from": {
     "case": "b1d0d9c2b84b524db1eef5e573a76f2693eacc03e9136735ab6bbc9743c39ad2",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

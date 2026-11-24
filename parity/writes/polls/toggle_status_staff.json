@@ -12,8 +12,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T23:07:31.687862",
-  "transaction_started_at": "2026-11-15T23:07:30.91045",
+  "started_at": "2026-11-23T22:08:08.342476",
+  "transaction_started_at": "2026-11-23T22:07:53.112289",
   "responses": [
     {
       "status": 200,
@@ -52,7 +52,7 @@
           },
           "chart_type": "bar",
           "title": null,
-          "closed_at": "2026-11-15T23:07:31.705Z",
+          "closed_at": "2026-11-23T22:08:08.673Z",
           "closed_by": {
             "id": 1,
             "username": "admin",
@@ -105,10 +105,10 @@
             "post_id": 37,
             "results": 0,
             "close_at": null,
-            "closed_at": "2026-11-15T23:07:31.705433",
+            "closed_at": "2026-11-23T22:08:08.673108",
             "chart_type": 0,
             "created_at": "2026-10-05T10:00:00",
-            "updated_at": "2026-11-15T23:07:31.705606",
+            "updated_at": "2026-11-23T22:08:08.674198",
             "visibility": 1,
             "closed_by_id": 1,
             "anonymous_voters": null
@@ -122,33 +122,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1Onws7hGwS0xDJQNmQ60gmkVPuw=",
-            "created_at": "2026-11-15T23:07:31.237103",
-            "rotated_at": "2026-11-15T23:07:31.236303",
-            "updated_at": "2026-11-15T23:07:31.237103",
+            "auth_token": "73/19Yt0BrlhUdTsiESJZ0ShsG0=",
+            "created_at": "2026-11-23T22:08:00.129596",
+            "rotated_at": "2026-11-23T22:08:00.116276",
+            "updated_at": "2026-11-23T22:08:00.129596",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "1Onws7hGwS0xDJQNmQ60gmkVPuw=",
+            "prev_auth_token": "73/19Yt0BrlhUdTsiESJZ0ShsG0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:07:31.69398",
+            "id": 1,
+            "seen_at": "2026-11-23T22:08:08.482661",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1Onws7hGwS0xDJQNmQ60gmkVPuw=",
-            "created_at": "2026-11-15T23:07:31.237103",
-            "rotated_at": "2026-11-15T23:07:31.236303",
-            "updated_at": "2026-11-15T23:07:31.237103",
+            "auth_token": "73/19Yt0BrlhUdTsiESJZ0ShsG0=",
+            "created_at": "2026-11-23T22:08:00.129596",
+            "rotated_at": "2026-11-23T22:08:00.116276",
+            "updated_at": "2026-11-23T22:08:00.129596",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "1Onws7hGwS0xDJQNmQ60gmkVPuw=",
+            "prev_auth_token": "73/19Yt0BrlhUdTsiESJZ0ShsG0=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -159,7 +159,7 @@
     "user_histories": {
       "inserted": [
         {
-          "id": 68,
+          "id": 69,
           "email": null,
           "action": 23,
           "context": null,
@@ -169,10 +169,10 @@
           "topic_id": null,
           "new_value": null,
           "admin_only": true,
-          "created_at": "2026-11-15T23:07:31.718562",
+          "created_at": "2026-11-23T22:08:08.690919",
           "expires_at": null,
           "ip_address": null,
-          "updated_at": "2026-11-15T23:07:31.718562",
+          "updated_at": "2026-11-23T22:08:08.690919",
           "category_id": null,
           "custom_type": "poll_closed",
           "reviewable_id": null,
@@ -187,7 +187,7 @@
   },
   "jobs": [],
   "next_ids": {
-    "user_histories": 68
+    "user_histories": 69
   },
   "setup": [
     "INSERT INTO polls (id, post_id, name, type, status, results, visibility, chart_type, dynamic, created_at, updated_at) VALUES (9002, 37, 'poll', 0, 0, 0, 1, 0, FALSE, '2026-10-05 10:00:00', '2026-10-05 10:00:00')",
@@ -197,7 +197,7 @@
   ],
   "recorded_from": {
     "case": "61b9b0d71585055817cb5a6d3bf9b4f015ebb61358cc17dd684c82963fd6d1c0",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

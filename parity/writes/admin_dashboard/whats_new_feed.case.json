@@ -1,4 +1,5 @@
 {
+  "unordered_responses": ["/responses/0/body/current_user/available_notification_types", "/responses/3/body/current_user/available_notification_types"],
   "user": "admin",
   "redis": {"new_features": {"fixture": "new_features_feed.json"}},
   "requests": [

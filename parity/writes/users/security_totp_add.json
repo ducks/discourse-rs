@@ -50,8 +50,8 @@
       "path": "/u/second_factors.json"
     }
   ],
-  "started_at": "2026-11-16T00:02:57.999576",
-  "transaction_started_at": "2026-11-16T00:02:57.113471",
+  "started_at": "2026-11-24T01:24:41.778555",
+  "transaction_started_at": "2026-11-24T01:24:40.508355",
   "responses": [
     {
       "status": 403,
@@ -72,8 +72,8 @@
       "status": 200,
       "body": {
         "success": "OK",
-        "key": "7DTA 46UW 7FZO ZKNC KFPT FE7C EI2E PDNX",
-        "qr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwAQAAAAAWLtQ/AAAElklEQVR4nMWZ3aqkOhCF40ToZwpEDOSpBEEEwacSEgzkmYQEz1e97+dcnKk5brp304GO9bNWrRV/vb+9fpnfXv/rch+GYeI1GtOnUV59mqaQR1kIyrc2v83eb/N9LPUZ7eHiYWyySRa009KH0JfpcxS3emNyKMXeF5HLwl8oCWFeqyn2Gt06Jy+bEvcf+vF/We6hb2lOxfhC1Nd2H8b/sR//3bJ9kz1q6tN2xWNubuUW5pRXWdDeOw9jX53Ud+Xv+49q+x5YUN7bwgHJSK7l3aZ6HvYo9aD3WVCvd45pvt+jgrQ8umlj32YE5ZM2vvsUU+lU2Y39exP7Mk1DPEhFVY67j/UJvh5s7eJFucN83m2m7Q3Nrt3nTTaeFvbcg2A98zkHcmCKOq+NLlRgZoxbqf0wbYCuudBXrx73fMXUR+PpbuH1+T6KyWM9+JC1ey2D59h63Cf66xs46DYuUoBZG2NzgtSCtJZxDBLq7+vZauKm9Pm80Fb2mgLJp8wzpfe+Pqu9T3VOhb2bvYJtTJHhcx+dGZ7XSsq7OrdkNIobSbYx9U192RIN31ebhG+U+TwZ+3ySd6MX1RRKp9NIwRJMUe81b5/Y5vPwX2K1qXj4vdTzifoz1O4RIPe1XsDKPlsr8KpHMzJG1Xlt25eIVnnCF17X56LF6TS4Rp1T674B532k7FOkzH4GW6LXvDqnilZidIg+s+i0+qNR4bUHka6NMdM/iU6/AkN0ic3U8wXt54Vq1u9zQVZNAMvXlDEpyxBkpNJp+nGXuXkX7H3vywjFkXh73neam/4sEUj9vBlR6t7P4FqmW5h35bhFnqPGAddEv0MtPZS8BHFkRX2OIcRHQZR99xXRwFDroTb5Vh9jdHnjDdFAmu17XxS9D/F8313bGxgHvjHAWVxYbcV9GnwOwxG3eq/VJMoFjbQyVULH+gcoLU+ArGtjzA3oM6CNAy4yNsX9cj/33dS9Af4HfYw/cJ+bYZrjNYK472BDQSn3GmphO1xMbI9oWp2knrQjFqv2/AbI+JG60+Q+y5b2xhnNh/vur63XlmUj5J0+98U+ZBw/iGwtLqifcW2IYtuMz0MooldFPA24Q2zwqn7uMP4oRPvCqPP9TAOTlARE8WjK9W6WgT2t9hnw/UEYDqj579nToj5D3TJ8mpzliUr8YMZJNmBH0Gj3ORa03gknjHCI90m2D/gFxRjqpX7WA7BX0ERXoyDcOF+h1EOI7fqo63PvPte0REKPJ6INnfqgFr/nulEZ3zQ4XIJBeELGgVsJ+22oN2Sretwlb2fqkQzbV4CV3CpD9H2Cui+xL5IYCv8Io8nZcT2vNSNWxx60Zwkv8aG2oZOWMDcGt03eng2dqu2J5PGAHGeJ+ftRq16ONh1hwy/a5y0vwhDqhsgAt3gEio+cgG3Uc06J2bTHRw6v8wiTM8HP+0C9ntpxyyVuHwHD8BadavdhGuX0XP1sTy7U4sN+tPvwPet47+SGVd+PSYAyt94DameqyRMjcYdIZnWNLI8HfF7gUTwCTMr+Ilfdsrq/89wASXy/DRoVd2bbDML5Rv352H9Z/gf7wgbwmHOeUgAAAABJRU5ErkJggg=="
+        "key": "QJZF 2PZ3 P7IM YR3C FSG5 PGJ5 GJSD PFMJ",
+        "qr": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAADwAQAAAAAWLtQ/AAAEmElEQVR4nMVZ24rkKhQ1o5BvEhQFvyoghICQrxIUBb8poGTWrp7nPg+n90xBVxcl1M6+rUvy6/329Ut8+/qnx2vbNquWr6r6aq3qdVOibpuiA898ae6dwsgcnlBkkY8XLm/n+5bPAXPstXmx7F663qLoI/su57L0Jf74WyLvZJaXb96LMG6KUSTy/qEf/69jHfJJ0bS1e1pRo/8/9+PfHCPF5Ve4MGYyual9/3wV6Z07Ns21MIilDxuRr47LWnTb0wFvbAkMKH0kIYvoXZbRWivU8UYH7HNuvTFGpi7fWZXGao9k+qIN595vpJrk5VHtar1Dzm4u3w02TXL3e21AlRzH/UQEroCWS7lpRsubd9w1R96ld229vDZPtTeodY06zMU9a8JoGmvsF0Z93An4WtzdSjfyztz9Xigt4q0TYJY91rvLi65G9MWOqSMtPya1udN8Ia6NhtY7SvYd0+HGbsXqDcBF1TCNK+PFfpdluWsOEFf1LEbIhMp708cVshJGoOPceYvuissoe3cZPccFYK91uHAViz1vlyPoA2O2BdIO6zi8Gfl8lODOW6a6Qy9g3tqb1qFWuNulkPMOCcM95649Ybq7aFUPaBaoB3S/Y7l3fg5dEWgOFu3CjGI0hINM+HKFbNnnXJYaO0kFKKYO8uzrwGZj1GQa3HPe13nPce055CMO0qkt0eyjDoabx6JAn418whMJ1xKo9Ih/pp9dMyl5l482JDyHKm93QtQayg/8+PfHshjos70M7HMn8UZVIGojJuWfNTfl82GuBdWgUeqOiYN8Eez9/jJj8gWknFR7sJcDnUI4ucRd8wZdJqchjU48Tsu+Do/uF/ZZW7FXtVSFHQKtVEUgA7Hm6SM7j4Eqp/nUeG3ROKJPcoHQ7Zkb17DY2CwkfrYCdQqVPitRqak2suvUTlGBYfUIbVYLeRquCGMU7sLeb3LfAb63gclWeFFzgGwrH4vEPucoMCx/1HvSodTwhTEKWMuP5wf6vSKJtAB1TrtljD4fmOLAzt/j2aHXQOLRQC4hbZdgSGSOLrHXHELtBH/a875iB6qb7u4XZoysATu2DOgzjBrwDJQNUIdUF7Ld750jd80xWOSKNMwo5g5SmWYMXtBr9n7LqQMUEqod2mOV3mE/6xbpDsTDrtcIvPFBKw3hMEeBVsZqky0ZNzOuLbudySUjAacjwSBRu6nv2rP7MfJ8cASkHfQBHn2vM4HME5DVs+s17UcyJFXcfRcY4pAM8Qhgnt0bQJ7k8wKAfmpM99cOBZV6eZn+An/XE3nLa7/ON59T3vdcZ3HvE9nvO5BG8FDJYC80uG6bhymCXPqSMtweWMD4Gsx5jiuSOB1g8QhnMtnnnB4PAMD6RxuLRcAKN14WVZy93/R4ADZoT9BJQDMHRwbBtpN44OZvejywThA3iLyYqqrSEE/vhE6V3Pr88w5prk8SMHBj8P15s16+/L7k8z6moHt5CgSGsVtetgvRJzuuwQNJumEO4ta+g0uR+LOdjdQLuwfeoEy3Q1VPVIJ4cvbuEsBd/5XnBmgz/k3XGvqN4HSHtbXG/nzs/xz/Bi/MBvDu7b/YAAAAAElFTkSuQmCC"
       }
     },
     {
@@ -126,33 +126,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "BHB1H1PHBbc1rEWKIzH9Sih5WfM=",
-            "created_at": "2026-11-16T00:02:57.495188",
-            "rotated_at": "2026-11-16T00:02:57.493743",
-            "updated_at": "2026-11-16T00:02:57.495188",
+            "auth_token": "GHNDRypMrb5cEGW70m6HEIhQIdE=",
+            "created_at": "2026-11-24T01:24:41.024202",
+            "rotated_at": "2026-11-24T01:24:41.022449",
+            "updated_at": "2026-11-24T01:24:41.024202",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "BHB1H1PHBbc1rEWKIzH9Sih5WfM=",
+            "prev_auth_token": "GHNDRypMrb5cEGW70m6HEIhQIdE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-16T00:02:58.006293",
+            "id": 1,
+            "seen_at": "2026-11-24T01:24:41.789168",
             "user_id": 3,
             "client_ip": "127.0.0.1",
-            "auth_token": "BHB1H1PHBbc1rEWKIzH9Sih5WfM=",
-            "created_at": "2026-11-16T00:02:57.495188",
-            "rotated_at": "2026-11-16T00:02:57.493743",
-            "updated_at": "2026-11-16T00:02:57.495188",
+            "auth_token": "GHNDRypMrb5cEGW70m6HEIhQIdE=",
+            "created_at": "2026-11-24T01:24:41.024202",
+            "rotated_at": "2026-11-24T01:24:41.022449",
+            "updated_at": "2026-11-24T01:24:41.024202",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "BHB1H1PHBbc1rEWKIzH9Sih5WfM=",
+            "prev_auth_token": "GHNDRypMrb5cEGW70m6HEIhQIdE=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -164,14 +164,14 @@
       "inserted": [
         {
           "id": 1,
-          "data": "7DTA46UW7FZOZKNCKFPTFE7CEI2EPDNX",
+          "data": "QJZF2PZ3P7IMYR3CFSG5PGJ5GJSDPFMJ",
           "name": "Phone",
           "method": 1,
           "enabled": true,
           "user_id": 3,
           "last_used": null,
-          "created_at": "2026-11-16T00:02:58.239503",
-          "updated_at": "2026-11-16T00:02:58.239503"
+          "created_at": "2026-11-24T01:24:42.155774",
+          "updated_at": "2026-11-24T01:24:42.155774"
         }
       ],
       "deleted": [],
@@ -184,7 +184,7 @@
   },
   "recorded_from": {
     "case": "3f683e2c499022c40cc61119c3f156c35bf76bbfcd2694fd5e3c57b5748f26fb",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

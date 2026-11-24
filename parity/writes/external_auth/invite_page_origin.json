@@ -19,14 +19,14 @@
       "path": "/invites/Fixture901"
     }
   ],
-  "started_at": "2026-11-15T22:50:30.325237",
-  "transaction_started_at": "2026-11-15T22:50:29.487116",
+  "started_at": "2026-11-23T21:54:56.479342",
+  "transaction_started_at": "2026-11-23T21:54:52.423672",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=decab9c3903d5ddceec6a9a8d087c66b455d2de0019c2a44...",
+      "body": "Redirecting to http://fixtures.localhost:8099/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=04ae83ec6f325d7e9e084951f4cc6e54ca2c11e214daacce...",
       "headers": {
-        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=decab9c3903d5ddceec6a9a8d087c66b455d2de0019c2a44"
+        "Location": "/authorize?client_id=basic-client&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Foauth2_basic%2Fcallback&response_type=code&state=04ae83ec6f325d7e9e084951f4cc6e54ca2c11e214daacce"
       }
     },
     {
@@ -85,9 +85,9 @@
           },
           "extra": {},
           "user_id": null,
-          "last_used": "2026-11-15T22:50:30.379781",
-          "created_at": "2026-11-15T22:50:30.380828",
-          "updated_at": "2026-11-15T22:50:30.380828",
+          "last_used": "2026-11-23T21:54:56.642649",
+          "created_at": "2026-11-23T21:54:56.650544",
+          "updated_at": "2026-11-23T21:54:56.650544",
           "credentials": {
             "token": "access-2",
             "expires": false
@@ -150,7 +150,7 @@
   ],
   "recorded_from": {
     "case": "0194609b4735a5a663afa8617996120dc28e28fac218c0b72899f82daa7c148a",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

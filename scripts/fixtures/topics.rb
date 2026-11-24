@@ -3,6 +3,14 @@
 # Fixture topics for parity testing; idempotent-ish (skips if marker topic exists).
 unless Topic.exists?(title: "Parity fixture: replies and posters")
 
+# PullHotlinkedImages#available_disk_space (percent_free reads df's
+# Capacity): the disable it makes on a full disk is done on purpose after
+# topic 35's replies, so the host must not set it off first.
+available = 100 - DiskSpace.percent_free(Rails.public_path.join("uploads").to_s)
+if available < SiteSetting.download_remote_images_threshold
+  abort "public/uploads' disk is #{100 - available}% used; PullHotlinkedImages would disable remote images on its own. Free disk first."
+end
+
 admin = User.find_by!(username: "admin")
 u0, u1, u2 = %w[user0 user1 user2].map { |n| User.find_by!(username: n) }
 general = Category.find_by!(name: "General")
@@ -18,6 +26,21 @@ t1 = mk(u0, "Parity fixture: replies and posters", "First post of a topic with s
 PostCreator.create!(u1, topic_id: t1.id, raw: "Reply one from user1, also long enough to pass the minimum length check.", skip_validations: true)
 PostCreator.create!(u2, topic_id: t1.id, raw: "Reply two from user2, also long enough to pass the minimum length check.", skip_validations: true)
 PostCreator.create!(admin, topic_id: t1.id, raw: "Reply three from admin, also long enough to pass the minimum length check.", skip_validations: true)
+
+# The seed has always had remote image downloads disabled for low disk, from
+# the host the first agent ran on: PullHotlinkedImages, racing this script in
+# Sidekiq, made topic 36 / post 39 the admin's notice, and every fixture id
+# after it (and the cases naming them) counts on that. Done here, as
+# Jobs::PullHotlinkedImages#disable_if_low_on_disk_space does it, so the seed
+# no longer depends on the disk or on which job wins.
+SiteSetting.download_remote_images_to_local = false
+StaffActionLogger.new(Discourse.system_user).log_site_setting_change(
+  "download_remote_images_to_local",
+  true,
+  false,
+  details: I18n.t("disable_remote_images_download_reason"),
+)
+SystemMessage.create_from_system_user(Discourse.site_contact_user, :download_remote_images_disabled)
 
 t2 = mk(admin, "Parity fixture: pinned and closed", "A pinned, closed topic in Site Feedback with an excerpt that should be shown in the list.", category: feedback.id).topic
 t2.update_pinned(true, false)

@@ -11,14 +11,14 @@
       "path": "/auth/linkedin_oidc/callback?code=good-code&state={{responses.0.headers.Location|state_param}}"
     }
   ],
-  "started_at": "2026-11-15T22:50:31.286643",
-  "transaction_started_at": "2026-11-15T22:50:30.688392",
+  "started_at": "2026-11-23T21:55:03.337035",
+  "transaction_started_at": "2026-11-23T21:54:58.799935",
   "responses": [
     {
       "status": 302,
-      "body": "Redirecting to http://fixtures.localhost:8099/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=2889e95856d08ff1af171a9df1019e46bd50b5f703e33529...",
+      "body": "Redirecting to http://fixtures.localhost:8099/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=d890ac74c61b49a00349e0e9c304258fe648ee1266a27e22...",
       "headers": {
-        "Location": "/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=2889e95856d08ff1af171a9df1019e46bd50b5f703e33529"
+        "Location": "/li-www/oauth/v2/authorization?client_id=liclient&redirect_uri=http%3A%2F%2Flocalhost%3A3042%2Fauth%2Flinkedin_oidc%2Fcallback&response_type=code&scope=openid%20profile%20email&state=d890ac74c61b49a00349e0e9c304258fe648ee1266a27e22"
       }
     },
     {
@@ -56,9 +56,9 @@
             }
           },
           "user_id": 5,
-          "last_used": "2026-11-15T22:50:31.351659",
-          "created_at": "2026-11-15T22:50:31.352972",
-          "updated_at": "2026-11-15T22:50:31.352972",
+          "last_used": "2026-11-23T21:55:03.471936",
+          "created_at": "2026-11-23T21:55:03.47826",
+          "updated_at": "2026-11-23T21:55:03.47826",
           "credentials": {
             "token": "li-token",
             "expires": false
@@ -79,10 +79,10 @@
           "action": "generate",
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "Gz33qLzj1ZI59sVUiH45Ffbap6s=",
-          "created_at": "2026-11-15T22:50:31.38974",
+          "auth_token": "X9ICZM7grN0aQdsZcnas02/ij3Y=",
+          "created_at": "2026-11-23T21:55:03.712952",
           "user_agent": null,
-          "user_auth_token_id": 14
+          "user_auth_token_id": 1
         }
       ],
       "deleted": [],
@@ -91,17 +91,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 14,
+          "id": 1,
           "seen_at": null,
           "user_id": 5,
           "client_ip": "127.0.0.1",
-          "auth_token": "Gz33qLzj1ZI59sVUiH45Ffbap6s=",
-          "created_at": "2026-11-15T22:50:31.387097",
-          "rotated_at": "2026-11-15T22:50:31.386316",
-          "updated_at": "2026-11-15T22:50:31.387097",
+          "auth_token": "X9ICZM7grN0aQdsZcnas02/ij3Y=",
+          "created_at": "2026-11-23T21:55:03.696687",
+          "rotated_at": "2026-11-23T21:55:03.693016",
+          "updated_at": "2026-11-23T21:55:03.696687",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "Gz33qLzj1ZI59sVUiH45Ffbap6s=",
+          "prev_auth_token": "X9ICZM7grN0aQdsZcnas02/ij3Y=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": true,
           "impersonation_expires_at": null
@@ -170,7 +170,7 @@
             "created_at": "2026-11-03T05:08:00.934987",
             "flag_level": 0,
             "ip_address": null,
-            "updated_at": "2026-11-15T22:50:31.370535",
+            "updated_at": "2026-11-23T21:55:03.581089",
             "approved_at": null,
             "trust_level": 4,
             "last_seen_at": null,
@@ -212,7 +212,7 @@
   "next_ids": {
     "user_associated_accounts": 1,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 14
+    "user_auth_tokens": 1
   },
   "settings": {
     "auth_require_interaction": false,
@@ -245,7 +245,7 @@
   ],
   "recorded_from": {
     "case": "4210d7e27b02bb327203dae95b340d5104ac9beda686f07dd2bab5fe0695dbaf",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

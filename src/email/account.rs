@@ -262,12 +262,9 @@ pub async fn build_template(
 /// The emails telling a user of a penalty: (type, the users column with
 /// its end, the template, the template's argument for that end).
 pub fn penalty_template(email_type: &str) -> Option<(&'static str, &'static str, &'static str)> {
+    // account_silenced went with the moderator_silence system message
+    // (ea0efdc105e).
     Some(match email_type {
-        "account_silenced" => (
-            "silenced_till",
-            "user_notifications.account_silenced",
-            "silenced_till",
-        ),
         "account_suspended" => (
             "suspended_till",
             "user_notifications.account_suspended",
@@ -277,7 +274,29 @@ pub fn penalty_template(email_type: &str) -> Option<(&'static str, &'static str,
     })
 }
 
-/// `UserNotifications#account_silenced` and `#account_suspended`: nothing
+/// A penalty's end in the user's timezone, through `key`'s
+/// `date_with_timezone`: `I18n.l(till, format: :long)` and its
+/// `formatted_offset`. A timezone ActiveSupport does not know falls back
+/// to UTC (f3067bbc7d3, d50426d12dd).
+pub fn penalty_end(
+    i18n: &crate::i18n::I18n,
+    key: &str,
+    till: chrono::NaiveDateTime,
+    timezone: Option<&str>,
+) -> String {
+    let zone: chrono_tz::Tz = timezone
+        .filter(|z| !z.trim().is_empty())
+        .and_then(|z| z.parse().ok())
+        .unwrap_or(chrono_tz::UTC);
+    let at = chrono::TimeZone::from_utc_datetime(&zone, &till);
+    let date = at.format("%B %-d, %Y, %l:%M%P").to_string();
+    // `formatted_offset`: +HH:MM.
+    let offset = at.format("%:z").to_string();
+    i18n.t_with(key, &[("date", &date), ("offset", &offset)])
+        .unwrap_or(date)
+}
+
+/// `UserNotifications#account_suspended`: nothing
 /// without the user history; a penalty past 100 years from now uses the
 /// `_forever` template, any other names its end in the user's timezone
 /// (`I18n.l(till, format: :long)`). The reason is the history's details.
@@ -325,24 +344,12 @@ pub async fn penalty(
         .await
         .map(Some);
     }
-    // A timezone ActiveSupport does not know falls back to UTC
-    // (f3067bbc7d3, d50426d12dd).
-    let zone: chrono_tz::Tz = timezone
-        .as_deref()
-        .filter(|z| !z.trim().is_empty())
-        .and_then(|z| z.parse().ok())
-        .unwrap_or(chrono_tz::UTC);
-    let at = chrono::TimeZone::from_utc_datetime(&zone, &till);
-    let date = at.format("%B %-d, %Y, %l:%M%P").to_string();
-    // `formatted_offset`: +HH:MM.
-    let offset = at.format("%:z").to_string();
-    let when = ctx
-        .i18n
-        .t_with(
-            &format!("{template}.date_with_timezone"),
-            &[("date", &date), ("offset", &offset)],
-        )
-        .unwrap_or(date);
+    let when = penalty_end(
+        ctx.i18n,
+        &format!("{template}.date_with_timezone"),
+        till,
+        timezone.as_deref(),
+    );
     build_with_args(
         conn,
         ctx,

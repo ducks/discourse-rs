@@ -351,20 +351,6 @@ fn organization(cx: &AdminCx, settings: &[Value]) -> String {
     for (name, setting, kind, key, has_help) in [
         ("companyName", "company_name", "text", "company_name", false),
         ("companyURL", "company_url", "url", "company_url", false),
-        (
-            "governingLaw",
-            "governing_law",
-            "text",
-            "governing_law",
-            true,
-        ),
-        (
-            "cityForDisputes",
-            "city_for_disputes",
-            "text",
-            "city_for_disputes",
-            true,
-        ),
     ] {
         out.push_str(
             &Field {

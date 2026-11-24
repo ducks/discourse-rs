@@ -26,14 +26,14 @@
       }
     }
   ],
-  "started_at": "2026-11-15T22:58:14.545605",
-  "transaction_started_at": "2026-11-15T22:58:13.955314",
+  "started_at": "2026-11-23T21:56:05.721306",
+  "transaction_started_at": "2026-11-23T21:56:02.685503",
   "responses": [
     {
       "status": 200,
       "body": {
-        "value": "1655036ad0a79c1eeb5bdca6d8322077",
-        "challenge": "a59b94dbc8f9b8559b100630684c3d96",
+        "value": "6ac4ebeb03d8852965e6d500590059d2",
+        "challenge": "c217f663c8e5e20772b2f28fc964027e",
         "expires_in": 3600
       }
     },
@@ -59,11 +59,11 @@
           "email": "user2@example.com",
           "purpose": 0,
           "attempts": 0,
-          "code_hash": "c6fd7a0650b3207e00f0bed631e23c06482eff95f550d50482dac299566936e4",
-          "created_at": "2026-11-15T22:58:14.591353",
-          "expires_at": "2026-11-15T23:08:14.591154",
-          "updated_at": "2026-11-15T22:58:14.591353",
-          "consumed_at": "2026-11-15T22:58:14.634892"
+          "code_hash": "3804c578d8ddee211a6d67e23d712bdb10b22a60f50e9fd794aaca1782bafb74",
+          "created_at": "2026-11-23T21:56:06.00319",
+          "expires_at": "2026-11-23T22:06:06.002399",
+          "updated_at": "2026-11-23T21:56:06.00319",
+          "consumed_at": "2026-11-23T21:56:06.314542"
         }
       ],
       "deleted": [],
@@ -77,9 +77,9 @@
           "subject": null,
           "group_id": 9001,
           "new_value": null,
-          "created_at": "2026-11-15T22:58:14.658585",
+          "created_at": "2026-11-23T21:56:06.439932",
           "prev_value": null,
-          "updated_at": "2026-11-15T22:58:14.658585",
+          "updated_at": "2026-11-23T21:56:06.439932",
           "acting_user_id": 3,
           "target_user_id": 4
         }
@@ -90,13 +90,13 @@
     "group_users": {
       "inserted": [
         {
-          "id": 69,
+          "id": 38,
           "owner": false,
           "user_id": 4,
           "group_id": 9001,
-          "created_at": "2026-11-15T22:58:14.656702",
-          "updated_at": "2026-11-15T22:58:14.656702",
-          "first_unread_pm_at": "2026-11-15T22:58:13.955314",
+          "created_at": "2026-11-23T21:56:06.431439",
+          "updated_at": "2026-11-23T21:56:06.431439",
+          "first_unread_pm_at": "2026-11-23T21:56:02.685503",
           "notification_level": 3
         }
       ],
@@ -119,9 +119,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-10-26T22:58:13.955314",
+            "created_at": "2026-11-03T21:56:02.685503",
             "flair_icon": null,
-            "updated_at": "2026-10-26T22:58:13.955314",
+            "updated_at": "2026-11-03T21:56:02.685503",
             "user_count": 0,
             "flair_color": null,
             "imap_server": null,
@@ -173,9 +173,9 @@
             "imap_port": null,
             "smtp_port": null,
             "bio_cooked": null,
-            "created_at": "2026-10-26T22:58:13.955314",
+            "created_at": "2026-11-03T21:56:02.685503",
             "flair_icon": null,
-            "updated_at": "2026-10-26T22:58:13.955314",
+            "updated_at": "2026-11-03T21:56:02.685503",
             "user_count": 1,
             "flair_color": null,
             "imap_server": null,
@@ -225,9 +225,9 @@
           "id": 1,
           "user_id": 4,
           "invite_id": 900,
-          "created_at": "2026-11-15T22:58:14.643684",
-          "updated_at": "2026-11-15T22:58:14.666975",
-          "redeemed_at": "2026-11-15T22:58:14.642345"
+          "created_at": "2026-11-23T21:56:06.369477",
+          "updated_at": "2026-11-23T21:56:06.474628",
+          "redeemed_at": "2026-11-23T21:56:06.362777"
         }
       ],
       "deleted": [],
@@ -244,11 +244,11 @@
             "email": null,
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-12T22:58:13.955314",
+            "created_at": "2026-11-20T21:56:02.685503",
             "deleted_at": null,
-            "expires_at": "2026-12-15T22:58:13.955314",
+            "expires_at": "2026-12-23T21:56:02.685503",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-12T22:58:13.955314",
+            "updated_at": "2026-11-20T21:56:02.685503",
             "description": "for the book club",
             "email_token": null,
             "deleted_by_id": null,
@@ -265,11 +265,11 @@
             "email": null,
             "domain": null,
             "moderator": false,
-            "created_at": "2026-11-12T22:58:13.955314",
+            "created_at": "2026-11-20T21:56:02.685503",
             "deleted_at": null,
-            "expires_at": "2026-12-15T22:58:13.955314",
+            "expires_at": "2026-12-23T21:56:02.685503",
             "invite_key": "Fixture900",
-            "updated_at": "2026-11-12T22:58:13.955314",
+            "updated_at": "2026-11-20T21:56:02.685503",
             "description": "for the book club",
             "email_token": null,
             "deleted_by_id": null,
@@ -286,26 +286,26 @@
     "notifications": {
       "inserted": [
         {
-          "id": 30,
+          "id": 32,
           "data": "{\"display_username\":\"user2\"}",
           "read": false,
           "user_id": 3,
           "topic_id": null,
-          "created_at": "2026-11-15T22:58:14.668623",
-          "updated_at": "2026-11-15T22:58:14.668623",
+          "created_at": "2026-11-23T21:56:06.483412",
+          "updated_at": "2026-11-23T21:56:06.483412",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
           "notification_type": 8
         },
         {
-          "id": 31,
+          "id": 33,
           "data": "{\"topic_title\":\"Parity fixture: replies and posters\",\"display_username\":\"user1\",\"original_user_id\":3,\"original_username\":\"user1\"}",
           "read": false,
           "user_id": 4,
           "topic_id": 35,
-          "created_at": "2026-11-15T22:58:14.69592",
-          "updated_at": "2026-11-15T22:58:14.69592",
+          "created_at": "2026-11-23T21:56:06.623552",
+          "updated_at": "2026-11-23T21:56:06.623552",
           "post_number": 1,
           "high_priority": false,
           "post_action_id": null,
@@ -323,10 +323,10 @@
           "action": "generate",
           "user_id": 4,
           "client_ip": "127.0.0.1",
-          "auth_token": "RJwnW3h934Q8nMcGRWn78vD/gB8=",
-          "created_at": "2026-11-15T22:58:14.724547",
+          "auth_token": "dNVtq2K8BtH9KLYAHdZ8rWuUXBA=",
+          "created_at": "2026-11-23T21:56:06.690465",
           "user_agent": null,
-          "user_auth_token_id": 14
+          "user_auth_token_id": 1
         }
       ],
       "deleted": [],
@@ -335,17 +335,17 @@
     "user_auth_tokens": {
       "inserted": [
         {
-          "id": 14,
+          "id": 1,
           "seen_at": null,
           "user_id": 4,
           "client_ip": "127.0.0.1",
-          "auth_token": "RJwnW3h934Q8nMcGRWn78vD/gB8=",
-          "created_at": "2026-11-15T22:58:14.720442",
-          "rotated_at": "2026-11-15T22:58:14.719432",
-          "updated_at": "2026-11-15T22:58:14.720442",
+          "auth_token": "dNVtq2K8BtH9KLYAHdZ8rWuUXBA=",
+          "created_at": "2026-11-23T21:56:06.67785",
+          "rotated_at": "2026-11-23T21:56:06.673997",
+          "updated_at": "2026-11-23T21:56:06.67785",
           "user_agent": null,
           "auth_token_seen": false,
-          "prev_auth_token": "RJwnW3h934Q8nMcGRWn78vD/gB8=",
+          "prev_auth_token": "dNVtq2K8BtH9KLYAHdZ8rWuUXBA=",
           "impersonated_user_id": null,
           "authenticated_with_oauth": false,
           "impersonation_expires_at": null
@@ -360,7 +360,7 @@
       "send_email_login_code",
       {
         "to_address": "user2@example.com",
-        "code": "288134"
+        "code": "927762"
       }
     ],
     [
@@ -368,7 +368,7 @@
       {
         "type": "user_invited_to_topic",
         "user_id": 4,
-        "notification_id": 31,
+        "notification_id": 33,
         "notification_data_hash": {
           "topic_title": "Parity fixture: replies and posters",
           "display_username": "user1",
@@ -383,11 +383,11 @@
   "next_ids": {
     "email_login_codes": 1,
     "group_histories": 1,
-    "group_users": 69,
+    "group_users": 38,
     "invited_users": 1,
-    "notifications": 30,
+    "notifications": 32,
     "user_auth_token_logs": 1,
-    "user_auth_tokens": 14
+    "user_auth_tokens": 1
   },
   "setup": [
     "INSERT INTO groups (id, name, created_at, updated_at) VALUES (9001, 'testers', now() - interval '20 days', now() - interval '20 days')",
@@ -399,7 +399,7 @@
   ],
   "recorded_from": {
     "case": "c1c7c3d3025a1e8f43767e115b009776ebac9d4409ab89e0fa43287522840327",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

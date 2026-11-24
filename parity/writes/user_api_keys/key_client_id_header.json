@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-15T23:59:05.2137",
-  "transaction_started_at": "2026-11-15T23:59:04.619033",
+  "started_at": "2026-11-24T01:23:26.820839",
+  "transaction_started_at": "2026-11-24T01:23:25.890126",
   "responses": [
     {
       "status": 200,
@@ -38,6 +38,7 @@
           "can_send_private_email_messages": false,
           "can_send_private_messages": true,
           "can_upload_avatar": true,
+          "can_embed_media": true,
           "can_edit": true,
           "can_invite_to_forum": true,
           "can_post_anonymously": false,
@@ -309,9 +310,9 @@
         {
           "id": 1,
           "client_id": "a-new-device",
-          "created_at": "2026-11-15T23:59:05.225364",
+          "created_at": "2026-11-24T01:23:26.853474",
           "public_key": null,
-          "updated_at": "2026-11-15T23:59:05.225364",
+          "updated_at": "2026-11-24T01:23:26.853474",
           "auth_redirect": null,
           "application_name": "Parity App"
         }
@@ -330,11 +331,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-13T23:59:04.619033",
+            "created_at": "2026-11-22T01:23:25.890126",
             "expires_at": null,
             "revoked_at": null,
-            "updated_at": "2026-11-13T23:59:04.619033",
-            "last_used_at": "2026-11-14T23:59:04.619033",
+            "updated_at": "2026-11-22T01:23:25.890126",
+            "last_used_at": "2026-11-23T01:23:25.890126",
             "application_name": null,
             "user_api_key_client_id": 9101
           },
@@ -344,11 +345,11 @@
             "key_hash": "6d29574cad155c0d372117af333d007c36d5ca2febd398c678f9fa227b7c2e3c",
             "push_url": null,
             "client_id": null,
-            "created_at": "2026-11-13T23:59:04.619033",
+            "created_at": "2026-11-22T01:23:25.890126",
             "expires_at": null,
             "revoked_at": null,
-            "updated_at": "2026-11-13T23:59:04.619033",
-            "last_used_at": "2026-11-15T23:59:05.224508",
+            "updated_at": "2026-11-22T01:23:25.890126",
+            "last_used_at": "2026-11-24T01:23:26.848216",
             "application_name": null,
             "user_api_key_client_id": 1
           }
@@ -367,7 +368,7 @@
   ],
   "recorded_from": {
     "case": "a65fe4618f1f151fa5e8fa2302e3a7f58a29a969ad09a5799cddf5d38cae4ec5",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }

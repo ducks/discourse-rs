@@ -19,8 +19,8 @@
       "path": "/admin/customize/site_texts.json?q=Unsolved&locale=en"
     }
   ],
-  "started_at": "2026-11-15T23:37:23.972151",
-  "transaction_started_at": "2026-11-15T23:37:23.158237",
+  "started_at": "2026-11-24T01:17:23.184639",
+  "transaction_started_at": "2026-11-24T01:17:21.994131",
   "responses": [
     {
       "status": 200,
@@ -29,6 +29,8 @@
           {
             "id": "js.theme_translations.-2.posted",
             "value": "posted",
+            "override_value": null,
+            "preview_default": "posted",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "posted",
@@ -41,6 +43,8 @@
           {
             "id": "js.theme_translations.-2.solved",
             "value": "Answered",
+            "override_value": "Answered",
+            "preview_default": "Solved",
             "status": "unknown",
             "old_default": null,
             "new_default": "Solved",
@@ -53,6 +57,8 @@
           {
             "id": "js.theme_translations.-2.replied",
             "value": "replied",
+            "override_value": null,
+            "preview_default": "replied",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "replied",
@@ -65,6 +71,8 @@
           {
             "id": "js.theme_translations.-2.unsolved",
             "value": "Unsolved",
+            "override_value": null,
+            "preview_default": "Unsolved",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "Unsolved",
@@ -77,6 +85,8 @@
           {
             "id": "js.theme_translations.-2.by_username",
             "value": "by @%{username}",
+            "override_value": null,
+            "preview_default": "by @%{username}",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "by @%{username}",
@@ -89,6 +99,8 @@
           {
             "id": "js.theme_translations.-2.vote_count.one",
             "value": "%{count} vote",
+            "override_value": null,
+            "preview_default": "%{count} vote",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "%{count} vote",
@@ -101,6 +113,8 @@
           {
             "id": "js.theme_translations.-2.like_count.one",
             "value": "%{count} like",
+            "override_value": null,
+            "preview_default": "%{count} like",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "%{count} like",
@@ -113,6 +127,8 @@
           {
             "id": "js.theme_translations.-2.reply_count.one",
             "value": "%{count} reply",
+            "override_value": null,
+            "preview_default": "%{count} reply",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "%{count} reply",
@@ -125,6 +141,8 @@
           {
             "id": "js.theme_translations.-2.vote_count.other",
             "value": "%{count} votes",
+            "override_value": null,
+            "preview_default": "%{count} votes",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "%{count} votes",
@@ -137,6 +155,8 @@
           {
             "id": "js.theme_translations.-2.like_count.other",
             "value": "%{count} likes",
+            "override_value": null,
+            "preview_default": "%{count} likes",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "%{count} likes",
@@ -149,6 +169,8 @@
           {
             "id": "js.theme_translations.-2.reply_count.other",
             "value": "%{count} replies",
+            "override_value": null,
+            "preview_default": "%{count} replies",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "%{count} replies",
@@ -184,6 +206,8 @@
           {
             "id": "js.theme_translations.-2.solved",
             "value": "Answered",
+            "override_value": "Answered",
+            "preview_default": "Solved",
             "status": "unknown",
             "old_default": null,
             "new_default": "Solved",
@@ -196,6 +220,7 @@
           {
             "id": "js.solved.no_answer.title",
             "value": "Has your question been answered?",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -206,6 +231,7 @@
           {
             "id": "admin_js.admin.dashboard.ask_ai.outcomes.answered",
             "value": "Answer provided",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -216,6 +242,7 @@
           {
             "id": "admin_js.admin.dashboard.sections.support.outcomes.unanswered.label",
             "value": "Unanswered",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -226,6 +253,7 @@
           {
             "id": "admin_js.admin.dashboard.sections.support.outcomes.unanswered.tooltip",
             "value": "The number of topics with no replies.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -236,6 +264,7 @@
           {
             "id": "admin_js.admin.dashboard.sections.support.headline.summaries.more_answers",
             "value": "More questions are getting answered.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -246,6 +275,7 @@
           {
             "id": "js.discourse_ai.decision_models.test_success",
             "value": "The decision model answered the test question (yes: %{percentage}%).",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -258,6 +288,7 @@
           {
             "id": "admin_js.admin.dashboard.sections.support.headline.cta.unanswered",
             "value": "Check out the unanswered topics to see which you can address.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -268,6 +299,7 @@
           {
             "id": "admin_js.admin.dashboard.sections.support.headline.summaries.more_answers_and_faster_replies",
             "value": "More questions are getting answered, and they're getting answered faster.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -278,6 +310,7 @@
           {
             "id": "admin_js.admin.dashboard.sections.support.headline.summaries.more_answers_first_reply_time_flat",
             "value": "More questions are getting answered, but the time to first reply is flat.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -288,6 +321,7 @@
           {
             "id": "admin_js.admin.dashboard.sections.support.headline.summaries.more_answers_but_slower_replies",
             "value": "More questions are getting answered, but the time to first reply has increased.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -298,6 +332,7 @@
           {
             "id": "admin_js.admin.dashboard.sections.support.headline.cta.in_progress_and_unanswered",
             "value": "Investigate the in progress and unanswered topics to make sure members are getting timely responses.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -331,6 +366,8 @@
           {
             "id": "js.theme_translations.-2.solved",
             "value": "Answered",
+            "override_value": "Answered",
+            "preview_default": "Solved",
             "status": "unknown",
             "old_default": null,
             "new_default": "Solved",
@@ -366,6 +403,7 @@
           {
             "id": "js.solved.topic_status_filter.unsolved",
             "value": "unsolved",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -376,6 +414,8 @@
           {
             "id": "js.theme_translations.-2.unsolved",
             "value": "Unsolved",
+            "override_value": null,
+            "preview_default": "Unsolved",
             "status": "up_to_date",
             "old_default": null,
             "new_default": "Unsolved",
@@ -388,6 +428,7 @@
           {
             "id": "js.search.advanced.statuses.unsolved",
             "value": "are unsolved",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -398,6 +439,7 @@
           {
             "id": "solved.filter.description.unsolved",
             "value": "Filter topics that have not been solved",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -408,6 +450,7 @@
           {
             "id": "site_settings.empty_box_on_unsolved",
             "value": "Display an empty box next to unsolved topics",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -418,6 +461,7 @@
           {
             "id": "js.solved.empty_box_on_unsolved",
             "value": "Display unsolved topic state in the topic list for supported themes",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -428,6 +472,7 @@
           {
             "id": "site_settings.assignment_status_on_unsolve",
             "value": "When a topic is unsolved update all assignments to this status",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -438,6 +483,7 @@
           {
             "id": "discourse_solved.category_type.empty_box_on_unsolved.label",
             "value": "Display unsolved topic state in the topic list for supported themes",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -448,6 +494,7 @@
           {
             "id": "js.solved.confirm_move_solution.one",
             "value": "The post you selected is marked as the solution for this topic. If you move it, the topic will be updated to unsolved.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -458,6 +505,7 @@
           {
             "id": "js.solved.confirm_move_solution.other",
             "value": "One of the posts you selected is marked as the solution for this topic. If you move them, the topic will be updated to unsolved.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -468,6 +516,7 @@
           {
             "id": "site_settings.enable_solved_shared_issues",
             "value": "Adds a “Me too” button to unsolved topics in support categories, letting members signal they’re experiencing the same issue and opt-in to notifications about the topic's solution.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -478,6 +527,7 @@
           {
             "id": "discourse_solved.category_type.enable_shared_issues.description",
             "value": "Adds a button to unsolved topics in this category that members can use to signal they're experiencing the same issue and opt in to notifications about the solution.",
+            "override_value": null,
             "status": "up_to_date",
             "old_default": null,
             "new_default": null,
@@ -512,33 +562,33 @@
       "updated": [
         {
           "before": {
-            "id": 14,
+            "id": 1,
             "seen_at": null,
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1sZ20hJ1hf0Y6lpDvynrwvbsTZo=",
-            "created_at": "2026-11-15T23:37:23.508231",
-            "rotated_at": "2026-11-15T23:37:23.507445",
-            "updated_at": "2026-11-15T23:37:23.508231",
+            "auth_token": "dnwuEffiNc/0uVJEG/JGz+Wt5MI=",
+            "created_at": "2026-11-24T01:17:22.453113",
+            "rotated_at": "2026-11-24T01:17:22.451726",
+            "updated_at": "2026-11-24T01:17:22.453113",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "1sZ20hJ1hf0Y6lpDvynrwvbsTZo=",
+            "prev_auth_token": "dnwuEffiNc/0uVJEG/JGz+Wt5MI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 14,
-            "seen_at": "2026-11-15T23:37:23.975782",
+            "id": 1,
+            "seen_at": "2026-11-24T01:17:23.193043",
             "user_id": 1,
             "client_ip": "127.0.0.1",
-            "auth_token": "1sZ20hJ1hf0Y6lpDvynrwvbsTZo=",
-            "created_at": "2026-11-15T23:37:23.508231",
-            "rotated_at": "2026-11-15T23:37:23.507445",
-            "updated_at": "2026-11-15T23:37:23.508231",
+            "auth_token": "dnwuEffiNc/0uVJEG/JGz+Wt5MI=",
+            "created_at": "2026-11-24T01:17:22.453113",
+            "rotated_at": "2026-11-24T01:17:22.451726",
+            "updated_at": "2026-11-24T01:17:22.453113",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "1sZ20hJ1hf0Y6lpDvynrwvbsTZo=",
+            "prev_auth_token": "dnwuEffiNc/0uVJEG/JGz+Wt5MI=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -554,7 +604,7 @@
   ],
   "recorded_from": {
     "case": "7120c725b8825b6a4c0c4297ee45472aba15aabfe2988e3584f655b282ab95c0",
-    "seed": "33b02a7c3895a41427fae35a80f44a6b276ac65168bd346d92e51a7873defdba",
-    "discourse": "9daeae2a745b73533215775ebf132191ca4c5056"
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }
 }
