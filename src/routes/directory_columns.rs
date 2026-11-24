@@ -77,13 +77,15 @@ fn refuse(state: &AppState, guardian: &crate::guardian::Guardian) -> Option<Resp
 
 /// `ensure_user_fields_have_columns`: a disabled column, after the last,
 /// for each user field shown on profiles or cards that has none (Rails'
-/// query has no order; the reference's plan reads the fields by id).
+/// query has no order, so neither has this one: on the same unanalyzed
+/// tables Postgres picks the same plan, a hash anti join that does not
+/// read the fields by id).
 async fn ensure_user_fields_have_columns(conn: &mut PgConnection) -> Result<(), AppError> {
     let missing: Vec<i32> = sqlx::query_scalar(
         "SELECT user_fields.id FROM user_fields \
          LEFT OUTER JOIN directory_columns ON directory_columns.user_field_id = user_fields.id \
          WHERE directory_columns.user_field_id IS NULL \
-           AND (show_on_profile = TRUE OR show_on_user_card = TRUE) ORDER BY user_fields.id",
+           AND (show_on_profile = TRUE OR show_on_user_card = TRUE)",
     )
     .fetch_all(&mut *conn)
     .await?;
