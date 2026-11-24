@@ -48,8 +48,14 @@ pub async fn log_on_user(
     if staged {
         return Err(Unsupported("unstaging a user at login").into());
     }
-    crate::roles::bootstrap_first_admin(&mut *conn, &state.i18n, &state.config.globals, user_id)
-        .await?;
+    crate::roles::bootstrap_first_admin(
+        &mut *conn,
+        &state.i18n,
+        &state.config.globals,
+        &state.site_setting_defs,
+        user_id,
+    )
+    .await?;
     crate::session::token::enforce_session_count_limit(
         &mut *conn,
         user_id,

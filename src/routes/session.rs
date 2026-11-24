@@ -585,9 +585,14 @@ pub(super) async fn complete_login(
         // unstage!'s user_unstaged, to discourse-narrative-bot.
         crate::plugins::narrative_bot::user_unstaged(&mut conn, settings, user.id).await?;
     }
-    let grants =
-        crate::roles::bootstrap_first_admin(&mut conn, &state.i18n, &state.config.globals, user.id)
-            .await?;
+    let grants = crate::roles::bootstrap_first_admin(
+        &mut conn,
+        &state.i18n,
+        &state.config.globals,
+        &state.site_setting_defs,
+        user.id,
+    )
+    .await?;
     user.admin |= grants.admin;
     user.moderator |= grants.moderator;
     token::enforce_session_count_limit(
