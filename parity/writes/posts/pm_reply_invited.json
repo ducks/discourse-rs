@@ -11,8 +11,8 @@
       }
     }
   ],
-  "started_at": "2026-11-23T22:18:32.982953",
-  "transaction_started_at": "2026-11-23T22:18:28.339739",
+  "started_at": "2026-11-24T03:29:42.300275",
+  "transaction_started_at": "2026-11-24T03:29:41.359461",
   "responses": [
     {
       "status": 200,
@@ -21,12 +21,12 @@
         "name": "User0",
         "username": "user0",
         "avatar_template": "/letter_avatar_proxy/v4/letter/u/94ad74/{size}.png",
-        "created_at": "2026-11-23T22:18:33.256Z",
+        "created_at": "2026-11-24T03:29:42.362Z",
         "cooked": "<p>A reply from user0, who was invited to this message by notification.</p>",
         "post_number": 2,
         "post_type": 1,
         "posts_count": 2,
-        "updated_at": "2026-11-23T22:18:33.256Z",
+        "updated_at": "2026-11-24T03:29:42.362Z",
         "reply_count": 0,
         "reply_to_post_number": null,
         "quote_count": 0,
@@ -120,14 +120,14 @@
           "raw": null,
           "bounced": false,
           "post_id": 53,
-          "user_id": 3,
+          "user_id": 4,
           "topic_id": 44,
           "bounce_key": null,
-          "created_at": "2026-11-23T22:18:34.847265",
+          "created_at": "2026-11-24T03:29:42.660675",
           "email_type": "user_private_message",
           "message_id": "discourse/post/53@localhost",
-          "to_address": "user1@example.com",
-          "updated_at": "2026-11-23T22:18:34.847265",
+          "to_address": "user2@example.com",
+          "updated_at": "2026-11-24T03:29:42.660675",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -140,14 +140,14 @@
           "raw": null,
           "bounced": false,
           "post_id": 53,
-          "user_id": 4,
+          "user_id": 3,
           "topic_id": 44,
           "bounce_key": null,
-          "created_at": "2026-11-23T22:18:35.230795",
+          "created_at": "2026-11-24T03:29:42.733057",
           "email_type": "user_private_message",
           "message_id": "discourse/post/53@localhost",
-          "to_address": "user2@example.com",
-          "updated_at": "2026-11-23T22:18:35.230795",
+          "to_address": "user1@example.com",
+          "updated_at": "2026-11-24T03:29:42.733057",
           "cc_user_ids": null,
           "cc_addresses": null,
           "bcc_addresses": null,
@@ -163,26 +163,26 @@
       "inserted": [
         {
           "id": 33,
-          "data": "{\"topic_title\":\"Parity fixture: PM user2 to user1, archived\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"2 replies\",\"display_name\":\"User2\"}",
+          "data": "{\"topic_title\":\"Parity fixture: PM user2 to user1, archived\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"user0\",\"display_name\":\"User0\"}",
           "read": false,
-          "user_id": 3,
+          "user_id": 4,
           "topic_id": 44,
-          "created_at": "2026-11-23T22:18:34.237018",
-          "updated_at": "2026-11-23T22:18:34.237018",
-          "post_number": 1,
+          "created_at": "2026-11-24T03:29:42.545425",
+          "updated_at": "2026-11-24T03:29:42.545425",
+          "post_number": 2,
           "high_priority": true,
           "post_action_id": null,
           "notification_type": 6
         },
         {
           "id": 34,
-          "data": "{\"topic_title\":\"Parity fixture: PM user2 to user1, archived\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"user0\",\"display_name\":\"User0\"}",
+          "data": "{\"topic_title\":\"Parity fixture: PM user2 to user1, archived\",\"original_post_id\":53,\"original_post_type\":1,\"original_username\":\"user0\",\"revision_number\":null,\"display_username\":\"2 replies\",\"display_name\":\"User2\"}",
           "read": false,
-          "user_id": 4,
+          "user_id": 3,
           "topic_id": 44,
-          "created_at": "2026-11-23T22:18:34.406182",
-          "updated_at": "2026-11-23T22:18:34.406182",
-          "post_number": 2,
+          "created_at": "2026-11-24T03:29:42.573011",
+          "updated_at": "2026-11-24T03:29:42.573011",
+          "post_number": 1,
           "high_priority": true,
           "post_action_id": null,
           "notification_type": 6
@@ -224,8 +224,8 @@
         {
           "id": 52,
           "post_id": 53,
-          "created_at": "2026-11-23T22:18:33.331368",
-          "updated_at": "2026-11-23T22:18:33.331368",
+          "created_at": "2026-11-24T03:29:42.380776",
+          "updated_at": "2026-11-24T03:29:42.380776",
           "drafts_saved": 0,
           "writing_device": "unknown",
           "composer_version": null,
@@ -262,20 +262,20 @@
           "locale": null,
           "user_id": 2,
           "version": 1,
-          "baked_at": "2026-11-23T22:18:33.256348",
+          "baked_at": "2026-11-24T03:29:42.362609",
           "topic_id": 44,
           "hidden_at": null,
           "post_type": 1,
           "raw_email": null,
           "via_email": false,
-          "created_at": "2026-11-23T22:18:33.256584",
+          "created_at": "2026-11-24T03:29:42.362665",
           "deleted_at": null,
           "like_count": 0,
           "like_score": 0,
           "self_edits": 0,
           "sort_order": 2,
           "spam_count": 0,
-          "updated_at": "2026-11-23T22:18:33.256584",
+          "updated_at": "2026-11-24T03:29:42.362665",
           "word_count": 12,
           "action_code": null,
           "cook_method": 1,
@@ -295,7 +295,7 @@
           "last_editor_id": 2,
           "public_version": 1,
           "image_upload_id": null,
-          "last_version_at": "2026-11-23T22:18:33.321982",
+          "last_version_at": "2026-11-24T03:29:42.377787",
           "off_topic_count": 0,
           "hidden_reason_id": null,
           "reply_to_user_id": null,
@@ -319,9 +319,9 @@
           "user_id": 2,
           "topic_id": 44,
           "bookmarked": false,
-          "last_posted_at": "2026-11-23T22:18:33.497551",
-          "last_visited_at": "2026-11-23T22:18:33.505257",
-          "first_visited_at": "2026-11-23T22:18:33.505257",
+          "last_posted_at": "2026-11-24T03:29:42.406901",
+          "last_visited_at": "2026-11-24T03:29:42.407755",
+          "first_visited_at": "2026-11-24T03:29:42.407755",
           "cleared_pinned_at": null,
           "notification_level": 3,
           "total_msecs_viewed": 0,
@@ -333,44 +333,6 @@
       ],
       "deleted": [],
       "updated": [
-        {
-          "before": {
-            "id": 53,
-            "liked": false,
-            "posted": false,
-            "user_id": 3,
-            "topic_id": 44,
-            "bookmarked": false,
-            "last_posted_at": null,
-            "last_visited_at": "2026-11-23T20:53:20.832203",
-            "first_visited_at": "2026-11-23T20:53:20.832203",
-            "cleared_pinned_at": null,
-            "notification_level": 3,
-            "total_msecs_viewed": 0,
-            "last_read_post_number": null,
-            "notifications_reason_id": 2,
-            "last_emailed_post_number": 1,
-            "notifications_changed_at": "2026-11-23T20:53:20.831186"
-          },
-          "after": {
-            "id": 53,
-            "liked": false,
-            "posted": false,
-            "user_id": 3,
-            "topic_id": 44,
-            "bookmarked": false,
-            "last_posted_at": null,
-            "last_visited_at": "2026-11-23T20:53:20.832203",
-            "first_visited_at": "2026-11-23T20:53:20.832203",
-            "cleared_pinned_at": null,
-            "notification_level": 3,
-            "total_msecs_viewed": 0,
-            "last_read_post_number": null,
-            "notifications_reason_id": 2,
-            "last_emailed_post_number": 2,
-            "notifications_changed_at": "2026-11-23T20:53:20.831186"
-          }
-        },
         {
           "before": {
             "id": 52,
@@ -407,6 +369,44 @@
             "notifications_reason_id": 1,
             "last_emailed_post_number": 2,
             "notifications_changed_at": "2026-11-23T20:53:20.82781"
+          }
+        },
+        {
+          "before": {
+            "id": 53,
+            "liked": false,
+            "posted": false,
+            "user_id": 3,
+            "topic_id": 44,
+            "bookmarked": false,
+            "last_posted_at": null,
+            "last_visited_at": "2026-11-23T20:53:20.832203",
+            "first_visited_at": "2026-11-23T20:53:20.832203",
+            "cleared_pinned_at": null,
+            "notification_level": 3,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": null,
+            "notifications_reason_id": 2,
+            "last_emailed_post_number": 1,
+            "notifications_changed_at": "2026-11-23T20:53:20.831186"
+          },
+          "after": {
+            "id": 53,
+            "liked": false,
+            "posted": false,
+            "user_id": 3,
+            "topic_id": 44,
+            "bookmarked": false,
+            "last_posted_at": null,
+            "last_visited_at": "2026-11-23T20:53:20.832203",
+            "first_visited_at": "2026-11-23T20:53:20.832203",
+            "cleared_pinned_at": null,
+            "notification_level": 3,
+            "total_msecs_viewed": 0,
+            "last_read_post_number": null,
+            "notifications_reason_id": 2,
+            "last_emailed_post_number": 2,
+            "notifications_changed_at": "2026-11-23T20:53:20.831186"
           }
         }
       ]
@@ -482,13 +482,13 @@
             "visible": true,
             "archived": false,
             "archetype": "private_message",
-            "bumped_at": "2026-11-23T22:18:33.256584",
+            "bumped_at": "2026-11-24T03:29:42.362665",
             "pinned_at": null,
             "created_at": "2026-11-23T20:53:20.818379",
             "deleted_at": null,
             "like_count": 0,
             "spam_count": 0,
-            "updated_at": "2026-11-23T22:18:33.57792",
+            "updated_at": "2026-11-24T03:29:42.421193",
             "word_count": 22,
             "category_id": null,
             "external_id": null,
@@ -501,7 +501,7 @@
             "deleted_by_id": null,
             "featured_link": null,
             "bannered_until": null,
-            "last_posted_at": "2026-11-23T22:18:33.256584",
+            "last_posted_at": "2026-11-24T03:29:42.362665",
             "image_upload_id": null,
             "pinned_globally": false,
             "reviewable_score": 0,
@@ -526,21 +526,21 @@
     "unsubscribe_keys": {
       "inserted": [
         {
-          "key": "7f60dda5e8414852e5a80333c6fa325ebacb2e9029fe7ddf8a5d6458035da5e8",
-          "post_id": 53,
-          "user_id": 3,
-          "topic_id": 44,
-          "created_at": "2026-11-23T22:18:34.543592",
-          "updated_at": "2026-11-23T22:18:34.543592",
-          "unsubscribe_key_type": "topic"
-        },
-        {
-          "key": "15ef292c2d704d63882d84bca43a4bfe64da918e3b139b4645d3c30cf5ec26c1",
+          "key": "e545fcbae5853d647e47e44a1d2ab6118f515df5c3a312d17d05bea565a329e7",
           "post_id": 53,
           "user_id": 4,
           "topic_id": 44,
-          "created_at": "2026-11-23T22:18:34.954054",
-          "updated_at": "2026-11-23T22:18:34.954054",
+          "created_at": "2026-11-24T03:29:42.605558",
+          "updated_at": "2026-11-24T03:29:42.605558",
+          "unsubscribe_key_type": "topic"
+        },
+        {
+          "key": "93e0bf4b4335867f96c4d899e3c9cdc40b87a3166ac9b275fffa3c3b120abb49",
+          "post_id": 53,
+          "user_id": 3,
+          "topic_id": 44,
+          "created_at": "2026-11-24T03:29:42.679392",
+          "updated_at": "2026-11-24T03:29:42.679392",
           "unsubscribe_key_type": "topic"
         }
       ],
@@ -552,8 +552,8 @@
         {
           "id": 65,
           "user_id": 3,
-          "created_at": "2026-11-23T22:18:33.256584",
-          "updated_at": "2026-11-23T22:18:33.356479",
+          "created_at": "2026-11-24T03:29:42.362665",
+          "updated_at": "2026-11-24T03:29:42.387406",
           "action_type": 13,
           "acting_user_id": 2,
           "target_post_id": 53,
@@ -563,8 +563,8 @@
         {
           "id": 66,
           "user_id": 4,
-          "created_at": "2026-11-23T22:18:33.256584",
-          "updated_at": "2026-11-23T22:18:33.400937",
+          "created_at": "2026-11-24T03:29:42.362665",
+          "updated_at": "2026-11-24T03:29:42.39467",
           "action_type": 13,
           "acting_user_id": 2,
           "target_post_id": 53,
@@ -574,8 +574,8 @@
         {
           "id": 67,
           "user_id": 2,
-          "created_at": "2026-11-23T22:18:33.256584",
-          "updated_at": "2026-11-23T22:18:33.45465",
+          "created_at": "2026-11-24T03:29:42.362665",
+          "updated_at": "2026-11-24T03:29:42.401236",
           "action_type": 12,
           "acting_user_id": 2,
           "target_post_id": 53,
@@ -605,33 +605,33 @@
       "updated": [
         {
           "before": {
-            "id": 1,
+            "id": 6,
             "seen_at": null,
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "qxJTsi2cBpXia8jK0hvL7Rd703E=",
-            "created_at": "2026-11-23T22:18:30.12388",
-            "rotated_at": "2026-11-23T22:18:30.117762",
-            "updated_at": "2026-11-23T22:18:30.12388",
+            "auth_token": "+lYDkV6iSIqhBmjotuSJZVR3Wrs=",
+            "created_at": "2026-11-24T03:29:41.658973",
+            "rotated_at": "2026-11-24T03:29:41.658134",
+            "updated_at": "2026-11-24T03:29:41.658973",
             "user_agent": null,
             "auth_token_seen": false,
-            "prev_auth_token": "qxJTsi2cBpXia8jK0hvL7Rd703E=",
+            "prev_auth_token": "+lYDkV6iSIqhBmjotuSJZVR3Wrs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
           },
           "after": {
-            "id": 1,
-            "seen_at": "2026-11-23T22:18:33.009791",
+            "id": 6,
+            "seen_at": "2026-11-24T03:29:42.306822",
             "user_id": 2,
             "client_ip": "127.0.0.1",
-            "auth_token": "qxJTsi2cBpXia8jK0hvL7Rd703E=",
-            "created_at": "2026-11-23T22:18:30.12388",
-            "rotated_at": "2026-11-23T22:18:30.117762",
-            "updated_at": "2026-11-23T22:18:30.12388",
+            "auth_token": "+lYDkV6iSIqhBmjotuSJZVR3Wrs=",
+            "created_at": "2026-11-24T03:29:41.658973",
+            "rotated_at": "2026-11-24T03:29:41.658134",
+            "updated_at": "2026-11-24T03:29:41.658973",
             "user_agent": null,
             "auth_token_seen": true,
-            "prev_auth_token": "qxJTsi2cBpXia8jK0hvL7Rd703E=",
+            "prev_auth_token": "+lYDkV6iSIqhBmjotuSJZVR3Wrs=",
             "impersonated_user_id": null,
             "authenticated_with_oauth": false,
             "impersonation_expires_at": null
@@ -645,8 +645,8 @@
       "updated": [
         {
           "before": {
-            "id": 3,
-            "name": "User1",
+            "id": 4,
+            "name": "User2",
             "admin": false,
             "title": null,
             "views": 0,
@@ -654,24 +654,24 @@
             "locale": null,
             "staged": false,
             "approved": false,
-            "username": "user1",
+            "username": "user2",
             "moderator": false,
-            "created_at": "2026-11-03T05:08:00.404788",
+            "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
-            "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-23T20:53:10.769723",
+            "ip_address": null,
+            "updated_at": "2026-11-23T20:53:27.948368",
             "approved_at": null,
             "trust_level": 2,
-            "last_seen_at": "2026-11-23T20:53:28.144434",
+            "last_seen_at": null,
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-23T20:53:28.144434",
+            "first_seen_at": null,
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T20:53:10.659906",
+            "last_posted_at": "2026-11-23T20:53:07.76738",
             "suspended_till": null,
-            "username_lower": "user1",
+            "username_lower": "user2",
             "last_emailed_at": null,
             "primary_group_id": null,
             "previous_visit_at": null,
@@ -685,8 +685,8 @@
             "manual_locked_trust_level": null
           },
           "after": {
-            "id": 3,
-            "name": "User1",
+            "id": 4,
+            "name": "User2",
             "admin": false,
             "title": null,
             "views": 0,
@@ -694,25 +694,25 @@
             "locale": null,
             "staged": false,
             "approved": false,
-            "username": "user1",
+            "username": "user2",
             "moderator": false,
-            "created_at": "2026-11-03T05:08:00.404788",
+            "created_at": "2026-11-03T05:08:00.661478",
             "flag_level": 0,
-            "ip_address": "172.17.0.1",
-            "updated_at": "2026-11-23T20:53:10.769723",
+            "ip_address": null,
+            "updated_at": "2026-11-23T20:53:27.948368",
             "approved_at": null,
             "trust_level": 2,
-            "last_seen_at": "2026-11-23T20:53:28.144434",
+            "last_seen_at": null,
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": "2026-11-23T20:53:28.144434",
+            "first_seen_at": null,
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T20:53:10.659906",
+            "last_posted_at": "2026-11-23T20:53:07.76738",
             "suspended_till": null,
-            "username_lower": "user1",
-            "last_emailed_at": "2026-11-23T22:18:28.339739",
+            "username_lower": "user2",
+            "last_emailed_at": "2026-11-24T03:29:41.359461",
             "primary_group_id": null,
             "previous_visit_at": null,
             "secure_identifier": null,
@@ -727,8 +727,8 @@
         },
         {
           "before": {
-            "id": 4,
-            "name": "User2",
+            "id": 3,
+            "name": "User1",
             "admin": false,
             "title": null,
             "views": 0,
@@ -736,24 +736,24 @@
             "locale": null,
             "staged": false,
             "approved": false,
-            "username": "user2",
+            "username": "user1",
             "moderator": false,
-            "created_at": "2026-11-03T05:08:00.661478",
+            "created_at": "2026-11-03T05:08:00.404788",
             "flag_level": 0,
-            "ip_address": null,
-            "updated_at": "2026-11-23T20:53:27.948368",
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-11-23T20:53:10.769723",
             "approved_at": null,
             "trust_level": 2,
-            "last_seen_at": null,
+            "last_seen_at": "2026-11-23T20:53:28.144434",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": null,
+            "first_seen_at": "2026-11-23T20:53:28.144434",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T20:53:07.76738",
+            "last_posted_at": "2026-11-23T20:53:10.659906",
             "suspended_till": null,
-            "username_lower": "user2",
+            "username_lower": "user1",
             "last_emailed_at": null,
             "primary_group_id": null,
             "previous_visit_at": null,
@@ -767,8 +767,8 @@
             "manual_locked_trust_level": null
           },
           "after": {
-            "id": 4,
-            "name": "User2",
+            "id": 3,
+            "name": "User1",
             "admin": false,
             "title": null,
             "views": 0,
@@ -776,25 +776,25 @@
             "locale": null,
             "staged": false,
             "approved": false,
-            "username": "user2",
+            "username": "user1",
             "moderator": false,
-            "created_at": "2026-11-03T05:08:00.661478",
+            "created_at": "2026-11-03T05:08:00.404788",
             "flag_level": 0,
-            "ip_address": null,
-            "updated_at": "2026-11-23T20:53:27.948368",
+            "ip_address": "172.17.0.1",
+            "updated_at": "2026-11-23T20:53:10.769723",
             "approved_at": null,
             "trust_level": 2,
-            "last_seen_at": null,
+            "last_seen_at": "2026-11-23T20:53:28.144434",
             "suspended_at": null,
             "date_of_birth": null,
-            "first_seen_at": null,
+            "first_seen_at": "2026-11-23T20:53:28.144434",
             "silenced_till": null,
             "approved_by_id": null,
             "flair_group_id": null,
-            "last_posted_at": "2026-11-23T20:53:07.76738",
+            "last_posted_at": "2026-11-23T20:53:10.659906",
             "suspended_till": null,
-            "username_lower": "user2",
-            "last_emailed_at": "2026-11-23T22:18:28.339739",
+            "username_lower": "user1",
+            "last_emailed_at": "2026-11-24T03:29:41.359461",
             "primary_group_id": null,
             "previous_visit_at": null,
             "secure_identifier": null,
@@ -876,28 +876,8 @@
       "user_email in 20s",
       {
         "type": "user_private_message",
-        "user_id": 3,
-        "notification_id": 33,
-        "notification_data_hash": {
-          "topic_title": "Parity fixture: PM user2 to user1, archived",
-          "original_post_id": 53,
-          "original_post_type": 1,
-          "original_username": "user0",
-          "revision_number": null,
-          "display_username": "2 replies",
-          "display_name": "User2",
-          "group_name": null
-        },
-        "notification_type": "private_message",
-        "post_id": 53
-      }
-    ],
-    [
-      "user_email in 20s",
-      {
-        "type": "user_private_message",
         "user_id": 4,
-        "notification_id": 34,
+        "notification_id": 33,
         "notification_data_hash": {
           "topic_title": "Parity fixture: PM user2 to user1, archived",
           "original_post_id": 53,
@@ -911,103 +891,29 @@
         "notification_type": "private_message",
         "post_id": 53
       }
+    ],
+    [
+      "user_email in 20s",
+      {
+        "type": "user_private_message",
+        "user_id": 3,
+        "notification_id": 34,
+        "notification_data_hash": {
+          "topic_title": "Parity fixture: PM user2 to user1, archived",
+          "original_post_id": 53,
+          "original_post_type": 1,
+          "original_username": "user0",
+          "revision_number": null,
+          "display_username": "2 replies",
+          "display_name": "User2",
+          "group_name": null
+        },
+        "notification_type": "private_message",
+        "post_id": 53
+      }
     ]
   ],
   "emails": [
-    {
-      "headers": [
-        [
-          "From",
-          "\"User0\" <noreply@unconfigured.discourse.org>"
-        ],
-        [
-          "Reply-To",
-          "\"User0\" <noreply@unconfigured.discourse.org>"
-        ],
-        [
-          "To",
-          "user1@example.com"
-        ],
-        [
-          "Message-ID",
-          "<discourse/post/53@localhost>"
-        ],
-        [
-          "In-Reply-To",
-          "<discourse/post/51@localhost>"
-        ],
-        [
-          "References",
-          "<discourse/post/51@localhost>"
-        ],
-        [
-          "Subject",
-          "[Discourse] [PM] Parity fixture: PM user2 to user1, archived"
-        ],
-        [
-          "MIME-Version",
-          "1.0"
-        ],
-        [
-          "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b04bbbac2a0d_1417f384245f"
-        ],
-        [
-          "Content-Transfer-Encoding",
-          "7bit"
-        ],
-        [
-          "X-Discourse-Email-Preview",
-          "Someone sent you a PM."
-        ],
-        [
-          "List-Unsubscribe",
-          "<http://localhost:3042/email/unsubscribe/7f60dda5e8414852e5a80333c6fa325ebacb2e9029fe7ddf8a5d6458035da5e8>"
-        ],
-        [
-          "List-Unsubscribe-Post",
-          "List-Unsubscribe=One-Click"
-        ],
-        [
-          "X-Discourse-Post-Id",
-          "53"
-        ],
-        [
-          "X-Discourse-Topic-Id",
-          "44"
-        ],
-        [
-          "X-Discourse-Sender",
-          "user0"
-        ],
-        [
-          "X-Auto-Response-Suppress",
-          "All"
-        ],
-        [
-          "x-ms-reactions",
-          "disallow"
-        ],
-        [
-          "Auto-Submitted",
-          "auto-generated"
-        ],
-        [
-          "Precedence",
-          "list"
-        ],
-        [
-          "List-ID",
-          "Discourse <localhost>"
-        ],
-        [
-          "List-Archive",
-          "http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44"
-        ]
-      ],
-      "text": "\n\nA reply from user0, who was invited to this message by notification.\n\n\n\n\n\n---\n[Visit Message](http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2) to respond to [user0](http://localhost:3042/u/user0), [user2](http://localhost:3042/u/user2).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/7f60dda5e8414852e5a80333c6fa325ebacb2e9029fe7ddf8a5d6458035da5e8).\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone sent you a PM.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/45.png\" title=\"user0\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user0\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user0</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 23</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">A reply from user0, who was invited to this message by notification.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Message</a> to respond to <a href=\"http://localhost:3042/u/user0\" style=\"font-weight:bold;text-decoration:none;color:#666\">user0</a>, <a href=\"http://localhost:3042/u/user2\" style=\"font-weight:bold;text-decoration:none;color:#666\">user2</a>.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/7f60dda5e8414852e5a80333c6fa325ebacb2e9029fe7ddf8a5d6458035da5e8\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
-    },
     {
       "headers": [
         [
@@ -1044,7 +950,7 @@
         ],
         [
           "Content-Type",
-          "multipart/alternative; boundary=--==_mimepart_6b04bbbb2dc61_1417f38425b0"
+          "multipart/alternative; boundary=--==_mimepart_6b0504a69ec50_5b35f3876869"
         ],
         [
           "Content-Transfer-Encoding",
@@ -1056,7 +962,7 @@
         ],
         [
           "List-Unsubscribe",
-          "<http://localhost:3042/email/unsubscribe/15ef292c2d704d63882d84bca43a4bfe64da918e3b139b4645d3c30cf5ec26c1>"
+          "<http://localhost:3042/email/unsubscribe/e545fcbae5853d647e47e44a1d2ab6118f515df5c3a312d17d05bea565a329e7>"
         ],
         [
           "List-Unsubscribe-Post",
@@ -1099,8 +1005,102 @@
           "http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44"
         ]
       ],
-      "text": "\n\nA reply from user0, who was invited to this message by notification.\n\n\n\n\n\n---\n[Visit Message](http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2) to respond to [user0](http://localhost:3042/u/user0), [user1](http://localhost:3042/u/user1).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/15ef292c2d704d63882d84bca43a4bfe64da918e3b139b4645d3c30cf5ec26c1).\n",
-      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone sent you a PM.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/45.png\" title=\"user0\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user0\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user0</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 23</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">A reply from user0, who was invited to this message by notification.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Message</a> to respond to <a href=\"http://localhost:3042/u/user0\" style=\"font-weight:bold;text-decoration:none;color:#666\">user0</a>, <a href=\"http://localhost:3042/u/user1\" style=\"font-weight:bold;text-decoration:none;color:#666\">user1</a>.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/15ef292c2d704d63882d84bca43a4bfe64da918e3b139b4645d3c30cf5ec26c1\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+      "text": "\n\nA reply from user0, who was invited to this message by notification.\n\n\n\n\n\n---\n[Visit Message](http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2) to respond to [user0](http://localhost:3042/u/user0), [user1](http://localhost:3042/u/user1).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/e545fcbae5853d647e47e44a1d2ab6118f515df5c3a312d17d05bea565a329e7).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone sent you a PM.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/45.png\" title=\"user0\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user0\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user0</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 24</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">A reply from user0, who was invited to this message by notification.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Message</a> to respond to <a href=\"http://localhost:3042/u/user0\" style=\"font-weight:bold;text-decoration:none;color:#666\">user0</a>, <a href=\"http://localhost:3042/u/user1\" style=\"font-weight:bold;text-decoration:none;color:#666\">user1</a>.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/e545fcbae5853d647e47e44a1d2ab6118f515df5c3a312d17d05bea565a329e7\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
+    },
+    {
+      "headers": [
+        [
+          "From",
+          "\"User0\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "Reply-To",
+          "\"User0\" <noreply@unconfigured.discourse.org>"
+        ],
+        [
+          "To",
+          "user1@example.com"
+        ],
+        [
+          "Message-ID",
+          "<discourse/post/53@localhost>"
+        ],
+        [
+          "In-Reply-To",
+          "<discourse/post/51@localhost>"
+        ],
+        [
+          "References",
+          "<discourse/post/51@localhost>"
+        ],
+        [
+          "Subject",
+          "[Discourse] [PM] Parity fixture: PM user2 to user1, archived"
+        ],
+        [
+          "MIME-Version",
+          "1.0"
+        ],
+        [
+          "Content-Type",
+          "multipart/alternative; boundary=--==_mimepart_6b0504a6b0bca_5b35f38769f1"
+        ],
+        [
+          "Content-Transfer-Encoding",
+          "7bit"
+        ],
+        [
+          "X-Discourse-Email-Preview",
+          "Someone sent you a PM."
+        ],
+        [
+          "List-Unsubscribe",
+          "<http://localhost:3042/email/unsubscribe/93e0bf4b4335867f96c4d899e3c9cdc40b87a3166ac9b275fffa3c3b120abb49>"
+        ],
+        [
+          "List-Unsubscribe-Post",
+          "List-Unsubscribe=One-Click"
+        ],
+        [
+          "X-Discourse-Post-Id",
+          "53"
+        ],
+        [
+          "X-Discourse-Topic-Id",
+          "44"
+        ],
+        [
+          "X-Discourse-Sender",
+          "user0"
+        ],
+        [
+          "X-Auto-Response-Suppress",
+          "All"
+        ],
+        [
+          "x-ms-reactions",
+          "disallow"
+        ],
+        [
+          "Auto-Submitted",
+          "auto-generated"
+        ],
+        [
+          "Precedence",
+          "list"
+        ],
+        [
+          "List-ID",
+          "Discourse <localhost>"
+        ],
+        [
+          "List-Archive",
+          "http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44"
+        ]
+      ],
+      "text": "\n\nA reply from user0, who was invited to this message by notification.\n\n\n\n\n\n---\n[Visit Message](http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2) to respond to [user0](http://localhost:3042/u/user0), [user2](http://localhost:3042/u/user2).\n\nTo unsubscribe from these emails, [click here](http://localhost:3042/email/unsubscribe/93e0bf4b4335867f96c4d899e3c9cdc40b87a3166ac9b275fffa3c3b120abb49).\n",
+      "html": "<!DOCTYPE html><html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\"><head>\n    <meta http-equiv=\"Content-type\" name=\"viewport\" content=\"initial-scale=1.0, maximum-scale=1.0, user-scalable=no, width=device-width\">\n    \n    <meta name=\"color-scheme\" content=\"light dark\">\n    <meta name=\"supported-color-schemes\" content=\"light dark\">\n    \n    <!-- prevent ios zooming + autoscaling -->\n    <meta name=\"x-apple-disable-message-reformatting\">\n    <title></title>\n  </head>\n\n  <body style=\"line-height:1.4;text-align:left\" dir=\"ltr\">\n    <!--[if mso]>\n      <style type=\"text/css\">\n        body,\n        table,\n        td,\n        th,\n        h1,\n        h2,\n        h3 {\n          font-family: Arial, sans-serif !important;\n        }\n      </style>\n    <![endif]-->\n\n    <div style=\"display:none\"></div>\n\n    \n    \n    <div id=\"main\" class=\"\">\n\n  <div class=\"email-preview\" style=\"display:none\"><p>Someone sent you a PM.</p></div>\n\n  <div class=\"header-instructions\"></div>\n\n    <div class=\"post-wrapper  \" style=\"margin-bottom:25px\">\n  <table cellspacing=\"0\" cellpadding=\"0\" border=\"0\">\n    <tbody><tr>\n      <td class=\"user-avatar\" style=\"vertical-align:top;width:55px\">\n        <img src=\"http://localhost:3042/letter_avatar_proxy/v4/letter/u/94ad74/45.png\" title=\"user0\" width=\"45\" height=\"45\">\n      </td>\n      <td>\n          <a rel=\"nofollow\" class=\"username username-link\" href=\"http://localhost:3042/u/user0\" target=\"_blank\" style=\"color:#006699;font-size:13px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;text-decoration:none;font-weight:bold\">user0</a>\n        <br>\n        <span class=\"notification-date\" style=\"text-align:right;color:#999999;padding-right:5px;font-family:'lucida grande',tahoma,verdana,arial,sans-serif;font-size:11px\">November 24</span>\n      </td>\n    </tr>\n  </tbody></table>\n  <div class=\"body\" style=\"padding-top:5px\" dm=\"body\"><p style=\"margin-top:0;border:0\">A reply from user0, who was invited to this message by notification.</p></div>\n</div>\n\n\n\n\n\n\n  <div class=\"footer undecorated-link-footer highlight\" style=\"color:#666\"><hr style=\"background-color:#ddd;height:1px;border:1px\">\n<p><a href=\"http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2\" style=\"font-weight:bold;text-decoration:none;color:#FFFFFF;background-color:#2F70AC;border-top:4px solid #2F70AC;border-right:6px solid #2F70AC;border-bottom:4px solid #2F70AC;border-left:6px solid #2F70AC;display:inline-block\">Visit Message</a> to respond to <a href=\"http://localhost:3042/u/user0\" style=\"font-weight:bold;text-decoration:none;color:#666\">user0</a>, <a href=\"http://localhost:3042/u/user2\" style=\"font-weight:bold;text-decoration:none;color:#666\">user2</a>.</p></div>\n  <div class=\"footer\" style=\"color:#666\"><p>To unsubscribe from these emails, <a href=\"http://localhost:3042/email/unsubscribe/93e0bf4b4335867f96c4d899e3c9cdc40b87a3166ac9b275fffa3c3b120abb49\" style=\"text-decoration:none;font-weight:bold;color:#666\">click here</a>.</p></div>\n\n</div>\n\n<div itemscope=\"\" itemtype=\"http://schema.org/EmailMessage\" style=\"display:none\">\n  <div itemprop=\"action\" itemscope=\"\" itemtype=\"http://schema.org/ViewAction\">\n    <link itemprop=\"url\" href=\"http://localhost:3042/t/parity-fixture-pm-user2-to-user1-archived/44/2\">\n    <meta itemprop=\"name\" content=\"Read full topic\">\n  </div>\n</div>\n\n\n\n    <!-- prevent Gmail on iOS font size manipulation -->\n    <div style=\"display:none;white-space:nowrap;font:15px courier;line-height:0\">\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;\n    </div>\n    \n    <style>\n      @media (prefers-color-scheme: dark) {\n        html {\n          background: #151515 !important;\n        }\n\n        h1,\n        h2,\n        h3,\n        h4,\n        h5,\n        h6,\n        p,\n        span,\n        td {\n          color: inherit !important;\n        }\n\n        [data-stripped-secure-media] {\n          border-color: #454545 !important;\n        }\n\n        [data-stripped-secure-upload] {\n          border-color: #454545 !important;\n        }\n\n        [dm='text-color'] {\n          color: #dddddd;\n        }\n\n        [dm='header'] {\n          background: #151515 !important;\n        }\n\n        [dm='topic-body'] {\n          background: #151515 !important;\n          border-bottom: 1px solid #454545 !important;\n        }\n\n        [dm='triangle'] {\n          border-top-color: #151515 !important;\n        }\n\n        [dm='body'] {\n          background: #222222 !important;\n          color: #dddddd !important;\n        }\n\n        [dm='body_primary'] {\n          background: #062e3d !important;\n          color: #dddddd !important;\n        }\n\n        code,\n        pre code,\n        blockquote {\n          background: #323232 !important;\n          border-color: #454545 !important;\n          color: #dddddd !important;\n        }\n      }\n    </style>\n    \n  \n\n</body></html>"
     }
   ],
   "recorded_from": {

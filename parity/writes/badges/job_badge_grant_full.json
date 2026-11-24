@@ -2,8 +2,8 @@
   "name": "job_badge_grant_full",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-23T21:45:30.293209",
-  "transaction_started_at": "2026-11-23T21:45:29.473147",
+  "started_at": "2026-11-24T04:07:56.221185",
+  "transaction_started_at": "2026-11-24T04:07:55.334275",
   "responses": [],
   "changes": {
     "badges": {
@@ -46,7 +46,7 @@
             "listable": true,
             "created_at": "2026-11-03T05:07:09.797126",
             "show_posts": true,
-            "updated_at": "2026-11-23T21:45:30.624409",
+            "updated_at": "2026-11-24T04:07:56.53728",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
@@ -96,7 +96,7 @@
             "listable": true,
             "created_at": "2026-11-03T05:07:09.938947",
             "show_posts": true,
-            "updated_at": "2026-11-23T21:45:30.649305",
+            "updated_at": "2026-11-24T04:07:56.597159",
             "allow_title": false,
             "auto_revoke": true,
             "description": null,
@@ -120,8 +120,8 @@
           "read": false,
           "user_id": 2,
           "topic_id": null,
-          "created_at": "2026-11-23T21:45:30.631837",
-          "updated_at": "2026-11-23T21:45:30.631837",
+          "created_at": "2026-11-24T04:07:56.54737",
+          "updated_at": "2026-11-24T04:07:56.54737",
           "post_number": null,
           "high_priority": false,
           "post_action_id": null,
@@ -139,7 +139,7 @@
           "post_id": 52,
           "user_id": 2,
           "badge_id": 40,
-          "created_at": "2026-11-23T21:45:29.473147",
+          "created_at": "2026-11-24T04:07:55.334275",
           "granted_at": "2026-11-23T20:53:20.972537",
           "is_favorite": null,
           "featured_rank": 2,
@@ -154,8 +154,8 @@
           "post_id": 52,
           "user_id": 5,
           "badge_id": 11,
-          "created_at": "2026-11-20T21:45:29.473147",
-          "granted_at": "2026-11-20T21:45:29.473147",
+          "created_at": "2026-11-21T04:07:55.334275",
+          "granted_at": "2026-11-21T04:07:55.334275",
           "is_favorite": null,
           "featured_rank": null,
           "granted_by_id": -1,
@@ -289,11 +289,10 @@
   },
   "setup": [
     "DELETE FROM user_badges WHERE id > 18",
-    "UPDATE badges SET grant_count = 0 WHERE id = 40",
     "UPDATE user_stats SET distinct_badge_count = 3 WHERE user_id = 2",
     "UPDATE user_badges SET featured_rank = CASE id WHEN 3 THEN 4 WHEN 16 THEN 3 WHEN 17 THEN 2 WHEN 18 THEN 3 END WHERE id IN (3, 16, 17, 18)",
     "INSERT INTO user_badges (id, badge_id, user_id, granted_at, granted_by_id, seq, created_at, post_id) VALUES (901, 11, 5, now() - interval '3 days', -1, 0, now() - interval '3 days', 52)",
-    "UPDATE badges SET grant_count = 3 WHERE id = 11"
+    "UPDATE badges SET grant_count = CASE id WHEN 11 THEN 3 ELSE 0 END WHERE id IN (11, 40)"
   ],
   "enqueue": [
     [
@@ -658,7 +657,7 @@
     ]
   ],
   "recorded_from": {
-    "case": "133c32ec0dc51650a3780be474f2162bcdea7a47ad66fbe67e0fbce974aa6d5d",
+    "case": "d5af9adda4e8012f0336e8b62399336622d7e37b5fc2d6e0ec57e3d1b728fedf",
     "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }

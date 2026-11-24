@@ -6,7 +6,7 @@
     "top_topics_formula_least_likes_per_post_multiplier": "2.5"
   },
   "setup": [
-    "INSERT INTO topic_views (topic_id, viewed_at, user_id, ip_address) VALUES (35, now() - interval '2 hours', 2, NULL), (35, now() - interval '3 hours', 3, NULL), (37, now() - interval '20 days', 4, NULL), (38, now() - interval '200 days', 5, NULL)",
+    "INSERT INTO topic_views (topic_id, viewed_at, user_id, ip_address) VALUES (35, now(), 2, NULL), (35, now(), 3, NULL), (37, now() - interval '20 days', 4, NULL), (38, now() - interval '200 days', 5, NULL)",
     "UPDATE posts SET like_count = 3 WHERE id = 35"
   ],
   "requests": [],

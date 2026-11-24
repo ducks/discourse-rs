@@ -2,8 +2,8 @@
   "name": "top_refresh_today",
   "user": null,
   "requests": [],
-  "started_at": "2026-11-24T01:12:50.012699",
-  "transaction_started_at": "2026-11-24T01:12:45.1145",
+  "started_at": "2026-11-24T03:33:55.221572",
+  "transaction_started_at": "2026-11-24T03:33:54.476145",
   "responses": [],
   "changes": {
     "top_topics": {
@@ -78,7 +78,7 @@
   "jobs": [],
   "next_ids": {},
   "setup": [
-    "INSERT INTO topic_views (topic_id, viewed_at, user_id, ip_address) VALUES (35, now() - interval '2 hours', 2, NULL), (35, now() - interval '3 hours', 3, NULL), (37, now() - interval '20 days', 4, NULL), (38, now() - interval '200 days', 5, NULL)",
+    "INSERT INTO topic_views (topic_id, viewed_at, user_id, ip_address) VALUES (35, now(), 2, NULL), (35, now(), 3, NULL), (37, now() - interval '20 days', 4, NULL), (38, now() - interval '200 days', 5, NULL)",
     "UPDATE posts SET like_count = 3 WHERE id = 35",
     "UPDATE posts SET created_at = now() - interval '2 hours' WHERE topic_id = 35"
   ],
@@ -93,7 +93,7 @@
   ],
   "jobs_from_jobs": [],
   "recorded_from": {
-    "case": "69c239b7ef6bb64d72d3c1bc8998f7b850b2e92e2e5d60babcfbeef026f8acdb",
+    "case": "8c76b89f75e493a06c85b07edfdd0f89902d6385b170314f53ce2682071c14ab",
     "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
     "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
   }

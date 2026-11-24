@@ -13,5 +13,8 @@
       "method": "GET",
       "path": "/t/parity-fixture-replies-and-posters.json"
     }
+  ],
+  "unordered_responses": [
+    "/responses/0/body/suggested_topics"
   ]
 }
