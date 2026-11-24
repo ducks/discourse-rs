@@ -30,14 +30,16 @@ async fn hook(pool: &PgPool, id: i32, wildcard: bool, active: bool, types: &[i32
     }
 }
 
-/// Rails joins the event types (an INNER JOIN): a wildcard hook without
-/// any never fires; with any, it fires for every event.
+/// Rails left joins the event types (ff1f80f5e8b): an active wildcard hook
+/// fires for every event, with or without any; an inactive one never.
 #[tokio::test]
-async fn wildcard_hooks_need_an_event_type() {
+async fn wildcard_hooks_fire_with_or_without_event_types() {
     let db = TestDb::new().await;
     let mut conn = db.pool.acquire().await.unwrap();
-    hook(&db.pool, 9001, true, true, &[]).await;
+    hook(&db.pool, 9002, true, false, &[]).await;
     assert!(!web_hooks::active(&mut conn, "post_created").await.unwrap());
+    hook(&db.pool, 9001, true, true, &[]).await;
+    assert!(web_hooks::active(&mut conn, "post_created").await.unwrap());
     sqlx::query("INSERT INTO web_hook_event_types_hooks (web_hook_id, web_hook_event_type_id) VALUES (9001, 304)")
         .execute(&db.pool)
         .await
