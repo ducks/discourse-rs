@@ -851,7 +851,11 @@ pub async fn reply_ids(
     else {
         return Ok(super::topics::not_found_response(&state));
     };
-    let replies: Vec<(i32, i32)> = sqlx::query_as(
+    let secured = guardian
+        .visible_posts_clause(&mut conn, &settings, "p")
+        .await?
+        .unwrap_or_else(|| "TRUE".to_string());
+    let replies: Vec<(i32, i32)> = sqlx::query_as(&format!(
         "WITH RECURSIVE breadcrumb(id, level) AS ( \
            SELECT $1::int, 0 \
            UNION \
@@ -865,13 +869,12 @@ pub async fn reply_ids(
            WHERE r.reply_post_id <> r.post_id GROUP BY id, level \
          ) \
          SELECT b.id, MIN(b.level) FROM breadcrumb_with_count b JOIN posts p ON p.id = b.id \
-         WHERE b.level > 0 AND b.count = 1 AND p.deleted_at IS NULL AND p.post_type = ANY($4) \
-         GROUP BY b.id ORDER BY b.id",
-    )
+         WHERE b.level > 0 AND b.count = 1 AND p.deleted_at IS NULL AND {secured} \
+         GROUP BY b.id ORDER BY b.id"
+    ))
     .bind(post_id)
     .bind(MAX_REPLY_LEVEL)
     .bind(access.topic_id)
-    .bind(guardian.visible_post_types(&settings)?)
     .fetch_all(&mut *conn)
     .await?;
     let replies: Vec<Value> = replies

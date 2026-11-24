@@ -881,21 +881,20 @@ async fn bookmark_lists_follow_what_the_viewer_can_see() {
     let reply = client.get(&format!("{path}?q=repliers")).await;
     assert_eq!(bookmark_ids(&reply.json()), vec![2]);
 
-    // A hidden post of someone else stays listed, without its excerpt.
+    // A hidden post of someone else takes its bookmark out of the list
+    // (Post.secured); the admin reading user1's list still sees it.
     sqlx::query("UPDATE posts SET hidden = TRUE WHERE id = 52")
         .execute(&db.pool)
         .await
         .unwrap();
-    let json = client.get(path).await.json();
-    let hidden = json["user_bookmark_list"]["bookmarks"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .find(|b| b["id"] == 5)
-        .unwrap()
-        .clone();
-    assert_eq!(hidden["hidden"], true);
-    assert!(hidden.get("excerpt").is_none());
+    assert_eq!(
+        bookmark_ids(&client.get(path).await.json()),
+        vec![4, 3, 2, 1]
+    );
+    assert_eq!(
+        bookmark_ids(&admin.get(path).await.json()),
+        vec![4, 3, 5, 2, 1]
+    );
 
     // A whisper is not for a regular user.
     sqlx::query("UPDATE posts SET post_type = 4 WHERE id = 52")
@@ -915,13 +914,17 @@ async fn bookmark_lists_follow_what_the_viewer_can_see() {
     assert_eq!(bookmark_ids(&client.get(path).await.json()), vec![4, 2, 1]);
 
     // So does a topic moved into a category the viewer can't read; an
-    // admin reading user1's list still sees it.
+    // admin reading user1's list still sees it, and the whisper too
+    // (Post.secured leaves admins unfiltered).
     sqlx::query("UPDATE topics SET category_id = 3 WHERE id = 37")
         .execute(&db.pool)
         .await
         .unwrap();
     assert_eq!(bookmark_ids(&client.get(path).await.json()), vec![4, 2]);
-    assert_eq!(bookmark_ids(&admin.get(path).await.json()), vec![4, 2, 1]);
+    assert_eq!(
+        bookmark_ids(&admin.get(path).await.json()),
+        vec![4, 5, 2, 1]
+    );
 
     // And a private message the owner is no longer in, for the admin too:
     // the messages are the owner's, not the viewer's.
@@ -930,7 +933,7 @@ async fn bookmark_lists_follow_what_the_viewer_can_see() {
         .await
         .unwrap();
     assert_eq!(bookmark_ids(&client.get(path).await.json()), vec![2]);
-    assert_eq!(bookmark_ids(&admin.get(path).await.json()), vec![2, 1]);
+    assert_eq!(bookmark_ids(&admin.get(path).await.json()), vec![5, 2, 1]);
 
     // A topic bookmark goes with its topic's first post.
     sqlx::query("UPDATE posts SET deleted_at = now() WHERE topic_id = 35 AND post_number = 1")

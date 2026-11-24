@@ -370,15 +370,17 @@ pub async fn stream(
     .map(|t| (t.0, t))
     .collect();
     // Post.secured(guardian) joined to the allowed topics.
-    let post_types: Vec<i32> = guardian.visible_post_types(settings)?;
+    let secured = guardian
+        .visible_posts_clause(&mut *conn, settings, "posts")
+        .await?
+        .unwrap_or_else(|| "TRUE".to_string());
     let wanted_posts: Vec<i32> = post_ids.iter().flatten().copied().collect();
     let posts: HashMap<i32, Option<i32>> = sqlx::query_as::<_, (i32, Option<i32>)>(&format!(
         "SELECT posts.id, posts.user_id FROM posts JOIN topics ON topics.id = posts.topic_id \
-         WHERE posts.id = ANY($1) AND posts.deleted_at IS NULL AND posts.post_type = ANY($2) \
+         WHERE posts.id = ANY($1) AND posts.deleted_at IS NULL AND {secured} \
          AND ({allowed})"
     ))
     .bind(&wanted_posts)
-    .bind(&post_types)
     .fetch_all(&mut *conn)
     .await?
     .into_iter()

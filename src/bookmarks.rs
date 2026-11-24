@@ -326,20 +326,13 @@ impl Bookmarks<'_> {
         let topics = guardian
             .listable_or_own_messages(&mut *self.conn, settings, user_id)
             .await?;
-        // Post.secured(guardian)
-        let post_types = guardian
-            .visible_post_types(settings)?
-            .iter()
-            .map(|t| t.to_string())
-            .collect::<Vec<_>>()
-            .join(", ");
-        let posts = format!("posts.deleted_at IS NULL AND posts.post_type IN ({post_types})");
-        // filter_hidden_posts, which only the topic bookmarks go through.
-        let hidden = if guardian.can_see_all_hidden_posts(settings)? {
-            String::new()
-        } else {
-            let viewer = guardian.user_id().unwrap_or(0);
-            format!(" AND (posts.hidden = false OR posts.user_id = {viewer})")
+        // Post.secured(guardian), under Post's default scope.
+        let posts = match guardian
+            .visible_posts_clause(&mut *self.conn, settings, "posts")
+            .await?
+        {
+            Some(visible) => format!("posts.deleted_at IS NULL AND {visible}"),
+            None => "posts.deleted_at IS NULL".to_string(),
         };
         // filter_allowed_categories
         let admin_sees_all = guardian.is_admin()
@@ -396,7 +389,7 @@ impl Bookmarks<'_> {
                INNER JOIN posts ON posts.topic_id = topics.id AND posts.post_number = 1 \
                LEFT JOIN topic_users ON topic_users.topic_id = topics.id{topic_search_join} \
              WHERE bookmarks.user_id = $1 AND bookmarks.bookmarkable_type = 'Topic' \
-               AND topic_users.user_id = {user_id} AND {topics} AND {posts}{hidden}{allowed}{search_where}{chat}"
+               AND topic_users.user_id = {user_id} AND {topics} AND {posts}{allowed}{search_where}{chat}"
         ))
     }
 

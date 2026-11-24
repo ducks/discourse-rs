@@ -333,9 +333,9 @@ impl Guardian {
         ))
     }
 
-    /// `visible_topic_scope(scope, deleted:)`'s condition on `topics`, with
-    /// `shared_drafts` LEFT OUTER JOINed on the topic; None when the scope
-    /// is left as it is (admins). `include_deleted` is `deleted: :include`.
+    /// `visible_topic_scope(scope, deleted:)`'s condition on `topics`; None
+    /// when the scope is left as it is (admins). `include_deleted` is
+    /// `deleted: :include`.
     pub async fn visible_topic_clause(
         &self,
         conn: &mut PgConnection,
@@ -349,7 +349,7 @@ impl Guardian {
             return Ok(None);
         }
         let mut clauses = Vec::new();
-        if !include_deleted && !self.is_staff() {
+        if !include_deleted && !self.can_delete_all_posts_and_topics(settings)? {
             let mut visible = "topics.deleted_at IS NULL".to_string();
             if self.category_group_moderation_allowed(settings)?
                 && let Some(moderated) = self.category_group_moderator_sql()
@@ -357,9 +357,6 @@ impl Guardian {
                 visible = format!("({visible} OR topics.category_id IN ({moderated}))");
             }
             clauses.push(visible);
-        }
-        if !self.can_see_shared_draft(settings)? {
-            clauses.push("shared_drafts.id IS NULL".to_string());
         }
         // secured_regular_topic_scope: Topic.secured, or for a staged user
         // their own topics in categories that take email from strangers.
@@ -371,9 +368,16 @@ impl Guardian {
             secured = format!(
                 "({secured} OR topics.id IN (SELECT topics.id FROM topics \
                    INNER JOIN categories ON categories.id = topics.category_id \
-                   WHERE categories.read_restricted AND categories.email_in IS NOT NULL \
+                   WHERE categories.read_restricted \
+                     AND NULLIF(BTRIM(categories.email_in, E' \\t\\r\\n\\f\\x0B'), '') IS NOT NULL \
                      AND categories.email_in_allow_strangers AND topics.user_id = {}))",
                 u.id
+            );
+        }
+        // Shared drafts hide regular topics only, never a participant's PM.
+        if !self.can_see_shared_draft(settings)? {
+            secured = format!(
+                "{secured} AND NOT EXISTS (SELECT 1 FROM shared_drafts WHERE shared_drafts.topic_id = topics.id)"
             );
         }
         let regular = format!("(topics.archetype <> 'private_message' AND {secured})");
@@ -387,6 +391,97 @@ impl Guardian {
             None => regular,
         });
         Ok(Some(clauses.join(" AND ")))
+    }
+
+    /// `filter_visible_posts(scope)` (`Post.secured`): `can_see_post?` as a
+    /// condition on the posts table or alias `posts`. None for admins, who
+    /// are unfiltered. Deleted posts still need the caller's own
+    /// `deleted_at IS NULL` where Rails' default scope applies.
+    /// `filter_visible_posts(scope, topic:)` is this with the topic id
+    /// constrained: visible_topic_scope matches `can_see_topic?`.
+    pub async fn visible_posts_clause(
+        &self,
+        conn: &mut PgConnection,
+        settings: &SiteSettings,
+        posts: &str,
+    ) -> Result<Option<String>, GuardianError> {
+        if self.is_admin() {
+            return Ok(None);
+        }
+        let types = self
+            .visible_post_types(settings)?
+            .iter()
+            .map(i32::to_string)
+            .collect::<Vec<_>>()
+            .join(", ");
+        let mut clauses = vec![format!("{posts}.post_type IN ({types})")];
+        if !self.is_moderator() {
+            let rules = self.visible_post_state_sql(settings, posts)?;
+            let moderated = if self.category_group_moderation_allowed(settings)? {
+                self.category_group_moderator_sql()
+            } else {
+                None
+            };
+            clauses.push(match moderated {
+                Some(ids) => format!(
+                    "(({rules}) OR EXISTS (SELECT 1 FROM topics \
+                       WHERE topics.id = {posts}.topic_id AND topics.category_id IN ({ids})))"
+                ),
+                None => format!("({rules})"),
+            });
+        }
+        let topics = self
+            .visible_topic_clause(&mut *conn, settings, false)
+            .await?
+            .unwrap_or_else(|| "TRUE".to_string());
+        clauses.push(format!(
+            "EXISTS (SELECT 1 FROM topics WHERE topics.id = {posts}.topic_id AND {topics})"
+        ));
+        Ok(Some(clauses.join(" AND ")))
+    }
+
+    /// `visible_post_state_sql`: the deleted and hidden rules of
+    /// `can_see_post?` for a viewer who isn't a moderator.
+    fn visible_post_state_sql(
+        &self,
+        settings: &SiteSettings,
+        posts: &str,
+    ) -> Result<String, GuardianError> {
+        let mut deleted = format!("{posts}.deleted_at IS NULL");
+        if let Some(u) = self.user()
+            && self.has_trust_level(4)
+        {
+            // TL4 sees what it deleted, unless it is an anonymous-mode
+            // shadow (`User#anonymous?`).
+            let anonymous = if settings.get("allow_anonymous_mode")?.truthy() && u.trust_level >= 1
+            {
+                format!(
+                    " AND NOT EXISTS (SELECT 1 FROM anonymous_users \
+                       WHERE anonymous_users.user_id = {})",
+                    u.id
+                )
+            } else {
+                String::new()
+            };
+            deleted = format!(
+                "({deleted} OR ({posts}.deleted_by_id = {}{anonymous}))",
+                u.id
+            );
+        }
+        // can_see_all_hidden_posts?(nil)
+        let all_hidden = !(self.is_anonymous()
+            && !settings
+                .get("granular_anonymous_and_logged_in_groups_permissions")?
+                .truthy())
+            && self.in_setting_groups(settings, "hidden_post_visible_groups")?;
+        if all_hidden {
+            return Ok(deleted);
+        }
+        let hidden = match self.user_id() {
+            Some(uid) => format!("({posts}.hidden = FALSE OR {posts}.user_id = {uid})"),
+            None => format!("{posts}.hidden = FALSE"),
+        };
+        Ok(format!("{deleted} AND {hidden}"))
     }
 
     /// `can_see_topic_ids(topic_ids:)`: the given ids the guardian may
@@ -407,8 +502,7 @@ impl Guardian {
             return Ok(topic_ids.to_vec());
         };
         let ids: Vec<i32> = sqlx::query_scalar(&format!(
-            "SELECT topics.id FROM topics LEFT OUTER JOIN shared_drafts ON shared_drafts.topic_id = topics.id \
-             WHERE topics.id = ANY($1) AND {visible}"
+            "SELECT topics.id FROM topics WHERE topics.id = ANY($1) AND {visible}"
         ))
         .bind(topic_ids)
         .fetch_all(conn)

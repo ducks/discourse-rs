@@ -1062,13 +1062,16 @@ impl Users<'_> {
         if !g.can_see_topic(self.settings, &topic, true, &secure)? {
             return Ok(None);
         }
-        let count: i64 = sqlx::query_scalar(
+        let secured = g
+            .visible_posts_clause(&mut *self.conn, self.settings, "posts")
+            .await?
+            .unwrap_or_else(|| "TRUE".to_string());
+        let count: i64 = sqlx::query_scalar(&format!(
             "SELECT COUNT(*) FROM posts WHERE topic_id = $1 AND user_id = $2 \
-             AND deleted_at IS NULL AND post_type = ANY($3)",
-        )
+             AND deleted_at IS NULL AND {secured}"
+        ))
         .bind(topic_id)
         .bind(user.id)
-        .bind(g.visible_post_types(self.settings)?)
         .fetch_one(&mut *self.conn)
         .await?;
         Ok(Some(json!({ topic_id.to_string(): count })))

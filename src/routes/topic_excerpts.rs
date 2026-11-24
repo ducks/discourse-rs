@@ -79,17 +79,18 @@ pub async fn excerpts(
     if !visible {
         return Ok(super::search::invalid_access(&state));
     }
-    // Post.secured: whispers for whisperers only.
-    let whisperer = guardian.is_whisperer(&settings)?;
-    let rows: Vec<ExcerptRow> = sqlx::query_as(
+    let secured = guardian
+        .visible_posts_clause(&mut conn, &settings, "posts")
+        .await?
+        .unwrap_or_else(|| "TRUE".to_string());
+    let rows: Vec<ExcerptRow> = sqlx::query_as(&format!(
         "SELECT posts.id, posts.cooked, u.username, posts.action_code, posts.created_at \
              FROM posts LEFT JOIN users u ON u.id = posts.user_id \
              WHERE posts.hidden = FALSE AND posts.deleted_at IS NULL AND posts.topic_id = $1 \
-             AND posts.id = ANY($2) AND ($3 OR posts.post_type <> 4) ORDER BY posts.id",
-    )
+             AND posts.id = ANY($2) AND {secured} ORDER BY posts.id"
+    ))
     .bind(topic_id)
     .bind(post_ids.iter().map(|id| *id as i32).collect::<Vec<i32>>())
-    .bind(whisperer)
     .fetch_all(&mut *conn)
     .await?;
     let plugins = crate::excerpt::Plugins::from_settings(&settings)?;
