@@ -12,13 +12,16 @@ use serde_json::json;
 use crate::guardian::Guardian;
 use crate::session::current::AuthGuardian;
 use crate::site_settings::SiteSettings;
-use crate::topic_view::{CHUNK_SIZE, Options, TopicView, TopicViewError};
+use crate::topic_view::{CHUNK_SIZE, Options, PRINT_CHUNK_SIZE, TopicView, TopicViewError};
 use crate::url::Urls;
 use crate::{AppError, AppState};
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize, Default, Clone)]
 pub struct ShowParams {
     page: Option<String>,
+    /// `params[:print]`: "true" from the print route (or the query) prints;
+    /// any value switches to the crawler layout.
+    print: Option<String>,
     /// `params[:show_deleted]`: present at all, deleted replies stay in.
     show_deleted: Option<String>,
     /// `?post_number=`: params[:post_number] when the path has none.
@@ -124,15 +127,25 @@ pub async fn show_post(
     requested: Option<axum::Extension<super::RequestedUri>>,
     super::search::Peer(peer): super::search::Peer,
 ) -> Result<Response, AppError> {
+    let incoming = Incoming {
+        headers: &headers,
+        uri: &uri,
+        requested: requested.as_ref().map(|r| &r.0),
+        guardian: &guardian,
+        peer,
+    };
     let (post_number, json) = split_format(&post_number);
+    // `t/:slug/:topic_id/print` (print: "true"; an Accept for JSON still
+    // gets the JSON, at the print chunk).
+    if post_number == "print" && all_digits(&id) {
+        let params = ShowParams {
+            print: Some("true".into()),
+            ..params
+        };
+        return show(incoming, &state, Some(&slug), &id, None, &params, json).await;
+    }
     show(
-        Incoming {
-            headers: &headers,
-            uri: &uri,
-            requested: requested.as_ref().map(|r| &r.0),
-            guardian: &guardian,
-            peer,
-        },
+        incoming,
         &state,
         Some(&slug),
         &id,
@@ -369,6 +382,33 @@ async fn detailed_invalid_access(
     Ok(response)
 }
 
+/// A plain Discourse::InvalidAccess out of topics#show (no topic to
+/// explain): 403 with the not-found page as extras.
+async fn invalid_access(
+    state: &AppState,
+    guardian: &Guardian,
+    page_slug: &str,
+) -> Result<Response, AppError> {
+    let message = state
+        .i18n
+        .t("invalid_access")
+        .unwrap_or("You are not permitted to view the requested resource.");
+    let extras = not_found_extras(state, guardian, page_slug, true, None).await?;
+    let mut response = (
+        StatusCode::FORBIDDEN,
+        Json(json!({"errors": [message], "error_type": "invalid_access", "extras": extras})),
+    )
+        .into_response();
+    response
+        .extensions_mut()
+        .insert(super::not_found::ErrorPage {
+            status: StatusCode::FORBIDDEN,
+            forbidden: true,
+            custom_message: None,
+        });
+    Ok(response)
+}
+
 /// The path topics#show checks for a permalink, None when it checks none.
 async fn permalink_path(
     state: &AppState,
@@ -529,10 +569,12 @@ async fn show(
         }
     };
     let post_number: Option<i64> = match post_number {
-        Some(n) => Some(
-            n.parse()
-                .map_err(|_| crate::Unsupported("non-numeric post_number"))?,
-        ),
+        // The routes constrain post_number to digits (`last` and `print`
+        // have their own): any other segment matches no route.
+        Some(n) => match n.parse() {
+            Ok(n) => Some(n),
+            Err(_) => return Ok(not_found_response(state)),
+        },
         // A query post_number, as TopicView reads it (`to_i`).
         None => params
             .post_number
@@ -540,6 +582,44 @@ async fn show(
             .filter(|n| !n.is_empty())
             .map(crate::ruby::to_i),
     };
+
+    // opts[:print]: the print route's (or the query's) "true". Any other
+    // value still asks for the crawler layout (params.key?(:print)).
+    let print = params.print.as_deref() == Some("true");
+    if params.print.is_some() && !print && !json {
+        return Err(crate::Unsupported("a topic page in the crawler layout").into());
+    }
+    if print {
+        if settings.get("max_prints_per_hour_per_user")?.to_i() == 0 {
+            drop(conn);
+            return invalid_access(state, guardian, &page_slug).await;
+        }
+        if !guardian.is_admin() {
+            let user = guardian.user_id().map(|id| crate::rate_limiter::LimitUser {
+                id,
+                staff: guardian.is_staff(),
+            });
+            let limiter = crate::rate_limiter::RateLimiter::new(
+                user,
+                "print-topic-per-hour",
+                settings.get("max_prints_per_hour_per_user")?.to_i(),
+                3600,
+            );
+            if limiter
+                .performed(&state.pool, state.config.rate_limits)
+                .await?
+                .is_err()
+            {
+                // render_json_error I18n.t("rate_limiter.slow_down")
+                let text = state.i18n.t("rate_limiter.slow_down").unwrap_or_default();
+                return Ok((
+                    StatusCode::UNPROCESSABLE_ENTITY,
+                    Json(json!({ "errors": [text] })),
+                )
+                    .into_response());
+            }
+        }
+    }
 
     let urls = Urls {
         config: &state.config,
@@ -556,6 +636,7 @@ async fn show(
             post_number,
             show_deleted: params.show_deleted.is_some(),
             filter: params.filter.clone(),
+            print,
             ..Default::default()
         },
         post_types: Vec::new(),
@@ -597,8 +678,9 @@ async fn show(
             .as_array()
             .map(Vec::len)
             .unwrap_or(0) as i64;
-        if (page - 1) * CHUNK_SIZE >= count {
-            let last_page = ((count - 1).max(0) / CHUNK_SIZE) + 1;
+        let chunk = if print { PRINT_CHUNK_SIZE } else { CHUNK_SIZE };
+        if (page - 1) * chunk >= count {
+            let last_page = ((count - 1).max(0) / chunk) + 1;
             let mut location = format!("{base_path}/t/{}/{topic_id}{format}", rendered.slug);
             if last_page > 1 {
                 location.push_str(&format!("?page={last_page}"));
@@ -669,6 +751,22 @@ async fn show(
 
     if json {
         return Ok(Json(rendered.json).into_response());
+    }
+    if print {
+        return super::topic_print::render(
+            &mut conn,
+            super::topic_print::Print {
+                state,
+                settings: &settings,
+                guardian,
+                headers,
+                uri,
+                view: &rendered.json,
+                page,
+                page_image: rendered.page_image.map_err(crate::Unsupported)?,
+            },
+        )
+        .await;
     }
     let vs = super::session::viewer_state(state, headers, &settings, guardian)?;
     let mut site = crate::html::Site::from_settings(&settings, &base_path)?;
@@ -759,7 +857,7 @@ async fn show(
 /// The crawler block of topics/show: canonical_url from the topic view,
 /// the description from the topic's stored excerpt else the first shown
 /// post's summary, TopicView#image_url else the site's image.
-async fn topic_crawler(
+pub(super) async fn topic_crawler(
     conn: &mut sqlx::PgConnection,
     state: &AppState,
     settings: &SiteSettings,
@@ -854,7 +952,7 @@ fn absolute_image_url(urls: &crate::url::Urls<'_>, link: &str) -> Result<String,
 }
 
 /// `gsub(/<[^>]*>/, "")`
-fn strip_tags(s: &str) -> String {
+pub(super) fn strip_tags(s: &str) -> String {
     let mut out = String::with_capacity(s.len());
     let mut in_tag = false;
     for c in s.chars() {

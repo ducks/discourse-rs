@@ -105,6 +105,7 @@ mod topic_move;
 mod topic_notifications;
 mod topic_pin;
 mod topic_posts;
+mod topic_print;
 mod topic_status;
 mod topic_timer;
 mod topic_update;
@@ -3337,6 +3338,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/overflow-controls.js", get(asset))
         .route("/assets/groups.js", get(asset))
         .route("/assets/badge-page.js", get(asset))
+        .route("/assets/print-page.js", get(asset))
         .route("/assets/search-page.js", get(asset))
         .route("/assets/search-advanced.js", get(asset))
         .route("/assets/search-menu.js", get(asset))

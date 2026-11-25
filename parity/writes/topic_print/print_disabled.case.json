@@ -1,0 +1,16 @@
+{
+  "user": "user1",
+  "settings": {
+    "max_prints_per_hour_per_user": 0
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35/print"
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35/abc"
+    }
+  ]
+}

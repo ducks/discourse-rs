@@ -1,0 +1,21 @@
+{
+  "user": "user1",
+  "settings": {
+    "display_name_on_posts": true
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-liked-and-archived/41/print",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": "",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+      }
+    }
+  ],
+  "fragment": [
+    "<div id=\"main-outlet\"",
+    "</footer>"
+  ]
+}

@@ -285,7 +285,13 @@ pub struct Options {
     /// `params[:filter]`: the plugins' (discourse-post-voting's
     /// `activity`).
     pub filter: Option<String>,
+    /// `print: true` (topics#show's print route): chunks of
+    /// `print_chunk_size`.
+    pub print: bool,
 }
+
+/// `TopicView.print_chunk_size`
+pub const PRINT_CHUNK_SIZE: i64 = 1000;
 
 /// `setup_filtered_posts`: which of the topic's posts the view streams.
 /// Every query over them binds the topic id as $1, the visible post types
@@ -437,6 +443,15 @@ pub struct PageImage {
 }
 
 impl TopicView<'_> {
+    /// `@chunk_size` (and `@limit`): the print chunk for a print view.
+    fn chunk_size(&self) -> i64 {
+        if self.options.print {
+            PRINT_CHUNK_SIZE
+        } else {
+            CHUNK_SIZE
+        }
+    }
+
     /// `TopicView.new` + `TopicViewSerializer`: the full document, or
     /// NotFound. `Redirect` when `page` is past the end.
     pub async fn render(&mut self, topic_id: i32) -> Result<Rendered, TopicViewError> {
@@ -785,7 +800,7 @@ impl TopicView<'_> {
         if pm && topic.subtype.as_deref() == Some("moderator_warning") {
             out.insert("is_warning".into(), json!(true));
         }
-        out.insert("chunk_size".into(), json!(CHUNK_SIZE));
+        out.insert("chunk_size".into(), json!(self.chunk_size()));
         out.insert("bookmarked".into(), json!(!viewer.bookmarks.is_empty()));
         if pm {
             out.insert(
@@ -1517,7 +1532,7 @@ impl TopicView<'_> {
             .bind(post_number)
             .fetch_one(&mut *self.conn)
             .await?;
-        Ok(((count - 1).max(0) / CHUNK_SIZE) + 1)
+        Ok(((count - 1).max(0) / self.chunk_size()) + 1)
     }
 
     const POST_SQL: &'static str = "SELECT id, user_id, topic_id, post_number, cooked, created_at, updated_at, \
@@ -1543,8 +1558,8 @@ impl TopicView<'_> {
             .bind(topic_id)
             .bind(&self.post_types)
             .bind(&filter.ignored)
-            .bind(CHUNK_SIZE * (page - 1).max(0))
-            .bind(CHUNK_SIZE)
+            .bind(self.chunk_size() * (page - 1).max(0))
+            .bind(self.chunk_size())
             .fetch_all(&mut *self.conn)
             .await?;
         self.filter_posts_by_ids(topic_id, &ids, filter).await
@@ -1591,7 +1606,8 @@ impl TopicView<'_> {
                 .filter_posts_near_in_order(topic_id, post_number, filter)
                 .await;
         }
-        let before = (CHUNK_SIZE / 4).max(1);
+        let chunk = self.chunk_size();
+        let before = (chunk / 4).max(1);
         let Some(sort_order) = self.get_sort_order(topic_id, post_number).await? else {
             return Ok(Vec::new());
         };
@@ -1619,18 +1635,18 @@ impl TopicView<'_> {
             .bind(&filter.ignored)
             .bind(sort_order)
             .bind(0i64)
-            .bind(CHUNK_SIZE - before_len)
+            .bind(chunk - before_len)
             .fetch_all(&mut *self.conn)
             .await?;
         ids.extend(after);
-        if (ids.len() as i64) < CHUNK_SIZE {
+        if (ids.len() as i64) < chunk {
             let more: Vec<i32> = sqlx::query_scalar(&ids_where("<", "DESC"))
                 .bind(topic_id)
                 .bind(&self.post_types)
                 .bind(&filter.ignored)
                 .bind(sort_order)
                 .bind(before_len)
-                .bind(CHUNK_SIZE - ids.len() as i64)
+                .bind(chunk - ids.len() as i64)
                 .fetch_all(&mut *self.conn)
                 .await?;
             ids.extend(more);
@@ -1659,7 +1675,7 @@ impl TopicView<'_> {
             .bind(&filter.ignored)
             .fetch_all(&mut *self.conn)
             .await?;
-        let window = near_window(&rows, post_number.max(1), CHUNK_SIZE);
+        let window = near_window(&rows, post_number.max(1), self.chunk_size());
         let ids: Vec<i32> = rows
             .iter()
             .enumerate()
@@ -1696,7 +1712,7 @@ impl TopicView<'_> {
             .bind(&self.post_types)
             .bind(&filter.ignored)
             .bind(sort_order)
-            .bind(CHUNK_SIZE)
+            .bind(self.chunk_size())
             .fetch_all(&mut *self.conn)
             .await?;
         let mut posts = self.filter_posts_by_ids(topic_id, &ids, filter).await?;
