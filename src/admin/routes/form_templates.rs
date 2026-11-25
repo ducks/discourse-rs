@@ -5,6 +5,9 @@
 //! A page request for the list, new or a template is the Ember page
 //! (crate::admin::routes::customize::form_templates_page).
 //!
+//! A page load of the public paths is Ember's not-found page: Ember has
+//! no route for them outside admin.
+//!
 //! Refused: a valid preview and the public show, which re-dump the
 //! template with Psych (`process!`).
 
@@ -36,6 +39,20 @@ fn refuse_html(headers: &HeaderMap, uri: &Uri) -> Result<(), AppError> {
     } else {
         Err(Unsupported("the form template pages (Ember)").into())
     }
+}
+
+/// A page load of /form-templates(/:id): Rails boots the app for any id,
+/// but Ember only routes form templates under admin, so its not-found page.
+async fn ember_page(
+    state: &AppState,
+    guardian: &Guardian,
+    conn: &mut sqlx::PgConnection,
+    headers: &HeaderMap,
+) -> Result<Response, AppError> {
+    let settings =
+        SiteSettings::load(&mut *conn, &state.site_setting_defs, &state.config.globals).await?;
+    let bus_position = crate::bus::page_position(&state.bus).await?;
+    crate::routes::ember_not_found(state, conn, &settings, guardian, headers, bus_position).await
 }
 
 fn pairs(p: &Map<String, Value>) -> Vec<(String, String)> {
@@ -411,11 +428,14 @@ pub async fn public_index(
     uri: Uri,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
+    // check_xhr runs after requires_login but before the setting check.
+    if !guardian.is_anonymous() && !json_request(&headers, &uri) {
+        return ember_page(&state, &guardian, &mut conn, &headers).await;
+    }
     let allowed = match public_guard(&state, &guardian, &mut conn).await? {
         Ok(a) => a,
         Err(r) => return Ok(r),
     };
-    refuse_html(&headers, &uri)?;
     let list: Vec<Value> = form_templates::accessible(&mut conn, &allowed)
         .await?
         .iter()
@@ -434,11 +454,18 @@ pub async fn public_show(
     uri: Uri,
 ) -> Result<Response, AppError> {
     let mut conn = state.pool.acquire().await?;
+    // check_xhr runs after requires_login but before the setting check.
+    if !guardian.is_anonymous() && !json_request(&headers, &uri) {
+        return ember_page(&state, &guardian, &mut conn, &headers).await;
+    }
     let allowed = match public_guard(&state, &guardian, &mut conn).await? {
         Ok(a) => a,
-        Err(r) => return Ok(r),
+        Err(mut r) => {
+            // A page load's not-found page searches for params[:id].
+            r.extensions_mut().insert(crate::routes::NotFoundSlug(id));
+            return Ok(r);
+        }
     };
-    refuse_html(&headers, &uri)?;
     let id = id_of(&id);
     let found = form_templates::accessible(&mut conn, &allowed)
         .await?

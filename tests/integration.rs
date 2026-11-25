@@ -53,6 +53,7 @@ mod external_auth;
 mod fancy_title;
 mod finish_installation;
 mod flag_modal_rest;
+mod form_template_pages;
 mod groups_pages;
 mod html_pages;
 mod html_to_markdown;

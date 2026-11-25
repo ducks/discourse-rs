@@ -60,6 +60,11 @@ pub(super) struct ErrorPage {
     pub custom_message: Option<&'static str>,
 }
 
+/// The `params[:slug] || params[:id]` the not-found page searches for, set
+/// by a route other than topics#show (whose slug comes from the path).
+#[derive(Clone)]
+pub(crate) struct NotFoundSlug(pub String);
+
 /// `show_json_errors?`: format json (the `.json` path, a route whose
 /// format defaults to json, or as the Accept header decides it) or XHR.
 fn shows_json_errors(path: &str, query: Option<&str>, headers: &HeaderMap) -> bool {
@@ -112,7 +117,10 @@ pub async fn html_errors(
         .path()
         .strip_prefix(base_path.as_str())
         .unwrap_or(uri.path());
-    let slug = crate::not_found_page::topic_show_slug(path).unwrap_or_default();
+    let slug = match response.extensions().get::<NotFoundSlug>() {
+        Some(NotFoundSlug(slug)) => slug.clone(),
+        None => crate::not_found_page::topic_show_slug(path).unwrap_or_default(),
+    };
 
     let mut conn = state.pool.acquire().await?;
     let settings =

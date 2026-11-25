@@ -1,0 +1,14 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO form_templates (id, name, template, created_at, updated_at) VALUES (1, 'Open', E'- type: input\\n  id: a\\n', now(), now()), (2, 'Staff only', E'- type: input\\n  id: b\\n', now(), now())",
+    "INSERT INTO category_form_templates (category_id, form_template_id, created_at, updated_at) VALUES (3, 2, now(), now())"
+  ],
+  "ignore": ["/responses/0/body", "/responses/1/body", "/responses/2/body", "/responses/3/body"],
+  "requests": [
+    {"method": "GET", "path": "/form-templates", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/form-templates/1", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/form-templates/2", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/form-templates/99", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}}
+  ]
+}
