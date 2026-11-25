@@ -1124,6 +1124,13 @@
       ]
     },
     {
+      "name": "print-page.js",
+      "content_type": "js",
+      "files": [
+        "js/print-page.js"
+      ]
+    },
+    {
       "name": "category-edit.js",
       "content_type": "js",
       "files": [

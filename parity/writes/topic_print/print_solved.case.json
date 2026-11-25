@@ -1,0 +1,33 @@
+{
+  "settings": {
+    "allow_solved_on_all_topics": true
+  },
+  "setup": [
+    "INSERT INTO discourse_solved_solved_topics (id, topic_id, created_at, updated_at) VALUES (9001, 35, now(), now())",
+    "INSERT INTO discourse_solved_topic_answers (solved_topic_id, answer_post_id, accepter_user_id, created_at, updated_at) VALUES (9001, 36, 1, now(), now())"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-replies-and-posters/35/print",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": "",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/t/parity-fixture-pinned-and-closed/37/print",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": "",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+      }
+    }
+  ],
+  "fragment": [
+    "<div id=\"main-outlet\"",
+    "</footer>"
+  ]
+}
