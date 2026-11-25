@@ -2766,6 +2766,8 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route("/posts/{id}/reply-ids", get(posts::reply_ids))
         .route("/posts/{id}/reply-ids.json", get(posts::reply_ids))
+        .route("/posts/{id}/replies", get(posts::replies))
+        .route("/posts/{id}/replies.json", get(posts::replies))
         // The post admin menu's actions.
         .route("/posts/{id}/post_type", put(post_admin::post_type))
         .route("/posts/{id}/post_type.json", put(post_admin::post_type))

@@ -884,6 +884,91 @@ pub async fn reply_ids(
     Ok(Json(replies).into_response())
 }
 
+/// GET /posts/:post_id/replies(.json): the post's direct replies after
+/// post number `?after=` (at least 1), `Post.secured`, by post number, at
+/// most MAX_POST_REPLIES, as TopicViewPostsSerializer's post_stream posts.
+pub async fn replies(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    Path(id): Path<String>,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    const MAX_POST_REPLIES: i64 = 20;
+    let Ok(post_id) = strip_format(&id).parse::<i32>() else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let query = params::parse_query(uri.query().unwrap_or_default());
+    let after = params::string(&query, "after")
+        .map_or(0, |s| crate::ruby::to_i(&s))
+        .max(1);
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let cook_host = Host::from_state(&state);
+    let ctx = Ctx {
+        host: &cook_host,
+        settings: &settings,
+        config: &state.config,
+        i18n: &state.i18n,
+        bus: &state.bus,
+    };
+    let Some(access) =
+        revisions::find_post_with_deleted(&mut conn, &ctx, &guardian, post_id).await?
+    else {
+        return Ok(super::topics::not_found_response(&state));
+    };
+    let secured = guardian
+        .visible_posts_clause(&mut conn, &settings, "p")
+        .await?
+        .unwrap_or_else(|| "TRUE".to_string());
+    let post_ids: Vec<i32> = sqlx::query_scalar(&format!(
+        "SELECT p.id FROM post_replies r JOIN posts p ON p.id = r.reply_post_id \
+         WHERE r.post_id = $1 AND p.deleted_at IS NULL AND p.post_number >= $2 AND {secured} \
+         ORDER BY p.post_number LIMIT $3"
+    ))
+    .bind(post_id)
+    .bind(after + 1)
+    .bind(MAX_POST_REPLIES)
+    .fetch_all(&mut *conn)
+    .await?;
+    if post_ids.is_empty() {
+        return Ok(Json(json!([])).into_response());
+    }
+    let urls = Urls {
+        config: &state.config,
+        settings: &settings,
+    };
+    let mut view = TopicView {
+        conn: &mut conn,
+        settings: &settings,
+        i18n: &state.i18n,
+        guardian: &guardian,
+        urls: &urls,
+        options: Options {
+            post_ids: Some(post_ids),
+            include_suggested: Some(false),
+            raise_access_errors: true,
+            ..Default::default()
+        },
+        post_types: Vec::new(),
+        logo_small_url: None,
+    };
+    let mut rendered = match view.render(access.topic_id).await {
+        Ok(r) => r,
+        Err(crate::topic_view::TopicViewError::NotFound) => {
+            return Ok(super::topics::not_found_response(&state));
+        }
+        Err(crate::topic_view::TopicViewError::InvalidAccess) => {
+            return Ok(super::search::invalid_access(&state));
+        }
+        Err(crate::topic_view::TopicViewError::NotLoggedIn) => {
+            return Ok(super::login_required::not_logged_in(&state));
+        }
+        Err(e) => return Err(e.into()),
+    };
+    Ok(Json(rendered.json["post_stream"]["posts"].take()).into_response())
+}
+
 /// The path's last segment: the name a collection route (`merge_posts`)
 /// is to the member routes Rails gives its other verbs to.
 pub(super) fn last_segment(uri: &Uri) -> String {

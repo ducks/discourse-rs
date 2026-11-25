@@ -1,0 +1,32 @@
+{
+  "setup": [
+    "INSERT INTO post_replies (post_id, reply_post_id, created_at, updated_at) VALUES (35, 36, now(), now()), (35, 37, now(), now()), (35, 38, now(), now()), (35, 52, now(), now())",
+    "UPDATE posts SET reply_to_post_number = 1, reply_to_user_id = (SELECT user_id FROM posts WHERE id = 35) WHERE id IN (36, 37, 38, 52)",
+    "UPDATE topics SET reply_count = 4 WHERE id = 35",
+    "UPDATE posts SET reply_count = 4 WHERE id = 35",
+    "UPDATE posts SET deleted_at = now(), deleted_by_id = 1 WHERE id = 37"
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/posts/35/replies.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/replies.json?after=4"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/35/replies"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/36/replies.json"
+    },
+    {
+      "method": "GET",
+      "path": "/posts/999999/replies.json"
+    }
+  ],
+  "user": "admin"
+}

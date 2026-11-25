@@ -12,7 +12,7 @@ are in the script's header.
   parity/SPEC_COVERAGE.md, the rest not looked at yet)
 - **Refusals: 1815 distinct `Unsupported` messages** at 2131 sites
   (plus 34 sites with a computed message)
-- Write cases: 3649, 9 not_yet, 244 with ignored fields
+- Write cases: 3653, 9 not_yet, 244 with ignored fields
 - Golden cases: 277, 0 not_yet, 108 with ignored fields
 - Inventoried request-spec scenarios: 671 covered, 587 recordable,
   263 needs-harness, 350 unported (1871 in 91 sections)
@@ -220,6 +220,7 @@ Messages are distinct within an area; the total counts each text once.
 | polls | 30 | 0 | 0 | 6 |
 | post_actions | 43 | 0 | 1 | 0 |
 | post_admin | 38 | 0 | 0 | 1 |
+| post_replies | 4 | 0 | 0 | 0 |
 | posts | 182 | 3 | 2 | 0 |
 | posts_by_number | 4 | 0 | 0 | 0 |
 | presence | 50 | 0 | 0 | 0 |
@@ -263,7 +264,7 @@ Messages are distinct within an area; the total counts each text once.
 | watched_words | 57 | 0 | 2 | 0 |
 | web_hooks | 76 | 0 | 4 | 4 |
 | wizard | 3 | 1 | 0 | 0 |
-| **All** | **3649** | **9** | **244** | **129** |
+| **All** | **3653** | **9** | **244** | **129** |
 
 ## Request-spec inventory (parity/SPEC_COVERAGE.md)
 
