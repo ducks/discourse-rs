@@ -236,10 +236,20 @@ async fn login_required_lets_legal_pages_through_only() {
     assert!(reply.body.contains("nav-item-tos"), "{}", reply.body);
 }
 
+/// Rails renders the page at `.html` and `.json` too, but Ember's router
+/// has no route for either: its not-found page, with a 200.
 #[tokio::test]
-async fn a_page_load_of_the_html_path_is_refused() {
+async fn a_page_load_of_the_html_or_json_path_is_embers_not_found() {
     let db = TestDb::new().await;
     let st = state(db.pool.clone(), config(RailsEnv::Test, &[])).await;
-    let reply = page(&st, "/guidelines.html", None).await;
-    assert_eq!(reply.status, StatusCode::INTERNAL_SERVER_ERROR);
+    for path in ["/guidelines.html", "/guidelines.json", "/rules.json"] {
+        let reply = page(&st, path, None).await;
+        assert_eq!(reply.status, StatusCode::OK, "{path}");
+        assert!(
+            reply.body.contains("page-not-found"),
+            "{path}: {}",
+            reply.body
+        );
+        assert!(!reply.body.contains("static-guidelines"), "{path}");
+    }
 }
