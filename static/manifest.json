@@ -1117,6 +1117,13 @@
       ]
     },
     {
+      "name": "badge-page.js",
+      "content_type": "js",
+      "files": [
+        "js/badge-page.js"
+      ]
+    },
+    {
       "name": "category-edit.js",
       "content_type": "js",
       "files": [

@@ -5,4 +5,7 @@
 {%- if main.contains("groups-index") || main.contains("group-details-container") %}
 <script src="{{ crate::assets::url(base_path, "groups.js") }}"></script>
 {%- endif %}
+{%- if main.contains("data-next-offset") %}
+<script src="{{ crate::assets::url(base_path, "badge-page.js") }}"></script>
+{%- endif %}
 {% endblock %}

@@ -275,6 +275,9 @@ pub struct Show<'a> {
     /// `?username=`
     pub username: Option<&'a str>,
     pub enable_badges: bool,
+    /// The grants drawn before these (`?offset=`, badge-page.js's next
+    /// page); 0 for the page itself.
+    pub offset: i64,
 }
 
 /// DUserInfo at the medium size with the `badge-info` class, its details
@@ -347,10 +350,9 @@ pub fn render_show(cx: &ListContext, v: &Show<'_>) -> Result<(String, bool), App
     } else {
         model_count
     };
-    let can_load_more = grant_count > grants.len() as i64;
-    if can_load_more {
-        return Err(Unsupported("a badge's page with more grants than its first page").into());
-    }
+    // `offset`: the grants already drawn before this page of them
+    // (badge-page.js asks for the next one).
+    let can_load_more = grant_count > v.offset + grants.len() as i64;
     let slug = escape(s(&b["slug"]));
     let has_badge = b["has_badge"] == true;
     let can_select_title = v.enable_badges && b["allow_title"] == true && has_badge;
@@ -421,9 +423,18 @@ pub fn render_show(cx: &ListContext, v: &Show<'_>) -> Result<(String, bool), App
             }
             out.push_str(&user_info(cx, user, &details));
         }
-        out.push_str("</div><div aria-hidden=\"true\" class=\"load-more-sentinel\"></div></div>");
-        // canShowOthers: a username and more than one grant.
-        if v.username.is_some() && model_count > 1 {
+        // data-next-offset: where badge-page.js's next page starts.
+        let next = if can_load_more {
+            format!(" data-next-offset=\"{}\"", v.offset + grants.len() as i64)
+        } else {
+            String::new()
+        };
+        out.push_str(&format!(
+            "</div><div aria-hidden=\"true\" class=\"load-more-sentinel\"{next}></div></div>"
+        ));
+        // canShowOthers (a username and more than one grant), once every
+        // grant is drawn.
+        if !can_load_more && v.username.is_some() && model_count > 1 {
             let others = model_count - user_grant_count.unwrap_or(0);
             out.push_str(&format!(
                 "<div><a class=\"btn btn-default\" href=\"{}/badges/{}/{slug}\" id=\"show-others-with-badge-link\">{}</a></div>",
@@ -432,7 +443,12 @@ pub fn render_show(cx: &ListContext, v: &Show<'_>) -> Result<(String, bool), App
                 escape(&t_count(cx, "badges.others_count", others, &[]))
             ));
         }
-        out.push_str("</div><div class=\"loading-container\"></div>");
+        out.push_str("</div>");
+        out.push_str(if can_load_more {
+            "<div class=\"loading-container visible\" data-loading=\"true\"><div class=\"spinner \"></div></div>"
+        } else {
+            "<div class=\"loading-container\"></div>"
+        });
     }
     out.push_str("</div>");
     Ok((out, can_load_more))
