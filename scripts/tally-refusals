@@ -35,8 +35,8 @@
 #   e.g. scripts/tally-refusals rs_backup backups/rs_backup
 #   TALLY_OUT=<dir>: keep the run's files (urls, results, server.log,
 #   report.json) there instead of a temporary directory.
-# Runs inside shell.nix (psql, python3, the local Postgres); builds
-# target/debug.
+# Runs inside shell.nix (psql, python3, the local Postgres); builds the
+# debug binary (under CARGO_TARGET_DIR when set).
 set -euo pipefail
 
 if [ $# -lt 1 ]; then
@@ -48,7 +48,8 @@ public_dir="${2:-public}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 
-host="host=$root/.nix-postgres"
+# shell.nix's PGHOST: a worktree shares its main checkout's cluster.
+host="host=${PGHOST:-$root/.nix-postgres}"
 admin_url="postgresql://localhost:5442/postgres?$host"
 copy="tally_$$"
 copy_url="postgresql://localhost:5442/$copy?$host"
@@ -101,13 +102,14 @@ SELECT id, '$hash', '$salt', '$algorithm', now(), now() FROM users WHERE id IN (
 SQL
 
 cargo build -q
+bin="${CARGO_TARGET_DIR:-target}/debug/discourse-rs"
 export RAILS_ENV=development UNICORN_PORT=3000 DISCOURSE_RS_JOBS=off PUBLIC_DIR="$public_dir" \
   DATABASE_URL="$copy_url" DISCOURSE_MAX_REQS_PER_IP_MODE=none
 # Every route, from the router built for this database.
-target/debug/discourse-rs routes > "$work/routes"
+"$bin" routes > "$work/routes"
 python3 scripts/tally-refusals.py fill "$copy_url" "$work/routes" "$work" "$member_id" "$admin_id"
 
-BIND_ADDR="127.0.0.1:$port" RUST_LOG=warn target/debug/discourse-rs >> "$work/server.log" 2>&1 &
+BIND_ADDR="127.0.0.1:$port" RUST_LOG=warn "$bin" >> "$work/server.log" 2>&1 &
 # Appended to by the server and by the crawl's markers alike (both in append
 # mode, or one would write over the other).
 server_pid=$!

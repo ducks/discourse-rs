@@ -3336,6 +3336,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/user-activity.js", get(asset))
         .route("/assets/overflow-controls.js", get(asset))
         .route("/assets/groups.js", get(asset))
+        .route("/assets/badge-page.js", get(asset))
         .route("/assets/search-page.js", get(asset))
         .route("/assets/search-advanced.js", get(asset))
         .route("/assets/search-menu.js", get(asset))

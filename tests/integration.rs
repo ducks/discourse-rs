@@ -16,6 +16,7 @@ mod anonymous_cache;
 mod assign;
 mod backup_restore;
 mod backups;
+mod badge_pages;
 mod categories;
 mod category_pages;
 mod chat_admin;

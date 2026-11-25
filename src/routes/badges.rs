@@ -490,6 +490,16 @@ async fn show_page(
     if let Some(u) = &username {
         grants_params.insert("username".into(), json!(u));
     }
+    // badge-page.js's next page of grants: the controller's loadMore
+    // (`offset: userBadges.length`), drawn by the page.
+    let offset = p.get("offset").and_then(params::scalar);
+    if let Some(o) = &offset {
+        grants_params.insert("offset".into(), json!(o));
+    }
+    let offset = offset
+        .and_then(|o| o.trim().parse::<i64>().ok())
+        .unwrap_or(0)
+        .max(0);
     let grants = match user_badges_doc(state, &mut conn, settings, guardian, &grants_params).await?
     {
         Ok(doc) => doc,
@@ -513,6 +523,7 @@ async fn show_page(
             grants: &grants,
             username: username.as_deref(),
             enable_badges: true,
+            offset,
         },
     )?;
     let name = doc["badge"]["name"]

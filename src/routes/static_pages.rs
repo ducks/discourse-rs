@@ -95,7 +95,7 @@ pub struct StaticPageHtml {
 }
 
 /// GET /faq, /guidelines, /rules, /conduct, /tos, /privacy (and `.html`,
-/// `.json`)
+/// `.json`, which Ember draws as not found)
 pub async fn show(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -265,8 +265,19 @@ pub async fn show(
         )
             .into_response());
     }
+    // Rails renders the page for `.html` and `.json` alike, but the Ember
+    // router has no route for either path: its not-found page.
     if extension.is_some() {
-        return Err(Unsupported("a static page's .html or .json path as a page").into());
+        let bus_position = crate::bus::page_position(&state.bus).await?;
+        return super::user_preferences::ember_not_found(
+            &state,
+            &mut conn,
+            &settings,
+            &guardian,
+            &headers,
+            bus_position,
+        )
+        .await;
     }
 
     // `@title`: the page's name, then the site's.
