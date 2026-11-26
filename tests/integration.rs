@@ -122,6 +122,7 @@ mod site_json;
 mod slugs;
 mod static_pages;
 mod svg_sprite;
+mod tag_group_pages;
 mod tag_pages;
 mod theme_html_pages;
 mod theme_screenshots;

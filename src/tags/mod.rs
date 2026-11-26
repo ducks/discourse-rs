@@ -3,6 +3,7 @@
 //! and TagSerializer.
 
 pub mod groups;
+pub mod groups_view;
 pub mod tagging;
 pub mod writes;
 

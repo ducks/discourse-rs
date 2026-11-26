@@ -1,7 +1,8 @@
 //! /tag_groups: TagGroupsController (staff, as StaffConstraint routes it:
 //! everyone else 404s), and /tag_groups/filter/search for anyone.
 //!
-//! Refused: the HTML pages (index, show, new), which Ember draws.
+//! A page load of the list, new or a group is its page
+//! (crate::tags::groups_view).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -47,6 +48,115 @@ fn id_of(segment: &str) -> Option<i32> {
         .ok()
 }
 
+enum Which {
+    Index,
+    New,
+    Edit(Option<i32>),
+}
+
+/// A page load of /tag_groups(/new|/:id): the tagGroups route with its
+/// index, new or edit outlet (src/tags/groups_view.rs).
+async fn page(
+    state: &AppState,
+    guardian: &Guardian,
+    headers: &HeaderMap,
+    which: Which,
+) -> Result<Response, AppError> {
+    use crate::tags::groups_view::{Outlet, Page, render};
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let tagging_enabled = settings.get("tagging_enabled")?.truthy();
+    let base_path = state.config.globals.relative_url_root().to_string();
+    // tagGroups.new's beforeModel: back to the list while tagging is off.
+    if matches!(which, Which::New) && !tagging_enabled {
+        return Ok(
+            axum::response::Redirect::to(&format!("{base_path}/tag_groups")).into_response(),
+        );
+    }
+    // tag_groups#show skips check_xhr, so fetch_tag_group's RecordNotFound
+    // is the 404 page for a group that isn't there.
+    let edited = match which {
+        Which::Edit(id) => {
+            let exists = match id {
+                Some(id) => {
+                    sqlx::query_scalar::<_, i32>("SELECT id FROM tag_groups WHERE id = $1")
+                        .bind(id)
+                        .fetch_optional(&mut *conn)
+                        .await?
+                }
+                None => None,
+            };
+            match exists {
+                Some(id) => Some(crate::tag_groups::serialize(&mut conn, id).await?),
+                None => return Ok(not_found(state)),
+            }
+        }
+        _ => None,
+    };
+    let groups: Vec<(i32, String)> =
+        sqlx::query_as("SELECT id, name FROM tag_groups ORDER BY name ASC")
+            .fetch_all(&mut *conn)
+            .await?;
+    // Site#groups less everyone, as TagGroupsForm's allGroups.
+    let site_groups: Vec<(i32, String)> = sqlx::query_as(&format!(
+        "SELECT id, name FROM groups WHERE id <> 0 AND {} ORDER BY name ASC",
+        crate::groups::visible_groups_where(guardian, "groups")
+    ))
+    .fetch_all(&mut *conn)
+    .await?;
+    let t = |key: &str| {
+        state
+            .i18n
+            .t(&format!("js.{key}"))
+            .unwrap_or_default()
+            .to_string()
+    };
+    let chooser_strings = json!({
+        "default_header": t("select_kit.default_header_text"),
+        "filter_placeholder": t("select_kit.filter_placeholder"),
+        "tags_placeholder": t("tagging.groups.tags_placeholder"),
+        "results_one": t("select_kit.results_count.one").replace("%{count}", "1"),
+        "results_other": t("select_kit.results_count.other"),
+        "delete_item": t("select_kit.delete_item"),
+        "filter_by": t("select_kit.filter_by"),
+        "max_tag_search_results": settings.get("max_tag_search_results")?.to_i(),
+        "max_tag_length": settings.get("max_tag_length")?.to_i(),
+        "force_lowercase_tags": settings.get("force_lowercase_tags")?.truthy(),
+        "tags_sort_alphabetically": settings.get("tags_sort_alphabetically")?.truthy(),
+        "tag_style": settings.get("tag_style")?.to_s(),
+    });
+    let outlet = match &edited {
+        Some(group) => Outlet::Edit(group),
+        None if matches!(which, Which::New) => Outlet::New,
+        None => Outlet::Index,
+    };
+    let main = render(&Page {
+        i18n: &state.i18n,
+        base_path: &base_path,
+        tagging_enabled,
+        groups: &groups,
+        site_groups: &site_groups,
+        outlet,
+        chooser_strings,
+    }) + &format!(
+        "<script type=\"application/json\" id=\"dialog-strings\">{}</script>",
+        crate::html::dialog_strings(&state.i18n)
+    );
+    let bus_position = crate::bus::page_position(&state.bus).await?;
+    super::user_preferences::app_page(
+        state,
+        &mut conn,
+        &settings,
+        guardian,
+        headers,
+        bus_position,
+        t("tagging.groups.title"),
+        main,
+    )
+    .await
+}
+
 /// GET /tag_groups(.json)
 pub async fn index(
     State(state): State<AppState>,
@@ -58,7 +168,7 @@ pub async fn index(
         return Ok(r);
     }
     if !wants_json(&headers, uri.path()) {
-        return Err(Unsupported("the tag groups page (Ember)").into());
+        return page(&state, &guardian, &headers, Which::Index).await;
     }
     let mut conn = state.pool.acquire().await?;
     let ids: Vec<i32> = sqlx::query_scalar("SELECT id FROM tag_groups ORDER BY name ASC")
@@ -82,8 +192,16 @@ pub async fn show(
     if let Some(r) = staff(&state, &guardian) {
         return Ok(r);
     }
-    if id == "new" || !wants_json(&headers, uri.path()) {
-        return Err(Unsupported("the tag group pages (Ember)").into());
+    if !wants_json(&headers, uri.path()) {
+        let which = if id == "new" {
+            Which::New
+        } else {
+            Which::Edit(id_of(&id))
+        };
+        return page(&state, &guardian, &headers, which).await;
+    }
+    if id == "new" {
+        return Err(Unsupported("tag_groups#new's JSON").into());
     }
     let mut conn = state.pool.acquire().await?;
     let exists = match id_of(&id) {

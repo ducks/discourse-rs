@@ -1,0 +1,15 @@
+{
+  "user": "admin",
+  "settings": {"tagging_enabled": true},
+  "setup": [
+    "INSERT INTO tag_groups (id, name, one_per_topic, created_at, updated_at) VALUES (9001, 'Colors', false, now(), now())",
+    "INSERT INTO tag_group_permissions (tag_group_id, group_id, permission_type, created_at, updated_at) VALUES (9001, 0, 1, now(), now())"
+  ],
+  "ignore": ["/responses/0/body", "/responses/1/body", "/responses/2/body", "/responses/3/body"],
+  "requests": [
+    {"method": "GET", "path": "/tag_groups", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/tag_groups/new", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/tag_groups/9001", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/tag_groups/99999", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}}
+  ]
+}

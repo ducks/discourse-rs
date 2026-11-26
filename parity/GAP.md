@@ -10,9 +10,9 @@ are in the script's header.
 - **Rails request-spec scenarios covered by a parity case: 623 of ~11123 (5.6%)**
   (474 request-spec files in core and bundled plugins; 1773 request-spec scenarios inventoried in
   parity/SPEC_COVERAGE.md, the rest not looked at yet)
-- **Refusals: 1815 distinct `Unsupported` messages** at 2131 sites
+- **Refusals: 1814 distinct `Unsupported` messages** at 2130 sites
   (plus 34 sites with a computed message)
-- Write cases: 3653, 9 not_yet, 244 with ignored fields
+- Write cases: 3654, 9 not_yet, 245 with ignored fields
 - Golden cases: 277, 0 not_yet, 108 with ignored fields
 - Inventoried request-spec scenarios: 671 covered, 587 recordable,
   263 needs-harness, 350 unported (1871 in 91 sections)
@@ -21,7 +21,7 @@ are in the script's header.
 
 | Area | Sites | Messages |
 |---|---|---|
-| src/routes | 488 | 413 |
+| src/routes | 487 | 412 |
 | src/admin | 155 | 138 |
 | src/email | 120 | 110 |
 | src/users | 102 | 96 |
@@ -132,7 +132,7 @@ are in the script's header.
 | src/sidebar_backfill | 1 | 1 |
 | src/site | 1 | 1 |
 | src/watched_words | 1 | 1 |
-| **All** | **2131** | **1815** |
+| **All** | **2130** | **1814** |
 
 Messages are distinct within an area; the total counts each text once.
 
@@ -158,11 +158,11 @@ Messages are distinct within an area; the total counts each text once.
 | src/routes/drafts.rs | 9 |
 | src/routes/gamification.rs | 9 |
 | src/routes/invites.rs | 9 |
-| src/routes/tag_groups.rs | 9 |
 | src/routes/directory_columns.rs | 8 |
 | src/routes/discourse_connect.rs | 8 |
 | src/routes/groups.rs | 8 |
 | src/routes/pm_invite.rs | 8 |
+| src/routes/tag_groups.rs | 8 |
 | src/routes/topic_print.rs | 8 |
 | src/routes/topics_bulk.rs | 7 |
 
@@ -246,7 +246,7 @@ Messages are distinct within an area; the total counts each text once.
 | solved | 45 | 0 | 0 | 3 |
 | static | 11 | 0 | 0 | 0 |
 | stylesheets | 9 | 0 | 0 | 7 |
-| tags | 76 | 0 | 2 | 0 |
+| tags | 77 | 0 | 3 | 0 |
 | theme_html | 1 | 0 | 0 | 1 |
 | themes | 27 | 0 | 0 | 21 |
 | topic_admin | 28 | 0 | 0 | 0 |
@@ -264,7 +264,7 @@ Messages are distinct within an area; the total counts each text once.
 | watched_words | 57 | 0 | 2 | 0 |
 | web_hooks | 76 | 0 | 4 | 4 |
 | wizard | 3 | 1 | 0 | 0 |
-| **All** | **3653** | **9** | **244** | **129** |
+| **All** | **3654** | **9** | **245** | **129** |
 
 ## Request-spec inventory (parity/SPEC_COVERAGE.md)
 
