@@ -879,8 +879,14 @@ pub async fn reseed_options(
     if let Some(r) = refuse_non_admin(&state, &guardian) {
         return Ok(r);
     }
+    // A page load is adminCustomizeThemes with `reseed` as its type, whose
+    // index route goes on to adminConfig.customize.themes.
     if !json_request(&headers, &uri) {
-        return Err(Unsupported("the admin site texts page").into());
+        return Ok(axum::response::Redirect::to(&format!(
+            "{}/admin/config/customize/themes",
+            state.config.globals.relative_url_root()
+        ))
+        .into_response());
     }
     let mut conn = state.pool.acquire().await?;
     let settings =

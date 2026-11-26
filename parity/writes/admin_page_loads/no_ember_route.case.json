@@ -1,0 +1,14 @@
+{"user": "admin",
+  "ignore": ["/responses/0/body", "/responses/1/body", "/responses/2/body", "/responses/3/body", "/responses/4/body", "/responses/5/body", "/responses/6/body", "/responses/7/body", "/responses/8/body"],
+  "requests": [
+    {"method": "GET", "path": "/admin/themes", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/admin/permalinks", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/admin/permalinks/1", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/admin/color_schemes", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/admin/config/design-wizard", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/admin/config/user_fields", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/admin/config/user_fields/1", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/admin/config/user_fields/1/edit", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}},
+    {"method": "GET", "path": "/admin/config/user-fields/1", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}}
+  ]
+}
