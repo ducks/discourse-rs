@@ -429,6 +429,13 @@
       ]
     },
     {
+      "name": "wizard.js",
+      "content_type": "js",
+      "files": [
+        "js/wizard.js"
+      ]
+    },
+    {
       "name": "login.js",
       "content_type": "js",
       "files": [

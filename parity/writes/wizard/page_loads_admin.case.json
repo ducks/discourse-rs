@@ -1,0 +1,37 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/wizard",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": "",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/wizard/steps/setup",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": "",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/wizard/steps/nope",
+      "headers": {
+        "Accept": "text/html",
+        "X-Requested-With": "",
+        "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/0/body",
+    "/responses/1/body",
+    "/responses/2/body"
+  ]
+}
