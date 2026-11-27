@@ -1,0 +1,52 @@
+{
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/bulk.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/bulk.json",
+      "params": {
+        "reports": "signups"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/bulk.json",
+      "params": {
+        "reports": [
+          "signups"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/bulk.json",
+      "params": {
+        "reports": {
+          "signups": "x"
+        }
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/bulk.json",
+      "params": {
+        "reports": {
+          "signups": [
+            "a"
+          ]
+        }
+      }
+    }
+  ],
+  "ignore": [
+    "/responses/0/body",
+    "/responses/1/body",
+    "/responses/2/body",
+    "/responses/3/body",
+    "/responses/4/body"
+  ]
+}

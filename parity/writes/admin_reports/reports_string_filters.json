@@ -1,0 +1,337 @@
+{
+  "name": "reports_string_filters",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/reports/signups.json",
+      "params": {
+        "start_date": "2026-09-20",
+        "filters": "x"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/users_by_type.json",
+      "params": {
+        "filters": "x"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/top_referred_topics.json",
+      "params": {
+        "filters": "x"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/posts.json",
+      "params": {
+        "filters": [
+          "a"
+        ]
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/reports/bulk.json",
+      "params": {
+        "reports": {
+          "visits": {
+            "filters": "x"
+          }
+        }
+      }
+    }
+  ],
+  "started_at": "2026-11-27T10:59:36.886658",
+  "transaction_started_at": "2026-11-27T10:59:34.574489",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "signups",
+          "title": "Signups",
+          "xaxis": "Day",
+          "yaxis": "Number of signups",
+          "description": "New account registrations for this period.",
+          "description_link": null,
+          "data": null,
+          "start_date": "2026-09-20T00:00:00Z",
+          "end_date": "2026-10-20T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-08-20T00:00:00Z",
+          "prev_end_date": "2026-09-20T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:signups:20260920:20261020:[:total, :prev30Days]:\"x\":5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "icon": "user-plus",
+          "error": "exception"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "users_by_type",
+          "title": "Users per Type",
+          "xaxis": "Type",
+          "yaxis": "Number of Users",
+          "description": "Number of users grouped by admin, moderator, suspended, and silenced.",
+          "description_link": null,
+          "data": [
+            {
+              "url": "/admin/users/list/admins",
+              "icon": "shield-halved",
+              "key": "admins",
+              "x": "Admin",
+              "y": 1
+            }
+          ],
+          "start_date": "2026-11-26T00:00:00Z",
+          "end_date": "2026-12-26T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-10-26T00:00:00Z",
+          "prev_end_date": "2026-11-26T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": false,
+          "report_key": "reports:users_by_type:20261126:20261226:[:total, :prev30Days]:\"x\":5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "property": "x",
+              "title": "Type"
+            },
+            {
+              "property": "y",
+              "type": "number",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "table"
+          ]
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "top_referred_topics",
+          "title": "Top Referred Topics",
+          "xaxis": "",
+          "yaxis": null,
+          "description": "Topics that have received the most clicks from external sources.",
+          "description_link": null,
+          "data": null,
+          "start_date": "2026-11-26T00:00:00Z",
+          "end_date": "2026-12-26T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-10-26T00:00:00Z",
+          "prev_end_date": "2026-11-26T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:top_referred_topics:20261126:20261226:[:total, :prev30Days]:\"x\":5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "error": "exception"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "report": {
+          "type": "posts",
+          "title": "Posts",
+          "xaxis": "Day",
+          "yaxis": "Number of new posts",
+          "description": "New posts created during this period",
+          "description_link": null,
+          "data": null,
+          "start_date": "2026-11-26T00:00:00Z",
+          "end_date": "2026-12-26T23:59:59Z",
+          "prev_data": null,
+          "prev_start_date": "2026-10-26T00:00:00Z",
+          "prev_end_date": "2026-11-26T00:00:00Z",
+          "prev30Days": null,
+          "dates_filtering": true,
+          "report_key": "reports:posts:20261126:20261226:[:total, :prev30Days]:[\"a\"]:5:1:true:false",
+          "primary_color": "rgba(0,136,204,1)",
+          "secondary_color": "rgba(0,136,204,0.1)",
+          "available_filters": [],
+          "labels": [
+            {
+              "type": "date",
+              "property": "x",
+              "title": "Day"
+            },
+            {
+              "type": "number",
+              "property": "y",
+              "title": "Count"
+            }
+          ],
+          "average": false,
+          "percent": false,
+          "higher_is_better": true,
+          "modes": [
+            "chart",
+            "table"
+          ],
+          "error": "exception"
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "reports": [
+          {
+            "type": "visits",
+            "title": "User Visits",
+            "xaxis": {
+              "desktop": "Desktop",
+              "mobile": "Mobile"
+            },
+            "yaxis": "Number of visits",
+            "description": "Number of signed-in user visits by device type.",
+            "description_link": null,
+            "data": null,
+            "start_date": "2026-11-26T00:00:00Z",
+            "end_date": "2026-12-26T23:59:59Z",
+            "prev_data": null,
+            "prev_start_date": "2026-10-26T00:00:00Z",
+            "prev_end_date": "2026-11-26T00:00:00Z",
+            "prev30Days": null,
+            "dates_filtering": true,
+            "report_key": "reports:visits:20261126:20261226:[:total, :prev30Days]:\"x\":5:1:true:false",
+            "primary_color": "rgba(0,136,204,1)",
+            "secondary_color": "rgba(0,136,204,0.1)",
+            "available_filters": [],
+            "labels": [
+              {
+                "type": "date",
+                "property": "x",
+                "title": "Day"
+              },
+              {
+                "type": "number",
+                "property": "y",
+                "title": "Count"
+              }
+            ],
+            "average": false,
+            "percent": false,
+            "higher_is_better": true,
+            "modes": [
+              "chart",
+              "table"
+            ],
+            "error": "exception"
+          }
+        ]
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 6,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YtjqDZkkCrgvyRqSDSHCTX3tBAk=",
+            "created_at": "2026-11-27T10:59:35.635021",
+            "rotated_at": "2026-11-27T10:59:35.630533",
+            "updated_at": "2026-11-27T10:59:35.635021",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "YtjqDZkkCrgvyRqSDSHCTX3tBAk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 6,
+            "seen_at": "2026-11-27T10:59:36.895834",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "YtjqDZkkCrgvyRqSDSHCTX3tBAk=",
+            "created_at": "2026-11-27T10:59:35.635021",
+            "rotated_at": "2026-11-27T10:59:35.630533",
+            "updated_at": "2026-11-27T10:59:35.635021",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "YtjqDZkkCrgvyRqSDSHCTX3tBAk=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "recorded_from": {
+    "case": "28f86e6b9989a86688f8eeee0a605b8d08168b57bc52a0a8ff223a7685bff6a2",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
+  }
+}

@@ -402,7 +402,7 @@ pub async fn top_referred_topics(
     cx: &Cx<'_>,
     r: &mut Report,
 ) -> Result<(), AppError> {
-    let filter = r.add_category_filter();
+    let filter = r.add_category_filter()?;
     r.modes = vec!["table".into()];
     r.labels = json!([
         {"type": "topic", "properties": {"title": "topic_title", "id": "topic_id"}, "title": cx.t("reports.top_referred_topics.labels.topic")?},
@@ -456,7 +456,7 @@ pub async fn top_traffic_sources(
     cx: &Cx<'_>,
     r: &mut Report,
 ) -> Result<(), AppError> {
-    let filter = r.add_category_filter();
+    let filter = r.add_category_filter()?;
     r.modes = vec!["table".into()];
     r.labels = json!([
         {"property": "domain", "title": cx.t("reports.top_traffic_sources.labels.domain")?},
@@ -639,7 +639,7 @@ pub async fn web_hook_events(
         {"type": "date", "property": "x", "title": cx.t("reports.default.labels.day")?},
         {"type": "percent", "property": "y", "title": cx.t("reports.default.labels.percent")?},
     ]);
-    let kind = r.filter_str("type_of_web_hook_event");
+    let kind = r.filter_str("type_of_web_hook_event")?;
     let choices: Vec<Value> = ["all", "failed events", "successful events", "mean duration"]
         .iter()
         .map(|t| json!({"id": t, "name": t}))

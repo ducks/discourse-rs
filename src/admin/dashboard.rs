@@ -681,7 +681,7 @@ async fn engagement(
     let opts = Opts {
         start_date: Some(s),
         end_date: Some(e),
-        filters: (!filters.is_empty()).then_some(filters),
+        filters: (!filters.is_empty()).then_some(Value::Object(filters)),
         ..Opts::default()
     };
     let posters =
@@ -704,7 +704,7 @@ async fn engagement(
         filters: (!is_blank(&selected)).then(|| {
             let mut m = Map::new();
             m.insert("category_ids".into(), selected.clone());
-            m
+            Value::Object(m)
         }),
         ..Opts::default()
     };

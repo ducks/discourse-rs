@@ -389,7 +389,7 @@ async fn fetch_card(
     let opts = Opts {
         start_date: Some(start),
         end_date: Some(end),
-        filters: Some(filters),
+        filters: Some(Value::Object(filters)),
         ..Opts::default()
     };
     let rows = |data: &Value| -> Value {

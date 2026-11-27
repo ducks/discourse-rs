@@ -288,8 +288,8 @@ pub async fn post_edits(
     viewer: &Viewer<'_>,
     r: &mut Report,
 ) -> Result<(), AppError> {
-    let filter = r.add_category_filter();
-    let editor = r.filter_str("editor");
+    let filter = r.add_category_filter()?;
+    let editor = r.filter_str("editor")?;
     r.modes = vec!["table".into()];
     r.labels = json!([
         {"type": "date", "property": "created_at", "title": cx.t("reports.post_edits.labels.edited_at")?},
@@ -530,7 +530,7 @@ pub async fn top_uploads(
     r: &mut Report,
 ) -> Result<(), AppError> {
     r.modes = vec!["table".into()];
-    let extension = r.filter_str("file_extension");
+    let extension = r.filter_str("file_extension")?;
     let mut choices: Vec<String> = cx
         .settings
         .get("authorized_extensions")?
@@ -859,7 +859,7 @@ pub async fn topic_view_stats(
     r: &mut Report,
 ) -> Result<(), AppError> {
     r.modes = vec!["table".into()];
-    let filter = r.add_category_filter();
+    let filter = r.add_category_filter()?;
     // [category_id] (nil when none) or its subcategories.
     let ids: Vec<i64> = match filter {
         Some((id, true)) => super::subcategory_ids(conn, cx.settings, id).await?,
@@ -934,7 +934,7 @@ async fn parse_category_ids_filter(
     conn: &mut PgConnection,
     r: &Report,
 ) -> Result<(Option<Vec<i64>>, bool), AppError> {
-    let raw = r.filter("category_ids").cloned();
+    let raw = r.filter("category_ids")?.cloned();
     let Some(raw) = raw.filter(|v| !super::is_blank(v)) else {
         return Ok((None, false));
     };
@@ -1082,7 +1082,7 @@ pub async fn posters_by_member_type(
         "category_ids",
         json!({"type": "category_list", "default": category_ids}),
     );
-    let raw = r.filter("groups").cloned();
+    let raw = r.filter("groups")?.cloned();
     let resolved = resolve_groups_filter(conn, viewer, raw.as_ref()).await?;
     r.add_filter("groups", json!({"type": "groups", "default": resolved}));
     let group_ids: Vec<i64> = resolved
@@ -1198,7 +1198,7 @@ pub async fn posters_by_member_type_members(
         "category_ids",
         json!({"type": "category_list", "default": category_ids}),
     );
-    let token = r.filter_str("group").unwrap_or_default();
+    let token = r.filter_str("group")?.unwrap_or_default();
     let Some(parsed) = parse_group_token(&token) else {
         r.error = Some("not_found");
         return Ok(());
@@ -1291,7 +1291,7 @@ pub async fn activity_by_category(
         {"property": "share_formatted", "title": cx.t("reports.activity_by_category.labels.share")?},
         {"property": "share_change_formatted", "title": cx.t("reports.activity_by_category.labels.vs_prior")?},
     ]);
-    let raw = r.filter("category_ids").cloned();
+    let raw = r.filter("category_ids")?.cloned();
     let requested = raw.as_ref().filter(|v| !super::is_blank(v)).map(|raw| {
         let mut ids: Vec<i64> = Vec::new();
         for id in parse_id_list(raw) {
