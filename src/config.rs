@@ -13,6 +13,9 @@ pub struct Config {
     pub rails_env: RailsEnv,
     /// `ENV["UNICORN_PORT"]`, appended to the base URL in development.
     pub unicorn_port: String,
+    /// `ENV["DISCOURSE_SKIP_EMAIL_SETUP"] == "1"`: an install that sets up
+    /// Discourse ID in place of email (FinishInstallationController#index).
+    pub skip_email_setup: bool,
     /// Directory served at /images and /uploads: a Discourse `public/` (or a
     /// restored backup's), from PUBLIC_DIR.
     pub public_dir: std::path::PathBuf,
@@ -251,6 +254,7 @@ impl Config {
             bind,
             rails_env,
             unicorn_port: var("UNICORN_PORT").unwrap_or("3000").to_string(),
+            skip_email_setup: var("DISCOURSE_SKIP_EMAIL_SETUP") == Some("1"),
             public_dir: var("PUBLIC_DIR").unwrap_or("public").into(),
             discourse_src: var("DISCOURSE_SRC")
                 .filter(|s| !s.is_empty())

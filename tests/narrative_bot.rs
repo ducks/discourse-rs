@@ -121,6 +121,7 @@ async fn new_user(st: &AppState, username: &str, staged: bool) -> i32 {
             trust_level: 1,
             active: true,
             approved: true,
+            admin: false,
             moderator: false,
             staged,
             locale: None,
