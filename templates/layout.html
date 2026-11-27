@@ -250,6 +250,7 @@
         {#- GlimmerSiteHeader: drop-down-mode outside the mobile view and the
             narrow desktop (whose slide-ins sidebar.js and search-menu.js
             switch to). -#}
+        {%- if !chrome.hide_site_header %}
         <div class="{% if !mobile && !narrow %}drop-down-mode {% endif %}d-header-wrap">
           <header class="d-header">
             <div class="wrap">
@@ -328,6 +329,7 @@
             </div>
           </header>
         </div>
+        {%- endif %}
         <script>
           // --header-offset and --main-outlet-offset, which Ember's site
           // header sets: where sticky content (the sidebar, a post's
@@ -338,7 +340,7 @@
             }
             function setOffsets() {
               var header = document.querySelector(".d-header-wrap");
-              var offset = header.getBoundingClientRect().height + "px";
+              var offset = (header ? header.getBoundingClientRect().height : 0) + "px";
               var root = document.documentElement.style;
               root.setProperty("--header-offset", offset);
               root.setProperty("--main-outlet-offset", offset);

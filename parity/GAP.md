@@ -10,9 +10,9 @@ are in the script's header.
 - **Rails request-spec scenarios covered by a parity case: 623 of ~11123 (5.6%)**
   (474 request-spec files in core and bundled plugins; 1773 request-spec scenarios inventoried in
   parity/SPEC_COVERAGE.md, the rest not looked at yet)
-- **Refusals: 1809 distinct `Unsupported` messages** at 2124 sites
+- **Refusals: 1808 distinct `Unsupported` messages** at 2123 sites
   (plus 33 sites with a computed message)
-- Write cases: 3661, 9 not_yet, 252 with ignored fields
+- Write cases: 3668, 9 not_yet, 259 with ignored fields
 - Golden cases: 277, 0 not_yet, 108 with ignored fields
 - Inventoried request-spec scenarios: 671 covered, 587 recordable,
   263 needs-harness, 350 unported (1871 in 91 sections)
@@ -21,7 +21,7 @@ are in the script's header.
 
 | Area | Sites | Messages |
 |---|---|---|
-| src/routes | 481 | 407 |
+| src/routes | 480 | 406 |
 | src/admin | 155 | 138 |
 | src/email | 120 | 110 |
 | src/users | 102 | 96 |
@@ -132,7 +132,7 @@ are in the script's header.
 | src/sidebar_backfill | 1 | 1 |
 | src/site | 1 | 1 |
 | src/watched_words | 1 | 1 |
-| **All** | **2124** | **1809** |
+| **All** | **2123** | **1808** |
 
 Messages are distinct within an area; the total counts each text once.
 
@@ -153,7 +153,7 @@ Messages are distinct within an area; the total counts each text once.
 | src/routes/tags.rs | 13 |
 | src/routes/login_required.rs | 12 |
 | src/routes/new_topic.rs | 11 |
-| src/routes/categories.rs | 10 |
+| src/routes/categories.rs | 9 |
 | src/routes/drafts.rs | 9 |
 | src/routes/gamification.rs | 9 |
 | src/routes/invites.rs | 9 |
@@ -187,7 +187,7 @@ Messages are distinct within an area; the total counts each text once.
 | avatars | 17 | 1 | 2 | 0 |
 | badges | 71 | 0 | 3 | 2 |
 | bookmarks | 39 | 0 | 0 | 0 |
-| categories | 51 | 0 | 4 | 0 |
+| categories | 54 | 0 | 7 | 0 |
 | category_types | 10 | 0 | 5 | 0 |
 | chat | 308 | 0 | 43 | 13 |
 | checklist | 21 | 0 | 0 | 0 |
@@ -264,8 +264,8 @@ Messages are distinct within an area; the total counts each text once.
 | user_status | 40 | 0 | 16 | 3 |
 | watched_words | 57 | 0 | 2 | 0 |
 | web_hooks | 76 | 0 | 4 | 4 |
-| wizard | 3 | 1 | 0 | 0 |
-| **All** | **3661** | **9** | **252** | **129** |
+| wizard | 7 | 1 | 4 | 0 |
+| **All** | **3668** | **9** | **259** | **129** |
 
 ## Request-spec inventory (parity/SPEC_COVERAGE.md)
 

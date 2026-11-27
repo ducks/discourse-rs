@@ -171,3 +171,17 @@ async fn categories_index_lists_top_level_categories_with_featured_topics() {
     assert!(html.contains(r#"<a href="/t/welcome-to-discourse/5" class="title" data-topic-id="5">Welcome to Discourse! "#));
     assert!(html.contains(r#"<a class="btn btn-default pull-right" href="/latest">More</a>"#));
 }
+
+/// check_xhr boots the app before fetch_category, and Ember reads
+/// `:id/show` as a slug path naming no category.
+#[tokio::test]
+async fn a_show_page_load_is_embers_not_found() {
+    let db = TestDb::new().await;
+    for path in ["/c/4/show", "/c/999999/show"] {
+        let (status, _, html) = get(&db.pool, path).await;
+        assert_eq!(status, StatusCode::OK, "{path}: {html}");
+        assert!(html.contains("page-not-found"), "{path}: {html}");
+    }
+    let (status, _, _) = get(&db.pool, "/c/4/show.json").await;
+    assert_eq!(status, StatusCode::OK);
+}

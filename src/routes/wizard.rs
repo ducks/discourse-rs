@@ -1,6 +1,6 @@
-//! The setup wizard's JSON (WizardController#index, StepsController#update)
-//! and the admin design wizard (Admin::Config::DesignWizardController).
-//! The wizards' pages are Ember's (90g).
+//! The setup wizard (WizardController#index, StepsController#update): its
+//! JSON and its page (crate::wizard_view), and the admin design wizard
+//! (Admin::Config::DesignWizardController).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -55,11 +55,26 @@ pub async fn index(
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let json = json_request(&headers, &uri);
+    // A page load passes check_xhr once logged in: the app, whose
+    // Wizard.load gets the JSON's 403 where the gate refuses it.
+    if !json && guardian.is_authenticated() {
+        let allowed = guardian.is_admin() && settings.get("wizard_enabled")?.truthy();
+        if !allowed {
+            let base = state.config.globals.relative_url_root();
+            return page(
+                &state,
+                &mut conn,
+                &settings,
+                &guardian,
+                &headers,
+                Content::Refused(format!("{base}/wizard.json")),
+            )
+            .await;
+        }
+    }
     if let Some(r) = wizard_gate(&state, &guardian, &settings, false).await? {
         return Ok(r);
-    }
-    if !json_request(&headers, &uri) {
-        return Err(Unsupported("the wizard page (Ember)").into());
     }
     let cx = crate::wizard::Cx {
         settings: &settings,
@@ -67,7 +82,137 @@ pub async fn index(
         i18n: &state.i18n,
     };
     let body = crate::wizard::wizard_json(&mut conn, &cx).await?;
-    Ok(Json(body).into_response())
+    if json {
+        return Ok(Json(body).into_response());
+    }
+    // wizard.index replaces itself with the start step, as wizard.step
+    // does a step the wizard lacks: the start step is drawn, and
+    // wizard.js puts its URL in place.
+    let wizard = &body["wizard"];
+    let start = wizard["start"].as_str().unwrap_or("setup");
+    let steps = wizard["steps"].as_array().cloned().unwrap_or_default();
+    let wanted = uri
+        .path()
+        .rsplit_once("/wizard/steps/")
+        .map(|(_, id)| id.trim_end_matches('/'));
+    let step = wanted
+        .and_then(|id| steps.iter().find(|s| s["id"] == id))
+        .or_else(|| steps.iter().find(|s| s["id"] == start))
+        .cloned()
+        .ok_or(Unsupported("a wizard without its start step"))?;
+    page(
+        &state,
+        &mut conn,
+        &settings,
+        &guardian,
+        &headers,
+        Content::Step(step),
+    )
+    .await
+}
+
+#[derive(askama::Template)]
+#[template(path = "wizard.html")]
+struct WizardPage {
+    site_title: String,
+    lang: String,
+    base_path: String,
+    crawler: crate::html::Crawler,
+    viewer: Option<crate::html::Viewer>,
+    bus_position: String,
+    chrome: crate::html::Chrome,
+    main: String,
+    wizard: bool,
+}
+
+/// What a wizard page load draws.
+enum Content {
+    /// The wizard route: the step, with no site header, sidebar or
+    /// footer and the body classed `wizard`.
+    Step(Value),
+    /// The application's exception page for Wizard.load's 403, at the
+    /// JSON's URL.
+    Refused(String),
+}
+
+async fn page(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    content: Content,
+) -> Result<Response, AppError> {
+    use askama::Template;
+    let base_path = state.config.globals.relative_url_root().to_string();
+    let vs = super::session::viewer_state(state, headers, settings, guardian)?;
+    let mut site = crate::html::Site::from_settings(settings, &base_path)?;
+    site.viewer = vs.viewer.clone();
+    site.load_chrome(
+        &mut *conn,
+        state,
+        settings,
+        guardian,
+        crate::sidebar::Active::None,
+    )
+    .await?;
+    site.bus_position = crate::bus::page_position(&state.bus).await?;
+    let categories = std::collections::HashMap::new();
+    let cx = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        hide_category: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(settings)?,
+    };
+    let (main, wizard) = match content {
+        Content::Step(step) => {
+            site.chrome.sidebar.clear();
+            site.chrome.show_footer = false;
+            site.chrome.defer_footer = false;
+            site.chrome.hide_site_header = true;
+            site.chrome.body_classes.push_str(" wizard");
+            (
+                crate::wizard_view::render(&cx, &step, &available_locales()),
+                true,
+            )
+        }
+        Content::Refused(url) => (crate::messages_view::exception(&cx, 403, &url), false),
+    };
+    let page = WizardPage {
+        site_title: site.site_title,
+        lang: site.lang,
+        base_path: site.base_path,
+        crawler: crate::html::Crawler::default(),
+        viewer: site.viewer,
+        bus_position: site.bus_position,
+        chrome: site.chrome,
+        main,
+        wizard,
+    };
+    let response =
+        axum::response::Html(page.render().map_err(crate::html::HtmlError::from)?).into_response();
+    Ok(crate::html::with_viewer_headers(response, &vs))
+}
+
+/// siteSettings.available_locales: LocaleSiteSetting.values (value,
+/// name).
+fn available_locales() -> Vec<(String, String)> {
+    crate::setting_enums::recorded("default_locale")
+        .and_then(|r| r.get("valid_values"))
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|v| {
+            Some((
+                v.get("value")?.as_str()?.to_string(),
+                v.get("name")?.as_str()?.to_string(),
+            ))
+        })
+        .collect()
 }
 
 /// GET /wizard/steps/:id(.json)

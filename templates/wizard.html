@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}{{ site_title }}{% endblock %}
+{% block head %}{% if wizard %}<link href="{{ crate::assets::url(base_path, "wizard.css") }}" media="all" rel="stylesheet" data-target="wizard"/>{% endif %}{% endblock %}
+{% block content %}
+{{ main|safe }}
+{%- if wizard %}
+<script src="{{ crate::assets::url(base_path, "combo-box.js") }}"></script>
+<script src="{{ crate::assets::url(base_path, "wizard.js") }}"></script>
+{%- endif %}
+{% endblock %}
