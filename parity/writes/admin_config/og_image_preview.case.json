@@ -1,0 +1,13 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json"},
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json", "params": {"topic_id": ""}},
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json", "params": {"topic_id": "999999"}},
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json", "params": {"topic_id": "abc"}},
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json", "params": {"topic_id": "36"}},
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json", "params": {"topic_id": "36abc"}},
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json", "params": {"topic_id": "2"}},
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json", "params": {"topic_id": ["36"]}}
+  ]
+}

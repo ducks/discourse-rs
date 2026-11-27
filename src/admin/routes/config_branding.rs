@@ -2,8 +2,8 @@
 //! logo and fonts pages (90g6) and their updates, SiteSetting::Update over
 //! the pages' settings in one transaction.
 //!
-//! Refused: the topic Open Graph image preview (TopicOgImageGenerator is
-//! not ported).
+//! The topic Open Graph image preview answers its guards; rendering the
+//! image (TopicOgImageGenerator) is not ported.
 
 use axum::Json;
 use axum::body::Bytes;
@@ -162,15 +162,92 @@ pub async fn fonts_update(
     Ok(answer(&state, outcome))
 }
 
-/// GET /admin/config/logo/og-image-preview(.json)
+/// GET /admin/config/logo/og-image-preview(.json): the topic's Open
+/// Graph image as a data URI. A blank `topic_id` is InvalidParameters, a
+/// missing topic not found, and one TopicOgImageGenerator.eligible?
+/// refuses a 422; rendering the image itself is not ported.
 pub async fn og_image_preview(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    headers: HeaderMap,
+    uri: Uri,
+    body: Bytes,
 ) -> Result<Response, AppError> {
     if let Some(refused) = admin_only(&state, &guardian) {
         return Ok(refused);
     }
+    let p = params::parse(uri.query(), &headers, &body);
+    // Topic.find_by(id:): ActiveModel's integer cast of each id given.
+    let ids: Vec<Option<i64>> = match p.get("topic_id") {
+        None | Some(serde_json::Value::Null) => Vec::new(),
+        Some(serde_json::Value::Array(a)) => a
+            .iter()
+            .map(|v| params::scalar(v).and_then(|s| crate::users::penalties::cast_integer(&s)))
+            .collect(),
+        Some(serde_json::Value::Object(_)) => {
+            return Err(Unsupported("an og-image-preview topic_id sent as a hash").into());
+        }
+        Some(v) => {
+            let s = params::scalar(v).unwrap_or_default();
+            if crate::ruby::is_blank(&s) {
+                Vec::new()
+            } else {
+                vec![crate::users::penalties::cast_integer(&s)]
+            }
+        }
+    };
+    let blank = match p.get("topic_id") {
+        Some(serde_json::Value::Array(a)) => a.is_empty(),
+        _ => ids.is_empty(),
+    };
+    if blank {
+        return Ok(crate::routes::search::invalid_parameters(
+            &state, "topic_id",
+        ));
+    }
+    let ids: Vec<i32> = ids
+        .into_iter()
+        .flatten()
+        .filter_map(|id| i32::try_from(id).ok())
+        .collect();
+    let Some(eligible) = eligible(&state, &ids).await? else {
+        return Ok(crate::routes::topics::not_found_response(&state));
+    };
+    if !eligible {
+        return Ok((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({
+                "error": state.i18n.t("topic_og_image.preview_not_eligible").unwrap_or_default()
+            })),
+        )
+            .into_response());
+    }
     Err(Unsupported("the topic Open Graph image preview (TopicOgImageGenerator)").into())
+}
+
+/// The first of the topics, and whether TopicOgImageGenerator.eligible?
+/// takes it: not under login_required, not a PM, not in a read-restricted
+/// category.
+async fn eligible(state: &AppState, ids: &[i32]) -> Result<Option<bool>, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let topic: Option<(bool, Option<bool>)> = sqlx::query_as(
+        "SELECT t.archetype = 'private_message', c.read_restricted \
+         FROM topics t LEFT JOIN categories c ON c.id = t.category_id \
+         WHERE t.id = ANY($1) ORDER BY t.id LIMIT 1",
+    )
+    .bind(ids)
+    .fetch_optional(&mut *conn)
+    .await?;
+    let Some((private_message, read_restricted)) = topic else {
+        return Ok(None);
+    };
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    Ok(Some(
+        !settings.get("login_required")?.truthy()
+            && !private_message
+            && read_restricted != Some(true),
+    ))
 }
 
 /// Which page.
