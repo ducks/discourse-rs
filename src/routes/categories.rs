@@ -2,9 +2,9 @@
 //! (`/c/*slug/find_by_slug`) and visible_groups (`/c/:id/visible_groups`),
 //! dispatched from the `/c/*path` route; create, update, update_slug and
 //! destroy; and the category editor page (`/c/*slug/edit(/:tab)`,
-//! `/new-category`, crate::category_edit_view).
-//!
-//! Refused: the HTML of `/c/:id/show` (an Ember route that has none).
+//! `/new-category`, crate::category_edit_view). The HTML of `/c/:id/show`
+//! is check_xhr's shell, where Ember reads `:id/show` as a slug path that
+//! names no category and shows its not-found page.
 
 use axum::Json;
 use axum::body::Bytes;
@@ -47,7 +47,9 @@ pub(super) async fn dispatch(
     match segments.as_slice() {
         [id, "show"] => {
             if !json {
-                return Err(Unsupported("the category editor page (Ember)").into());
+                return super::ember_not_found_page(state, guardian, headers)
+                    .await
+                    .map(Some);
             }
             Ok(Some(show(state, guardian, id).await?))
         }
