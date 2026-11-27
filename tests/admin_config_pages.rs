@@ -849,3 +849,51 @@ async fn the_whats_new_page() {
         "{current}"
     );
 }
+
+#[tokio::test]
+async fn the_discourse_id_challenge_is_open_to_anyone() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut anon = Client::anonymous(st.clone());
+    let (status, _) = anon.page("/.well-known/discourse-id-challenge").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+
+    sqlx::query(
+        "INSERT INTO discourse_rs.cached_values (key, value, expires_at) \
+         VALUES ('discourse_id_challenge_token', 'tok-x', now() + interval '10 minutes')",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    // Login required or not.
+    sqlx::query(
+        "INSERT INTO site_settings (name, data_type, value, created_at, updated_at) \
+         VALUES ('login_required', 5, 't', now(), now()) \
+         ON CONFLICT (name) DO UPDATE SET value = 't'",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    for path in [
+        "/.well-known/discourse-id-challenge",
+        "/.well-known/discourse-id-challenge.json",
+    ] {
+        let (status, body) = anon.page(path).await;
+        assert_eq!(status, StatusCode::OK, "{path}: {body}");
+        let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+        assert_eq!(json["token"], "tok-x");
+        assert!(json["domain"].is_string());
+        assert!(json.get("path").is_none());
+    }
+
+    // An expired token is gone.
+    sqlx::query(
+        "UPDATE discourse_rs.cached_values SET expires_at = now() - interval '1 second' \
+         WHERE key = 'discourse_id_challenge_token'",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    let (status, _) = anon.page("/.well-known/discourse-id-challenge").await;
+    assert_eq!(status, StatusCode::NOT_FOUND);
+}

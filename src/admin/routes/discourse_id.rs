@@ -1,8 +1,7 @@
 //! Admin::Config::DiscourseIdController: the Discourse ID tab of login and
 //! authentication (templates/admin-config/login/discourse-id.gjs), its
 //! JSON, the enabled switch's settings update, and regenerating the
-//! credentials. Regenerating with credentials there asks Discourse ID for
-//! a challenge (DiscourseId::Concerns::ChallengeFlow), which is not ported.
+//! credentials through the challenge flow (crate::discourse_id).
 
 use axum::Json;
 use axum::body::Bytes;
@@ -207,18 +206,41 @@ pub async fn regenerate(
     if let Some(refused) = admin_only(&state, &guardian) {
         return Ok(refused);
     }
-    let mut conn = state.pool.acquire().await?;
+    let actor = guardian
+        .user()
+        .ok_or(Unsupported(
+            "regenerating Discourse ID credentials anonymously",
+        ))?
+        .id;
+    let mut tx = state.pool.begin().await?;
     let settings =
-        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    if !discourse_id_configured(&settings)? {
-        return Ok((
-            StatusCode::UNPROCESSABLE_ENTITY,
-            Json(json!({
-                "failed": "FAILED",
-                "error": state.i18n.t("discourse_id.errors.not_configured").unwrap_or_default(),
-            })),
-        )
-            .into_response());
-    }
-    Err(Unsupported("regenerating Discourse ID credentials (its challenge flow)").into())
+        SiteSettings::load(&mut tx, &state.site_setting_defs, &state.config.globals).await?;
+    let cx = crate::discourse_id::Cx {
+        config: &state.config,
+        bus: &state.bus,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        settings: &settings,
+    };
+    let error = match crate::discourse_id::regenerate(&mut tx, &cx, actor).await? {
+        crate::discourse_id::Outcome::Done => {
+            tx.commit().await?;
+            super::site_settings::after_update(&state, &settings).await?;
+            return Ok(Json(json!({ "success": "OK" })).into_response());
+        }
+        crate::discourse_id::Outcome::PolicyFailed => state
+            .i18n
+            .t("discourse_id.errors.not_configured")
+            .unwrap_or_default()
+            .to_string(),
+        // on_failed_step(:request_challenge / :regenerate_with_challenge)
+        crate::discourse_id::Outcome::Failed(error) => error,
+    };
+    // The challenge token stays for Discourse ID to read, as Redis keeps it.
+    tx.commit().await?;
+    Ok((
+        StatusCode::UNPROCESSABLE_ENTITY,
+        Json(json!({ "failed": "FAILED", "error": error })),
+    )
+        .into_response())
 }

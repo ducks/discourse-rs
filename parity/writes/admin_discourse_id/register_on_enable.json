@@ -1,0 +1,213 @@
+{
+  "name": "register_on_enable",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "PUT",
+      "path": "/admin/config/login-and-authentication/discourse-id/settings.json",
+      "params": {
+        "enabled": "true"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/login-and-authentication/discourse-id.json"
+    },
+    {
+      "method": "GET",
+      "path": "/.well-known/discourse-id-challenge"
+    },
+    {
+      "method": "GET",
+      "path": "/.well-known/discourse-id-challenge.json"
+    }
+  ],
+  "started_at": "2026-11-27T16:30:40.280215",
+  "transaction_started_at": "2026-11-27T16:30:39.4706",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "enabled": true,
+        "configured": true,
+        "stats": {
+          "total_users": 0,
+          "signups_30_days": 0,
+          "logins_30_days": 0
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "token": "tok-1",
+        "domain": "localhost"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "token": "tok-1",
+        "domain": "localhost"
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 39,
+          "name": "discourse_id_client_id",
+          "value": "cid-1",
+          "data_type": 1,
+          "created_at": "2026-11-27T16:30:40.360232",
+          "updated_at": "2026-11-27T16:30:40.360232"
+        },
+        {
+          "id": 40,
+          "name": "discourse_id_client_secret",
+          "value": "sec-1",
+          "data_type": 1,
+          "created_at": "2026-11-27T16:30:40.365128",
+          "updated_at": "2026-11-27T16:30:40.365128"
+        },
+        {
+          "id": 41,
+          "name": "enable_discourse_id",
+          "value": "t",
+          "data_type": 5,
+          "created_at": "2026-11-27T16:30:40.385515",
+          "updated_at": "2026-11-27T16:30:40.385515"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 6,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "+05kOuuZn1dvdHH7VR/xXF3oItQ=",
+            "created_at": "2026-11-27T16:30:39.755998",
+            "rotated_at": "2026-11-27T16:30:39.755097",
+            "updated_at": "2026-11-27T16:30:39.755998",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "+05kOuuZn1dvdHH7VR/xXF3oItQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 6,
+            "seen_at": "2026-11-27T16:30:40.286393",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "+05kOuuZn1dvdHH7VR/xXF3oItQ=",
+            "created_at": "2026-11-27T16:30:39.755998",
+            "rotated_at": "2026-11-27T16:30:39.755097",
+            "updated_at": "2026-11-27T16:30:39.755998",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "+05kOuuZn1dvdHH7VR/xXF3oItQ=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 69,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "client_id: cid-1",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-11-27T16:30:40.380244",
+          "expires_at": null,
+          "ip_address": null,
+          "updated_at": "2026-11-27T16:30:40.380244",
+          "category_id": null,
+          "custom_type": "discourse_id_register",
+          "reviewable_id": null,
+          "acting_user_id": -1,
+          "previous_value": null,
+          "target_user_id": null
+        },
+        {
+          "id": 70,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "enable_discourse_id",
+          "topic_id": null,
+          "new_value": "true",
+          "admin_only": true,
+          "created_at": "2026-11-27T16:30:40.389539",
+          "expires_at": null,
+          "ip_address": null,
+          "updated_at": "2026-11-27T16:30:40.389539",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "false",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 39,
+    "user_histories": 69
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "discourse_id_provider_url": "http://fixtures.localhost:8099/did"
+  },
+  "remote": {
+    "/did/challenge": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"token\":\"tok-1\",\"domain\":\"localhost\"}"
+    },
+    "/did/register": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"client_id\":\"cid-1\",\"client_secret\":\"sec-1\"}"
+    }
+  },
+  "recorded_from": {
+    "case": "5add67dbcfbb838fb3fea02f3d4f8b00df665b99557dc77a175a54017d4acf9d",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
+  }
+}

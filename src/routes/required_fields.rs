@@ -74,6 +74,8 @@ fn skipped(path: &str, method: &axum::http::Method) -> bool {
             | "/site/statistics.json"
             | "/offline.html"
             | "/manifest.webmanifest"
+            | "/.well-known/discourse-id-challenge"
+            | "/.well-known/discourse-id-challenge.json"
             | "/manifest.json"
             | "/opensearch.xml"
             | "/login"

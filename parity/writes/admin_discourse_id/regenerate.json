@@ -1,0 +1,156 @@
+{
+  "name": "regenerate",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/config/login-and-authentication/discourse-id/regenerate.json"
+    },
+    {
+      "method": "GET",
+      "path": "/.well-known/discourse-id-challenge"
+    }
+  ],
+  "started_at": "2026-11-27T16:29:51.032212",
+  "transaction_started_at": "2026-11-27T16:29:50.064886",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "token": "tok-2",
+        "domain": "localhost"
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 40,
+            "name": "discourse_id_client_secret",
+            "value": "sec-0",
+            "data_type": 1,
+            "created_at": "2026-11-27T16:29:50.485186",
+            "updated_at": "2026-11-27T16:29:50.485186"
+          },
+          "after": {
+            "id": 40,
+            "name": "discourse_id_client_secret",
+            "value": "sec-2",
+            "data_type": 1,
+            "created_at": "2026-11-27T16:29:50.485186",
+            "updated_at": "2026-11-27T16:29:51.084303"
+          }
+        }
+      ]
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 6,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2//R+4gPRteEuADe6APHz583qjI=",
+            "created_at": "2026-11-27T16:29:50.361846",
+            "rotated_at": "2026-11-27T16:29:50.360937",
+            "updated_at": "2026-11-27T16:29:50.361846",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "2//R+4gPRteEuADe6APHz583qjI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 6,
+            "seen_at": "2026-11-27T16:29:51.039134",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "2//R+4gPRteEuADe6APHz583qjI=",
+            "created_at": "2026-11-27T16:29:50.361846",
+            "rotated_at": "2026-11-27T16:29:50.360937",
+            "updated_at": "2026-11-27T16:29:50.361846",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "2//R+4gPRteEuADe6APHz583qjI=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 69,
+          "email": null,
+          "action": 23,
+          "context": null,
+          "details": "client_id: cid-0",
+          "post_id": null,
+          "subject": null,
+          "topic_id": null,
+          "new_value": null,
+          "admin_only": true,
+          "created_at": "2026-11-27T16:29:51.096892",
+          "expires_at": null,
+          "ip_address": null,
+          "updated_at": "2026-11-27T16:29:51.096892",
+          "category_id": null,
+          "custom_type": "discourse_id_regenerate_credentials",
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": null,
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "user_histories": 69
+  },
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "discourse_id_provider_url": "http://fixtures.localhost:8099/did",
+    "discourse_id_client_id": "cid-0",
+    "discourse_id_client_secret": "sec-0"
+  },
+  "remote": {
+    "/did/challenge": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"token\":\"tok-2\",\"domain\":\"localhost\"}"
+    },
+    "/did/regenerate": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"client_secret\":\"sec-2\"}"
+    }
+  },
+  "recorded_from": {
+    "case": "3c412e267e9de6b14c42e1c0be513ae7673040aa6843e45370ddf5bf87991d51",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
+  }
+}
