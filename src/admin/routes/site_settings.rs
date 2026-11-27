@@ -112,7 +112,8 @@ pub async fn update(
 
 /// What the settings' change handlers do past the update's transaction:
 /// a changed title or site description rewrites the welcome topic
-/// (crate::seed_topics), with the settings as they now are.
+/// (crate::seed_topics), with the settings as they now are, and a
+/// registered site's new name, logos or description go to Discourse ID.
 pub(crate) async fn after_update(state: &AppState, before: &SiteSettings) -> Result<(), AppError> {
     let mut conn = state.pool.acquire().await?;
     let now =
@@ -136,6 +137,31 @@ pub(crate) async fn after_update(state: &AppState, before: &SiteSettings) -> Res
             bus: &state.bus,
         };
         crate::seed_topics::update_welcome_topic(&state.pool, &ctx).await?;
+    }
+    // 014-track-setting-changes: a registered site sends Discourse ID its
+    // new name, logos or description, after the response
+    // (Scheduler::Defer, its failure logged).
+    let mut metadata_changed = false;
+    for name in ["title", "logo", "logo_small", "site_description"] {
+        metadata_changed |= *before.get(name)? != *now.get(name)?;
+    }
+    if metadata_changed && crate::site_setting_update::discourse_id_configured(&now)? {
+        let state = state.clone();
+        crate::request_tracking::later("Update Discourse ID metadata", async move {
+            let mut conn = state.pool.acquire().await?;
+            let settings =
+                SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals)
+                    .await?;
+            let cx = crate::discourse_id::Cx {
+                config: &state.config,
+                bus: &state.bus,
+                defs: &state.site_setting_defs,
+                i18n: &state.i18n,
+                settings: &settings,
+            };
+            crate::discourse_id::register(&mut conn, &cx, false, true, None).await?;
+            Ok(())
+        });
     }
     Ok(())
 }

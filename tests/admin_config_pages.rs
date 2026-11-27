@@ -897,3 +897,86 @@ async fn the_discourse_id_challenge_is_open_to_anyone() {
     let (status, _) = anon.page("/.well-known/discourse-id-challenge").await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+#[tokio::test]
+async fn a_registered_site_sends_discourse_id_its_new_name() {
+    use std::sync::{Arc, Mutex};
+    let db = TestDb::new().await;
+    // A stand-in for Discourse ID that keeps what it is sent.
+    let sent: Arc<Mutex<Vec<(String, serde_json::Value)>>> = Arc::default();
+    let kept = sent.clone();
+    let app = axum::Router::new().fallback(
+        move |uri: axum::http::Uri, axum::Json(body): axum::Json<serde_json::Value>| {
+            let kept = kept.clone();
+            async move {
+                kept.lock()
+                    .unwrap()
+                    .push((uri.path().to_string(), body.clone()));
+                match uri.path() {
+                    "/challenge" => axum::Json(serde_json::json!({
+                        "token": "tok-md", "domain": body["domain"]
+                    })),
+                    _ => axum::Json(
+                        serde_json::json!({ "client_id": "cid", "client_secret": "sec" }),
+                    ),
+                }
+            }
+        },
+    );
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let provider = format!("http://{}", listener.local_addr().unwrap());
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    common::set_setting(&db.pool, "discourse_id_provider_url", 1, &provider).await;
+
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    // Not registered: nothing is sent.
+    let (status, _) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/title",
+            "title=Unregistered",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    discourse_rs::request_tracking::drain().await;
+    assert!(sent.lock().unwrap().is_empty());
+
+    common::set_setting(&db.pool, "discourse_id_client_id", 1, "cid-0").await;
+    common::set_setting(&db.pool, "discourse_id_client_secret", 1, "sec-0").await;
+    let (status, _) = admin
+        .send(
+            Method::PUT,
+            "/admin/site_settings/title",
+            "title=Renamed+Forum",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::NO_CONTENT);
+    discourse_rs::request_tracking::drain().await;
+    let sent = sent.lock().unwrap().clone();
+    assert_eq!(sent.len(), 2, "{sent:?}");
+    assert_eq!(sent[0].0, "/challenge");
+    let (path, body) = &sent[1];
+    assert_eq!(path, "/register");
+    assert_eq!(body["update"], true);
+    assert_eq!(body["client_name"], "Renamed Forum");
+    assert_eq!(body["client_id"], "cid-0");
+    assert_eq!(body["client_secret"], "sec-0");
+    assert_eq!(body["challenge_token"], "tok-md");
+    assert!(
+        body["redirect_uri"]
+            .as_str()
+            .unwrap()
+            .ends_with("/auth/discourse_id/callback")
+    );
+    // An update keeps the site's own credentials.
+    let secret: String = sqlx::query_scalar(
+        "SELECT value FROM site_settings WHERE name = 'discourse_id_client_secret'",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(secret, "sec-0");
+}
