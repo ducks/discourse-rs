@@ -39,6 +39,7 @@ pub mod site_settings_view;
 pub mod site_texts_view;
 pub mod theme_view;
 pub mod themes_view;
+pub mod tl3_view;
 pub mod traffic_explorer;
 pub mod ui;
 pub mod upcoming_changes_view;

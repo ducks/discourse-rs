@@ -1786,7 +1786,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/admin/users/{user_id}/{username}/tl3_requirements",
-            get(admin::pages::user_subpage),
+            get(admin::pages::user_tl3_requirements),
         )
         .route(
             "/admin/users/{user_id}",

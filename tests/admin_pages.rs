@@ -514,12 +514,46 @@ async fn a_users_admin_page() {
         "{html}"
     );
     assert!(html.contains("<span class=\"delete-explanation\">"));
-    // Nobody by that id.
-    let (status, _) = admin.page("/admin/users/999999/nobody").await;
-    assert_eq!(status, StatusCode::NOT_FOUND);
-    // Its tabs are not ported.
+    // Nobody by that id: Ember's not-found page in the booted app.
+    let (status, html) = admin.page("/admin/users/999999/nobody").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("page-not-found"), "{html}");
+    // The badges tab is not ported.
     let (status, _) = admin.page("/admin/users/3/user1/badges").await;
     assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+}
+
+/// templates/admin-user/tl3-requirements.gjs over the user's
+/// tl3_requirements.
+#[tokio::test]
+async fn a_users_tl3_requirements_page() {
+    let db = TestDb::new().await;
+    sqlx::query("UPDATE users SET trust_level = 2 WHERE id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/users/3/user1/tl3_requirements").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>user1 - Users - Admin - "), "{html}");
+    assert!(html.contains("<a href=\"/admin/users/3/user1\">"), "{html}");
+    assert!(html.contains("<a href=\"/admin/users/list/member\">Trust Level 2 Users</a>"));
+    assert!(html.contains("<h2>user1 - Requirements for Trust Level 3</h2>"));
+    assert!(html.contains("<p>In the last 100 days:</p>"), "{html}");
+    assert!(html.contains("<th>Topics Replied To</th><td><svg"));
+    assert!(html.contains("<td>0</td><td>max of 5</td>"), "{html}");
+    assert!(
+        html.contains("<td>0% (0 / 100 days)</td><td>50%</td>"),
+        "{html}"
+    );
+    assert!(html.contains("qualify for trust level 3.</p>"), "{html}");
+    // Nobody by that id.
+    let (status, html) = admin
+        .page("/admin/users/999999/nobody/tl3_requirements")
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("page-not-found"), "{html}");
 }
 
 /// What static/js/penalize-user.js draws the silence and suspend modals
