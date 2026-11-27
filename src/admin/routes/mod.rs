@@ -13,6 +13,7 @@ pub(crate) mod config_upcoming_changes;
 pub(crate) mod customize;
 pub(crate) mod dashboard;
 pub(crate) mod dashboard_sections;
+pub(crate) mod discourse_id;
 pub(crate) mod email;
 pub(crate) mod email_pages;
 pub(crate) mod email_style;

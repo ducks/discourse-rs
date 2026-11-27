@@ -1840,6 +1840,13 @@
       "files": [
         "js/admin-user-badges.js"
       ]
+    },
+    {
+      "name": "admin-discourse-id.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-discourse-id.js"
+      ]
     }
   ]
 }
