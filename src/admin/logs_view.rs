@@ -756,14 +756,14 @@ fn ip_row(cx: &AdminCx, list: &ListContext, r: &Value) -> String {
     )
 }
 
-/// The search logs tab: the period and search type menus over the
-/// trending terms.
-pub fn search_logs(
+/// The search logs' period chooser and search type menu; the term page's
+/// menu adds click-through only.
+fn search_log_filters(
     cx: &AdminCx,
     list: &ListContext,
-    rows: &[Value],
     period: &str,
     search_type: &str,
+    click_through: bool,
 ) -> String {
     let i18n = cx.i18n;
     let mut types = vec![
@@ -780,6 +780,9 @@ pub fn search_logs(
     }
     types.push(("header", "header"));
     types.push(("full_page", "full_page"));
+    if click_through {
+        types.push(("click_through_only", "click_through_only"));
+    }
     let options: Vec<Value> = types
         .iter()
         .map(|(id, key)| {
@@ -795,15 +798,31 @@ pub fn search_logs(
         .map(|o| s(&o["name"]).to_string())
         .unwrap_or_default();
     let aria = t(i18n, "select_kit.filter_by").replace("%{name}", &selected);
-    let mut out = format!(
-        "<div class=\"admin-container\"><div class=\"admin-title\">{} <details class=\"select-kit single-select combobox combo-box has-selection search-logs-filter\" data-options=\"{}\"><summary aria-label=\"{a}\" name=\"{a}\" data-name=\"{n}\" data-value=\"{}\" tabindex=\"0\" class=\"select-kit-header single-select-header combo-box-header\"><div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{n}\" data-value=\"{}\" title=\"{n}\"><span class=\"name\">{n}</span></div>{}</div></summary><div class=\"select-kit-body\"></div></details></div><div class=\"loading-container\">",
+    format!(
+        "<div class=\"admin-title\">{} <details class=\"select-kit single-select combobox combo-box has-selection search-logs-filter\" data-options=\"{}\"><summary aria-label=\"{a}\" name=\"{a}\" data-name=\"{n}\" data-value=\"{}\" tabindex=\"0\" class=\"select-kit-header single-select-header combo-box-header\"><div class=\"select-kit-header-wrapper\"><div class=\"select-kit-selected-name selected-name choice\" data-name=\"{n}\" data-value=\"{}\" title=\"{n}\"><span class=\"name\">{n}</span></div>{}</div></summary><div class=\"select-kit-body\"></div></details></div>",
         crate::directory_view::period_chooser(list, period),
-        escape(&Value::Array(options.clone()).to_string()),
+        escape(&Value::Array(options).to_string()),
         escape(search_type),
         escape(search_type),
         icon("angle-down", Some("angle-icon")),
         a = escape(&aria),
         n = escape(&selected),
+    )
+}
+
+/// The search logs tab: the period and search type menus over the
+/// trending terms.
+pub fn search_logs(
+    cx: &AdminCx,
+    list: &ListContext,
+    rows: &[Value],
+    period: &str,
+    search_type: &str,
+) -> String {
+    let i18n = cx.i18n;
+    let mut out = format!(
+        "<div class=\"admin-container\">{}<div class=\"loading-container\">",
+        search_log_filters(cx, list, period, search_type, false)
     );
     if rows.is_empty() {
         out.push_str(&escape(&t(i18n, "search.no_results")));
@@ -840,6 +859,81 @@ pub fn search_logs(
         out.push_str("</tbody></table>");
     }
     out.push_str("</div></div>");
+    out
+}
+
+/// The search log term page (admin-search-logs/term.gjs): the menus, the
+/// term linking to its full-page search, the searches per day as a bar
+/// chart (static/js/admin-logs.js draws it) and the header search's
+/// results, already rendered.
+pub fn search_log_term(
+    cx: &AdminCx,
+    list: &ListContext,
+    term: &str,
+    details: &Value,
+    search_type: &str,
+    results: &[String],
+) -> String {
+    let i18n = cx.i18n;
+    let period = s(&details["period"]);
+    let mut out = search_log_filters(cx, list, period, search_type, true);
+    out.push_str(&format!(
+        "<h2><a href=\"{}/search?q={}\">{}</a></h2>",
+        cx.base_path,
+        escape(&urlencoding(term)),
+        escape(term)
+    ));
+    let data = term_chart_data(details);
+    let chart = serde_json::json!({
+        "labels": data.iter().map(|(x, _)| x).collect::<Vec<_>>(),
+        "values": data.iter().map(|(_, y)| y).collect::<Vec<_>>(),
+        "label": details["title"],
+    });
+    out.push_str(&format!(
+        "<div><div class=\"chart-canvas-container\"><canvas class=\"chart-canvas search-log-term-chart\" data-chart=\"{}\" data-chart-js=\"{}\"></canvas></div></div><br><br><h2> {} </h2><br><div class=\"header-search-results\">",
+        escape(&chart.to_string()),
+        crate::assets::url(cx.base_path, "chart.umd.min.js"),
+        escape(&t(i18n, "admin.logs.search_logs.header_search_results")),
+    ));
+    for result in results {
+        out.push_str(result);
+    }
+    out.push_str("</div>");
+    out
+}
+
+/// The route's fillMissingDates: every day from the period's start (the
+/// first search's day for `all`) to its end, zero without searches.
+fn term_chart_data(details: &Value) -> Vec<(String, i64)> {
+    let rows = details["data"].as_array().cloned().unwrap_or_default();
+    let day = |v: &Value| {
+        v.as_str()
+            .and_then(|s| s.get(..10))
+            .and_then(|s| chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").ok())
+    };
+    let (Some(first), Some(end)) = (rows.first(), day(&details["end_date"])) else {
+        return Vec::new();
+    };
+    let start = if details["period"] == "all" {
+        day(&first["x"])
+    } else {
+        day(&details["start_date"])
+    };
+    let Some(mut date) = start else {
+        return Vec::new();
+    };
+    let counts: std::collections::HashMap<chrono::NaiveDate, i64> = rows
+        .iter()
+        .filter_map(|r| Some((day(&r["x"])?, r["y"].as_i64().unwrap_or(0))))
+        .collect();
+    let mut out = Vec::new();
+    while date <= end {
+        out.push((date.to_string(), counts.get(&date).copied().unwrap_or(0)));
+        match date.succ_opt() {
+            Some(next) => date = next,
+            None => break,
+        }
+    }
     out
 }
 
