@@ -143,10 +143,10 @@ async fn report_about(
 }
 
 /// The group filter (`filters.dig(:group)`), registered as a filter.
-fn group_filter(r: &mut Report) -> Option<String> {
-    let group = r.filter("group").cloned();
+fn group_filter(r: &mut Report) -> Result<Option<String>, AppError> {
+    let group = r.filter("group")?.cloned();
     r.add_filter("group", json!({"type": "group", "default": group}));
-    group.as_ref().and_then(crate::params::scalar)
+    Ok(group.as_ref().and_then(crate::params::scalar))
 }
 
 /// BasicUserSerializer from a row's columns.
@@ -177,7 +177,7 @@ const GROUP_PARAM: &str = "$1::text::integer";
 /// `report_signups`
 pub async fn signups(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Report) -> Result<(), AppError> {
     r.icon = Some("user-plus".into());
-    let group = group_filter(r);
+    let group = group_filter(r)?;
     let real = real_users("users");
     if let Some(g) = &group {
         // basic_report_about starts the data before it queries.
@@ -266,7 +266,7 @@ pub async fn signups(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Report) -> Re
 
 /// `Topic.listable_count_per_day` and the listable topics.
 pub async fn topics(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Report) -> Result<(), AppError> {
-    let filter = r.add_category_filter();
+    let filter = r.add_category_filter()?;
     let ids = super::category_ids(conn, cx, filter).await?;
     let mut cond =
         "topics.deleted_at IS NULL AND topics.archetype <> 'private_message'".to_string();
@@ -299,7 +299,7 @@ fn category_condition(column: &str, ids: &[i64]) -> String {
 
 /// `Post.public_posts_count_per_day` and the public regular posts.
 pub async fn posts(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Report) -> Result<(), AppError> {
-    let filter = r.add_category_filter();
+    let filter = r.add_category_filter()?;
     let ids = super::category_ids(conn, cx, filter).await?;
     let mut cond = "posts.deleted_at IS NULL AND topics.archetype <> 'private_message' \
                     AND posts.post_type = 1"
@@ -333,7 +333,7 @@ pub async fn post_action_report(
     icon: &str,
 ) -> Result<(), AppError> {
     r.icon = Some(icon.into());
-    let filter = r.add_category_filter();
+    let filter = r.add_category_filter()?;
     let mut from = "post_actions".to_string();
     let mut cond = format!("post_actions.post_action_type_id = {action_type}");
     if let Some((id, include)) = filter {
@@ -360,7 +360,7 @@ pub async fn post_action_report(
 
 /// `report_flags`: ReviewableFlaggedPost's scores by day.
 pub async fn flags(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Report) -> Result<(), AppError> {
-    let filter = r.add_category_filter();
+    let filter = r.add_category_filter()?;
     r.icon = Some("flag".into());
     r.higher_is_better = false;
     let from = "reviewable_scores \
@@ -437,7 +437,7 @@ pub async fn bookmarks(
     r: &mut Report,
 ) -> Result<(), AppError> {
     r.icon = Some("bookmark".into());
-    let category = r.filter("category").cloned();
+    let category = r.filter("category")?.cloned();
     r.add_filter("category", json!({"type": "category", "default": category}));
     let mut from = "bookmarks".to_string();
     let mut cond = format!(
@@ -472,7 +472,7 @@ pub async fn bookmarks(
 
 /// `report_visits`: desktop and mobile visits per day.
 pub async fn visits(conn: &mut PgConnection, cx: &Cx<'_>, r: &mut Report) -> Result<(), AppError> {
-    let group = group_filter(r);
+    let group = group_filter(r)?;
     r.icon = Some("user".into());
     r.modes = vec!["stacked_chart".into()];
     r.default_group_by = Some("weekly".into());
@@ -561,7 +561,7 @@ pub async fn mobile_visits(conn: &mut PgConnection, r: &mut Report) -> Result<()
 
 /// `report_profile_views`
 pub async fn profile_views(conn: &mut PgConnection, r: &mut Report) -> Result<(), AppError> {
-    let group = group_filter(r);
+    let group = group_filter(r)?;
     r.data = json!([]);
     let (join, cond) = match &group {
         Some(_) => (
@@ -861,7 +861,7 @@ pub async fn time_to_first_response(
     cx: &Cx<'_>,
     r: &mut Report,
 ) -> Result<(), AppError> {
-    let filter = r.add_category_filter();
+    let filter = r.add_category_filter()?;
     r.icon = Some("reply".into());
     r.higher_is_better = false;
     r.y_axis_title = Some(cx.t("reports.time_to_first_response.yaxis")?);
@@ -931,7 +931,7 @@ pub async fn topics_with_no_response(
     cx: &Cx<'_>,
     r: &mut Report,
 ) -> Result<(), AppError> {
-    let filter = r.add_category_filter();
+    let filter = r.add_category_filter()?;
     let ids = super::category_ids(conn, cx, filter).await?;
     let filter = ids.as_deref();
     let sql = format!(
@@ -1073,9 +1073,9 @@ pub async fn accepted_solutions(
 ) -> Result<(), AppError> {
     r.data = json!([]);
     let filter_requested = r
-        .filter("category_ids")
+        .filter("category_ids")?
         .is_some_and(|v| !super::is_blank(v));
-    let raw = r.filter("category_ids").cloned();
+    let raw = r.filter("category_ids")?.cloned();
     let requested = requested_category_ids(conn, raw.as_ref(), 50).await?;
     r.add_filter(
         "category_ids",
