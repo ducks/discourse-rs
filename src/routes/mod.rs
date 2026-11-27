@@ -3279,6 +3279,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/penalize-user.js", get(asset))
         .route("/assets/flag-modal.js", get(asset))
         .route("/assets/admin-ui.js", get(asset))
+        .route("/assets/admin-discourse-id.js", get(asset))
         .route("/assets/admin-backups.js", get(asset))
         .route("/assets/admin-api-keys.js", get(asset))
         .route("/assets/admin-web-hooks.js", get(asset))

@@ -1,0 +1,224 @@
+{
+  "name": "show_and_settings",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/admin/config/login-and-authentication/discourse-id.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/login-and-authentication/discourse-id.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/login-and-authentication/discourse-id/settings.json",
+      "params": {
+        "enabled": "false"
+      }
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/login-and-authentication/discourse-id/settings.json"
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/config/login-and-authentication/discourse-id/settings.json",
+      "params": {
+        "enabled": "maybe"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/admin/config/login-and-authentication/discourse-id/regenerate.json"
+    },
+    {
+      "method": "GET",
+      "path": "/admin/config/login-and-authentication/discourse-id.json"
+    }
+  ],
+  "started_at": "2026-11-27T15:06:29.282628",
+  "transaction_started_at": "2026-11-27T15:06:28.458314",
+  "responses": [
+    {
+      "status": 200,
+      "body": {
+        "enabled": false,
+        "configured": false,
+        "stats": {
+          "total_users": 3,
+          "signups_30_days": 1,
+          "logins_30_days": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "enabled": false,
+        "configured": false,
+        "stats": {
+          "total_users": 3,
+          "signups_30_days": 1,
+          "logins_30_days": 1
+        }
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "success": "OK"
+      }
+    },
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED",
+        "error": "Discourse ID is not configured. Please enable Discourse ID first."
+      }
+    },
+    {
+      "status": 200,
+      "body": {
+        "enabled": false,
+        "configured": false,
+        "stats": {
+          "total_users": 3,
+          "signups_30_days": 1,
+          "logins_30_days": 1
+        }
+      }
+    }
+  ],
+  "changes": {
+    "site_settings": {
+      "inserted": [
+        {
+          "id": 37,
+          "name": "enable_discourse_id",
+          "value": "f",
+          "data_type": 5,
+          "created_at": "2026-11-27T15:06:29.334117",
+          "updated_at": "2026-11-27T15:06:29.334117"
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    },
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 6,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8Kw4B4J7/mNZSlH1EMp7rh4hdt0=",
+            "created_at": "2026-11-27T15:06:28.751043",
+            "rotated_at": "2026-11-27T15:06:28.750111",
+            "updated_at": "2026-11-27T15:06:28.751043",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "8Kw4B4J7/mNZSlH1EMp7rh4hdt0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 6,
+            "seen_at": "2026-11-27T15:06:29.288531",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "8Kw4B4J7/mNZSlH1EMp7rh4hdt0=",
+            "created_at": "2026-11-27T15:06:28.751043",
+            "rotated_at": "2026-11-27T15:06:28.750111",
+            "updated_at": "2026-11-27T15:06:28.751043",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "8Kw4B4J7/mNZSlH1EMp7rh4hdt0=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    },
+    "user_histories": {
+      "inserted": [
+        {
+          "id": 69,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "enable_discourse_id",
+          "topic_id": null,
+          "new_value": "false",
+          "admin_only": true,
+          "created_at": "2026-11-27T15:06:29.33889",
+          "expires_at": null,
+          "ip_address": null,
+          "updated_at": "2026-11-27T15:06:29.33889",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "false",
+          "target_user_id": null
+        },
+        {
+          "id": 70,
+          "email": null,
+          "action": 3,
+          "context": null,
+          "details": null,
+          "post_id": null,
+          "subject": "enable_discourse_id",
+          "topic_id": null,
+          "new_value": "maybe",
+          "admin_only": true,
+          "created_at": "2026-11-27T15:06:29.374091",
+          "expires_at": null,
+          "ip_address": null,
+          "updated_at": "2026-11-27T15:06:29.374091",
+          "category_id": null,
+          "custom_type": null,
+          "reviewable_id": null,
+          "acting_user_id": 1,
+          "previous_value": "false",
+          "target_user_id": null
+        }
+      ],
+      "deleted": [],
+      "updated": []
+    }
+  },
+  "jobs": [],
+  "next_ids": {
+    "site_settings": 37,
+    "user_histories": 69
+  },
+  "setup": [
+    "INSERT INTO user_associated_accounts (provider_name, provider_uid, user_id, last_used, info, credentials, extra, created_at, updated_at) VALUES ('discourse_id', 'a1', 3, now() - interval '2 days', '{}', '{}', '{}', now() - interval '40 days', now()), ('discourse_id', 'a2', 4, now() - interval '50 days', '{}', '{}', '{}', now() - interval '3 days', now()), ('discourse_id', 'a3', 5, now() - interval '60 days', '{}', '{}', '{}', now() - interval '90 days', now()), ('github', 'g1', 3, now(), '{}', '{}', '{}', now(), now())"
+  ],
+  "recorded_from": {
+    "case": "d563950346459ddfa1cd90cadc411676346ed8a5206eedec9ad83da8f84d9048",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "settings": {"discourse_id_client_id": "rs-client", "discourse_id_client_secret": "rs-secret"},
+  "requests": [
+    {"method": "GET", "path": "/admin/config/login-and-authentication/discourse-id.json"},
+    {"method": "PUT", "path": "/admin/config/login-and-authentication/discourse-id/settings.json", "params": {"enabled": "true"}},
+    {"method": "GET", "path": "/admin/config/login-and-authentication/discourse-id.json"},
+    {"method": "PUT", "path": "/admin/config/login-and-authentication/discourse-id/settings.json", "params": {"enabled": "false"}}
+  ]
+}

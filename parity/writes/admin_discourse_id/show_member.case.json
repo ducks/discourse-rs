@@ -1,0 +1,11 @@
+{
+  "user": "user1",
+  
+  "requests": [
+    {"method": "GET", "path": "/admin/config/login-and-authentication/discourse-id.json"},
+    {"method": "PUT", "path": "/admin/config/login-and-authentication/discourse-id/settings.json", "params": {"enabled": "true"}},
+    {"method": "POST", "path": "/admin/config/login-and-authentication/discourse-id/regenerate.json"},
+    {"method": "GET", "path": "/admin/config/login-and-authentication/discourse-id", "headers": {"Accept": "text/html", "X-Requested-With": "", "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"}}
+  ],
+  "ignore": ["/responses/3/body"]
+}

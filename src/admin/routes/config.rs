@@ -708,6 +708,17 @@ const LOGIN: TabbedArea = TabbedArea {
 /// The tabbed areas' routes: each tab and its `.json`, and content's
 /// settings route, which goes to the area's first tab.
 pub(crate) fn tabbed_routes(mut router: Router<AppState>) -> Router<AppState> {
+    for suffix in ["", ".json"] {
+        router = router
+            .route(
+                &format!("/admin/config/login-and-authentication/discourse-id/settings{suffix}"),
+                axum::routing::put(super::discourse_id::update_settings),
+            )
+            .route(
+                &format!("/admin/config/login-and-authentication/discourse-id/regenerate{suffix}"),
+                axum::routing::post(super::discourse_id::regenerate),
+            );
+    }
     for area in [&CONTENT, &LOGIN] {
         for (index, tab) in area.tabs.iter().enumerate() {
             let path = if tab.path.is_empty() {
@@ -756,8 +767,7 @@ pub(crate) fn tabbed_routes(mut router: Router<AppState>) -> Router<AppState> {
 }
 
 /// A tab of a tabbed area: the area's header with its tabs over the tab's
-/// AdminAreaSettings. Discourse ID's tab, whose controller is not ported,
-/// is refused.
+/// AdminAreaSettings, or Discourse ID's own (crate::admin::routes::discourse_id).
 async fn tabbed_page(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -770,10 +780,17 @@ async fn tabbed_page(
     let tab = &area.tabs[index];
     if tab.area.is_empty() {
         // Admin::Config::DiscourseIdController
-        if !guardian.is_staff() {
-            return Ok(crate::routes::topics::not_found_response(&state));
-        }
-        return Err(crate::Unsupported("the Discourse ID admin page and its JSON").into());
+        let classes = format!("admin-config {} {}", area.key, tab.class);
+        return super::discourse_id::show(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            |cx| area_header(cx, area, index),
+            |cx| tab_title(cx, area, index),
+            &classes,
+        )
+        .await;
     }
     if wants_json(&uri, &headers) || !guardian.is_admin() {
         return super::site_settings::config_index(
@@ -796,6 +813,25 @@ async fn tabbed_page(
     )
     .await?;
     let cx = shell.cx(&state);
+    let header = area_header(&cx, area, index);
+    let content = format!("{header}<div class=\"admin-config-page__main-area\">{settings}</div>");
+    let classes = format!("admin-config {} {}", area.key, tab.class);
+    let main = crate::admin::view::contents(&classes, &content);
+    let page_title = tab_title(&cx, area, index);
+    shell.render(
+        &state,
+        &uri,
+        &page_title,
+        main,
+        "site-settings.js",
+        StatusCode::OK,
+    )
+}
+
+/// The tabbed area's DPageHeader: its crumbs (the tab's own when it has
+/// one), title, description and tabs, the tab at `index` active.
+fn area_header(cx: &crate::admin::view::AdminCx, area: &TabbedArea, index: usize) -> String {
+    let tab = &area.tabs[index];
     let area_path = format!("/admin/config/{}", area.path);
     let tab_path = |t: &Tab| {
         if t.path.is_empty() {
@@ -830,7 +866,7 @@ async fn tabbed_page(
         .enumerate()
         .map(|(i, (t, p))| ("", p.as_str(), t.label, i == index))
         .collect();
-    let header = PageHeader {
+    PageHeader {
         crumbs,
         title: title.clone(),
         actions: String::new(),
@@ -839,23 +875,16 @@ async fn tabbed_page(
             &format!("admin.config.{}.header_description", area.key),
         )),
         learn_more_url: None,
-        tabs: Some(crate::admin::ui::tabs(&cx, &items)),
+        tabs: Some(crate::admin::ui::tabs(cx, &items)),
     }
-    .render(&cx);
-    let content = format!("{header}<div class=\"admin-config-page__main-area\">{settings}</div>");
-    let classes = format!("admin-config {} {}", area.key, tab.class);
-    let main = crate::admin::view::contents(&classes, &content);
-    let page_title = if area.area_title {
-        title
+    .render(cx)
+}
+
+/// The tab's page title: the area's, or the tab's own label.
+fn tab_title(cx: &crate::admin::view::AdminCx, area: &TabbedArea, index: usize) -> String {
+    if area.area_title {
+        t(cx.i18n, &format!("admin.config.{}.title", area.key))
     } else {
-        t(cx.i18n, tab.label)
-    };
-    shell.render(
-        &state,
-        &uri,
-        &page_title,
-        main,
-        "site-settings.js",
-        StatusCode::OK,
-    )
+        t(cx.i18n, area.tabs[index].label)
+    }
 }

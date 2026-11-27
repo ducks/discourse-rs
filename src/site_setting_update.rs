@@ -265,6 +265,71 @@ pub async fn update(
     // `allow_changing_hidden:`, the hidden settings the caller may set.
     allow_hidden: &[&str],
 ) -> Result<Outcome, AppError> {
+    update_inner(
+        conn,
+        bus,
+        config,
+        defs,
+        settings,
+        i18n,
+        guardian,
+        name,
+        raw,
+        backfill,
+        allow_hidden,
+        false,
+    )
+    .await
+}
+
+/// `SiteSetting.set_and_log(name, params[...])` as a controller calls it
+/// with the param itself: unchanged only when the value is that very
+/// string, and logged as given (the setting stored cast as `update` does).
+#[allow(clippy::too_many_arguments)]
+pub async fn update_as_given(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    config: &crate::config::Config,
+    defs: &Definitions,
+    settings: &SiteSettings,
+    i18n: &crate::i18n::I18n,
+    guardian: &Guardian,
+    name: &str,
+    raw: &str,
+) -> Result<Outcome, AppError> {
+    update_inner(
+        conn,
+        bus,
+        config,
+        defs,
+        settings,
+        i18n,
+        guardian,
+        name,
+        raw,
+        false,
+        &[],
+        true,
+    )
+    .await
+}
+
+#[allow(clippy::too_many_arguments)]
+async fn update_inner(
+    conn: &mut PgConnection,
+    bus: &pg_bus::Bus,
+    config: &crate::config::Config,
+    defs: &Definitions,
+    settings: &SiteSettings,
+    i18n: &crate::i18n::I18n,
+    guardian: &Guardian,
+    name: &str,
+    raw: &str,
+    backfill: bool,
+    // `allow_changing_hidden:`, the hidden settings the caller may set.
+    allow_hidden: &[&str],
+    as_given: bool,
+) -> Result<Outcome, AppError> {
     if settings.get("site_archived")?.truthy() && name != "site_archived" {
         return Err(Unsupported("changing settings of an archived site").into());
     }
@@ -312,8 +377,10 @@ pub async fn update(
     if CUSTOM_VALIDATIONS.contains(&name) {
         return Err(Unsupported("settings with custom validations").into());
     }
+    let discourse_id_validator = validator == Some("EnableDiscourseIdValidator");
     let list_validator = validator.filter(|v| crate::site_setting_lists::VALIDATORS.contains(v));
-    if validator.is_some() && !css_validator && list_validator.is_none() {
+    if validator.is_some() && !css_validator && !discourse_id_validator && list_validator.is_none()
+    {
         return Err(Unsupported("site settings with a validator class not ported").into());
     }
     if preference_not_ported(name) {
@@ -388,7 +455,9 @@ pub async fn update(
     // setting's value is its Upload (nil without one), which "" never
     // equals.
     let previous = settings.get(name)?.clone();
-    let unchanged = if def.data_type == DataType::Upload {
+    let unchanged = if as_given {
+        matches!(&previous, Value::Str(s) if s == raw)
+    } else if def.data_type == DataType::Upload {
         matches!(new_value, Value::Int(id) if !previous.is_blank() && previous.to_i() == id)
     } else {
         previous == new_value
@@ -486,6 +555,14 @@ pub async fn update(
             return Ok(Outcome::Invalid(format!("{name}: {message}")));
         }
     }
+    // EnableDiscourseIdValidator: off, or on with the credentials there,
+    // is valid; on without them registers the site (DiscourseId::Register).
+    if discourse_id_validator
+        && !matches!(new_value, Value::Bool(false))
+        && !discourse_id_configured(settings)?
+    {
+        return Err(Unsupported("registering with Discourse ID (DiscourseId::Register)").into());
+    }
     // The type's validator: EmailSettingValidator, UsernameSettingValidator,
     // GroupSettingValidator (each allowing blank).
     let v = new_value.to_s();
@@ -570,6 +647,7 @@ pub async fn update(
         &new_value,
         actor.id,
         details.as_deref(),
+        as_given.then_some(raw),
     )
     .await?;
     if changed {
@@ -701,7 +779,7 @@ pub async fn set_and_log(
     new_value: &Value,
     actor_id: i32,
 ) -> Result<(), AppError> {
-    set_and_log_details(conn, bus, def, previous, new_value, actor_id, None).await?;
+    set_and_log_details(conn, bus, def, previous, new_value, actor_id, None, None).await?;
     Ok(())
 }
 
@@ -709,6 +787,7 @@ pub async fn set_and_log(
 /// user preference settings). Whether `current[name]` changed, so
 /// `site_setting_changed` is triggered: always for the types other than
 /// lists, whose stored value is the one given.
+#[allow(clippy::too_many_arguments)]
 pub async fn set_and_log_details(
     conn: &mut PgConnection,
     bus: &pg_bus::Bus,
@@ -717,6 +796,8 @@ pub async fn set_and_log_details(
     new_value: &Value,
     actor_id: i32,
     details: Option<&str>,
+    // The value logged when not new_value's own (a param as given).
+    logged: Option<&str>,
 ) -> Result<bool, AppError> {
     let name = def.name.as_str();
     let list = crate::site_setting_lists::is_list(def.data_type);
@@ -788,7 +869,10 @@ pub async fn set_and_log_details(
     } else if let Some((previous, new_value)) = urls {
         (previous, new_value)
     } else {
-        (Some(previous.to_s()), new_value.to_s())
+        (
+            Some(previous.to_s()),
+            logged.map_or_else(|| new_value.to_s(), str::to_string),
+        )
     };
     log_change(
         conn,
@@ -1081,6 +1165,15 @@ fn string_validator(
         }));
     }
     Ok(None)
+}
+
+/// `Auth::DiscourseIdAuthenticator#configured?` (and the Discourse ID
+/// controller's `credentials_configured?`): its client id and secret set.
+pub(crate) fn discourse_id_configured(settings: &SiteSettings) -> Result<bool, AppError> {
+    Ok(
+        !crate::ruby::is_blank(&settings.get("discourse_id_client_id")?.to_s())
+            && !crate::ruby::is_blank(&settings.get("discourse_id_client_secret")?.to_s()),
+    )
 }
 
 #[cfg(test)]

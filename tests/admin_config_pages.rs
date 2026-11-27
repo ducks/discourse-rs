@@ -341,11 +341,33 @@ async fn the_content_and_login_areas() {
         .page("/admin/config/login-and-authentication/authenticators")
         .await;
     assert!(html.contains("<div class=\"admin-contents admin-config login authenticators\">"));
-    // Discourse ID's controller is not ported.
-    let (status, _) = admin
+    // Discourse ID's tab: its card under the area's header, the
+    // regenerate button disabled without credentials.
+    let (status, html) = admin
         .page("/admin/config/login-and-authentication/discourse-id")
         .await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("<div class=\"admin-contents admin-config login discourse-id\">"));
+    assert!(
+        html.contains("<title>Login &#38; authentication - Admin - "),
+        "{html}"
+    );
+    assert!(
+        html.contains("class=\"admin-config-area discourse-id-admin\""),
+        "{html}"
+    );
+    assert!(
+        html.contains(
+            "aria-checked=\"false\" class=\"d-toggle-switch__checkbox discourse-id-toggle\""
+        ),
+        "{html}"
+    );
+    assert!(html.contains("disabled"), "{html}");
+    assert!(
+        html.contains("<span class=\"discourse-id-stats__value\">0</span>"),
+        "{html}"
+    );
+    assert!(html.contains("admin-discourse-id.js"), "{html}");
     // The JSON is the site settings controller's.
     let (status, body) = admin
         .send(
