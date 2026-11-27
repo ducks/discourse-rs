@@ -55,6 +55,8 @@ test("the tab reached from the user's page opens its ComboBox", async ({ page, c
   await page.goto("/admin/users/3/user1");
   await page.locator('a[href$="/admin/users/3/user1/badges"]').click();
   await expect(page).toHaveURL(/\/admin\/users\/3\/user1\/badges$/);
+  // The URL changes when the navigation commits, before the tab's scripts.
+  await page.waitForLoadState("load");
   const combo = page.locator(".admin-container.user-badges details.grant-badge-combo");
   await combo.locator("summary").click();
   await expect(combo).toHaveClass(/is-expanded/);

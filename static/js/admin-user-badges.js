@@ -181,4 +181,10 @@
       grant(form);
     }
   });
+
+  // A chooser opened before this script ran missed its toggle event.
+  document.querySelectorAll(ROOT + " details.grant-badge-combo[open]").forEach(function (chooser) {
+    Discourse.comboBox.expanded(chooser);
+    Discourse.comboBox.float(chooser);
+  });
 })();
