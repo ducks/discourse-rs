@@ -25,6 +25,13 @@ fn not_found(state: &AppState) -> Response {
     crate::routes::topics::not_found_response(state)
 }
 
+/// A Ruby exception bulk doesn't rescue (`params[:reports].each` on nil
+/// or a string, `report_params[:start_date]` on a string or an array): a
+/// 500.
+fn crash(what: &str) -> AppError {
+    std::io::Error::other(what.to_string()).into()
+}
+
 /// What the request's params came to: the find options, or the 400.
 enum Params {
     Opts(Opts),
@@ -103,11 +110,11 @@ fn parse_params(p: &Map<String, Value>) -> Result<Params, AppError> {
             }
         }
     };
+    // `report_params[:filters]`: a string or an array as much as a hash.
     let filters = match p.get("filters") {
         None => None,
-        Some(Value::Object(m)) => Some(m.clone()),
-        Some(Value::Null) => Some(Map::new()),
-        Some(_) => return Err(Unsupported("report filters that aren't a hash").into()),
+        Some(Value::Null) => Some(Value::Object(Map::new())),
+        Some(v) => Some(v.clone()),
     };
     let include_related_items = crate::ruby::cast_boolean(
         p.get("include_related_items")
@@ -262,7 +269,7 @@ pub async fn bulk(
     }
     let p = crate::params::parse(uri.query(), &headers, &body);
     let Some(Value::Object(requested)) = p.get("reports") else {
-        return Err(Unsupported("bulk reports without a reports hash").into());
+        return Err(crash("undefined method 'each'"));
     };
     let mut conn = state.pool.acquire().await?;
     let settings =
@@ -296,7 +303,7 @@ async fn bulk_reports(
         }
         let params = match params {
             Value::Object(m) => m.clone(),
-            _ => return Err(Unsupported("bulk report params that aren't a hash").into()),
+            _ => return Err(crash("report params that aren't a hash")),
         };
         let opts = match parse_params(&params)? {
             Params::Opts(o) => o,

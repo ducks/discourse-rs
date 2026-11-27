@@ -382,7 +382,8 @@ pub struct Opts {
     pub end_date: Option<NaiveDateTime>,
     pub facets: Option<Vec<String>>,
     pub limit: Option<i64>,
-    pub filters: Option<Map<String, Value>>,
+    /// A hash, or whatever else was given (which reports crash on).
+    pub filters: Option<Value>,
     pub include_related_items: bool,
 }
 
@@ -408,8 +409,10 @@ pub struct Report {
     pub error: Option<&'static str>,
     pub primary_color: String,
     pub secondary_color: String,
-    pub filters: Map<String, Value>,
-    /// Whether `filters` came from the request (an empty hash still dumps).
+    /// The filters hash, or what else was given: a string or an array,
+    /// which `filters[key]` raises on.
+    filters: Value,
+    /// Whether `filters` came from the request.
     filters_given: bool,
     pub available_filters: Vec<(String, Map<String, Value>)>,
     pub legacy: bool,
@@ -442,14 +445,18 @@ impl Report {
         self.start_date
     }
 
-    /// `filters.dig(key)` / `filters[key]`
-    pub fn filter(&self, key: &str) -> Option<&Value> {
-        self.filters.get(key).filter(|v| !v.is_null())
+    /// `filters.dig(key)` / `filters[key]`: a TypeError (rescued into the
+    /// report's `exception` error) when the filters aren't a hash.
+    pub fn filter(&self, key: &str) -> Result<Option<&Value>, AppError> {
+        match &self.filters {
+            Value::Object(m) => Ok(m.get(key).filter(|v| !v.is_null())),
+            _ => Err(std::io::Error::other("no implicit conversion of Symbol into Integer").into()),
+        }
     }
 
     /// A filter's value as a string, as it was given.
-    pub fn filter_str(&self, key: &str) -> Option<String> {
-        self.filter(key).and_then(crate::params::scalar)
+    pub fn filter_str(&self, key: &str) -> Result<Option<String>, AppError> {
+        Ok(self.filter(key)?.and_then(crate::params::scalar))
     }
 
     /// `add_filter(name, options)`
@@ -467,18 +474,20 @@ impl Report {
 
     /// `add_category_filter`: the category and whether its subcategories
     /// count, when one is asked for.
-    pub fn add_category_filter(&mut self) -> Option<(i64, bool)> {
+    pub fn add_category_filter(&mut self) -> Result<Option<(i64, bool)>, AppError> {
         let category_id = self
-            .filter("category")
+            .filter("category")?
             .filter(|v| !is_blank(v))
             .map(|v| crate::ruby::to_i(&crate::params::scalar(v).unwrap_or_default()));
         self.add_filter(
             "category",
             json!({"type": "category", "default": category_id}),
         );
-        let category_id = category_id?;
+        let Some(category_id) = category_id else {
+            return Ok(None);
+        };
         let include = crate::ruby::cast_boolean(
-            self.filter("include_subcategories")
+            self.filter("include_subcategories")?
                 .and_then(crate::params::scalar)
                 .as_deref(),
         )
@@ -487,7 +496,7 @@ impl Report {
             "include_subcategories",
             json!({"type": "bool", "default": include}),
         );
-        Some((category_id, include))
+        Ok(Some((category_id, include)))
     }
 
     /// `Report.default_labels`
@@ -677,8 +686,8 @@ fn cache_key(r: &Report, viewer: &Viewer<'_>, settings: &SiteSettings) -> Result
     if let Some(limit) = r.limit {
         parts.push(limit.to_string());
     }
-    if r.filters_given && !r.filters.is_empty() {
-        parts.push(Value::Object(r.filters.clone()).to_string());
+    if r.filters_given && !is_blank(&r.filters) {
+        parts.push(r.filters.to_string());
     }
     parts.push(SCHEMA_VERSION.to_string());
     if let Some(id) = viewer.user_id() {
@@ -770,7 +779,10 @@ pub fn get(cx: &Cx<'_>, viewer: &Viewer<'_>, kind: &str, opts: &Opts) -> Result<
         error: None,
         primary_color: rgba_color(&tertiary, "1"),
         secondary_color: rgba_color(&tertiary, "0.1"),
-        filters: opts.filters.clone().unwrap_or_default(),
+        filters: opts
+            .filters
+            .clone()
+            .unwrap_or_else(|| Value::Object(Map::new())),
         filters_given: opts.filters.is_some(),
         available_filters: Vec::new(),
         legacy: LEGACY_REPORTS.contains(&kind),

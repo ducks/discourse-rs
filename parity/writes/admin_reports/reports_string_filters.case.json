@@ -1,0 +1,10 @@
+{
+  "user": "admin",
+  "requests": [
+    {"method": "GET", "path": "/admin/reports/signups.json", "params": {"start_date": "2026-09-20", "filters": "x"}},
+    {"method": "GET", "path": "/admin/reports/users_by_type.json", "params": {"filters": "x"}},
+    {"method": "GET", "path": "/admin/reports/top_referred_topics.json", "params": {"filters": "x"}},
+    {"method": "GET", "path": "/admin/reports/posts.json", "params": {"filters": ["a"]}},
+    {"method": "GET", "path": "/admin/reports/bulk.json", "params": {"reports": {"visits": {"filters": "x"}}}}
+  ]
+}
