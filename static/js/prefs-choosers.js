@@ -8,7 +8,10 @@
 // holds is its data-items, [value, name] pairs, which preferences.js
 // saves. Also IgnoredUserList and the IgnoreDurationModal it opens
 // (EmailGroupUserChooser and DFutureDateInput's time shortcuts), which the
-// profile's notification level dropdown opens too.
+// profile's notification level dropdown opens too. The tag group form
+// (src/tags/groups_view.rs) uses them too: data-own-scope (a chooser
+// blocking only its own choices), data-allow-any (a typed tag's row),
+// data-exclude-synonyms, data-placeholder, and [value, name] options.
 (function () {
   "use strict";
 
@@ -76,7 +79,13 @@
 
   // The choices of every chooser of the kind on the page: what a
   // CategorySelector's blockedCategories and a TagChooser's blockedTags are.
+  // A chooser with data-own-scope (the tag group form's) blocks its own.
   function blocked(chooser) {
+    if (chooser.hasAttribute("data-own-scope")) {
+      return items(chooser).map(function (i) {
+        return String(i[1]).toLowerCase();
+      });
+    }
     var out = [];
     var scope = chooser.closest(".d-modal") || document;
     scope.querySelectorAll('details.multi-select[data-chooser="' + chooser.dataset.chooser + '"]').forEach(function (c) {
@@ -201,7 +210,7 @@
       '<div class="select-kit-filter multi-select-filter' +
       (kind === "email-user" ? " email-group-user-chooser-filter" : "") +
       ' is-expanded"><input class="ember-text-field filter-input" autocapitalize="off" autocomplete="off" autocorrect="off" name="filter-input-search" placeholder="' +
-      escapeHtml(kind === "tag" ? s.tags_placeholder : s.filter_placeholder) +
+      escapeHtml(chooser.dataset.placeholder || (kind === "tag" ? s.tags_placeholder : s.filter_placeholder)) +
       '" spellcheck="false" tabindex="0" type="search"></div>'
     );
   }
@@ -257,7 +266,8 @@
     return out.join("");
   }
 
-  // The options not chosen yet.
+  // The options not chosen yet. An option is its own name and value, or a
+  // [value, name] pair (the tag group form's GroupChooser).
   function optionRows(chooser, term) {
     var options = [];
     try {
@@ -270,18 +280,21 @@
     });
     var needle = term.toLowerCase();
     return options
+      .map(function (o) {
+        return Array.isArray(o) ? o : [o, o];
+      })
       .filter(function (o) {
-        return chosen.indexOf(String(o)) === -1 && (!needle || String(o).toLowerCase().indexOf(needle) !== -1);
+        return chosen.indexOf(String(o[0])) === -1 && (!needle || String(o[1]).toLowerCase().indexOf(needle) !== -1);
       })
       .map(function (o, i) {
-        var n = escapeHtml(o);
+        var n = escapeHtml(o[1]);
         return (
           '<li aria-checked="false" role="menuitemradio" data-index="' +
           i +
           '" data-name="' +
           n +
           '" data-value="' +
-          n +
+          escapeHtml(o[0]) +
           '" title="' +
           n +
           '" tabindex="0" class="select-kit-row' +
@@ -294,6 +307,47 @@
       .join("");
   }
 
+  // tagUtils.createContentFromInput: lib/discourse_tagging's clean_tag.
+  function cleanTag(input) {
+    var s = strings();
+    var out = input
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[\/\?#\[\]@!\$&'\(\)\*\+,;=\.%\\`^\s|\{\}"<>]+/g, "")
+      .substring(0, s.max_tag_length || 20);
+    return s.force_lowercase_tags ? out.toLowerCase() : out;
+  }
+
+  // A TagChooser with allowAny (data-allow-any): the typed tag as a row of
+  // its own when the results lack it.
+  function createRow(chooser, term, results) {
+    if (!chooser.hasAttribute("data-allow-any")) {
+      return "";
+    }
+    var name = cleanTag(term);
+    if (!name) {
+      return "";
+    }
+    var lower = name.toLowerCase();
+    var known = results.some(function (r) {
+      return String(r.name).toLowerCase() === lower;
+    });
+    if (known || blocked(chooser).indexOf(lower) !== -1) {
+      return "";
+    }
+    return (
+      '<li aria-checked="false" role="menuitemradio" data-index="0" data-name="' +
+      escapeHtml(name) +
+      '" data-value="' +
+      escapeHtml(name) +
+      '" title="' +
+      escapeHtml(name) +
+      '" tabindex="0" class="select-kit-row is-highlighted"><span class="name">' +
+      escapeHtml(name) +
+      "</span></li>"
+    );
+  }
+
   function tagRows(chooser, term) {
     var s = strings();
     var params = new URLSearchParams({ q: term, limit: String(s.max_tag_search_results || 5) });
@@ -302,6 +356,9 @@
       .forEach(function (name) {
         params.append("selected_tags[]", name);
       });
+    if (chooser.hasAttribute("data-exclude-synonyms")) {
+      params.append("excludeSynonyms", "true");
+    }
     return getJson("/tags/filter/search.json?" + params.toString()).then(function (json) {
       var skip = blocked(chooser);
       var results = (json.results || []).filter(function (r) {
@@ -313,7 +370,8 @@
         });
       }
       var seen = {};
-      return results
+      var create = createRow(chooser, term, results);
+      return create + results
         .filter(function (r) {
           if (seen[r.name]) {
             return false;
@@ -332,7 +390,7 @@
             '" title="' +
             escapeHtml(r.name) +
             '" tabindex="0" class="select-kit-row tag-chooser-row' +
-            (term && i === 0 ? " is-highlighted" : "") +
+            (term && i === 0 && !create ? " is-highlighted" : "") +
             '"><a data-tag-name="' +
             escapeHtml(String(r.name).toLowerCase()) +
             '" class="discourse-tag ' +

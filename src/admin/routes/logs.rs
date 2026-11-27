@@ -434,13 +434,17 @@ pub async fn search_log_term(
     if let Some(r) = staff_only(&state, &guardian) {
         return Ok(r);
     }
-    super::pages::refuse_page(&uri, &headers, "the search log term page")?;
+    let page = !super::pages::wants_json(&uri, &headers);
     let p = crate::params::parse(uri.query(), &headers, &body);
     let Some(term) = crate::params::string(&p, "term").filter(|t| !t.is_empty()) else {
         return Ok(crate::routes::accounts::param_missing("term"));
     };
-    let period = crate::params::string(&p, "period").unwrap_or_else(|| "quarterly".into());
-    let search_type = crate::params::string(&p, "search_type").unwrap_or_else(|| "all".into());
+    // The page's params are the route's: `period` (yearly by default)
+    // and `searchType`, which it sends on as the JSON's.
+    let period = crate::params::string(&p, "period")
+        .unwrap_or_else(|| if page { "yearly" } else { "quarterly" }.into());
+    let search_type = crate::params::string(&p, if page { "searchType" } else { "search_type" })
+        .unwrap_or_else(|| "all".into());
     let mut conn = state.pool.acquire().await?;
     let settings =
         SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
@@ -485,6 +489,20 @@ pub async fn search_log_term(
         .await?
         .unwrap_or_else(|| json!({ "grouped_search_result": null }));
     details.insert("search_result".into(), result);
+    if page {
+        drop(conn);
+        let term = args.term;
+        return super::pages::search_log_term_page(
+            &state,
+            &guardian,
+            &headers,
+            &uri,
+            &term,
+            &serde_json::Value::Object(details),
+            &search_type,
+        )
+        .await;
+    }
     Ok(Json(json!({ "term": details })).into_response())
 }
 

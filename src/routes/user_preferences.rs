@@ -1046,7 +1046,6 @@ pub(super) async fn ember_not_found(
         config: &state.config,
         settings,
     };
-    let base_path = state.config.globals.relative_url_root().to_string();
     let not_found = crate::not_found_page::NotFound {
         forbidden: false,
         custom_message: None,
@@ -1055,6 +1054,34 @@ pub(super) async fn ember_not_found(
     };
     let html =
         crate::not_found_page::build(&mut *conn, settings, &state.i18n, &urls, &not_found).await?;
+    app_page(
+        state,
+        conn,
+        settings,
+        guardian,
+        headers,
+        bus_position,
+        String::new(),
+        format!("<div class=\"container\">{html}</div>"),
+    )
+    .await
+}
+
+/// A page of the Ember app drawn in the application layout: `main` in the
+/// outlet, under "`page_title` - site title" (the site title alone when
+/// empty).
+#[allow(clippy::too_many_arguments)]
+pub(crate) async fn app_page(
+    state: &AppState,
+    conn: &mut sqlx::PgConnection,
+    settings: &SiteSettings,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    bus_position: String,
+    page_title: String,
+    main: String,
+) -> Result<Response, AppError> {
+    let base_path = state.config.globals.relative_url_root().to_string();
     let vs = super::session::viewer_state(state, headers, settings, guardian)?;
     let mut site = crate::html::Site::from_settings(settings, &base_path)?;
     site.viewer = vs.viewer.clone();
@@ -1075,8 +1102,8 @@ pub(super) async fn ember_not_found(
         lang: site.lang,
         base_path: site.base_path,
         crawler: Crawler::default(),
-        page_title: String::new(),
-        main: format!("<div class=\"container\">{html}</div>"),
+        page_title,
+        main,
     };
     let response = Html(page.render().map_err(crate::html::HtmlError::from)?).into_response();
     Ok(crate::html::with_viewer_headers(response, &vs))

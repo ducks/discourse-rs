@@ -961,6 +961,74 @@ pub async fn search_logs_page(
     shell.render(state, uri, &title, main, "admin-logs.js", StatusCode::OK)
 }
 
+/// The search log term page, from its JSON's `term`.
+pub async fn search_log_term_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    uri: &Uri,
+    term: &str,
+    details: &serde_json::Value,
+    search_type: &str,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(
+        &mut conn,
+        state,
+        guardian,
+        headers,
+        "admin_logs_staff_action_logs",
+    )
+    .await?;
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        hide_category: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let pg_headlines = shell
+        .settings
+        .get("use_pg_headlines_for_excerpt")
+        .map(|v| v.truthy())
+        .unwrap_or(false);
+    let result = &details["search_result"];
+    let topics = result["topics"].as_array();
+    let results: Vec<String> = result["posts"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .map(|post| {
+            let topic = topics
+                .and_then(|ts| ts.iter().find(|t| t["id"] == post["topic_id"]))
+                .cloned()
+                .unwrap_or(serde_json::Value::Null);
+            crate::search_view::log_term_entry(&list, post, &topic, pg_headlines)
+        })
+        .collect();
+    let cx = shell.cx(state);
+    let mut content = crate::admin::logs_view::header(
+        &cx,
+        shell.admin.can_see_emails,
+        crate::admin::logs_view::Tab::SearchLogs,
+    );
+    content.push_str(&crate::admin::logs_view::search_log_term(
+        &cx,
+        &list,
+        term,
+        details,
+        search_type,
+        &results,
+    ));
+    let main = crate::admin::view::contents("admin-logs admin-search-logs", &content);
+    let title = crate::admin::view::t(&state.i18n, "admin.config.staff_action_logs.title");
+    shell.render(state, uri, &title, main, "admin-logs.js", StatusCode::OK)
+}
+
 /// An email logs tab as a page, from its JSON; the URL's filters fill
 /// their inputs.
 pub async fn email_logs_page(
@@ -997,19 +1065,6 @@ pub async fn email_logs_page(
     let main = crate::admin::view::contents(&format!("admin-email-logs {}", tab.key()), &content);
     let title = crate::admin::view::t(&state.i18n, "admin.config.email_logs.title");
     shell.render(state, uri, &title, main, "admin-logs.js", StatusCode::OK)
-}
-
-/// An admin page not drawn yet: refused, where its JSON is served.
-pub(crate) fn refuse_page(
-    uri: &Uri,
-    headers: &HeaderMap,
-    what: &'static str,
-) -> Result<(), AppError> {
-    if wants_json(uri, headers) {
-        Ok(())
-    } else {
-        Err(crate::Unsupported(what).into())
-    }
 }
 
 pub(crate) fn wants_json(uri: &Uri, headers: &HeaderMap) -> bool {
