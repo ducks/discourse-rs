@@ -1018,9 +1018,23 @@ pub async fn page(
     Ok(crate::html::with_viewer_headers(response, &vs))
 }
 
+/// A page load Rails answers with the app (check_xhr's RenderEmpty) at a
+/// path Ember's router has no route for: its not-found page, with a 200.
+pub(crate) async fn ember_not_found_page(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+) -> Result<Response, AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let bus_position = crate::bus::page_position(&state.bus).await?;
+    ember_not_found(state, &mut conn, &settings, guardian, headers, bus_position).await
+}
+
 /// Ember's not-found page in the application layout, for a route the app
 /// lacks.
-pub(crate) async fn ember_not_found(
+pub(super) async fn ember_not_found(
     state: &AppState,
     conn: &mut sqlx::PgConnection,
     settings: &SiteSettings,

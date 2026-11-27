@@ -250,7 +250,7 @@ pub async fn index(
             )
             .await;
         }
-        return Err(Unsupported("the admin permalinks page").into());
+        return super::ember_not_found_page(&state, &guardian, &headers).await;
     }
     let query = crate::params::parse_query(uri.query().unwrap_or(""));
     let filter = crate::params::string(&query, "filter");
@@ -310,7 +310,7 @@ pub async fn show_admin(
             )
             .await;
         }
-        return Err(Unsupported("the admin permalinks page").into());
+        return super::ember_not_found_page(&state, &guardian, &headers).await;
     }
     let mut conn = state.pool.acquire().await?;
     let Some(p) = permalinks::find(&mut conn, id_of(&id)).await? else {

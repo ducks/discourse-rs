@@ -10,9 +10,9 @@ are in the script's header.
 - **Rails request-spec scenarios covered by a parity case: 623 of ~11123 (5.6%)**
   (474 request-spec files in core and bundled plugins; 1773 request-spec scenarios inventoried in
   parity/SPEC_COVERAGE.md, the rest not looked at yet)
-- **Refusals: 1814 distinct `Unsupported` messages** at 2130 sites
+- **Refusals: 1809 distinct `Unsupported` messages** at 2124 sites
   (plus 34 sites with a computed message)
-- Write cases: 3654, 9 not_yet, 245 with ignored fields
+- Write cases: 3655, 9 not_yet, 246 with ignored fields
 - Golden cases: 277, 0 not_yet, 108 with ignored fields
 - Inventoried request-spec scenarios: 671 covered, 587 recordable,
   263 needs-harness, 350 unported (1871 in 91 sections)
@@ -21,7 +21,7 @@ are in the script's header.
 
 | Area | Sites | Messages |
 |---|---|---|
-| src/routes | 487 | 412 |
+| src/routes | 481 | 407 |
 | src/admin | 155 | 138 |
 | src/email | 120 | 110 |
 | src/users | 102 | 96 |
@@ -132,7 +132,7 @@ are in the script's header.
 | src/sidebar_backfill | 1 | 1 |
 | src/site | 1 | 1 |
 | src/watched_words | 1 | 1 |
-| **All** | **2130** | **1814** |
+| **All** | **2124** | **1809** |
 
 Messages are distinct within an area; the total counts each text once.
 
@@ -141,23 +141,23 @@ Messages are distinct within an area; the total counts each text once.
 | File | Sites |
 |---|---|
 | src/routes/invite_redeem.rs | 44 |
-| src/routes/themes.rs | 26 |
+| src/routes/themes.rs | 25 |
 | src/routes/list.rs | 20 |
 | src/routes/accounts.rs | 15 |
 | src/routes/posts.rs | 15 |
 | src/routes/sidebar_sections.rs | 15 |
 | src/routes/tag_admin.rs | 15 |
-| src/routes/site_texts.rs | 14 |
 | src/routes/users.rs | 14 |
 | src/routes/omniauth.rs | 13 |
+| src/routes/site_texts.rs | 13 |
 | src/routes/tags.rs | 13 |
 | src/routes/login_required.rs | 12 |
 | src/routes/new_topic.rs | 11 |
 | src/routes/categories.rs | 10 |
-| src/routes/color_schemes.rs | 9 |
 | src/routes/drafts.rs | 9 |
 | src/routes/gamification.rs | 9 |
 | src/routes/invites.rs | 9 |
+| src/routes/color_schemes.rs | 8 |
 | src/routes/directory_columns.rs | 8 |
 | src/routes/discourse_connect.rs | 8 |
 | src/routes/groups.rs | 8 |
@@ -179,6 +179,7 @@ Messages are distinct within an area; the total counts each text once.
 | admin_email_logs | 2 | 0 | 0 | 0 |
 | admin_logs | 16 | 0 | 0 | 0 |
 | admin_mcp | 11 | 0 | 0 | 0 |
+| admin_page_loads | 1 | 0 | 1 | 0 |
 | admin_reports | 22 | 0 | 1 | 1 |
 | admin_search | 4 | 0 | 1 | 0 |
 | admin_users | 137 | 0 | 6 | 5 |
@@ -264,7 +265,7 @@ Messages are distinct within an area; the total counts each text once.
 | watched_words | 57 | 0 | 2 | 0 |
 | web_hooks | 76 | 0 | 4 | 4 |
 | wizard | 3 | 1 | 0 | 0 |
-| **All** | **3654** | **9** | **245** | **129** |
+| **All** | **3655** | **9** | **246** | **129** |
 
 ## Request-spec inventory (parity/SPEC_COVERAGE.md)
 

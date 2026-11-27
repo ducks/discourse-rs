@@ -91,7 +91,9 @@ pub async fn index(
     if let Some(r) = admin_route(&state, &guardian) {
         return Ok(r);
     }
-    refuse_html(&headers, &uri)?;
+    if !json_request(&headers, &uri) {
+        return crate::routes::ember_not_found_page(&state, &guardian, &headers).await;
+    }
     index_json(&state).await
 }
 
@@ -115,7 +117,9 @@ pub async fn index_alias(
         )
         .await;
     }
-    refuse_html(&headers, &uri)?;
+    if !json_request(&headers, &uri) {
+        return crate::routes::ember_not_found_page(&state, &guardian, &headers).await;
+    }
     index_json(&state).await
 }
 
@@ -147,7 +151,9 @@ pub async fn show(
         )
         .await;
     }
-    refuse_html(&headers, &uri)?;
+    if !json_request(&headers, &uri) {
+        return crate::routes::ember_not_found_page(&state, &guardian, &headers).await;
+    }
     if strip_json(&id) == "new" {
         return index_json(&state).await;
     }
@@ -188,7 +194,9 @@ pub async fn edit(
         )
         .await;
     }
-    refuse_html(&headers, &uri)?;
+    if !json_request(&headers, &uri) {
+        return crate::routes::ember_not_found_page(&state, &guardian, &headers).await;
+    }
     Ok(StatusCode::NO_CONTENT.into_response())
 }
 
