@@ -3144,6 +3144,10 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/assets/color_definitions_scheme/{file}",
             get(stylesheets::scheme),
         )
+        .route(
+            "/assets/color_definitions_theme/{theme}/{file}",
+            get(stylesheets::theme_scheme),
+        )
         .route("/fonts/{file}", get(stylesheets::font))
         .route(
             "/plugins/discourse-math/1.0.1/{*path}",

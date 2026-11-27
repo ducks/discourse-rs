@@ -1,0 +1,12 @@
+{
+  "user": "user1",
+  "setup": [
+    "INSERT INTO themes (id, name, user_id, created_at, updated_at, compiler_version, user_selectable, component) VALUES (900, 'Another', -1, now(), now(), 0, true, false), (901, 'Hidden', -1, now(), now(), 0, false, false)"
+  ],
+  "ignore": ["/responses/0/body/new_href", "/responses/1/body/new_href", "/responses/2/body/new_href"],
+  "requests": [
+    {"method": "GET", "path": "/color-scheme-stylesheet/2/900.json"},
+    {"method": "GET", "path": "/color-scheme-stylesheet/9999.json", "params": {"theme_id": "900"}},
+    {"method": "GET", "path": "/color-scheme-stylesheet/2/901.json"}
+  ]
+}

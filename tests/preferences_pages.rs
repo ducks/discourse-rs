@@ -701,6 +701,85 @@ async fn a_palette_preview_names_its_stylesheet() {
 }
 
 #[tokio::test]
+async fn a_palette_preview_under_another_theme_draws_its_color_definitions() {
+    let (db, mut user1) = client("user1").await;
+    let json = |body: &str| serde_json::from_str::<serde_json::Value>(body).unwrap();
+    sqlx::query(
+        "INSERT INTO themes (id, name, user_id, created_at, updated_at, compiler_version, user_selectable, component) \
+         VALUES (900, 'Another', -1, now(), now(), 0, true, false), \
+                (901, 'Hidden', -1, now(), now(), 0, false, false)",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO theme_fields (theme_id, target_id, name, value, type_id, created_at, updated_at) \
+         VALUES (900, 0, 'color_definitions', ':root { --another-marker: #{$primary}; }', 1, now(), now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
+
+    let scheme = user1
+        .send(Method::GET, "/color-scheme-stylesheet/2/900.json", "")
+        .await;
+    assert_eq!(
+        json(&scheme),
+        serde_json::json!({
+            "color_scheme_id": 2,
+            "new_href": "/assets/color_definitions_theme/900/2.css",
+        })
+    );
+    // The theme has no palette of its own: a missing one is the base.
+    let base = user1
+        .send(
+            Method::GET,
+            "/color-scheme-stylesheet/9999.json?theme_id=900",
+            "",
+        )
+        .await;
+    assert_eq!(
+        json(&base),
+        serde_json::json!({
+            "color_scheme_id": -1,
+            "new_href": "/assets/color_definitions_theme/900/base.css",
+        })
+    );
+    let css = user1
+        .send(Method::GET, "/assets/color_definitions_theme/900/2.css", "")
+        .await;
+    assert_eq!(user1.status, StatusCode::OK);
+    assert!(css.contains("--another-marker"), "{css}");
+    user1
+        .send(
+            Method::GET,
+            "/assets/color_definitions_theme/900/base.css",
+            "",
+        )
+        .await;
+    assert_eq!(user1.status, StatusCode::OK);
+
+    // A theme the member may not use is the default one's, and its
+    // stylesheet isn't served to them.
+    let hidden = user1
+        .send(Method::GET, "/color-scheme-stylesheet/2/901.json", "")
+        .await;
+    assert_eq!(
+        json(&hidden)["new_href"],
+        "/assets/color_definitions_scheme/2.css"
+    );
+    for missing in [
+        "/assets/color_definitions_theme/901/2.css",
+        "/assets/color_definitions_theme/900/9999.css",
+        "/assets/color_definitions_theme/x/2.css",
+        "/assets/color_definitions_theme/900/2.txt",
+    ] {
+        user1.send(Method::GET, missing, "").await;
+        assert_eq!(user1.status, StatusCode::NOT_FOUND, "{missing}");
+    }
+}
+
+#[tokio::test]
 async fn a_second_theme_is_refused() {
     let (db, mut user1) = client("user1").await;
     sqlx::query(
