@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "settings": {"login_required": "true"},
+  "requests": [
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json", "params": {"topic_id": "3"}}
+  ]
+}

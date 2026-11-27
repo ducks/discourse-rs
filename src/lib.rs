@@ -1,3 +1,7 @@
+// The handlers' futures hold AppState, whose wasm host reaches deep into
+// wasmtime's types; proving them Send and Sync outgrows the default 128.
+#![recursion_limit = "256"]
+
 pub mod about;
 pub mod about_view;
 pub mod accounts;
