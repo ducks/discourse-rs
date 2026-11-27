@@ -633,3 +633,29 @@ async fn a_themes_page_and_its_code_editor() {
         .await;
     assert_eq!(status, StatusCode::NOT_FOUND);
 }
+
+/// Page loads of admin JSON paths Ember's router has no route for: Rails
+/// answers with the app, which draws its not-found page. `reseed` is
+/// adminCustomizeThemes' type, whose index goes on to the themes.
+#[tokio::test]
+async fn admin_json_paths_without_an_ember_route() {
+    let db = TestDb::new().await;
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    for path in [
+        "/admin/themes",
+        "/admin/permalinks",
+        "/admin/permalinks/1",
+        "/admin/color_schemes",
+        "/admin/config/design-wizard",
+        "/admin/config/user_fields",
+        "/admin/config/user_fields/1/edit",
+    ] {
+        let (status, html) = admin.page(path).await;
+        assert_eq!(status, StatusCode::OK, "{path}: {html}");
+        assert!(html.contains("page-not-found"), "{path}: {html}");
+    }
+    let (status, location) = admin.page("/admin/customize/reseed").await;
+    assert_eq!(status, StatusCode::SEE_OTHER);
+    assert_eq!(location, "/admin/config/customize/themes");
+}

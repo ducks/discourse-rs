@@ -41,20 +41,6 @@ fn refuse_html(headers: &HeaderMap, uri: &Uri) -> Result<(), AppError> {
     }
 }
 
-/// A page load of /form-templates(/:id): Rails boots the app for any id,
-/// but Ember only routes form templates under admin, so its not-found page.
-async fn ember_page(
-    state: &AppState,
-    guardian: &Guardian,
-    conn: &mut sqlx::PgConnection,
-    headers: &HeaderMap,
-) -> Result<Response, AppError> {
-    let settings =
-        SiteSettings::load(&mut *conn, &state.site_setting_defs, &state.config.globals).await?;
-    let bus_position = crate::bus::page_position(&state.bus).await?;
-    crate::routes::ember_not_found(state, conn, &settings, guardian, headers, bus_position).await
-}
-
 fn pairs(p: &Map<String, Value>) -> Vec<(String, String)> {
     p.iter()
         .filter_map(|(k, v)| params::scalar(v).map(|v| (k.clone(), v)))
@@ -430,7 +416,7 @@ pub async fn public_index(
     let mut conn = state.pool.acquire().await?;
     // check_xhr runs after requires_login but before the setting check.
     if !guardian.is_anonymous() && !json_request(&headers, &uri) {
-        return ember_page(&state, &guardian, &mut conn, &headers).await;
+        return crate::routes::ember_not_found_page(&state, &guardian, &headers).await;
     }
     let allowed = match public_guard(&state, &guardian, &mut conn).await? {
         Ok(a) => a,
@@ -456,7 +442,7 @@ pub async fn public_show(
     let mut conn = state.pool.acquire().await?;
     // check_xhr runs after requires_login but before the setting check.
     if !guardian.is_anonymous() && !json_request(&headers, &uri) {
-        return ember_page(&state, &guardian, &mut conn, &headers).await;
+        return crate::routes::ember_not_found_page(&state, &guardian, &headers).await;
     }
     let allowed = match public_guard(&state, &guardian, &mut conn).await? {
         Ok(a) => a,

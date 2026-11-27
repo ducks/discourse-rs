@@ -132,7 +132,7 @@ pub async fn index(
         return Ok(r);
     }
     if !json_request(&headers, &uri) {
-        return Err(Unsupported("the admin color schemes page").into());
+        return super::ember_not_found_page(&state, &guardian, &headers).await;
     }
     let mut conn = state.pool.acquire().await?;
     let mut out = Vec::new();

@@ -125,7 +125,7 @@ pub(crate) mod user_menu;
 mod user_notes;
 mod user_notifications;
 mod user_preferences;
-pub(crate) use user_preferences::ember_not_found;
+pub(crate) use user_preferences::ember_not_found_page;
 mod user_search;
 mod user_security;
 mod user_status;
