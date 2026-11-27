@@ -283,6 +283,9 @@ pub struct Chrome {
     /// footer (a list with more to load, a topic not loaded to its end, the
     /// admin) go without PoweredByDiscourse and the theme's footer.
     pub show_footer: bool,
+    /// The application controller's `showSiteHeader` off: the wizard's
+    /// route draws no site header.
+    pub hide_site_header: bool,
     /// The footer is hidden only until the page loads the rest of its
     /// list or topic: it waits in `template.deferred-footer`s that
     /// static/js/page.js's Discourse.showFooter draws.

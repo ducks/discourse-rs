@@ -140,6 +140,7 @@ mod username_watched_words;
 mod users_pages;
 mod web_hooks;
 mod webauthn;
+mod wizard_page;
 
 /// A file under tests/ that is not listed above would never be compiled or
 /// run.
