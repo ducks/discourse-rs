@@ -461,10 +461,12 @@
     var body = combo.querySelector(".select-kit-body");
     if (combo.open) {
       combo.open = false;
+      combo.classList.remove("is-expanded");
       body.innerHTML = "";
       return;
     }
     combo.open = true;
+    combo.classList.add("is-expanded");
     JSON.parse(combo.dataset.options).forEach(function (o) {
       var item = document.createElement("div");
       item.className = "select-kit-row";
@@ -594,4 +596,78 @@
       el.querySelector(".select-kit-body").appendChild(collection);
     }
   });
+
+  // The search log term page: the searches per day as the controller's
+  // bar chart, its tooltip titled with the day's long date. Chart.js is
+  // loaded on the first chart, as the Chart component's loadChartJS.
+  var termChart = null;
+  var chartJs = null;
+
+  function loadChartJS(src) {
+    if (window.Chart) {
+      return Promise.resolve();
+    }
+    if (!chartJs) {
+      chartJs = new Promise(function (resolve, reject) {
+        var script = document.createElement("script");
+        script.src = src;
+        script.onload = resolve;
+        script.onerror = function () {
+          chartJs = null;
+          reject(new Error("Chart.js failed to load"));
+        };
+        document.head.appendChild(script);
+      });
+    }
+    return chartJs;
+  }
+
+  Discourse.onPage(function () {
+    if (termChart) {
+      termChart.destroy();
+      termChart = null;
+    }
+    var canvas = document.querySelector("canvas.search-log-term-chart");
+    if (!canvas) {
+      return;
+    }
+    loadChartJS(canvas.dataset.chartJs).then(function () {
+      if (canvas.isConnected) {
+        drawTermChart(canvas);
+      }
+    });
+  });
+
+  function drawTermChart(canvas) {
+    var data = JSON.parse(canvas.dataset.chart);
+    var lang = document.documentElement.lang || undefined;
+    termChart = new window.Chart(canvas.getContext("2d"), {
+      type: "bar",
+      data: {
+        labels: data.labels,
+        datasets: [
+          {
+            data: data.values,
+            label: data.label,
+            backgroundColor: "rgba(200,220,240,1)",
+            borderColor: "#08C",
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          tooltip: {
+            callbacks: {
+              title: function (context) {
+                var day = new Date(context[0].label + "T00:00:00");
+                return day.toLocaleDateString(lang, { year: "numeric", month: "long", day: "numeric" });
+              },
+            },
+          },
+        },
+        scales: { y: { display: true, ticks: { stepSize: 1 } } },
+      },
+    });
+  }
 })();

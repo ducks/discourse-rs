@@ -469,6 +469,33 @@ fn tag_name(t: &Value) -> String {
         .unwrap_or_else(|| t["name"].as_str().unwrap_or_default().to_string())
 }
 
+/// `defaultRenderTag`: a tag's link, by name or by its id and slug.
+pub(crate) fn tag_link(cx: &ListContext, tag: &Value) -> String {
+    let name = tag_name(tag);
+    let visible = escape(&name);
+    let lower = visible.to_lowercase();
+    let path = match tag["id"].as_i64() {
+        Some(id) => {
+            let slug = tag["slug"]
+                .as_str()
+                .filter(|s| !s.is_empty())
+                .map(str::to_string)
+                .unwrap_or_else(|| format!("{id}-tag"));
+            format!("/tag/{slug}/{id}")
+        }
+        None => format!("/tag/{}", lower.replace('.', "%2E")),
+    };
+    let mut classes = String::from("discourse-tag");
+    if !cx.settings.tag_style.is_empty() {
+        classes.push(' ');
+        classes.push_str(&cx.settings.tag_style);
+    }
+    format!(
+        "<a href='{}{path}'  data-tag-name={lower} class='{classes}'>{visible}</a>",
+        cx.base_path
+    )
+}
+
 fn tags_list(cx: &ListContext, tags: &[&Value], custom: &[String]) -> String {
     let custom: Vec<&String> = custom.iter().filter(|c| !c.is_empty()).collect();
     if tags.is_empty() && custom.is_empty() {
@@ -480,29 +507,8 @@ fn tags_list(cx: &ListContext, tags: &[&Value], custom: &[String]) -> String {
         t(cx, "tagging.tags")
     );
     for (i, tag) in tags.iter().enumerate() {
-        let name = tag_name(tag);
-        let visible = escape(&name);
-        let lower = visible.to_lowercase();
-        let path = match tag["id"].as_i64() {
-            Some(id) => {
-                let slug = tag["slug"]
-                    .as_str()
-                    .filter(|s| !s.is_empty())
-                    .map(str::to_string)
-                    .unwrap_or_else(|| format!("{id}-tag"));
-                format!("/tag/{slug}/{id}")
-            }
-            None => format!("/tag/{}", lower.replace('.', "%2E")),
-        };
-        let mut classes = String::from("discourse-tag");
-        if !cx.settings.tag_style.is_empty() {
-            classes.push(' ');
-            classes.push_str(&cx.settings.tag_style);
-        }
-        out.push_str(&format!(
-            "<li><a href='{}{path}'  data-tag-name={lower} class='{classes}'>{visible}</a>",
-            cx.base_path
-        ));
+        out.push_str("<li>");
+        out.push_str(&tag_link(cx, tag));
         if i < tags.len() - 1 || !custom.is_empty() {
             out.push_str(separator);
         }

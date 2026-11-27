@@ -915,17 +915,70 @@ async fn the_report_page() {
 }
 
 #[tokio::test]
-async fn the_admin_pages_not_drawn_yet_are_refused() {
+async fn the_search_log_term_page() {
     let db = TestDb::new().await;
+    sqlx::query(
+        "INSERT INTO search_logs (term, ip_address, search_type, created_at) VALUES \
+         ('fixture', '10.0.0.1', 1, now() - interval '2 days'), \
+         ('fixture', '10.0.0.2', 2, now() - interval '2 days'), \
+         ('fixture', '10.0.0.3', 1, now())",
+    )
+    .execute(&db.pool)
+    .await
+    .unwrap();
     let st = admin_state(&db).await;
     let mut admin = Client::logged_in(st, "admin").await;
-    for path in ["/admin/logs/search_logs/term?term=foo"] {
-        let (status, _) = admin.page(path).await;
-        assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR, "{path}");
-        // Their JSON is served.
-        let (status, _) = admin.send(Method::GET, path, "", true).await;
-        assert_eq!(status, StatusCode::OK, "{path}");
-    }
+    let (status, html) = admin
+        .page("/admin/logs/search_logs/term?term=fixture&period=weekly")
+        .await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<div class=\"admin-contents admin-logs admin-search-logs\">"));
+    assert!(
+        html.contains("<h2><a href=\"/search?q=fixture\">fixture</a></h2>"),
+        "{html}"
+    );
+    // The term page's menu has click-through only; the index's has not.
+    assert!(html.contains("click_through_only"));
+    assert!(html.contains("<h2> Header search results </h2>"), "{html}");
+    // The chart: every day of the week, the searches on theirs.
+    let start = html.find("data-chart=\"").unwrap() + 12;
+    let end = start + html[start..].find('"').unwrap();
+    let chart: serde_json::Value =
+        serde_json::from_str(&html[start..end].replace("&quot;", "\"")).unwrap();
+    let values = chart["values"].as_array().unwrap();
+    assert_eq!(values.len(), chart["labels"].as_array().unwrap().len());
+    assert_eq!(
+        values.iter().map(|v| v.as_i64().unwrap()).sum::<i64>(),
+        3,
+        "{chart}"
+    );
+    assert!(values.len() >= 7, "{chart}");
+    assert!(html.contains("/chart.umd.min.js"));
+    // The header search's results.
+    assert!(html.contains("<div class=\"fps-result\">"), "{html}");
+    assert!(html.contains("href=\"/t/parity-fixture-replies-and-posters/35\""));
+    // The search type filters the chart; the JSON stays as it was.
+    let (_, html) = admin
+        .page("/admin/logs/search_logs/term?term=fixture&period=weekly&searchType=full_page")
+        .await;
+    assert!(html.contains("&quot;values&quot;:["), "{html}");
+    let (status, body) = admin
+        .send(
+            Method::GET,
+            "/admin/logs/search_logs/term?term=fixture&period=weekly&search_type=full_page",
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK);
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    let total: i64 = json["term"]["data"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| r["y"].as_i64().unwrap())
+        .sum();
+    assert_eq!(total, 1, "{body}");
 }
 
 #[tokio::test]

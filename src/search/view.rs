@@ -11,7 +11,7 @@ use serde_json::Value;
 
 use crate::topic_list_view::{
     ListContext, category_badge_html, escape, icon, relative_age_tiny, t, t_count, t_with,
-    tags_html, topic_statuses_with,
+    tag_link, tags_html, topic_statuses_with,
 };
 
 /// `SEARCH_TYPE_DEFAULT`, `SEARCH_TYPE_CATS_TAGS`, `SEARCH_TYPE_USERS`.
@@ -480,6 +480,88 @@ pub fn entry(cx: &ListContext, v: &SearchView, post: &Value, topic: &Value) -> S
     // No like count: SearchResultEntry reads a showLikeCount nobody passes
     // it, so an order:likes search draws none.
     out.push_str("</div></div>");
+    out
+}
+
+/// A result on the search log term page (admin-search-logs/term.gjs):
+/// the post's avatar, the topic's statuses and title (its headline when
+/// `pg_headlines` and the search gave one), the categories, each tag,
+/// and the date and blurb. The template's HighlightSearch reads
+/// properties its controller lacks, so nothing is highlighted.
+pub fn log_term_entry(cx: &ListContext, post: &Value, topic: &Value, pg_headlines: bool) -> String {
+    let username = s(&post["username"]);
+    let slug = match s(&topic["slug"]) {
+        "" => "topic",
+        slug => slug,
+    };
+    let mut url = format!("{}/t/{slug}/{}", cx.base_path, post["topic_id"]);
+    if let Some(n) = post["post_number"].as_i64().filter(|n| *n > 1) {
+        url.push_str(&format!("/{n}"));
+    }
+    let mut out = format!(
+        "<div class=\"fps-result\"><div class=\"author\"><a data-user-card=\"{}\" href=\"{}/u/{}\">{}</a></div>",
+        escape(username),
+        cx.base_path,
+        escape(&username.to_lowercase()),
+        avatar(
+            cx,
+            s(&post["avatar_template"]),
+            cx.settings.avatar_size_48,
+            username
+        ),
+    );
+    let headline = s(&post["topic_title_headline"]);
+    let title = if pg_headlines && !headline.is_empty() {
+        headline.to_string()
+    } else {
+        format!(
+            "<span>{}</span>",
+            crate::topic_list_view::emoji_unescape(
+                s(&topic["fancy_title"]),
+                &cx.settings.emojis,
+                cx.base_path
+            )
+        )
+    };
+    out.push_str(&format!(
+        "<div class=\"fps-topic\"><div class=\"topic\"><a class=\"search-link\" href=\"{}\"><span class=\"topic-statuses\">{}</span><span class=\"topic-title\">{title}</span></a><div class=\"search-category\">",
+        escape(&url),
+        topic_statuses_with(cx, topic, true),
+    ));
+    if let Some(category) = topic["category_id"]
+        .as_i64()
+        .and_then(|id| cx.categories.get(&id))
+    {
+        if let Some(parent) = category.parent_id.and_then(|id| cx.categories.get(&id)) {
+            out.push_str(&category_badge_html(cx, parent, true, false));
+        }
+        out.push_str(&category_badge_html(cx, category, true, true));
+    }
+    for tag in topic["tags"].as_array().into_iter().flatten() {
+        out.push_str(&tag_link(cx, tag));
+    }
+    out.push_str("</div></div><div class=\"blurb container\"><span class=\"date\">");
+    if let Some(at) = date(&post["created_at"]) {
+        out.push_str(&format!(
+            "<span class=\"relative-date\"{} data-time=\"{}\" data-format=\"tiny\">{}</span>",
+            crate::viewer_dates::long_title(cx, at),
+            at.timestamp_millis(),
+            relative_age_tiny(cx, at)
+        ));
+    }
+    let blurb = crate::topic_list_view::emoji_unescape(
+        s(&post["blurb"]),
+        &cx.settings.emojis,
+        cx.base_path,
+    );
+    if blurb.is_empty() {
+        out.push_str("</span>");
+    } else if pg_headlines {
+        out.push_str(&format!(" -</span>{blurb}"));
+    } else {
+        out.push_str(&format!(" -</span><span>{blurb}</span>"));
+    }
+    out.push_str("</div></div></div>");
     out
 }
 
