@@ -24,6 +24,10 @@
 {#- The silence and suspend modal (PenalizeUser). -#}
 <script src="{{ crate::assets::url(base_path, "penalize-user.js") }}"></script>
 {%- endif %}
+{%- if script == "admin-user-badges.js" %}
+{#- The grant form's badge ComboBox. -#}
+<script src="{{ crate::assets::url(base_path, "combo-box.js") }}"></script>
+{%- endif %}
 {%- if !script.is_empty() %}
 <script src="{{ crate::assets::url(base_path, script) }}"></script>
 {%- endif %}

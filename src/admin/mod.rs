@@ -43,6 +43,7 @@ pub mod tl3_view;
 pub mod traffic_explorer;
 pub mod ui;
 pub mod upcoming_changes_view;
+pub mod user_badges_view;
 pub mod user_show;
 pub mod user_view;
 pub mod users;

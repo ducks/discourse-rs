@@ -31,7 +31,8 @@
   }
 
   function page() {
-    return document.querySelector(".admin-contents.admin-user");
+    // The user page itself; its tabs share the wrapper but not the id.
+    return document.querySelector(".admin-contents.admin-user[data-user-id]");
   }
 
   function base() {

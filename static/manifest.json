@@ -1833,6 +1833,13 @@
       "files": [
         "js/tag-groups.js"
       ]
+    },
+    {
+      "name": "admin-user-badges.js",
+      "content_type": "js",
+      "files": [
+        "js/admin-user-badges.js"
+      ]
     }
   ]
 }

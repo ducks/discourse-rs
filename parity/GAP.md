@@ -10,9 +10,9 @@ are in the script's header.
 - **Rails request-spec scenarios covered by a parity case: 623 of ~11123 (5.6%)**
   (474 request-spec files in core and bundled plugins; 1773 request-spec scenarios inventoried in
   parity/SPEC_COVERAGE.md, the rest not looked at yet)
-- **Refusals: 1808 distinct `Unsupported` messages** at 2123 sites
+- **Refusals: 1807 distinct `Unsupported` messages** at 2122 sites
   (plus 33 sites with a computed message)
-- Write cases: 3668, 9 not_yet, 259 with ignored fields
+- Write cases: 3671, 9 not_yet, 262 with ignored fields
 - Golden cases: 277, 0 not_yet, 108 with ignored fields
 - Inventoried request-spec scenarios: 671 covered, 587 recordable,
   263 needs-harness, 350 unported (1871 in 91 sections)
@@ -22,7 +22,7 @@ are in the script's header.
 | Area | Sites | Messages |
 |---|---|---|
 | src/routes | 480 | 406 |
-| src/admin | 155 | 138 |
+| src/admin | 154 | 137 |
 | src/email | 120 | 110 |
 | src/users | 102 | 96 |
 | src/plugins/chat | 99 | 83 |
@@ -132,7 +132,7 @@ are in the script's header.
 | src/sidebar_backfill | 1 | 1 |
 | src/site | 1 | 1 |
 | src/watched_words | 1 | 1 |
-| **All** | **2123** | **1808** |
+| **All** | **2122** | **1807** |
 
 Messages are distinct within an area; the total counts each text once.
 
@@ -179,7 +179,7 @@ Messages are distinct within an area; the total counts each text once.
 | admin_email_logs | 2 | 0 | 0 | 0 |
 | admin_logs | 16 | 0 | 0 | 0 |
 | admin_mcp | 11 | 0 | 0 | 0 |
-| admin_page_loads | 7 | 0 | 7 | 0 |
+| admin_page_loads | 10 | 0 | 10 | 0 |
 | admin_reports | 22 | 0 | 1 | 1 |
 | admin_search | 4 | 0 | 1 | 0 |
 | admin_users | 137 | 0 | 6 | 5 |
@@ -265,7 +265,7 @@ Messages are distinct within an area; the total counts each text once.
 | watched_words | 57 | 0 | 2 | 0 |
 | web_hooks | 76 | 0 | 4 | 4 |
 | wizard | 7 | 1 | 4 | 0 |
-| **All** | **3668** | **9** | **259** | **129** |
+| **All** | **3671** | **9** | **262** | **129** |
 
 ## Request-spec inventory (parity/SPEC_COVERAGE.md)
 
