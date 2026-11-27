@@ -265,40 +265,9 @@ pub async fn user_show(
     headers: HeaderMap,
     uri: Uri,
 ) -> Result<Response, AppError> {
-    if let Some(r) = refuse_non_staff(&state, &guardian) {
-        return Ok(r);
-    }
-    // User.find_by(id:): a non-numeric id finds nobody.
-    let Ok(id) = id.parse::<i32>() else {
-        return Ok(crate::routes::topics::not_found_response(&state));
-    };
-    let mut conn = state.pool.acquire().await?;
-    let shell = Shell::load(&mut conn, &state, &guardian, &headers, "admin_users").await?;
-    let urls = crate::url::Urls {
-        config: &state.config,
-        settings: &shell.settings,
-    };
-    let show_cx = crate::admin::user_show::Context {
-        settings: &shell.settings,
-        defs: &state.site_setting_defs,
-        i18n: &state.i18n,
-        urls: &urls,
-        globals: &state.config.globals,
-        development: state.config.rails_env == crate::config::RailsEnv::Development,
-    };
-    let Some(user) = crate::admin::user_show::show(
-        &mut conn,
-        &show_cx,
-        &guardian,
-        id,
-        crate::admin::user_show::ShowOptions {
-            show: true,
-            detailed: true,
-        },
-    )
-    .await?
-    else {
-        return Ok(crate::routes::topics::not_found_response(&state));
+    let (mut conn, shell, user, id) = match admin_user(&state, &guardian, &headers, &id).await? {
+        Ok(loaded) => loaded,
+        Err(r) => return Ok(r),
     };
     let user_fields: Vec<(i64, String)> = sqlx::query_as::<_, (i32, String)>(
         "SELECT id, name FROM user_fields ORDER BY position, id",
@@ -416,8 +385,101 @@ pub async fn users_settings(
     )
 }
 
-/// GET /admin/users/:id/:username/badges and /tl3_requirements: the user
-/// page's tabs, not ported yet.
+/// The adminUser route's model: staff only, then Admin::UsersController#show's
+/// document for the id.
+async fn admin_user(
+    state: &AppState,
+    guardian: &crate::guardian::Guardian,
+    headers: &HeaderMap,
+    id: &str,
+) -> Result<
+    Result<
+        (
+            sqlx::pool::PoolConnection<sqlx::Postgres>,
+            Shell,
+            serde_json::Value,
+            i32,
+        ),
+        Response,
+    >,
+    AppError,
+> {
+    if let Some(r) = refuse_non_staff(state, guardian) {
+        return Ok(Err(r));
+    }
+    // check_xhr boots the app for anyone on staff. AdminUser.find's 404
+    // (User.find_by(id:), which a non-numeric id misses) sends Ember to its
+    // exception-unknown route, the not-found page.
+    let not_found = || crate::routes::ember_not_found_page(state, guardian, headers);
+    let Ok(id) = id.parse::<i32>() else {
+        return not_found().await.map(Err);
+    };
+    let mut conn = state.pool.acquire().await?;
+    let shell = Shell::load(&mut conn, state, guardian, headers, "admin_users").await?;
+    let urls = crate::url::Urls {
+        config: &state.config,
+        settings: &shell.settings,
+    };
+    let show_cx = crate::admin::user_show::Context {
+        settings: &shell.settings,
+        defs: &state.site_setting_defs,
+        i18n: &state.i18n,
+        urls: &urls,
+        globals: &state.config.globals,
+        development: state.config.rails_env == crate::config::RailsEnv::Development,
+    };
+    let Some(user) = crate::admin::user_show::show(
+        &mut conn,
+        &show_cx,
+        guardian,
+        id,
+        crate::admin::user_show::ShowOptions {
+            show: true,
+            detailed: true,
+        },
+    )
+    .await?
+    else {
+        drop(conn);
+        return not_found().await.map(Err);
+    };
+    Ok(Ok((conn, shell, user, id)))
+}
+
+/// GET /admin/users/:id/:username/tl3_requirements: the adminUser model's
+/// TL3 requirements (crate::admin::tl3_view).
+pub async fn user_tl3_requirements(
+    State(state): State<AppState>,
+    AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path((id, _username)): axum::extract::Path<(String, String)>,
+    headers: HeaderMap,
+    uri: Uri,
+) -> Result<Response, AppError> {
+    let (_conn, shell, user, _) = match admin_user(&state, &guardian, &headers, &id).await? {
+        Ok(loaded) => loaded,
+        Err(r) => return Ok(r),
+    };
+    let cx = shell.cx(&state);
+    let header_viewer = crate::admin::users_view::HeaderViewer {
+        admin: shell.admin.admin,
+        can_invite_to_forum: shell.admin.can_invite_to_forum,
+    };
+    let content = format!(
+        "<div class=\"admin-users admin-config-page\">{}<div class=\"admin-container admin-config-page__main-area\"></div></div><div class=\"admin-container admin-config-page__main-area\"><section>{}</section></div>",
+        crate::admin::users_view::users_header(&cx, &header_viewer, ""),
+        crate::admin::tl3_view::render(&cx, &user)
+    );
+    let main = crate::admin::view::contents("admin-users admin-user", &content);
+    let title = format!(
+        "{} - {}",
+        user["username"].as_str().unwrap_or_default(),
+        crate::admin::view::t(&state.i18n, "admin.config.users.title")
+    );
+    shell.render(&state, &uri, &title, main, "admin.js", StatusCode::OK)
+}
+
+/// GET /admin/users/:id/:username/badges: the user page's badges tab, not
+/// ported yet.
 pub async fn user_subpage(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
