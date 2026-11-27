@@ -229,9 +229,8 @@ pub async fn font(State(state): State<AppState>, Path(file): Path<String>) -> Re
 
 /// `/color-scheme-stylesheet/:id(/:theme_id)` (StylesheetsController#
 /// color_scheme): the stylesheet a palette preview links, as
-/// `{color_scheme_id, new_href}`. A theme the viewer may use other than the
-/// default one would serve its own color definitions, which the port does
-/// not draw.
+/// `{color_scheme_id, new_href}`, under the theme asked for when the viewer
+/// may use it, else the default one.
 pub async fn color_scheme(
     State(state): State<AppState>,
     crate::session::current::AuthGuardian(guardian): crate::session::current::AuthGuardian,
@@ -269,32 +268,20 @@ pub async fn color_scheme(
     let default_theme = settings.get("default_theme_id")?.to_i();
     // `params[:theme_id]&.to_i`, nil unless guardian.allow_themes?([id],
     // include_preview: true).
+    let mut theme = None;
     if let Some(theme_id) = theme_param.map(|t| crate::ruby::to_i(&t))
         && theme_id != default_theme
+        && let Ok(theme_id) = i32::try_from(theme_id)
+        && allowed_theme(&mut conn, &guardian, theme_id).await?
     {
-        let staff_preview = guardian.is_staff()
-            && sqlx::query_scalar::<_, bool>("SELECT EXISTS (SELECT 1 FROM themes WHERE id = $1)")
-                .bind(i32::try_from(theme_id).unwrap_or(0))
-                .fetch_one(&mut *conn)
-                .await?;
-        let selectable = sqlx::query_scalar::<_, bool>(
-            "SELECT EXISTS (SELECT 1 FROM themes WHERE id = $1 AND user_selectable)",
-        )
-        .bind(i32::try_from(theme_id).unwrap_or(0))
-        .fetch_one(&mut *conn)
-        .await?;
-        if staff_preview || selectable {
-            return Err(crate::Unsupported(
-                "color definitions of a theme other than the default (258a)",
-            )
-            .into());
-        }
+        theme = Some(theme_id);
     }
     let base_path = state.config.globals.relative_url_root().to_string();
     let (scheme_id, href) = crate::color_mode::scheme_stylesheet(
         &mut conn,
         &settings,
         &base_path,
+        theme,
         // find_by(id:) casts as ActiveModel's integer type does (to_i).
         Some(crate::ruby::to_i(id)),
     )
@@ -304,4 +291,62 @@ pub async fn color_scheme(
         "new_href": href,
     }))
     .into_response())
+}
+
+/// `guardian.allow_themes?([id], include_preview: true)`: any theme for
+/// staff, a user selectable one for everyone else.
+async fn allowed_theme(
+    conn: &mut sqlx::PgConnection,
+    guardian: &crate::guardian::Guardian,
+    theme_id: i32,
+) -> Result<bool, AppError> {
+    let sql = if guardian.is_staff() {
+        "SELECT EXISTS (SELECT 1 FROM themes WHERE id = $1)"
+    } else {
+        "SELECT EXISTS (SELECT 1 FROM themes WHERE id = $1 AND user_selectable)"
+    };
+    Ok(sqlx::query_scalar(sql)
+        .bind(theme_id)
+        .fetch_one(conn)
+        .await?)
+}
+
+/// `/assets/color_definitions_theme/:theme_id/:scheme.css` (`base.css`
+/// for the base palette): a scheme's color definitions under a theme other
+/// than the default, with that theme's own color_definitions fields, for
+/// a viewer who may use it.
+pub async fn theme_scheme(
+    State(state): State<AppState>,
+    crate::session::current::AuthGuardian(guardian): crate::session::current::AuthGuardian,
+    Path((theme, file)): Path<(String, String)>,
+    headers: HeaderMap,
+) -> Result<Response, AppError> {
+    let Ok(theme_id) = theme.parse::<i32>() else {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    };
+    let scheme_id = match file.strip_suffix(".css") {
+        Some("base") => None,
+        Some(id) => match id.parse::<i32>() {
+            Ok(id) => Some(id),
+            Err(_) => return Ok(StatusCode::NOT_FOUND.into_response()),
+        },
+        None => return Ok(StatusCode::NOT_FOUND.into_response()),
+    };
+    let mut conn = state.pool.acquire().await?;
+    if !allowed_theme(&mut conn, &guardian, theme_id).await? {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    if let Some(id) = scheme_id
+        && ColorScheme::find(&mut conn, id).await?.is_none()
+    {
+        return Ok(StatusCode::NOT_FOUND.into_response());
+    }
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    let cx = manager::Cx {
+        config: &state.config,
+        settings: &settings,
+    };
+    let body = manager::color_definitions(&mut conn, &cx, Some(theme_id), scheme_id).await? + "\n";
+    Ok(stylesheet(&headers, Some(body)))
 }

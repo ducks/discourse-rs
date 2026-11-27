@@ -196,16 +196,20 @@ fn href(base_path: &str, theme: &Theme, scheme: Option<i32>) -> String {
     }
 }
 
-/// `color_scheme_stylesheet_details(id, fallback_to_base: true)` for the
-/// default theme: the scheme it serves (the one asked for when it exists,
-/// else the theme's own, else the base palette, -1) and its stylesheet.
+/// `color_scheme_stylesheet_details(id, fallback_to_base: true)` under a
+/// theme (None: the default one): the scheme it serves (the one asked for
+/// when it exists, else the theme's own, else the base palette, -1) and its
+/// stylesheet. Another theme's is drawn with its own color definitions
+/// (crate::routes::stylesheets::theme_scheme).
 pub async fn scheme_stylesheet(
     conn: &mut PgConnection,
     settings: &SiteSettings,
     base_path: &str,
+    theme: Option<i32>,
     id: Option<i64>,
 ) -> Result<(i32, String), crate::AppError> {
-    let theme_id = i32::try_from(settings.get("default_theme_id")?.to_i()).unwrap_or(0);
+    let default_theme = i32::try_from(settings.get("default_theme_id")?.to_i()).unwrap_or(0);
+    let theme_id = theme.unwrap_or(default_theme);
     let row: Option<(Option<i32>, Option<i32>, Option<i32>)> = sqlx::query_as(
         "SELECT t.color_scheme_id, t.dark_color_scheme_id, cs.id \
          FROM themes t \
@@ -228,7 +232,13 @@ pub async fn scheme_stylesheet(
         None => None,
     };
     let scheme = found.or(theme.color_scheme);
-    Ok((scheme.unwrap_or(-1), href(base_path, &theme, scheme)))
+    let href = if theme_id == default_theme {
+        href(base_path, &theme, scheme)
+    } else {
+        let file = scheme.map_or("base".to_string(), |id| id.to_string());
+        format!("{base_path}/assets/color_definitions_theme/{theme_id}/{file}.css")
+    };
+    Ok((scheme.unwrap_or(-1), href))
 }
 
 /// `color_scheme_stylesheet_link_tag`

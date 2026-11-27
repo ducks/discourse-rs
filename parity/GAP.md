@@ -10,9 +10,9 @@ are in the script's header.
 - **Rails request-spec scenarios covered by a parity case: 623 of ~11123 (5.6%)**
   (474 request-spec files in core and bundled plugins; 1773 request-spec scenarios inventoried in
   parity/SPEC_COVERAGE.md, the rest not looked at yet)
-- **Refusals: 1805 distinct `Unsupported` messages** at 2120 sites
+- **Refusals: 1804 distinct `Unsupported` messages** at 2119 sites
   (plus 33 sites with a computed message)
-- Write cases: 3675, 9 not_yet, 263 with ignored fields
+- Write cases: 3676, 9 not_yet, 264 with ignored fields
 - Golden cases: 277, 0 not_yet, 108 with ignored fields
 - Inventoried request-spec scenarios: 671 covered, 587 recordable,
   263 needs-harness, 350 unported (1871 in 91 sections)
@@ -21,7 +21,7 @@ are in the script's header.
 
 | Area | Sites | Messages |
 |---|---|---|
-| src/routes | 480 | 406 |
+| src/routes | 479 | 405 |
 | src/admin | 152 | 135 |
 | src/email | 120 | 110 |
 | src/users | 102 | 96 |
@@ -132,7 +132,7 @@ are in the script's header.
 | src/sidebar_backfill | 1 | 1 |
 | src/site | 1 | 1 |
 | src/watched_words | 1 | 1 |
-| **All** | **2120** | **1805** |
+| **All** | **2119** | **1804** |
 
 Messages are distinct within an area; the total counts each text once.
 
@@ -246,7 +246,7 @@ Messages are distinct within an area; the total counts each text once.
 | site_texts | 21 | 0 | 0 | 0 |
 | solved | 45 | 0 | 0 | 3 |
 | static | 11 | 0 | 0 | 0 |
-| stylesheets | 9 | 0 | 0 | 7 |
+| stylesheets | 10 | 0 | 1 | 7 |
 | tags | 77 | 0 | 3 | 0 |
 | theme_html | 1 | 0 | 0 | 1 |
 | themes | 27 | 0 | 0 | 21 |
@@ -265,7 +265,7 @@ Messages are distinct within an area; the total counts each text once.
 | watched_words | 57 | 0 | 2 | 0 |
 | web_hooks | 76 | 0 | 4 | 4 |
 | wizard | 7 | 1 | 4 | 0 |
-| **All** | **3675** | **9** | **263** | **129** |
+| **All** | **3676** | **9** | **264** | **129** |
 
 ## Request-spec inventory (parity/SPEC_COVERAGE.md)
 
