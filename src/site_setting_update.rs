@@ -556,12 +556,29 @@ async fn update_inner(
         }
     }
     // EnableDiscourseIdValidator: off, or on with the credentials there,
-    // is valid; on without them registers the site (DiscourseId::Register).
+    // is valid; on without them registers the site (DiscourseId::Register),
+    // invalid when that fails.
     if discourse_id_validator
         && !matches!(new_value, Value::Bool(false))
         && !discourse_id_configured(settings)?
     {
-        return Err(Unsupported("registering with Discourse ID (DiscourseId::Register)").into());
+        let cx = crate::discourse_id::Cx {
+            config,
+            bus,
+            defs,
+            i18n,
+            settings,
+        };
+        // A failed step leaves the result without an error of its own, so
+        // the message is always the generic one.
+        if crate::discourse_id::register(&mut *conn, &cx, false, false, None).await?
+            != crate::discourse_id::Outcome::Done
+        {
+            let message = i18n
+                .t("site_settings.errors.discourse_id_registration")
+                .unwrap_or_default();
+            return Ok(Outcome::Invalid(format!("{name}: {message}")));
+        }
     }
     // The type's validator: EmailSettingValidator, UsernameSettingValidator,
     // GroupSettingValidator (each allowing blank).

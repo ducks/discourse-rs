@@ -1,0 +1,12 @@
+{
+  "user": "admin",
+  "settings": {"allowed_internal_hosts": "fixtures.localhost", "discourse_id_provider_url": "http://fixtures.localhost:8099/did", "discourse_id_client_id": "cid-0", "discourse_id_client_secret": "sec-0"},
+  "remote": {
+    "/did/challenge": {"status": 200, "headers": {"Content-Type": "application/json"}, "body": "{\"token\":\"tok-2\",\"domain\":\"localhost\"}"},
+    "/did/regenerate": {"status": 200, "headers": {"Content-Type": "application/json"}, "body": "{\"client_secret\":\"sec-2\"}"}
+  },
+  "requests": [
+    {"method": "POST", "path": "/admin/config/login-and-authentication/discourse-id/regenerate.json"},
+    {"method": "GET", "path": "/.well-known/discourse-id-challenge"}
+  ]
+}

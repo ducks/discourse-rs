@@ -1,0 +1,85 @@
+{
+  "name": "regenerate_domain_mismatch",
+  "user": "admin",
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/admin/config/login-and-authentication/discourse-id/regenerate.json"
+    }
+  ],
+  "started_at": "2026-11-27T16:30:39.096462",
+  "transaction_started_at": "2026-11-27T16:30:36.925258",
+  "responses": [
+    {
+      "status": 422,
+      "body": {
+        "failed": "FAILED",
+        "error": "Domain mismatch in challenge response (expected: localhost, got: elsewhere.example)"
+      }
+    }
+  ],
+  "changes": {
+    "user_auth_tokens": {
+      "inserted": [],
+      "deleted": [],
+      "updated": [
+        {
+          "before": {
+            "id": 6,
+            "seen_at": null,
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SpObqu03AF5TRGKYO6sKV9s8BmM=",
+            "created_at": "2026-11-27T16:30:37.875965",
+            "rotated_at": "2026-11-27T16:30:37.872002",
+            "updated_at": "2026-11-27T16:30:37.875965",
+            "user_agent": null,
+            "auth_token_seen": false,
+            "prev_auth_token": "SpObqu03AF5TRGKYO6sKV9s8BmM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          },
+          "after": {
+            "id": 6,
+            "seen_at": "2026-11-27T16:30:39.104937",
+            "user_id": 1,
+            "client_ip": "127.0.0.1",
+            "auth_token": "SpObqu03AF5TRGKYO6sKV9s8BmM=",
+            "created_at": "2026-11-27T16:30:37.875965",
+            "rotated_at": "2026-11-27T16:30:37.872002",
+            "updated_at": "2026-11-27T16:30:37.875965",
+            "user_agent": null,
+            "auth_token_seen": true,
+            "prev_auth_token": "SpObqu03AF5TRGKYO6sKV9s8BmM=",
+            "impersonated_user_id": null,
+            "authenticated_with_oauth": false,
+            "impersonation_expires_at": null
+          }
+        }
+      ]
+    }
+  },
+  "jobs": [],
+  "next_ids": {},
+  "settings": {
+    "allowed_internal_hosts": "fixtures.localhost",
+    "discourse_id_provider_url": "http://fixtures.localhost:8099/did",
+    "discourse_id_client_id": "cid-0",
+    "discourse_id_client_secret": "sec-0"
+  },
+  "remote": {
+    "/did/challenge": {
+      "status": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": "{\"token\":\"tok-3\",\"domain\":\"elsewhere.example\"}"
+    }
+  },
+  "recorded_from": {
+    "case": "969e6cb3ed9af0fa62e52d76f80738bd81c535ea0961f9a30b80a295aeaefd59",
+    "seed": "cc890ca6335dee1d1951351ec507f355e66f0094aae533474925c817701a5476",
+    "discourse": "ba3bd0d0d47622cf8a9d216d1d935cf93aaec41d"
+  }
+}

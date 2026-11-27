@@ -1,0 +1,11 @@
+{
+  "user": "admin",
+  "settings": {"allowed_internal_hosts": "fixtures.localhost", "discourse_id_provider_url": "http://fixtures.localhost:8099/did"},
+  "remote": {
+    "/did/challenge": {"status": 503, "headers": {"Content-Type": "text/plain"}, "body": "down for a bit"}
+  },
+  "requests": [
+    {"method": "PUT", "path": "/admin/config/login-and-authentication/discourse-id/settings.json", "params": {"enabled": "true"}},
+    {"method": "GET", "path": "/admin/config/login-and-authentication/discourse-id.json"}
+  ]
+}

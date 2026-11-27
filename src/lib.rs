@@ -41,6 +41,7 @@ pub mod directory;
 pub mod directory_view;
 pub mod discourse_connect;
 pub mod discourse_diff;
+pub mod discourse_id;
 pub mod do_not_disturb;
 pub mod drafts;
 pub mod email;

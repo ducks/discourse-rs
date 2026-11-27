@@ -33,6 +33,9 @@ fn exempt(path: &str) -> bool {
             // StaticController skips the gate; /login renders below.
             | "/signup"
             | "/password-reset"
+            // MetadataController#discourse_id_challenge
+            | "/.well-known/discourse-id-challenge"
+            | "/.well-known/discourse-id-challenge.json"
     ) || super::static_pages::is_page(path)
         // FinishInstallationController
         || path.starts_with("/finish-installation")

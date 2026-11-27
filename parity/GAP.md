@@ -12,7 +12,7 @@ are in the script's header.
   parity/SPEC_COVERAGE.md, the rest not looked at yet)
 - **Refusals: 1805 distinct `Unsupported` messages** at 2120 sites
   (plus 33 sites with a computed message)
-- Write cases: 3680, 9 not_yet, 265 with ignored fields
+- Write cases: 3685, 9 not_yet, 265 with ignored fields
 - Golden cases: 277, 0 not_yet, 108 with ignored fields
 - Inventoried request-spec scenarios: 671 covered, 587 recordable,
   263 needs-harness, 350 unported (1871 in 91 sections)
@@ -35,7 +35,7 @@ are in the script's header.
 | src/themes | 61 | 54 |
 | src/categories | 48 | 40 |
 | src/auth | 32 | 29 |
-| src/site_setting_update | 24 | 24 |
+| src/site_setting_update | 23 | 23 |
 | src/signup | 22 | 17 |
 | src/plugins/assign | 19 | 19 |
 | src/pretty_text | 19 | 19 |
@@ -114,6 +114,7 @@ are in the script's header.
 | src/about_view | 1 | 1 |
 | src/composer | 1 | 1 |
 | src/custom_emoji | 1 | 1 |
+| src/discourse_id | 1 | 1 |
 | src/guardian | 1 | 1 |
 | src/header_badge | 1 | 1 |
 | src/html | 1 | 1 |
@@ -175,7 +176,7 @@ Messages are distinct within an area; the total counts each text once.
 | admin_badges | 66 | 0 | 0 | 2 |
 | admin_config | 26 | 2 | 2 | 0 |
 | admin_dashboard | 35 | 0 | 10 | 4 |
-| admin_discourse_id | 4 | 0 | 1 | 0 |
+| admin_discourse_id | 9 | 0 | 1 | 0 |
 | admin_email | 43 | 0 | 0 | 0 |
 | admin_email_logs | 2 | 0 | 0 | 0 |
 | admin_logs | 16 | 0 | 0 | 0 |
@@ -266,7 +267,7 @@ Messages are distinct within an area; the total counts each text once.
 | watched_words | 57 | 0 | 2 | 0 |
 | web_hooks | 76 | 0 | 4 | 4 |
 | wizard | 7 | 1 | 4 | 0 |
-| **All** | **3680** | **9** | **265** | **129** |
+| **All** | **3685** | **9** | **265** | **129** |
 
 ## Request-spec inventory (parity/SPEC_COVERAGE.md)
 

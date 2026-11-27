@@ -1192,6 +1192,14 @@ pub fn router(state: &AppState) -> Router<AppState> {
             "/.well-known/change-password",
             get(user_preferences::change_password),
         )
+        .route(
+            "/.well-known/discourse-id-challenge",
+            get(crate::discourse_id::challenge_page),
+        )
+        .route(
+            "/.well-known/discourse-id-challenge.json",
+            get(crate::discourse_id::challenge_page),
+        )
         .route("/u/search/users", get(user_search::search_users))
         .route("/u/search/users.json", get(user_search::search_users))
         .route(
