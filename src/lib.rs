@@ -211,6 +211,7 @@ pub mod web_hooks;
 pub mod webauthn;
 pub mod wildcard_url;
 pub mod wizard;
+pub mod wizard_view;
 pub mod word_watcher;
 
 use std::sync::Arc;
