@@ -1819,6 +1819,13 @@
       "files": [
         "js/rich-editor/plugins/spoiler.js"
       ]
+    },
+    {
+      "name": "tag-groups.js",
+      "content_type": "js",
+      "files": [
+        "js/tag-groups.js"
+      ]
     }
   ]
 }
