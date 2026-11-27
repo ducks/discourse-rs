@@ -125,7 +125,12 @@ pub fn icon_or_image(badge: &Value) -> String {
     if let Some(image) = badge["image_url"].as_str().filter(|i| !i.is_empty()) {
         return format!("<img src='{}' alt=''>", escape(image));
     }
-    let name = s(&badge["icon"])
+    combo_icon(s(&badge["icon"]))
+}
+
+/// A badge's icon as convertIconClass reads it, drawn; nothing for none.
+pub(crate) fn combo_icon(icon: &str) -> String {
+    let name = icon
         .replace("far fa-", "far-")
         .replace("fab fa-", "fab-")
         .replace("fas fa-", "")
@@ -138,7 +143,7 @@ pub fn icon_or_image(badge: &Value) -> String {
 }
 
 /// DBadgeButton
-fn badge_button(doc: &Value, badge: &Value) -> String {
+pub(crate) fn badge_button(doc: &Value, badge: &Value) -> String {
     let title = badge["description"]
         .as_str()
         .filter(|d| !d.is_empty())

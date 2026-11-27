@@ -478,16 +478,78 @@ pub async fn user_tl3_requirements(
     shell.render(&state, &uri, &title, main, "admin.js", StatusCode::OK)
 }
 
-/// GET /admin/users/:id/:username/badges: the user page's badges tab, not
-/// ported yet.
-pub async fn user_subpage(
+/// GET /admin/users/:id/:username/badges: the adminUser model's badges
+/// tab (crate::admin::user_badges_view) over every badge and the user's
+/// grants, as its route loads them.
+pub async fn user_badges(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
+    axum::extract::Path((id, _username)): axum::extract::Path<(String, String)>,
+    headers: HeaderMap,
+    uri: Uri,
 ) -> Result<Response, AppError> {
-    if let Some(r) = refuse_non_staff(&state, &guardian) {
-        return Ok(r);
-    }
-    Err(crate::Unsupported("the admin user's badges and TL3 requirements pages").into())
+    let (mut conn, shell, user, id) = match admin_user(&state, &guardian, &headers, &id).await? {
+        Ok(loaded) => loaded,
+        Err(r) => return Ok(r),
+    };
+    // Badge.findAll: an xhr, so every badge, listable or not.
+    let badges = crate::routes::badges::index_doc(
+        &state,
+        &mut conn,
+        &shell.settings,
+        &guardian,
+        None,
+        false,
+    )
+    .await?;
+    let user_badges = crate::routes::badges::username_doc(
+        &state,
+        &mut conn,
+        &shell.settings,
+        &guardian,
+        id,
+        false,
+    )
+    .await?;
+    let categories = crate::topic_list_view::categories(&mut conn).await?;
+    let list = crate::topic_list_view::ListContext {
+        i18n: &state.i18n,
+        base_path: &shell.site.base_path,
+        now: crate::clock::now(),
+        categories: &categories,
+        expand_all_pinned: false,
+        hide_category: false,
+        member_trust_level: None,
+        settings: crate::topic_list_view::ListSettings::load(&shell.settings)?,
+    };
+    let cx = shell.cx(&state);
+    let header_viewer = crate::admin::users_view::HeaderViewer {
+        admin: shell.admin.admin,
+        can_invite_to_forum: shell.admin.can_invite_to_forum,
+    };
+    let docs = crate::admin::user_badges_view::Docs {
+        badges: &badges,
+        user_badges: &user_badges,
+    };
+    let content = format!(
+        "<div class=\"admin-users admin-config-page\">{}<div class=\"admin-container admin-config-page__main-area\"></div></div><div class=\"admin-container admin-config-page__main-area\"><section>{}</section></div>",
+        crate::admin::users_view::users_header(&cx, &header_viewer, ""),
+        crate::admin::user_badges_view::render(&cx, &list, &user, &docs)
+    );
+    let main = crate::admin::view::contents("admin-users admin-user", &content);
+    let title = format!(
+        "{} - {}",
+        user["username"].as_str().unwrap_or_default(),
+        crate::admin::view::t(&state.i18n, "admin.config.users.title")
+    );
+    shell.render(
+        &state,
+        &uri,
+        &title,
+        main,
+        "admin-user-badges.js",
+        StatusCode::OK,
+    )
 }
 
 /// GET /admin/site_settings: the index's JSON, else the first category's

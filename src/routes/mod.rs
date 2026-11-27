@@ -5,7 +5,7 @@ pub(crate) mod accounts;
 mod archive_message;
 mod assign;
 mod backups;
-mod badges;
+pub(crate) mod badges;
 mod bookmark_writes;
 mod bookmarks;
 mod bus;
@@ -1782,7 +1782,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         )
         .route(
             "/admin/users/{user_id}/{username}/badges",
-            get(admin::pages::user_subpage),
+            get(admin::pages::user_badges),
         )
         .route(
             "/admin/users/{user_id}/{username}/tl3_requirements",
@@ -3247,6 +3247,7 @@ pub fn router(state: &AppState) -> Router<AppState> {
         .route("/assets/avatar-selector.js", get(asset))
         .route("/assets/login.js", get(asset))
         .route("/assets/combo-box.js", get(asset))
+        .route("/assets/admin-user-badges.js", get(asset))
         .route("/assets/wizard.js", get(asset))
         .route("/assets/user-invited.js", get(asset))
         .route("/assets/admin.css", get(asset))

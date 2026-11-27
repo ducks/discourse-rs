@@ -55,7 +55,7 @@ fn noindex(doc: Value) -> Response {
 /// BadgesController#index's badges document: every badge, or the
 /// enabled and listable ones, matching the search; `has_badge` for a
 /// current user.
-async fn index_doc(
+pub(crate) async fn index_doc(
     state: &AppState,
     conn: &mut PgConnection,
     settings: &SiteSettings,
@@ -701,7 +701,7 @@ pub async fn user_badges_index(
 /// UserBadgesController#username's document for a user the viewer may
 /// see: the user's grants of enabled badges, grouped per badge when
 /// asked.
-pub(super) async fn username_doc(
+pub(crate) async fn username_doc(
     state: &AppState,
     conn: &mut PgConnection,
     settings: &SiteSettings,

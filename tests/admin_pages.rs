@@ -518,9 +518,52 @@ async fn a_users_admin_page() {
     let (status, html) = admin.page("/admin/users/999999/nobody").await;
     assert_eq!(status, StatusCode::OK);
     assert!(html.contains("page-not-found"), "{html}");
-    // The badges tab is not ported.
-    let (status, _) = admin.page("/admin/users/3/user1/badges").await;
-    assert_eq!(status, StatusCode::INTERNAL_SERVER_ERROR);
+}
+
+/// templates/admin-user/badges.gjs: the grant form over the grantable
+/// badges, and the grants grouped per badge, latest first.
+#[tokio::test]
+async fn a_users_badges_page() {
+    let db = TestDb::new().await;
+    for sql in [
+        "INSERT INTO badges (name, badge_type_id, enabled, multiple_grant, created_at, updated_at) VALUES ('Zeta Helper', 3, true, false, now(), now())",
+        "INSERT INTO badges (name, badge_type_id, enabled, multiple_grant, created_at, updated_at) VALUES ('alpha helper', 3, true, true, now(), now())",
+        "INSERT INTO user_badges (badge_id, user_id, granted_at, granted_by_id, seq, created_at) VALUES (6, 3, now() - interval '3 days', 1, 0, now()), (6, 3, now() - interval '1 day', 1, 1, now())",
+    ] {
+        sqlx::query(sql).execute(&db.pool).await.unwrap();
+    }
+    let st = admin_state(&db).await;
+    let mut admin = Client::logged_in(st, "admin").await;
+    let (status, html) = admin.page("/admin/users/3/user1/badges").await;
+    assert_eq!(status, StatusCode::OK, "{html}");
+    assert!(html.contains("<title>user1 - Users - Admin - "), "{html}");
+    assert!(html.contains("<h2>Grant Badge</h2>"), "{html}");
+    // grantableBadges: custom badges, by name; the first selected.
+    let alpha = html.find("data-name=\"alpha helper\"").expect("alpha");
+    let zeta = html.find("data-name=\"Zeta Helper\"").expect("zeta");
+    assert!(alpha < zeta);
+    assert!(
+        !html.contains("data-name=\"Nice Post\" data-value"),
+        "{html}"
+    );
+    assert!(
+        html.contains("<span class=\"count\">&nbsp;(&times;2)</span>"),
+        "{html}"
+    );
+    assert!(html.contains("class=\"btn btn-text btn-default expand-badge\""));
+    assert!(html.contains("class=\"btn btn-text btn-danger revoke-badge\""));
+    // The group's grants, hidden until expanded.
+    assert_eq!(html.matches("data-grouped-in=\"6\" hidden").count(), 2);
+    assert!(
+        html.contains("<a href=\"/admin/users/1/admin\"><img"),
+        "{html}"
+    );
+    assert!(html.contains("id=\"admin-user-badges-strings\""));
+    assert!(html.contains("/assets/combo-box"), "{html}");
+    // Nobody by that id.
+    let (status, html) = admin.page("/admin/users/999999/nobody/badges").await;
+    assert_eq!(status, StatusCode::OK);
+    assert!(html.contains("page-not-found"), "{html}");
 }
 
 /// templates/admin-user/tl3-requirements.gjs over the user's
