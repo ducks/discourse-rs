@@ -10,9 +10,9 @@ are in the script's header.
 - **Rails request-spec scenarios covered by a parity case: 623 of ~11123 (5.6%)**
   (474 request-spec files in core and bundled plugins; 1773 request-spec scenarios inventoried in
   parity/SPEC_COVERAGE.md, the rest not looked at yet)
-- **Refusals: 1804 distinct `Unsupported` messages** at 2118 sites
+- **Refusals: 1800 distinct `Unsupported` messages** at 2113 sites
   (plus 33 sites with a computed message)
-- Write cases: 3685, 9 not_yet, 265 with ignored fields
+- Write cases: 3689, 9 not_yet, 266 with ignored fields
 - Golden cases: 277, 0 not_yet, 108 with ignored fields
 - Inventoried request-spec scenarios: 671 covered, 587 recordable,
   263 needs-harness, 350 unported (1871 in 91 sections)
@@ -22,14 +22,14 @@ are in the script's header.
 | Area | Sites | Messages |
 |---|---|---|
 | src/routes | 477 | 404 |
-| src/admin | 152 | 135 |
+| src/admin | 151 | 134 |
 | src/email | 120 | 110 |
 | src/users | 102 | 96 |
 | src/plugins/chat | 99 | 83 |
 | src/review | 96 | 85 |
 | src/onebox | 90 | 79 |
-| src/posting | 83 | 79 |
-| src/jobs | 78 | 71 |
+| src/posting | 81 | 77 |
+| src/jobs | 77 | 70 |
 | src/topics | 66 | 54 |
 | src/posts | 62 | 56 |
 | src/themes | 61 | 54 |
@@ -118,7 +118,6 @@ are in the script's header.
 | src/guardian | 1 | 1 |
 | src/header_badge | 1 | 1 |
 | src/html | 1 | 1 |
-| src/like_counters | 1 | 1 |
 | src/not_found_page | 1 | 1 |
 | src/plugin_api | 1 | 1 |
 | src/plugins/captcha | 1 | 1 |
@@ -133,7 +132,7 @@ are in the script's header.
 | src/sidebar_backfill | 1 | 1 |
 | src/site | 1 | 1 |
 | src/watched_words | 1 | 1 |
-| **All** | **2118** | **1804** |
+| **All** | **2113** | **1800** |
 
 Messages are distinct within an area; the total counts each text once.
 
@@ -254,6 +253,7 @@ Messages are distinct within an area; the total counts each text once.
 | themes | 27 | 0 | 0 | 21 |
 | topic_admin | 28 | 0 | 0 | 0 |
 | topic_links | 2 | 0 | 0 | 0 |
+| topic_og_image | 4 | 0 | 1 | 0 |
 | topic_print | 5 | 0 | 0 | 0 |
 | topics | 226 | 0 | 15 | 16 |
 | topic_timers | 95 | 0 | 11 | 0 |
@@ -267,7 +267,7 @@ Messages are distinct within an area; the total counts each text once.
 | watched_words | 57 | 0 | 2 | 0 |
 | web_hooks | 76 | 0 | 4 | 4 |
 | wizard | 7 | 1 | 4 | 0 |
-| **All** | **3685** | **9** | **265** | **129** |
+| **All** | **3689** | **9** | **266** | **129** |
 
 ## Request-spec inventory (parity/SPEC_COVERAGE.md)
 

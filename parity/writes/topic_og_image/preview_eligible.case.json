@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "ignore": ["/responses/0/body/url"],
+  "requests": [
+    {"method": "GET", "path": "/admin/config/logo/og-image-preview.json", "params": {"topic_id": "35"}}
+  ]
+}

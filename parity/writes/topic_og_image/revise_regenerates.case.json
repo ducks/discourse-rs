@@ -1,0 +1,9 @@
+{
+  "user": "admin",
+  "settings": {"generate_topic_og_image": "true"},
+  "setup": ["UPDATE topics SET og_image_upload_id = -6, image_upload_id = NULL WHERE id = 35"],
+  "requests": [
+    {"method": "PUT", "path": "/t/35.json", "params": {"title": "A brand new title for the card to show"}},
+    {"method": "PUT", "path": "/t/35.json", "params": {"category_id": "3"}}
+  ]
+}

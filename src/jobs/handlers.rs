@@ -111,6 +111,9 @@ fn handler<'a>(
         "generate_topic_thumbnails" => {
             Box::pin(async move { generate_topic_thumbnails(state, &job.args).await })
         }
+        "generate_topic_og_image" => {
+            Box::pin(async move { generate_topic_og_image(state, &job.args).await })
+        }
         super::crawl_topic_link::CRAWL_TOPIC_LINK => {
             Box::pin(
                 async move { super::crawl_topic_link::crawl_topic_link(state, &job.args).await },
@@ -1127,6 +1130,25 @@ async fn remove_full_quote_on_direct_reply(
     }
 }
 
+/// `Jobs::GenerateTopicOgImage` (crate::og_image::job); a blank topic_id
+/// raises InvalidParameters while the setting is on.
+async fn generate_topic_og_image(state: &AppState, args: &Value) -> Result<(), AppError> {
+    let mut conn = state.pool.acquire().await?;
+    let s = settings(state, &mut conn).await?;
+    if !s.get("generate_topic_og_image")?.truthy() {
+        return Ok(());
+    }
+    let Some(topic_id) = int_arg(args, "topic_id")? else {
+        return Err(std::io::Error::other("InvalidParameters: topic_id").into());
+    };
+    let cx = crate::og_image::Cx {
+        config: &state.config,
+        settings: &s,
+        i18n: &state.i18n,
+    };
+    crate::og_image::job(&mut conn, &cx, topic_id).await
+}
+
 /// `Jobs::GenerateTopicThumbnails`: `topic.generate_thumbnails!(extra_sizes:)`
 /// for the topic when it exists.
 async fn generate_topic_thumbnails(state: &AppState, args: &Value) -> Result<(), AppError> {
@@ -1329,7 +1351,17 @@ async fn process_post(state: &AppState, args: &Value) -> Result<(), AppError> {
                         .await?;
                 }
                 if s.get("generate_topic_og_image")?.truthy() {
-                    return Err(Unsupported("generate_topic_og_image").into());
+                    let og: Option<i64> =
+                        sqlx::query_scalar("SELECT og_image_upload_id FROM topics WHERE id = $1")
+                            .bind(post.topic_id)
+                            .fetch_one(&mut *conn)
+                            .await?;
+                    if og.is_none()
+                        && crate::og_image::eligible(&mut conn, &s, post.topic_id).await?
+                            == Some(true)
+                    {
+                        crate::og_image::enqueue(&mut conn, post.topic_id).await?;
+                    }
                 }
             }
         }

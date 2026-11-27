@@ -2,8 +2,8 @@
 //! logo and fonts pages (90g6) and their updates, SiteSetting::Update over
 //! the pages' settings in one transaction.
 //!
-//! The topic Open Graph image preview answers its guards; rendering the
-//! image (TopicOgImageGenerator) is not ported.
+//! The topic Open Graph image preview draws the card as a data URI
+//! (crate::og_image), without keeping an upload.
 
 use axum::Json;
 use axum::body::Bytes;
@@ -165,7 +165,7 @@ pub async fn fonts_update(
 /// GET /admin/config/logo/og-image-preview(.json): the topic's Open
 /// Graph image as a data URI. A blank `topic_id` is InvalidParameters, a
 /// missing topic not found, and one TopicOgImageGenerator.eligible?
-/// refuses a 422; rendering the image itself is not ported.
+/// refuses a 422, as is a card that fails to render.
 pub async fn og_image_preview(
     State(state): State<AppState>,
     AuthGuardian(guardian): AuthGuardian,
@@ -210,10 +210,19 @@ pub async fn og_image_preview(
         .flatten()
         .filter_map(|id| i32::try_from(id).ok())
         .collect();
-    let Some(eligible) = eligible(&state, &ids).await? else {
+    let mut conn = state.pool.acquire().await?;
+    // Topic.find_by(id:): the first of them.
+    let topic: Option<(i32, Option<String>)> =
+        sqlx::query_as("SELECT id, title FROM topics WHERE id = ANY($1) ORDER BY id LIMIT 1")
+            .bind(&ids)
+            .fetch_optional(&mut *conn)
+            .await?;
+    let Some((topic_id, topic_title)) = topic else {
         return Ok(crate::routes::topics::not_found_response(&state));
     };
-    if !eligible {
+    let settings =
+        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
+    if crate::og_image::eligible(&mut conn, &settings, topic_id).await? != Some(true) {
         return Ok((
             StatusCode::UNPROCESSABLE_ENTITY,
             Json(json!({
@@ -222,32 +231,29 @@ pub async fn og_image_preview(
         )
             .into_response());
     }
-    Err(Unsupported("the topic Open Graph image preview (TopicOgImageGenerator)").into())
-}
-
-/// The first of the topics, and whether TopicOgImageGenerator.eligible?
-/// takes it: not under login_required, not a PM, not in a read-restricted
-/// category.
-async fn eligible(state: &AppState, ids: &[i32]) -> Result<Option<bool>, AppError> {
-    let mut conn = state.pool.acquire().await?;
-    let topic: Option<(bool, Option<bool>)> = sqlx::query_as(
-        "SELECT t.archetype = 'private_message', c.read_restricted \
-         FROM topics t LEFT JOIN categories c ON c.id = t.category_id \
-         WHERE t.id = ANY($1) ORDER BY t.id LIMIT 1",
-    )
-    .bind(ids)
-    .fetch_optional(&mut *conn)
-    .await?;
-    let Some((private_message, read_restricted)) = topic else {
-        return Ok(None);
+    let cx = crate::og_image::Cx {
+        config: &state.config,
+        settings: &settings,
+        i18n: &state.i18n,
     };
-    let settings =
-        SiteSettings::load(&mut conn, &state.site_setting_defs, &state.config.globals).await?;
-    Ok(Some(
-        !settings.get("login_required")?.truthy()
-            && !private_message
-            && read_restricted != Some(true),
-    ))
+    let Some(png) = crate::og_image::generate_bytes(&mut conn, &cx, topic_id).await? else {
+        return Ok((
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({
+                "error": state.i18n.t("topic_og_image.preview_generation_failed").unwrap_or_default()
+            })),
+        )
+            .into_response());
+    };
+    use base64::Engine;
+    let data_uri = format!(
+        "data:image/png;base64,{}",
+        base64::engine::general_purpose::STANDARD.encode(&png)
+    );
+    Ok(
+        Json(json!({ "url": data_uri, "topic_id": topic_id, "topic_title": topic_title }))
+            .into_response(),
+    )
 }
 
 /// Which page.

@@ -1,0 +1,7 @@
+{
+  "user": "admin",
+  "setup": ["UPDATE topics SET og_image_upload_id = -6 WHERE id = 35"],
+  "requests": [
+    {"method": "PUT", "path": "/t/35.json", "params": {"title": "A brand new title for the card to show"}}
+  ]
+}
