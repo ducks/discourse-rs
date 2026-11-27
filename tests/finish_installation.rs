@@ -954,3 +954,179 @@ async fn register_shows_its_errors_then_registers_the_first_admin() {
     let reply = client.get("/finish-installation").await;
     assert_eq!(reply.status, StatusCode::FORBIDDEN);
 }
+
+/// A stand-in for Discourse ID: a challenge for whatever domain is asked
+/// about, and credentials for a registration. Its URL.
+async fn discourse_id_provider() -> String {
+    use axum::routing::post;
+    let app = axum::Router::new()
+        .route(
+            "/challenge",
+            post(|axum::Json(body): axum::Json<Value>| async move {
+                axum::Json(serde_json::json!({ "token": "tok-fi", "domain": body["domain"] }))
+            }),
+        )
+        .route(
+            "/register",
+            post(|| async {
+                axum::Json(serde_json::json!({ "client_id": "cid-fi", "client_secret": "sec-fi" }))
+            }),
+        );
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    tokio::spawn(async move { axum::serve(listener, app).await.unwrap() });
+    format!("http://{addr}")
+}
+
+fn skipping_email(globals: &[(&str, &str)]) -> discourse_rs::config::Config {
+    let mut c = config(RailsEnv::Test, globals);
+    c.skip_email_setup = true;
+    c
+}
+
+#[tokio::test]
+async fn skipping_email_setup_registers_with_discourse_id() {
+    let db = TestDb::new().await;
+    login_hint_on(&db.pool).await;
+    let provider = discourse_id_provider().await;
+    set_setting(&db.pool, "discourse_id_provider_url", STRING, &provider).await;
+    let st = state(
+        db.pool.clone(),
+        skipping_email(&[("developer_emails", DEVELOPERS)]),
+    )
+    .await;
+    let mut client = Client::new(&st);
+    let reply = client.get("/finish-installation").await;
+    assert_eq!(reply.status, StatusCode::OK, "{}", reply.body);
+    assert!(
+        reply
+            .body
+            .contains("Please log in with Discourse ID using the button below. <br/><br/>"),
+        "{}",
+        reply.body
+    );
+    assert!(reply.body.contains(
+        "<a class=\"wizard-container__button btn-primary finish-installation__discourse-id\" href=\"/finish-installation/redirect-discourse-id\">"
+    ));
+    assert!(reply.body.contains("Login with Discourse ID"));
+    assert!(!reply.body.contains("finish-installation__register"));
+    assert_eq!(
+        setting(&db.pool, "discourse_id_client_id").await.as_deref(),
+        Some("cid-fi")
+    );
+    assert_eq!(
+        setting(&db.pool, "discourse_id_client_secret")
+            .await
+            .as_deref(),
+        Some("sec-fi")
+    );
+    assert_eq!(
+        setting(&db.pool, "enable_discourse_id").await.as_deref(),
+        Some("t")
+    );
+    assert_eq!(
+        setting(&db.pool, "enable_local_logins").await.as_deref(),
+        Some("f")
+    );
+    assert_eq!(
+        setting(&db.pool, "auth_overrides_username")
+            .await
+            .as_deref(),
+        Some("t")
+    );
+    let logged: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM user_histories WHERE custom_type = 'discourse_id_register' AND acting_user_id = -1",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(logged, 1);
+
+    // The redirect seeds the developers' admins, inactive at trust level 4.
+    let reply = client
+        .get("/finish-installation/redirect-discourse-id")
+        .await;
+    assert!(reply.status.is_redirection(), "{}", reply.status);
+    assert_eq!(
+        reply.header("location"),
+        Some("/auth/discourse_id?origin=/wizard")
+    );
+    for email in ["dev1@example.com", "dev2@example.com"] {
+        let (admin, active, trust_level): (bool, bool, i32) = sqlx::query_as(
+            "SELECT u.admin, u.active, u.trust_level FROM users u \
+             JOIN user_emails e ON e.user_id = u.id WHERE e.email = $1",
+        )
+        .bind(email)
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+        assert!(admin && !active, "{email}");
+        assert_eq!(trust_level, 4, "{email}");
+    }
+    assert!(
+        setting(&db.pool, "global_notice")
+            .await
+            .unwrap_or_default()
+            .starts_with("No admins have logged in yet."),
+    );
+    // Again: nobody twice.
+    client
+        .get("/finish-installation/redirect-discourse-id")
+        .await;
+    let seeded: i64 = sqlx::query_scalar(
+        "SELECT count(*) FROM user_emails WHERE email IN ('dev1@example.com', 'dev2@example.com')",
+    )
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert_eq!(seeded, 2);
+}
+
+#[tokio::test]
+async fn skipping_email_setup_shows_what_stops_it() {
+    let db = TestDb::new().await;
+    login_hint_on(&db.pool).await;
+    // No developer emails.
+    let st = state(db.pool.clone(), skipping_email(&[])).await;
+    let reply = Client::new(&st).get("/finish-installation").await;
+    assert_eq!(reply.status, StatusCode::OK);
+    assert!(
+        reply.body.contains("<div class=\"alert alert-error\">"),
+        "{}",
+        reply.body
+    );
+    assert!(
+        reply
+            .body
+            .contains("No allowed emails configured in DISCOURSE_DEVELOPER_EMAILS.")
+    );
+    assert!(
+        reply
+            .body
+            .contains("<a href='https://meta.discourse.org/'>meta.discourse.org</a>")
+    );
+    assert_eq!(setting(&db.pool, "enable_discourse_id").await, None);
+
+    // Discourse ID out of reach: its registration's error.
+    set_setting(
+        &db.pool,
+        "discourse_id_provider_url",
+        STRING,
+        "http://127.0.0.1:9",
+    )
+    .await;
+    let st = state(
+        db.pool.clone(),
+        skipping_email(&[("developer_emails", DEVELOPERS)]),
+    )
+    .await;
+    let reply = Client::new(&st).get("/finish-installation").await;
+    assert!(
+        reply
+            .body
+            .contains("enable_discourse_id: Failed to automatically register with Discourse ID."),
+        "{}",
+        reply.body
+    );
+    assert_eq!(setting(&db.pool, "enable_discourse_id").await, None);
+}

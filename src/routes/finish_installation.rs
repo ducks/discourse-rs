@@ -7,8 +7,9 @@
 //! sent through the job queue's mailer, and becomes an admin when it logs
 //! in (make_developer_admin, crate::roles).
 //!
-//! Not ported: DISCOURSE_SKIP_EMAIL_SETUP's Discourse ID setup
-//! (`setup_discourse_id`, `redirect_discourse_id`).
+//! With DISCOURSE_SKIP_EMAIL_SETUP the index sets up Discourse ID in
+//! place of email, and redirect-discourse-id seeds the developer emails'
+//! admins on to its login.
 
 use askama::Template;
 use axum::body::Bytes;
@@ -52,6 +53,18 @@ struct IndexPage {
     congratulations: String,
     help: String,
     button: String,
+    discourse_id: DiscourseIdSetup,
+    discourse_id_help: String,
+    discourse_id_error_help: String,
+    login_with_discourse_id: String,
+}
+
+/// What the index shows: the register button, or with
+/// DISCOURSE_SKIP_EMAIL_SETUP Discourse ID's login or the setup's error.
+enum DiscourseIdSetup {
+    NotSettingUp,
+    Enabled,
+    Failed(String),
 }
 
 #[derive(Template)]
@@ -204,22 +217,175 @@ pub(super) async fn index_page(
     if !settings.get("has_login_hint")?.truthy() {
         return Ok(forbidden(state));
     }
-    if std::env::var("DISCOURSE_SKIP_EMAIL_SETUP").as_deref() == Ok("1") {
-        return Err(Unsupported("the finish installation page's Discourse ID setup").into());
-    }
+    let discourse_id = if state.config.skip_email_setup {
+        match setup_discourse_id(state, &mut conn, &settings).await? {
+            Ok(()) => DiscourseIdSetup::Enabled,
+            Err(error) => DiscourseIdSetup::Failed(error),
+        }
+    } else {
+        DiscourseIdSetup::NotSettingUp
+    };
     let html = IndexPage {
         head: head(state, &mut conn, &settings, guardian, uri).await?,
         congratulations: t(state, "finish_installation.congratulations"),
         help: t(state, "finish_installation.register.help"),
         button: t(state, "finish_installation.register.button"),
+        discourse_id,
+        discourse_id_help: t(state, "finish_installation.discourse_id_help"),
+        discourse_id_error_help: t(state, "finish_installation.discourse_id_error_help"),
+        login_with_discourse_id: t(state, "finish_installation.login_with_discourse_id"),
     }
     .render();
     page(html, None)
 }
 
-/// GET /finish-installation/redirect-discourse-id
-pub async fn redirect_discourse_id() -> Result<Response, AppError> {
-    Err(Unsupported("the finish installation page's Discourse ID setup").into())
+/// `setup_discourse_id`: Discourse ID on (registering the site first
+/// when it has no credentials, EnableDiscourseIdValidator), local logins
+/// off and usernames left to it. The error shown when that fails: no
+/// developer emails, or the setting's InvalidParameters.
+async fn setup_discourse_id(
+    state: &AppState,
+    conn: &mut PgConnection,
+    settings: &SiteSettings,
+) -> Result<Result<(), String>, AppError> {
+    if allowed_emails(state).is_empty() {
+        return Ok(Err(t(
+            state,
+            "finish_installation.discourse_id.no_allowed_emails",
+        )));
+    }
+    if !crate::site_setting_update::discourse_id_configured(settings)? {
+        let cx = crate::discourse_id::Cx {
+            config: &state.config,
+            bus: &state.bus,
+            defs: &state.site_setting_defs,
+            i18n: &state.i18n,
+            settings,
+        };
+        if crate::discourse_id::register(&mut *conn, &cx, false, false, None).await?
+            != crate::discourse_id::Outcome::Done
+        {
+            return Ok(Err(format!(
+                "enable_discourse_id: {}",
+                t(state, "site_settings.errors.discourse_id_registration")
+            )));
+        }
+    }
+    for (name, value) in [
+        ("enable_discourse_id", true),
+        ("enable_local_logins", false),
+        ("auth_overrides_username", true),
+    ] {
+        let set = crate::site_setting_update::set(
+            &mut *conn,
+            &state.bus,
+            settings,
+            &state.site_setting_defs,
+            &state.i18n,
+            name,
+            &json!(value),
+        )
+        .await?;
+        if let Err(message) = set {
+            return Ok(Err(message));
+        }
+    }
+    Ok(Ok(()))
+}
+
+/// GET /finish-installation/redirect-discourse-id: `seed_admin_users`
+/// (each developer email without an account made an inactive admin at
+/// trust level 4, to be activated by its first Discourse ID login), the
+/// global notice in case that login never comes, and Discourse ID's login
+/// on to the wizard.
+pub async fn redirect_discourse_id(State(state): State<AppState>) -> Result<Response, AppError> {
+    let mut tx = state.pool.begin().await?;
+    let settings = load_settings(&state, &mut tx).await?;
+    if !settings.get("has_login_hint")?.truthy() {
+        return Ok(forbidden(&state));
+    }
+    let emails = allowed_emails(&state);
+    if emails.is_empty() {
+        // A StandardError the controller doesn't rescue.
+        return Err(std::io::Error::other(t(
+            &state,
+            "finish_installation.discourse_id.no_allowed_emails",
+        ))
+        .into());
+    }
+    let payloads = crate::web_hooks::Payloads {
+        settings: &settings,
+        i18n: &state.i18n,
+        config: &state.config,
+    };
+    for email in &emails {
+        // User.find_by_email
+        let exists: bool = sqlx::query_scalar(
+            "SELECT EXISTS (SELECT 1 FROM user_emails WHERE lower(email) = lower($1))",
+        )
+        .bind(email)
+        .fetch_one(&mut *tx)
+        .await?;
+        if exists {
+            continue;
+        }
+        let username = crate::user_name_suggester::suggest(
+            &mut tx,
+            &settings,
+            &state.i18n,
+            &[Some(email)],
+            None,
+            true,
+            false,
+        )
+        .await?
+        .unwrap_or_default();
+        // save!(validate: false): the email as given, no password.
+        crate::signup::insert_user(
+            &mut tx,
+            &settings,
+            &payloads,
+            &crate::signup::NewUser {
+                username: &username,
+                name: None,
+                email,
+                password: None,
+                trust_level: 4,
+                active: false,
+                approved: false,
+                admin: true,
+                moderator: false,
+                staged: false,
+                locale: None,
+                ip: None,
+                custom_fields: &[],
+            },
+        )
+        .await?;
+    }
+    // Group.refresh_automatic_groups!(:staff, :admins); moderators with
+    // them, which no seeded account changes.
+    crate::roles::refresh_staff_groups(&mut tx, &state.i18n).await?;
+    let notice = t(&state, "finish_installation.discourse_id.global_notice");
+    let set = crate::site_setting_update::set(
+        &mut tx,
+        &state.bus,
+        &settings,
+        &state.site_setting_defs,
+        &state.i18n,
+        "global_notice",
+        &json!(notice),
+    )
+    .await?;
+    if let Err(message) = set {
+        return Err(std::io::Error::other(message).into());
+    }
+    tx.commit().await?;
+    let base = state.config.globals.relative_url_root();
+    Ok(
+        axum::response::Redirect::to(&format!("{base}/auth/discourse_id?origin={base}/wizard"))
+            .into_response(),
+    )
 }
 
 /// What the register form shows: the values given and the errors.
@@ -505,6 +671,7 @@ pub async fn register(
             trust_level,
             active: false,
             approved: false,
+            admin: false,
             moderator: false,
             staged: false,
             locale: None,

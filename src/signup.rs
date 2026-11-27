@@ -484,6 +484,7 @@ pub async fn create(
             trust_level: settings.get("default_trust_level")?.to_i() as i32,
             active: authenticated,
             approved: false,
+            admin: false,
             moderator: false,
             staged: false,
             locale: Some(s.locale.filter(|l| !l.is_empty()).unwrap_or("en")),
@@ -598,6 +599,7 @@ pub struct NewUser<'a> {
     pub active: bool,
     /// `ReviewableUser.set_approved_fields!(user, system)`
     pub approved: bool,
+    pub admin: bool,
     pub moderator: bool,
     pub staged: bool,
     pub locale: Option<&'a str>,
@@ -624,9 +626,9 @@ pub async fn insert_user(
     let trust_level = u.trust_level;
     let user_id: i32 = sqlx::query_scalar(
         "INSERT INTO users (username, username_lower, name, active, approved, approved_by_id, approved_at, \
-                            moderator, staged, trust_level, ip_address, registration_ip_address, locale, created_at, updated_at) \
+                            moderator, staged, trust_level, ip_address, registration_ip_address, locale, admin, created_at, updated_at) \
          VALUES ($1, $2, $3, $4, $5, CASE WHEN $5 THEN -1 END, CASE WHEN $5 THEN clock_timestamp() END, \
-                 $6, $10, $7, $8::inet, $8::inet, $9, clock_timestamp(), clock_timestamp()) \
+                 $6, $10, $7, $8::inet, $8::inet, $9, $11, clock_timestamp(), clock_timestamp()) \
          RETURNING id",
     )
     .bind(u.username)
@@ -639,6 +641,7 @@ pub async fn insert_user(
     .bind(u.ip)
     .bind(u.locale)
     .bind(u.staged)
+    .bind(u.admin)
     .fetch_one(&mut *conn)
     .await?;
     sqlx::query(

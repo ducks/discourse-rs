@@ -222,6 +222,7 @@ pub fn config(env: RailsEnv, globals: &[(&str, &str)]) -> Config {
         bind: "127.0.0.1:0".parse().unwrap(),
         rails_env: env,
         unicorn_port: "3000".into(),
+        skip_email_setup: false,
         public_dir: "public".into(),
         discourse_src: None,
         tmp_dir: "tmp".into(),

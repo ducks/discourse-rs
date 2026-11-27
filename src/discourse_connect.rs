@@ -1275,6 +1275,7 @@ async fn match_email_or_create_user(
                 trust_level: s.get("default_trust_level")?.to_i() as i32,
                 active: false,
                 approved: false,
+                admin: false,
                 moderator: false,
                 staged: false,
                 locale,
