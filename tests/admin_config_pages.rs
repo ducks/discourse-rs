@@ -980,3 +980,123 @@ async fn a_registered_site_sends_discourse_id_its_new_name() {
     .unwrap();
     assert_eq!(secret, "sec-0");
 }
+
+#[tokio::test]
+async fn a_topic_gets_its_generated_og_card() {
+    let _ = tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::ERROR)
+        .with_test_writer()
+        .try_init();
+    let db = TestDb::new().await;
+    common::set_setting(&db.pool, "generate_topic_og_image", 5, "t").await;
+    let st = admin_state(&db).await;
+    let mut conn = st.pool.acquire().await.unwrap();
+    let settings = discourse_rs::site_settings::SiteSettings::load(
+        &mut conn,
+        &st.site_setting_defs,
+        &st.config.globals,
+    )
+    .await
+    .unwrap();
+    let cx = discourse_rs::og_image::Cx {
+        config: &st.config,
+        settings: &settings,
+        i18n: &st.i18n,
+    };
+    // A topic in a public category, without an image of its own.
+    sqlx::query("UPDATE topics SET image_upload_id = NULL WHERE id = 3")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    discourse_rs::og_image::job(&mut conn, &cx, 3)
+        .await
+        .unwrap();
+    drop(conn);
+    let (upload_id, filename, width, height): (i64, String, Option<i32>, Option<i32>) =
+        sqlx::query_as(
+            "SELECT u.id::bigint, u.original_filename, u.width, u.height FROM topics t \
+         JOIN uploads u ON u.id = t.og_image_upload_id WHERE t.id = 3",
+        )
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(filename, "topic-og-3.png");
+    assert_eq!((width, height), (Some(1200), Some(630)));
+    let referenced: bool = sqlx::query_scalar(
+        "SELECT EXISTS (SELECT 1 FROM upload_references WHERE target_type = 'Topic' AND target_id = 3 AND upload_id = $1)",
+    )
+    .bind(upload_id)
+    .fetch_one(&db.pool)
+    .await
+    .unwrap();
+    assert!(referenced);
+
+    // The topic's page shares it.
+    let slug: String = sqlx::query_scalar("SELECT slug FROM topics WHERE id = 3")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let page = format!("/t/{slug}/3");
+    let mut anon = Client::anonymous(st.clone());
+    let (status, html) = anon.page(&page).await;
+    assert_eq!(status, StatusCode::OK);
+    // The app binds an upload id as an i32 for this statement, and the
+    // pool's connections cache it with that parameter type.
+    let url: String = sqlx::query_scalar("SELECT url FROM uploads WHERE id = $1")
+        .bind(i32::try_from(upload_id).unwrap())
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert!(
+        html.contains(&format!(
+            "<meta property=\"og:image\" content=\"http://test.localhost{url}\">"
+        )),
+        "{html}"
+    );
+
+    // A topic in a read-restricted category is not eligible: its card goes
+    // when it moves there.
+    sqlx::query("UPDATE categories SET read_restricted = TRUE WHERE id = (SELECT category_id FROM topics WHERE id = 3)")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let (_, html) = anon.page(&page).await;
+    assert!(!html.contains(&url), "{html}");
+
+    // The admin preview draws the card without keeping it.
+    sqlx::query("UPDATE categories SET read_restricted = FALSE WHERE id = (SELECT category_id FROM topics WHERE id = 3)")
+        .execute(&db.pool)
+        .await
+        .unwrap();
+    let uploads_before: i64 = sqlx::query_scalar("SELECT count(*) FROM uploads")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    let mut admin = Client::logged_in(st.clone(), "admin").await;
+    let (status, body) = admin
+        .send(
+            Method::GET,
+            "/admin/config/logo/og-image-preview.json?topic_id=3",
+            "",
+            true,
+        )
+        .await;
+    assert_eq!(status, StatusCode::OK, "{body}");
+    let json: serde_json::Value = serde_json::from_str(&body).unwrap();
+    assert_eq!(json["topic_id"], 3);
+    let data = json["url"].as_str().unwrap();
+    let encoded = data
+        .strip_prefix("data:image/png;base64,")
+        .expect("a png data uri");
+    use base64::Engine;
+    let png = base64::engine::general_purpose::STANDARD
+        .decode(encoded)
+        .unwrap();
+    let image = image::load_from_memory(&png).unwrap();
+    assert_eq!((image.width(), image.height()), (1200, 630));
+    let uploads_after: i64 = sqlx::query_scalar("SELECT count(*) FROM uploads")
+        .fetch_one(&db.pool)
+        .await
+        .unwrap();
+    assert_eq!(uploads_before, uploads_after);
+}

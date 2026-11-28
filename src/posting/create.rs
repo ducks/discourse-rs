@@ -1080,23 +1080,27 @@ pub async fn create_with(
         } else {
             ""
         };
-        sqlx::query_scalar(&format!(
+        let (number, posts_count): (i32, i32) = sqlx::query_as(&format!(
             "UPDATE topics SET highest_staff_post_number = $1 + 1, highest_post_number = $1 + 1{reply_sql}, \
-             posts_count = posts_count + 1 WHERE id = $2 RETURNING highest_post_number"
+             posts_count = posts_count + 1 WHERE id = $2 RETURNING highest_post_number, posts_count"
         ))
         .bind(highest)
         .bind(topic_id)
         .fetch_one(&mut *tx)
-        .await?
+        .await?;
+        // Topic.regenerate_og_image_after_replies_change(topic_id, posts_count - 1)
+        let replies = i64::from(posts_count) - 1;
+        if crate::og_image::counter_regeneration_needed(replies - 1, replies) {
+            crate::og_image::after_counter_change(&mut tx, s, topic_id, replies - 1, replies)
+                .await?;
+        }
+        number
     };
     let post_type = if whisper {
         post_types::WHISPER
     } else {
         post_types::REGULAR
     };
-    if s.get("generate_topic_og_image")?.truthy() {
-        return Err(Unsupported("generate_topic_og_image").into());
-    }
     // discourse-post-voting's before_create, after core's: an emailed reply
     // to the question is an answer (its reply_to_user_id and the topic's
     // reply count stay).

@@ -4,14 +4,12 @@
 
 use sqlx::PgConnection;
 
+use crate::AppError;
 use crate::posting::{post_types, user_actions};
 use crate::site_settings::SiteSettings;
-use crate::{AppError, Unsupported};
 
 /// `PostActionType::LIKE_POST_ACTION_ID`
 const LIKE: i32 = 2;
-/// `Topic::OG_IMAGE_REGENERATION_COUNTER_STEP`
-const OG_IMAGE_STEP: i32 = 10;
 
 /// `Post.recalculate_like_counts!`: like count and score (staff likes
 /// weighted) from the posts' live likes, deleted posts included.
@@ -50,9 +48,8 @@ pub struct TopicCount {
 }
 
 /// `Topic.recalculate_like_counts!`: the topics' (deleted ones too) like
-/// counts summed from their live non-whisper posts. A count crossing a
-/// step of ten on a topic with a generated og image would enqueue its
-/// regeneration, which is not ported.
+/// counts summed from their live non-whisper posts, a count crossing a
+/// step of ten regenerating a generated og image.
 pub async fn topics(
     conn: &mut PgConnection,
     settings: &SiteSettings,
@@ -73,26 +70,13 @@ pub async fn topics(
     .bind(post_types::WHISPER)
     .fetch_all(&mut *conn)
     .await?;
-    // enqueue_og_image_regeneration_after_counter_change
-    let crossed: Vec<i32> = counts
-        .iter()
-        .filter(|c| {
-            c.current_count >= OG_IMAGE_STEP
-                && c.previous_count / OG_IMAGE_STEP < c.current_count / OG_IMAGE_STEP
-        })
-        .map(|c| c.id)
-        .collect();
-    if !crossed.is_empty() && settings.get("generate_topic_og_image")?.truthy() {
-        let with_og_image: bool = sqlx::query_scalar(
-            "SELECT EXISTS (SELECT 1 FROM topics WHERE id = ANY($1) AND og_image_upload_id IS NOT NULL)",
-        )
-        .bind(&crossed)
-        .fetch_one(&mut *conn)
-        .await?;
-        if with_og_image {
-            return Err(
-                Unsupported("the topic og image regenerated on a like count change").into(),
-            );
+    // enqueue_og_image_regeneration_after_counter_change for each topic
+    // whose count crossed a step.
+    for c in &counts {
+        let (previous, current) = (i64::from(c.previous_count), i64::from(c.current_count));
+        if crate::og_image::counter_regeneration_needed(previous, current) {
+            crate::og_image::after_counter_change(&mut *conn, settings, c.id, previous, current)
+                .await?;
         }
     }
     Ok(counts)

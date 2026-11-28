@@ -693,21 +693,13 @@ impl TopicView<'_> {
         // post, else the desired post's own (without thumbnails).
         let image_url = self.list_serializer().image_url(&topic).await?;
         let page_image = if post_number == 1 {
-            let og: Option<i64> =
-                if image_url.is_null() && self.settings.get("generate_topic_og_image")?.truthy() {
-                    sqlx::query_scalar("SELECT og_image_upload_id FROM topics WHERE id = $1")
-                        .bind(topic.id)
-                        .fetch_one(&mut *self.conn)
-                        .await?
-                } else {
-                    None
-                };
-            match og {
-                Some(_) => Err("generate_topic_og_image"),
-                None => Ok(PageImage {
+            if image_url.is_null() {
+                self.og_image(topic.id).await?
+            } else {
+                Ok(PageImage {
                     url: image_url.as_str().map(str::to_string),
                     upload_id: topic.image_upload_id,
-                }),
+                })
             }
         } else {
             match posts
@@ -1270,6 +1262,40 @@ impl TopicView<'_> {
     /// `Post#image_url` (`UrlHelper.cook_url(image_upload.url, local: true)`)
     /// with the post's image upload id; what only the page needs is
     /// refused there.
+    /// `og_image_upload` and `og_image_url`: the topic's generated card,
+    /// while the setting is on and the topic eligible.
+    async fn og_image(
+        &mut self,
+        topic_id: i32,
+    ) -> Result<Result<PageImage, &'static str>, TopicViewError> {
+        if !self.settings.get("generate_topic_og_image")?.truthy()
+            || crate::og_image::eligible(&mut *self.conn, self.settings, topic_id).await?
+                != Some(true)
+        {
+            return Ok(Ok(PageImage::default()));
+        }
+        let row: Option<(i64, String, bool)> = sqlx::query_as(
+            "SELECT u.id::bigint, u.url, u.secure FROM topics t JOIN uploads u ON u.id = t.og_image_upload_id \
+             WHERE t.id = $1",
+        )
+        .bind(topic_id)
+        .fetch_optional(&mut *self.conn)
+        .await?;
+        let Some((id, url, secure)) = row else {
+            return Ok(Ok(PageImage::default()));
+        };
+        if secure && self.settings.get("secure_uploads")?.truthy() {
+            return Ok(Err("secure uploads"));
+        }
+        if self.urls.config.globals.cdn_url().is_some() {
+            return Ok(Err("topic images behind a CDN"));
+        }
+        Ok(Ok(PageImage {
+            url: Some(crate::topic_list::cook_topic_image(self.urls, &url)?),
+            upload_id: Some(id),
+        }))
+    }
+
     async fn post_image(
         &mut self,
         post_id: i32,

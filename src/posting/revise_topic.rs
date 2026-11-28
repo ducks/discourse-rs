@@ -1213,9 +1213,6 @@ async fn save_topic(
             new.slow_mode_seconds = seconds;
         }
     }
-    if (title_changed || category_changed) && old.og_image_upload_id.is_some() {
-        return Err(Unsupported("regenerating a topic's og image").into());
-    }
     let changed = title_changed
         || new.slug != old.slug
         || new.fancy_title != old.fancy_title
@@ -1240,6 +1237,17 @@ async fn save_topic(
         .bind(new.slow_mode_seconds)
         .execute(&mut *conn)
         .await?;
+    }
+    // after_save :regenerate_og_image: a generated card follows the new
+    // title or category, or goes when the topic is no longer eligible.
+    if (title_changed || category_changed) && old.og_image_upload_id.is_some() {
+        if ctx.settings.get("generate_topic_og_image")?.truthy()
+            && crate::og_image::eligible(&mut *conn, ctx.settings, topic_id).await? == Some(true)
+        {
+            crate::og_image::enqueue(&mut *conn, topic_id).await?;
+        } else {
+            crate::og_image::clear_generated(&mut *conn, topic_id).await?;
+        }
     }
     if category_changed {
         // before_save's inherit_auto_close_from_category, its timer

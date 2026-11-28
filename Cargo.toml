@@ -73,6 +73,9 @@ url = "2"
 image = { version = "0.25.10", default-features = false, features = ["png", "jpeg", "gif", "webp"] }
 fast_image_resize = { version = "6.1.0", features = ["image"] }
 oxipng = { version = "10.2.1", default-features = false }
+# The topic OG card: its SVG rendered to PNG (crate::og_image).
+resvg = { version = "0.50.0", default-features = false, features = ["text", "system-fonts", "raster-images"] }
+unicode-segmentation = "1"
 imagequant = { version = "4.4.1", default-features = false }
 kamadak-exif = "0.6.1"
 grass = { version = "0.13.4", default-features = false }

@@ -1,0 +1,8 @@
+{
+  "user": "user1",
+  "settings": {"generate_topic_og_image": "true"},
+  "setup": ["UPDATE topics SET og_image_upload_id = -6, image_upload_id = NULL, posts_count = 10 WHERE id = 35"],
+  "requests": [
+    {"method": "POST", "path": "/posts.json", "params": {"topic_id": 35, "raw": "A reply that takes the topic past ten replies."}}
+  ]
+}

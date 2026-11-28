@@ -102,6 +102,7 @@ pub mod mustache;
 pub mod new_features;
 pub mod not_found_page;
 pub mod notifications;
+pub mod og_image;
 pub use notifications::{
     create as notification_create, emailer as notification_emailer,
     schedule as notification_schedule,
